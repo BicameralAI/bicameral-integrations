@@ -1,0 +1,12 @@
+id: noisy-source-gate
+version: 0.1.0
+name: Noisy Source Gate
+outputs:
+  - routing_hint
+  - advisory_governance_result
+forbidden_actions:
+  - write_canonical_decision
+  - approve_signoff
+  - resolve_compliance
+  - create_blocking_ci_result
+

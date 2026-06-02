@@ -1,0 +1,26 @@
+name: Feature request
+description: Propose a new source adapter, EM-safe mod, or repository capability.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What workflow or integration gap should this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Describe the desired adapter, mod, or behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Authority boundaries
+      description: How will this avoid canonical writes and preserve reviewability?
+    validations:
+      required: true

@@ -1,0 +1,26 @@
+name: Bug report
+description: Report adapter, mod, or documentation behavior that is not working as expected.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Source evidence
+      description: Include payload excerpts, refs, timestamps, or fixture paths when relevant.
+    validations:
+      required: false

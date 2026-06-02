@@ -1,0 +1,19 @@
+name: Documentation issue
+description: Report missing, stale, or unclear repository documentation.
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: Link or path to the relevant documentation.
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: Issue
+      description: What needs to be corrected or clarified?
+    validations:
+      required: true
