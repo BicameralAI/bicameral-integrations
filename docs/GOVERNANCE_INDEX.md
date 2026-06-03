@@ -1,6 +1,6 @@
 # Governance Index
 
-**Last Reviewed**: [ISO 8601 date]
+**Last Reviewed**: 2026-06-03
 
 A single authoritative map of every governance artifact in this project, organized
 into six freshness tiers with explicit drift contracts. A stale entry here is
@@ -13,9 +13,11 @@ MUST be current at every cycle close. Drift signal: wrong version / wrong state 
 
 | Artifact | Path | Freshness marker |
 |----------|------|------------------|
-| Meta Ledger | `docs/META_LEDGER.md` | latest sealed entry |
+| Meta Ledger | `docs/META_LEDGER.md` | latest sealed entry (#9) |
+| Shadow Genome | `docs/SHADOW_GENOME.md` | latest narrative entry |
 | System State | `docs/SYSTEM_STATE.md` | latest phase snapshot |
 | Concept | `docs/CONCEPT.md` | stable |
+| Domain glossary | `CONTEXT.md` | stable vocabulary |
 | Architecture Plan | `docs/ARCHITECTURE_PLAN.md` | stable |
 | Backlog | `docs/BACKLOG.md` | open items current |
 | Feature Index | `docs/FEATURE_INDEX.md` | every feature has a test |
@@ -28,7 +30,10 @@ Stable; changes are explicit doctrine events. Drift signal: rules contradict eac
 
 | Artifact | Path |
 |----------|------|
-| _example_ | `qor/references/doctrine-*.md` |
+| Security policy | `SECURITY.md` |
+| Governance policy | `GOVERNANCE.md` |
+| Contribution guide | `CONTRIBUTING.md` |
+| Code of conduct | `CODE_OF_CONDUCT.md` |
 
 ## Tier 3 — Active Initiative
 
@@ -36,7 +41,7 @@ Live until close; ages out at substantiate. Drift signal: shipped feature still 
 
 | Artifact | Path | Opened |
 |----------|------|--------|
-| _example_ | `.qor/session/<id>` | [date] |
+| _(none — session state under `.qor/session/` is local/untracked)_ | — | — |
 
 ## Tier 4 — Per-Plan Artifact
 
@@ -44,7 +49,7 @@ Live for plan duration; archived at substantiate. Drift signal: plan shipped but
 
 | Artifact | Path | Plan |
 |----------|------|------|
-| _example_ | `docs/plan-*.md` | [slug] |
+| _(none tracked — `plan-*.md` are local drafts, gitignored)_ | — | — |
 
 ## Tier 5 — Reference Material
 
@@ -52,7 +57,9 @@ Informational, slow-drift. Drift signal: factual claims diverge from current cod
 
 | Artifact | Path |
 |----------|------|
-| _example_ | `docs/*.md` reference docs |
+| Architecture decision records | `docs/adr/0004..0007-*.md` |
+| Adapter-contract research brief | `docs/research-brief-adapter-contract-2026-06-02.md` |
+| Security & governance research brief | `docs/research-brief-security-governance-alignment-2026-06-03.md` |
 
 ## Tier 6 — Archived
 
@@ -60,7 +67,7 @@ Frozen historical record. Drift signal: none (frozen).
 
 | Archive | Path |
 |---------|------|
-| _example_ | `docs/archive/` |
+| _(none yet)_ | — |
 
 ## How to add a governance artifact
 

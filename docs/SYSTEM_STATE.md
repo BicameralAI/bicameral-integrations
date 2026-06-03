@@ -4,37 +4,30 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Last Updated** | [ISO 8601 timestamp] |
-| **Updated By** | [Governor \| Judge \| Specialist] |
-| **Phase** | [BOOTSTRAP \| IMPLEMENTING \| SUBSTANTIATED] |
-| **Iteration** | [N] |
-| **Session Seal** | [hash prefix or PENDING] |
+| **Last Updated** | 2026-06-03 |
+| **Updated By** | Orchestrator (qor-auto-dev-1) |
+| **Phase** | IMPLEMENTING (cycles 1–2 substantiated & merged to `main`) |
+| **Iteration** | 2 governed cycles (adapter seam + GitHub connector; secret screen + CI alignment) |
+| **Session Seal** | `cad649f6` (META_LEDGER Entry #9 chain hash) |
 
 ---
 
 ## File Tree (Current Reality)
 
-<!--
-This is the ACTUAL state of the project, not the planned state.
-Updated by /qor-substantiate or /qor-refactor.
--->
-
 ```
-project/
-|-- .agent/
-|   `-- staging/
-|       `-- AUDIT_REPORT.md
-|-- docs/
-|   |-- CONCEPT.md
-|   |-- ARCHITECTURE_PLAN.md
-|   |-- META_LEDGER.md
-|   |-- SYSTEM_STATE.md (this file)
-|   `-- SHADOW_GENOME.md
-|-- src/
-|   `-- [actual source tree]
-|-- tests/
-|   `-- [actual test tree]
-`-- [other project files]
+bicameral-integrations/
+|-- adapter/
+|   `-- core/  (emissions, observations, contracts, capabilities, pipeline,
+|              sensitive, filters, fixtures, __init__ + tests/)
+|-- connectors/
+|   |-- github/  (connector.py, fixtures/pr_merged.json, tests/)
+|   |-- google_drive/  (scaffold)
+|   `-- jira/  (scaffold)
+|-- mods/  (dependency_risk, noisy_source_gate, security_mentions — manifests)
+|-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME,
+|          SYSTEM_STATE, GOVERNANCE_INDEX, BACKLOG, FEATURE_INDEX, adr/, research-brief-*)
+|-- .github/workflows/  (ci.yml, secret-scan.yml)
+`-- (LICENSE, README, CONTRIBUTING, SECURITY, GOVERNANCE, CODE_OF_CONDUCT, CHANGELOG)
 ```
 
 ---
@@ -43,79 +36,52 @@ project/
 
 | Metric | Value |
 |--------|-------|
-| Total Source Files | [count] |
-| Total Test Files | [count] |
-| Total Lines of Code | [count] |
-| Average File Size | [lines] |
-| Max File Size | [lines] (file: [name]) |
-| Max Function Size | [lines] (file: [name]) |
-| Section 4 Violations | [count] |
+| Total Source Files (.py, excl. tests) | 16 |
+| Total Test Files | 3 |
+| Total Lines of Code (source) | 564 |
+| Max File Size | 132 lines (adapter/core/sensitive.py) |
+| Section 4 Violations | 0 |
 
 ---
 
 ## Blueprint Compliance
 
-<!--
-Compare ARCHITECTURE_PLAN.md (Promise) vs actual files (Reality).
--->
+| Status | Notes |
+|--------|-------|
+| Delivered | Universal adapter normalization seam + GitHub connector + producer secret screen — all per ADR-0004/0005/0006 |
+| Unplanned | 0 |
+| Missing | 0 (gateway bridge intentionally deferred — blocked on bicameral-bot#92/#109) |
 
-| Status | Planned | Actual | Notes |
-|--------|---------|--------|-------|
-| OK Delivered | [count] | [count] | Files matching blueprint |
-| WARN Unplanned | 0 | [count] | Files not in blueprint |
-| FAIL Missing | [count] | 0 | Planned but not created |
-
-**Compliance Rate**: [percentage]%
+**Compliance**: aligned with `ARCHITECTURE_PLAN.md` and ADR-0004..0007.
 
 ---
 
 ## Dependency Manifest
 
-<!--
-Current dependencies vs what was approved in blueprint.
--->
-
-| Package | Approved | Installed | Status |
-|---------|----------|-----------|--------|
-| [name] | OK | OK | OK |
-| [name] | FAIL | OK | UNPLANNED |
-| [name] | OK | FAIL | MISSING |
+| Scope | Status |
+|-------|--------|
+| Runtime | stdlib only — no third-party runtime dependencies |
+| Dev/CI | ruff, mypy, pytest (CI gate); TruffleHog (secret scan) |
 
 ---
 
 ## Section 4 Razor Compliance
 
-### File-Level (Macro KISS)
-
-| File | Lines | Status |
-|------|-------|--------|
-| [path] | [N]/250 | OK/FAIL |
-
-### Function-Level (Micro KISS)
-
-| File | Longest Function | Deepest Nesting | Status |
-|------|-----------------|-----------------|--------|
-| [path] | [N]/40 lines | [N]/3 levels | OK/FAIL |
+| Check | Limit | Actual | Status |
+|-------|-------|--------|--------|
+| Max file size | 250 | 132 (sensitive.py) | OK |
+| Max function size | 40 | ≤40 (verified at audit) | OK |
+| Max nesting depth | 3 | ≤3 | OK |
 
 ---
 
 ## Test Coverage
 
-| Component | Test File | Exists | Passing |
-|-----------|-----------|--------|---------|
-| [name] | [path] | OK/FAIL | OK/FAIL/- |
-
----
-
-## Recent Changes
-
-<!--
-List of files modified in current iteration.
--->
-
-| File | Change Type | Lines Changed |
-|------|-------------|---------------|
-| [path] | [Created \| Modified \| Deleted] | [+N, -M] |
+| Component | Test File | Passing |
+|-----------|-----------|---------|
+| Pipeline (normalize/validate/screen) | adapter/core/tests/test_pipeline.py | 26/26 suite OK |
+| Sensitive detector | adapter/core/tests/test_sensitive.py | OK |
+| GitHub connector | connectors/github/tests/test_github_connector.py | OK |
 
 ---
 
@@ -123,21 +89,19 @@ List of files modified in current iteration.
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Merkle Chain | [VALID \| BROKEN] | Last validated: [date] |
-| Blueprint Sync | [SYNCED \| DRIFT] | [details] |
-| Section 4 Compliance | [PASS \| VIOLATIONS] | [count] violations |
-| Test Status | [PASS \| FAIL \| UNKNOWN] | [details] |
+| Ledger Chain | VALID | through Entry #9 (`cad649f6`) |
+| Blueprint Sync | SYNCED | ADRs + research briefs current |
+| Section 4 Compliance | PASS | 0 violations |
+| Test Status | PASS | 26 passing; ruff + mypy clean |
+| CI Gates | GREEN | ci.yml + TruffleHog passing on `main` |
 
 ---
 
 ## Next Actions
 
-Based on current state:
-
-- [ ] [Recommended action 1]
-- [ ] [Recommended action 2]
+- [ ] Add the adapter→gateway conformance test against bicameral-bot `protocol/schemas/v1/` (blocked until bot #99 lands the v1 schema on bot `main`).
+- [ ] Track bot #108/#109 (gateway security) and #73 (release posture) as cross-repo dependencies.
 
 ---
 
-*State snapshot updated by Qor-logic A.E.G.I.S.*
-*Run `/qor-status` for live diagnostic.*
+*State snapshot maintained by Qor-logic. Run `/qor-status` for a live diagnostic.*
