@@ -5,6 +5,16 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-03-H — Security/governance standards: mcp is the baseline; bot under-enforces
+
+**Discovered**: 2026-06-03 (`/qor-research`, cross-repo security+governance alignment)
+**Prevents**: assuming the bot enforces the authority boundary our producers rely on, and shipping integrations out of step with the mcp standard.
+
+- **mcp is the inheritance baseline.** Four ingest guards — `_check_payload_size`/`_check_rate_limit`/`_check_canary`/`_check_sensitive` (`bicameral-mcp/handlers/ingest.py:138/202/231/265`), hard-vs-soft gating + DLQ (`:83-91`, `dlq/store.py`), webhook HMAC+dedup (`webhooks/github.py:48-72`, `dedup.py:51-145`), keyring secrets (`secrets_store/store.py`). Sibling repos adopt, not re-derive.
+- **CRIT — the bot's authority boundary is doctrine-only.** `bicameral-bot/crates/bicameral-gateway/src/routes.rs:265,616` accept review/dashboard state mutations (promote candidate, approve signoff) with **no actor identity** (actor is the spoofable string "dashboard", `:709`) and **no auth** (`lib.rs:45-52` only warns). The "edges can't write canonical" invariant our integrations work depends on is NOT enforced in code. Verify before trusting it.
+- **CRIT — secret-scan fragmentation.** mcp=TruffleHog, bot=custom python, integrations=`gitleaks-action@v2` — the tool mcp's own `secret-scan.yml` flags as paid-license-for-orgs. Ours is likely broken under the BicameralAI org. Standardize on TruffleHog.
+- **Integrations gaps:** no test/lint CI (only secret-scan); `validate_emissions` doesn't screen secrets/PII; missing `SYSTEM_STATE.md`/`GOVERNANCE_INDEX.md` scaffold.
+
 ## SG-2026-06-02-G — Norm cross-check: contract authority belongs to the bot
 
 **Discovered**: 2026-06-02 (`/qor-research`, doctrine cross-check of D1/D2/D3)

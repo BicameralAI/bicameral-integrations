@@ -145,5 +145,80 @@ SHA256(content_hash + previous_hash)
 **Decision**: PASS-audit plan implemented. Universal-adapter normalization seam (`adapter/core/observations.py`, `pipeline.py` `normalize`/`validate_emissions`/`EmissionContractError`, `contracts.py` returning `list[Observation]`) + fixture-based GitHub PR connector (`connectors/github/connector.py`). Verification: **14/14 pytest pass**, `ruff` clean, `mypy` clean (14 files). Independent objective-observer confirmed Reality==Promise (no scope creep, no coupling, bot#92 bridge untouched, ADR-0005 rules enforced). FEATURE_INDEX rows FX-ADP-001/FX-GH-001 = Verified. **Review Boundary held**: no commit/push/PR/tag. Secret scan: gitleaks absent (tool shortfall); fallback scan over touched source clean.
 
 ---
+
+### Entry #7: RESEARCH BRIEF — Security & Governance Alignment
+
+**Timestamp**: 2026-06-03T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-security-governance-alignment-2026-06-03.md)
+= c2a7bf5402c67aed9c5613801e448ca67a6a8c2418d13ef1fca06dffdd62f333
+```
+
+**Previous Hash**: 086a7213f2154ffa95d4a06f9f9df2be3d4d42e5dad2babc34b447bdcaf742e0
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 6d9ead64d1e652444a120a8b19699795a4c8a2c6eb35bb1a30c3b25b0f9f3bc7
+```
+
+**Decision**: Cross-repo security+governance alignment audited (bot/integrations/mcp). mcp is the standards baseline (4 ingest guards + hard/soft DLQ + webhook HMAC/dedup + keyring). **CRIT-1**: bot gateway has no ingest input-security guards (external-facing). **CRIT-2 (most severe)**: bot review/dashboard routes enforce no actor authority — canonical mutations (promote/approve-signoff) accepted from a spoofable actor; the "edges can't write canonical" invariant our work relies on is doctrine-only, not code-enforced (`routes.rs:265,616`). **CRIT-3**: 3 repos = 3 secret scanners; ours is `gitleaks-action@v2` (paid-license for orgs per mcp). Integrations also ships no test/lint CI. Risk grade L2 (security-surface findings, cross-repo). Recommendations: swap to TruffleHog, add CI test/lint gate, producer-side secret screening, seed scaffold; raise bot CRIT-1/CRIT-2 as bot issues.
+
+---
+
+### Entry #8: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-03T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-security-governance-alignment-2026-06-03.md)
+= 85e7bbaea670a3cf1e46cb79268ac52a75f31601dc7e798116aa1335993c6bdf
+```
+
+**Previous Hash**: 6d9ead64d1e652444a120a8b19699795a4c8a2c6eb35bb1a30c3b25b0f9f3bc7
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= effb49ede819ed1cedaa29f7d87359e8ffe5454cc7f9ab247761f916743b3e67
+```
+
+**Verdict**: **PASS** (iteration 1). Plan for producer-side sensitive-data screen (port of mcp `sensitive_patterns.py`) + CI alignment (gitleaks→TruffleHog, new test/lint gate). Independent reviewer verified the no-leak claim concretely (redaction math: all secret patterns min-len >8, body asterisked → raised error cannot carry a full credential). One non-blocking advisory (add PHI test) accepted into implement. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+---
+
+### Entry #9: IMPLEMENTATION SEAL (local — Review Boundary held)
+
+**Timestamp**: 2026-06-03T00:00:00-04:00
+**Phase**: IMPLEMENT / SUBSTANTIATE (local hold)
+**Author**: Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 2122190005fc04ba74dfcbe09f22b94a3c42f144c792a23185e83f24b1b08138
+```
+
+**Previous Hash**: effb49ede819ed1cedaa29f7d87359e8ffe5454cc7f9ab247761f916743b3e67
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= cad649f622885f5706fa9b4a7672eddf857b86dce3413be36c39d0eebb1b380e
+```
+
+**Decision**: PASS-audit plan implemented. (1) Producer-side sensitive-data screen — `adapter/core/sensitive.py` (faithful port of mcp `sensitive_patterns.py` v1: secret/PHI/PAN + Luhn) wired as a HARD gate in `validate_emissions`/`_screen_sensitive`; secret excerpts redacted so the raised error cannot leak a credential (independently verified). (2) CI alignment — `secret-scan.yml` gitleaks→TruffleHog (`--only-verified`, matches mcp; fixes org-license issue); new `ci.yml` (ruff/mypy/pytest); `.pre-commit-config.yaml` gitleaks→ruff. Verification: **26/26 pytest** (was 14; +12), ruff clean, mypy clean (16 files). Independent objective-observer confirmed Reality==Promise + no leak + faithful port + no scope creep. FEATURE_INDEX FX-SEC-001 Verified. **Review Boundary held**: no commit/push/PR. Decision-log note: PHI/PAN excerpts are truncate-only (not asterisked) in the error — mcp parity, design-as-specified; secret-class is fully redacted. bot CRIT-1/CRIT-2 remain bicameral-bot issues (out of scope).
+
+---
 *Chain integrity: VALID*
 *Next required action: operator review → publish decision (commit/PR). See handoff.*

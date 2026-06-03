@@ -7,6 +7,7 @@ from collections.abc import Iterable
 
 from .emissions import AdapterEmission, SourceEvidence
 from .observations import Observation
+from .sensitive import detect_sensitive
 
 _SOURCE_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
 _EMISSION_TYPES = frozenset({"candidate", "evidence", "hint", "advisory"})
@@ -45,7 +46,25 @@ def validate_emissions(emissions: Iterable[AdapterEmission]) -> list[AdapterEmis
             )
         if emission.confidence is not None and not emission.confidence.dimensions:
             raise EmissionContractError("confidence_not_dimensional")
+        _screen_sensitive(emission)
     return validated
+
+
+def _screen_sensitive(emission: AdapterEmission) -> None:
+    """Reject an emission carrying a secret / PHI / PAN. mcp parity: sensitive
+    data is a HARD gate — never forwarded to the gateway. The raised detail uses
+    the already-redacted excerpt, so a raw credential cannot leak into the error.
+    """
+    content = " ".join(
+        [emission.title, emission.body, *(ev.excerpt for ev in emission.evidence)]
+    )
+    hits = detect_sensitive(content)
+    if hits:
+        hit = hits[0]
+        raise EmissionContractError(
+            f"sensitive_data:{hit.cls} (pattern={hit.pattern_id}, "
+            f"excerpt={hit.match_excerpt!r}, catalog=v1)"
+        )
 
 
 def normalize(

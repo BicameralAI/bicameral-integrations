@@ -101,3 +101,34 @@ def test_normalize_maps_source_id_from_ref():
     obs = Observation(source_ref=_ref(), excerpt="x")
     out = normalize([obs], adapter_version="a/1")
     assert out[0].source_id == "github"
+
+
+_GH_TOKEN = "ghp_0123456789abcdefghijklmnopqrstuvwxyz"  # fake; ghp_ + 36 chars
+
+
+def test_validate_rejects_secret_in_evidence_excerpt():
+    ev = SourceEvidence(source_ref=_ref(), excerpt=f"api key {_GH_TOKEN}")
+    with pytest.raises(EmissionContractError) as exc:
+        validate_emissions([_emission(evidence=(ev,))])
+    assert str(exc.value).startswith("sensitive_data:")
+
+
+def test_validate_rejects_secret_in_body():
+    with pytest.raises(EmissionContractError) as exc:
+        validate_emissions([_emission(body=f"deploy with {_GH_TOKEN}")])
+    assert "sensitive_data:secret" in str(exc.value)
+
+
+def test_validate_error_does_not_leak_raw_secret():
+    ev = SourceEvidence(source_ref=_ref(), excerpt=f"api key {_GH_TOKEN}")
+    with pytest.raises(EmissionContractError) as exc:
+        validate_emissions([_emission(evidence=(ev,))])
+    assert _GH_TOKEN not in str(exc.value)
+
+
+def test_normalize_rejects_secret_bearing_observation():
+    # The screen must fire through the full normalize() seam, not only direct validation.
+    obs = Observation(source_ref=_ref(), excerpt=f"token {_GH_TOKEN}")
+    with pytest.raises(EmissionContractError) as exc:
+        normalize([obs], adapter_version="github/0.1.0")
+    assert str(exc.value).startswith("sensitive_data:")

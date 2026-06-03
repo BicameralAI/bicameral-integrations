@@ -17,6 +17,7 @@ from .emissions import (
 )
 from .observations import Observation
 from .pipeline import EmissionContractError, normalize, validate_emissions
+from .sensitive import SensitiveHit, detect_sensitive
 
 __all__ = [
     "ActiveConnector",
@@ -28,11 +29,13 @@ __all__ = [
     "Observation",
     "PollingConnector",
     "RoutingHint",
+    "SensitiveHit",
     "SourceCapabilities",
     "SourceEvidence",
     "SourceMode",
     "SourceRef",
     "WebhookConnector",
+    "detect_sensitive",
     "normalize",
     "validate_emissions",
 ]

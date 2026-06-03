@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **2**
-- **Verified**: 2
+- Total entries: **3**
+- **Verified**: 3
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -20,6 +20,7 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 |---|---|---|---|---|---|---|
 | FX-ADP-001 | Universal adapter normalization seam (`normalize` + `validate_emissions`) | docs/plan-adapter-core-github-connector-2026-06-02.md | adapter/core/pipeline.py, adapter/core/observations.py | adapter/core/tests/test_pipeline.py | Verified | Observation→AdapterEmission seam; enforces ADR-0005 contract rules |
 | FX-GH-001 | GitHub PR → Observation parser | docs/plan-adapter-core-github-connector-2026-06-02.md | connectors/github/connector.py | connectors/github/tests/test_github_connector.py | Verified | Fixture-based; live fetch_active/webhook deferred (no live API this cycle) |
+| FX-SEC-001 | Producer sensitive-data screen (secret/PHI/PAN) | docs/plan-security-governance-alignment-2026-06-03.md | adapter/core/sensitive.py, adapter/core/pipeline.py | adapter/core/tests/test_sensitive.py | Verified | Port of mcp sensitive_patterns; HARD-gate in validate_emissions; secret excerpts redacted (no leak) |
 
 ---
 
