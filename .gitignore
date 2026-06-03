@@ -24,3 +24,6 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+# qor:seed -- do not edit between markers
+.qor/session/
+# qor:seed/end
