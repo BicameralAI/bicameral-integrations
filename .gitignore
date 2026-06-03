@@ -1,0 +1,26 @@
+# AI governance and local session state
+.agent/
+.claude/
+.failsafe/
+.qor/
+CLAUDE.md
+GEMINI.md
+COPILOT.md
+CURSOR.md
+
+# Planning drafts
+plan-*.md
+Planning/
+
+# IDE local settings
+.vscode/
+.idea/
+.cursor/
+.windsurf/
+
+# Python local artifacts
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.venv/
+venv/

@@ -1,0 +1,10 @@
+{
+  "number": 92,
+  "title": "Adopt Postgres for the event store",
+  "body": "We will use Postgres as the durable event store substrate.",
+  "html_url": "https://github.com/BicameralAI/bicameral-bot/pull/92",
+  "merged": true,
+  "merged_at": "2026-06-01T18:30:00Z",
+  "user": {"login": "jinhongkuan"},
+  "base": {"repo": {"full_name": "BicameralAI/bicameral-bot"}}
+}

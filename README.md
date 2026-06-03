@@ -53,3 +53,9 @@ Mods may emit candidates, evidence, hints, dependency signals, advisories, and s
 ```bash
 pytest -v tests/
 ```
+
+## Project Governance
+
+- [Contributing](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
