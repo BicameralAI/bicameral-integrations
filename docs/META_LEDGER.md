@@ -221,4 +221,5 @@ SHA256(content_hash + previous_hash)
 
 ---
 *Chain integrity: VALID*
-*Next required action: operator review → publish decision (commit/PR). See handoff.*
+*Status: PR #1 merged to `main` (2026-06-03) — adapter seam + GitHub connector + producer secret screen + TruffleHog/CI alignment shipped. Scaffold seeded (SYSTEM_STATE.md, GOVERNANCE_INDEX.md).*
+*Next required action: integrations conformance test against bicameral-bot `protocol/schemas/v1/` — blocked until bot #99 (dev→main) lands the v1 schema on bot `main`. Gateway guards tracked in bot #108/#109.*
