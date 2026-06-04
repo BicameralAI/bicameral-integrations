@@ -1,0 +1,51 @@
+{
+  "title": "Weekly Eng Sync",
+  "meeting_title": "Adopt feature-flag rollout for the connector cutover",
+  "recording_id": 884412,
+  "url": "https://fathom.video/calls/884412",
+  "share_url": "https://fathom.video/share/abc123def456",
+  "created_at": "2026-06-02T15:00:00Z",
+  "scheduled_start_time": "2026-06-02T15:00:00Z",
+  "scheduled_end_time": "2026-06-02T15:30:00Z",
+  "recording_start_time": "2026-06-02T15:01:10Z",
+  "recording_end_time": "2026-06-02T15:28:42Z",
+  "transcript_language": "en",
+  "recorded_by": {
+    "name": "Dana Lee",
+    "email": "dana.lee@example.com",
+    "email_domain": "example.com",
+    "team": "Platform"
+  },
+  "calendar_invitees": [
+    {
+      "name": "Dana Lee",
+      "email": "dana.lee@example.com",
+      "email_domain": "example.com",
+      "is_external": false,
+      "matched_speaker_display_name": "Dana Lee"
+    },
+    {
+      "name": "Sam Rivera",
+      "email": "sam.rivera@example.com",
+      "email_domain": "example.com",
+      "is_external": false,
+      "matched_speaker_display_name": "Sam Rivera"
+    }
+  ],
+  "transcript": [
+    {
+      "speaker": {"display_name": "Dana Lee", "matched_calendar_invitee_email": "dana.lee@example.com"},
+      "text": "We will gate the connector cutover behind a feature flag and roll it out per workspace.",
+      "timestamp": "00:04:18"
+    },
+    {
+      "speaker": {"display_name": "Sam Rivera", "matched_calendar_invitee_email": "sam.rivera@example.com"},
+      "text": "Agreed. The flag defaults off until the conformance suite is green.",
+      "timestamp": "00:05:02"
+    }
+  ],
+  "default_summary": {
+    "template_name": "general",
+    "markdown_formatted": "## Summary\n\nDecision: gate the connector cutover behind a per-workspace feature flag, default off until conformance passes."
+  }
+}
