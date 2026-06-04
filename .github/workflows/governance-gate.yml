@@ -20,5 +20,7 @@ jobs:
           python-version: "3.13"
       - name: Verify committed governance artifacts
         run: python scripts/governance_gate.py
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
       - name: Governance gate unit tests
         run: python -m pytest scripts/tests -q
