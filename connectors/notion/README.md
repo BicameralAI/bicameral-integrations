@@ -1,7 +1,7 @@
 # Notion Connector
 
-Provider-facing Notion adapter. **Status: Prototype** (catalog docs, priority
-P0, default trust tier T1/T3). A Phase-1 foundation candidate from the
+Provider-facing Notion adapter. **Status: Beta** (ADR-0012; catalog docs,
+priority P0, default trust tier T1/T3). A Phase-1 foundation candidate from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 
 ## Modes
@@ -12,9 +12,18 @@ P0, default trust tier T1/T3). A Phase-1 foundation candidate from the
 - **Webhook** — page-change events carry a page object of the same shape and
   parse through the same surface.
 
-The live Notion API fetch, block-content retrieval, and OAuth credential
-resolution are deferred this cycle (see [`auth.md`](auth.md)); this connector is
-the parse surface only.
+`X-Notion-Signature` (hex HMAC-SHA256 over the raw body with the subscription
+verification token, `sha256=`-prefixed — the prefix is required) verification and
+best-effort dedup are implemented in `verify()` / `normalize_event()`. The live
+Notion API fetch, block-content retrieval, OAuth, and HTTP receipt stay in the
+operator runtime (see [`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its signed-webhook → `runtime.deliver_webhook` → reference
+sink path is proven end-to-end by `runtime/tests/test_runtime.py`, with **zero
+cross-repo dependency**. Live (gateway emission) remains gated on bicameral-bot
+#109.
 
 ## Surface
 

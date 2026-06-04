@@ -12,10 +12,13 @@ from pathlib import Path
 import pytest
 
 from connectors.fathom.connector import FathomConnector
+from connectors.github.connector import GitHubConnector
 from connectors.linear.connector import LinearConnector
+from connectors.notion.connector import NotionConnector
 from connectors.osv.connector import OsvConnector
 from connectors.pagerduty.connector import PagerDutyConnector
 from connectors.sentry.connector import SentryConnector
+from connectors.slack.connector import SlackConnector
 from runtime import (
     CollectingSink,
     GatewayEmissionGated,
@@ -173,6 +176,82 @@ def test_deliver_webhook_pagerduty_all_wrong_emits_nothing():
     sink = CollectingSink()
     bad = "v1=deadbeef,v1=cafebabe"
     assert deliver_webhook(conn, headers={"X-PagerDuty-Signature": bad}, body=body, sink=sink) == 0
+    assert sink.emissions == []
+
+
+# --- Beta cohort 2: GitHub / Slack / Notion verify-wired through the harness ---
+
+
+def _fixture_body(connector_name: str, fixture: str) -> bytes:
+    path = _FIXTURES / connector_name / "fixtures" / fixture
+    return json.dumps(json.loads(path.read_text(encoding="utf-8"))).encode("utf-8")
+
+
+def _signed_github() -> tuple[GitHubConnector, dict, bytes]:
+    body = _fixture_body("github", "webhook_pr.json")
+    sig = "sha256=" + _hex_hmac("gh-secret", body)
+    headers = {"X-Hub-Signature-256": sig, "X-GitHub-Delivery": "d-1"}
+    return GitHubConnector(secret="gh-secret"), headers, body
+
+
+def test_deliver_webhook_github_beta():
+    conn, headers, body = _signed_github()
+    sink = CollectingSink()
+    assert deliver_webhook(conn, headers=headers, body=body, sink=sink) == 1
+    assert sink.emissions[0].source_id == "github"
+
+
+def test_deliver_webhook_github_bad_sig_emits_nothing():
+    conn, _headers, body = _signed_github()
+    sink = CollectingSink()
+    bad = {"X-Hub-Signature-256": "sha256=bad"}
+    assert deliver_webhook(conn, headers=bad, body=body, sink=sink) == 0
+    assert sink.emissions == []
+
+
+def _signed_slack() -> tuple[SlackConnector, dict, bytes]:
+    body = _fixture_body("slack", "webhook_message.json")
+    ts = "1700000000"
+    base = b"v0:" + ts.encode() + b":" + body
+    headers = {"X-Slack-Signature": "v0=" + _hex_hmac("slack-secret", base),
+               "X-Slack-Request-Timestamp": ts}
+    return SlackConnector(secret="slack-secret", clock=lambda: float(ts)), headers, body
+
+
+def test_deliver_webhook_slack_beta():
+    conn, headers, body = _signed_slack()
+    sink = CollectingSink()
+    assert deliver_webhook(conn, headers=headers, body=body, sink=sink) == 1
+    assert sink.emissions[0].source_id == "slack"
+
+
+def test_deliver_webhook_slack_bad_sig_emits_nothing():
+    conn, _headers, body = _signed_slack()
+    sink = CollectingSink()
+    bad = {"X-Slack-Signature": "v0=bad", "X-Slack-Request-Timestamp": "1700000000"}
+    assert deliver_webhook(conn, headers=bad, body=body, sink=sink) == 0
+    assert sink.emissions == []
+
+
+def _signed_notion() -> tuple[NotionConnector, dict, bytes]:
+    body = _fixture_body("notion", "webhook_page.json")
+    headers = {"X-Notion-Signature": "sha256=" + _hex_hmac("notion-token", body)}
+    return NotionConnector(secret="notion-token"), headers, body
+
+
+def test_deliver_webhook_notion_beta():
+    conn, headers, body = _signed_notion()
+    sink = CollectingSink()
+    assert deliver_webhook(conn, headers=headers, body=body, sink=sink) == 1
+    assert sink.emissions[0].source_id == "notion"
+
+
+def test_deliver_webhook_notion_bad_sig_emits_nothing():
+    conn, _headers, body = _signed_notion()
+    sink = CollectingSink()
+    # bare hex without the required sha256= prefix -> rejected
+    assert deliver_webhook(conn, headers={"X-Notion-Signature": _hex_hmac("notion-token", body)},
+                           body=body, sink=sink) == 0
     assert sink.emissions == []
 
 
