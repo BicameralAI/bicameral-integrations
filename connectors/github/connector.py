@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from urllib.parse import urlsplit
+
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
@@ -47,7 +49,13 @@ class GitHubConnector:
     )
 
     def can_handle_ref(self, ref: SourceRef) -> bool:
-        return ref.source_id == "github" or "github.com" in ref.url
+        if ref.source_id == "github":
+            return True
+        # Match on the URL host, not a substring: `"github.com" in url` would
+        # also accept `https://github.com.evil.com` / `https://evil-github.com`
+        # (CodeQL py/incomplete-url-substring-sanitization).
+        host = (urlsplit(ref.url).hostname or "").lower()
+        return host == "github.com" or host.endswith(".github.com")
 
     def observations(self, payload: dict) -> list[Observation]:
         return [parse_pull_request(payload)]

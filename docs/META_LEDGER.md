@@ -882,7 +882,31 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Encoded the operator-raised design distinction as a standing triage criterion (no code). A candidate is often reachable as a read-only **evidence adapter** (this repo, T0/T1) or an **MCP server** (`bicameral-mcp`, T3/T5 agent action); the deciding question is **"does the use case require an agent to act interactively at inference time?"** — **No → evidence adapter (the default); Yes → MCP (the edge case)**. Added the **"Surface selection (the interactivity test)"** subsection to INTEGRATION_CANDIDATE_CATALOG §4 Evaluation Criteria, spelling out why direct API/webhook wins for evidence (push/webhooks vs MCP pull-only; deterministic + hash-chainable provenance; least authority; no runtime dependency; batch scale) and that a system may warrant **both** surfaces kept separate (GitHub: MCP for action, API/webhook for evidence). Recorded as **SHADOW_GENOME SG-2026-06-04-K** (companion to ADR-0008 + SG-2026-06-04-J). Doc-only doctrine note; chain verified #1–#36.
 
+### Entry #37: SECURITY REMEDIATION (GitHub code-scanning + Scorecard queue)
+
+**Entry ID**: `sec0remed1ate`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: REMEDIATE
+**Author**: Specialist / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/github/connector.py)
+= df9a05c1eb9f6097364a87d8909b8c25a1c9aae2162b4283a8e5dcba71fcac6a
+```
+
+**Previous Hash**: 2aa0a36d0ec0a20fa6f8cff2707b69c0672927c4e778bdd74723088b62af57ae
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b7c4c69814e0d41e3fb87a84507045996a9d342f6c5dfb46571b5c2eef27c502
+```
+
+**Decision**: Triaged the 17 open GitHub code-scanning alerts (parallel triage agent) and converted them to remediation actions. **FIX (code, CodeQL HIGH #17)**: `py/incomplete-url-substring-sanitization` in `GitHubConnector.can_handle_ref` — replaced the `"github.com" in ref.url` substring test (which also matched `github.com.evil.com` / `evil-github.com`) with a `urllib.urlsplit` host check (`host == "github.com" or host.endswith(".github.com")`, lowercased); added `test_can_handle_ref_accepts_github_hosts` + `test_can_handle_ref_rejects_lookalike_hosts` (incl. userinfo/empty-URL vectors). Read-only routing so real impact was low, but a legitimate HIGH. **FIX (supply chain, Scorecard PinnedDependencies)**: SHA-pinned the legacy workflows — `ci.yml` (`actions/checkout@v6.0.3`, `setup-python@v6.2.0`) and `secret-scan.yml` (`actions/checkout@v6.0.3`, `trufflehog@v3.95.5` `d411fff…`, verified latest release) — closing BACKLOG **B1**. **ACCEPT/BACKLOG (posture)**: pip not hash-pinned → accept (stdlib-only runtime); `Maintained`/`SAST`/`Fuzzing` → dismiss-with-reason (transient / covered by CodeQL+Bandit / N/A for a parse library); `Branch-Protection`+`Code-Review` → BACKLOG **B5** (admin; token is push-only); `CII` → accept. Dispositions recorded in `docs/BACKLOG.md`. Several stale pip/line alerts will auto-close on the next Scorecard scan. **Verification**: pytest **154 passed**, ruff + mypy clean (67 files), governance gate verifies the #1–#37 chain, 16 workflows parse. Resolved alerts to be confirmed closed (CodeQL #17 closes as "fixed" on re-scan of `main`; pin alerts on next Scorecard run; posture alerts dismissed via API).
+
 ---
 *Chain integrity: VALID*
-*Status: `main` SEALED at Entry #36 (`2aa0a36d`; L1). Surface-selection interactivity test is now a documented §4 triage criterion + SG-2026-06-04-K.*
-*Next required action: operator selects the next build target from the shortlist (OSV.dev / Claude Code lead) when ready.*
+*Status: `main` SEALED at Entry #37 (`b7c4c698`; L2). Security queue remediated — 1 CodeQL fix + 4 action pins + posture dispositions; B1 closed.*
+*Next required action: merge the remediation PR; confirm alerts closed; then Phase-2 connector build (OSV.dev lead).*

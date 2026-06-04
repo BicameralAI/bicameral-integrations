@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from adapter.core.emissions import AdapterEmission
+from adapter.core.emissions import AdapterEmission, SourceRef
 from adapter.core.pipeline import normalize
 from connectors.github.connector import GitHubConnector, parse_pull_request
 
@@ -45,6 +45,21 @@ def test_parse_falls_back_to_title_when_body_empty():
     payload["body"] = ""
     obs = parse_pull_request(payload)
     assert obs.excerpt == payload["title"]
+
+
+def test_can_handle_ref_accepts_github_hosts():
+    c = GitHubConnector()
+    assert c.can_handle_ref(SourceRef(source_id="github", ref="x"))
+    assert c.can_handle_ref(SourceRef(source_id="other", ref="x", url="https://github.com/o/r/pull/1"))
+    assert c.can_handle_ref(SourceRef(source_id="other", ref="x", url="https://api.github.com/repos/o/r"))
+
+
+def test_can_handle_ref_rejects_lookalike_hosts():
+    # incomplete-substring-sanitization look-alikes must NOT match (CodeQL fix)
+    c = GitHubConnector()
+    assert not c.can_handle_ref(SourceRef(source_id="other", ref="x", url="https://github.com.evil.com/o/r"))
+    assert not c.can_handle_ref(SourceRef(source_id="other", ref="x", url="https://evil-github.com/o/r"))
+    assert not c.can_handle_ref(SourceRef(source_id="other", ref="x", url=""))
 
 
 def test_end_to_end_normalizes_to_emission():
