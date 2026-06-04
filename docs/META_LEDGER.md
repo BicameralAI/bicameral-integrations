@@ -813,7 +813,30 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #32, iter 1) implemented + substantiated. Built **2 developer-AI parse surfaces** per `plan-connectors-dev-tools-2026-06-04.md`, each `parse_*(record) -> Observation` → `pipeline.normalize()`, read-only (ADR-0008), live paths deferred to `auth.md`: **continue** (`parse_event`, dev-data JSONL event, prompt/completion→excerpt with `continue {name}` floor, PASSIVE, T0; package `continue_dev` because `continue` is a Python keyword, `source_id="continue"`), **aider** (`parse_commit`, `(aider)` git attribution author/committer/co-author → `attributed_by`, subject→excerpt with `aider-commit` floor, PASSIVE, T0). Each with synthetic fixture + behavioral tests; READMEs at Prototype; `__init__` re-exports; catalog §6.1 + FEATURE_INDEX rows added. **Independent review** (objective observer + devil's advocate): observer Reality==Promise CONFIRMED; devil's advocate found **2 blockers + 3 non-blocking** — **HIGH** wrong-typed fields (int/list) crashed both parsers via `.strip()`/`.split()`/`[:7]`/`in` (fixed: coerce to `str` / `isinstance` guards), **HIGH** whitespace-only Aider `hash` produced a whitespace excerpt that skipped the `or`-floor (fixed: `.strip()` before the floor) — both with regression tests; 3 non-blocking accepted (typed `payload: dict` contract; `(aider)` substring + dict-trailers are non-load-bearing metadata). SHADOW_GENOME **SG-2026-06-04-H** (ingest the stable surface) + **SG-2026-06-04-I** (defend on type + whitespace, not just presence). **Verification**: pytest **136 passed**, ruff + mypy clean (67 files), governance gate verifies the chain. FEATURE_INDEX **FX-CONTINUE-001**, **FX-AIDER-001** Verified (24 total after ecosystem merge). (Re-anchored onto Entry #32 at ecosystem merge; originally #29.)
 
+### Entry #34: DOCUMENTATION CURRENCY + README BADGES
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: DOCUMENT
+**Author**: Technical Writer / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(README.md)
+= 1e52f24b23efd68a2e7e65333bc927ea3a6410e4008544a1b79ad3c6b8e2054a
+```
+
+**Previous Hash**: 5233f1f66ed2a1e6f65b50ef90bfb06ea286f98d3bd2074daaf876c44beabcec
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 06429651f4b095d21d04d24eb79d904a4a965674b1e45bb976a8c96bac3c428a
+```
+
+**Decision**: Brought all Tier-1 documentation current with the post-ecosystem-merge reality and added status badges to the primary README. **README**: added CI/Governance-Gate/CodeQL/Security-Scan/OpenSSF-Scorecard workflow badges + License-MIT + Python-3.13 (shields.io); added a "CI Gates" section (10 gates + 6 reusable templates + compliance link); refreshed the repository layout (`scripts/`, `.github/workflows/`) and the test command (`scripts/tests`). **SYSTEM_STATE**: refreshed to Entry #33 reality — seal `5233f1f6`→ this entry, 9 governed cycles, 12 connectors, **152 tests**, 10 gates + 6 reusable templates, file tree + health indicators + next actions. **GOVERNANCE_INDEX**: fixed the stale Meta-Ledger freshness marker (#22→#34) and registered the two missing research briefs (connectors-phase1, connectors-dev-tools) in Tier 5. **CHANGELOG**: populated the `Unreleased` section per Keep-a-Changelog (Added/Changed) covering the adapter core, 12 connectors, CI gate ecosystem, compliance mappings, and the badge/action-bump changes. Doc-currency drift correction; no code or contract change. Governance gate verifies the #1–#34 chain.
+
 ---
 *Chain integrity: VALID*
-*Status: ALL open PRs merged in order (#9 reusable gates, #10 AGT doc, #12/#13 dependabot, #16 connectors). `main` SEALED at Entry #33 (`5233f1f6`; L2). 12 connectors + reusable gate ecosystem + 24 verified features.*
-*Next required action: none queued — ecosystem reconciled on `main`.*
+*Status: `main` documentation current + badged; SEALED at Entry #34 (`06429651`; L1). All Tier-1 docs reconciled with the Entry #33 ecosystem state.*
+*Next required action: none queued — repo current.*
