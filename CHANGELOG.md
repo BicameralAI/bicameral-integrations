@@ -38,6 +38,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+- Wired live webhook signature verification + best-effort delivery dedup
+  (fail-closed, constant-time) into the Sentry and PagerDuty connectors —
+  including a new multi-signature (`v1=…,v1=…` rotation) HMAC primitive for
+  PagerDuty. Sentry/PagerDuty join Fathom/Linear as verify-wired connectors.
 - Fixed an incomplete URL host check in the GitHub connector
   (`can_handle_ref`) that matched look-alike hosts (e.g. `github.com.evil.com`);
   now validates the parsed host exactly. Resolves CodeQL

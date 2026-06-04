@@ -139,6 +139,7 @@ connector models the correct relationship: ingest evidence *about* MCP, don't tr
 | GitHub Copilot | P1 | AI-leverage usage/acceptance metrics by org/enterprise/team | Read-only API | T1 | Official usage-metrics endpoints (post-2026-04 set); per-user data is PII; needs admin permission + policy enabled. |
 | Cursor | P1 | Per-user activity, model/token usage, spend, audit logs | Read-only Admin API (read endpoints only) | T1 | Verify Privacy-Mode effect on the usage surface; admin-only key custody. |
 | Windsurf (Codeium) | P2 | AI-authored-code %, usage, tool calls | UI export (no confirmed API) | T0/T1 | Deferred — no verifiable official API in current docs (post-acquisition redirect to Devin). |
+| Devin / Devin Desktop (Cognition) | P? — needs research | Agentic coding harness: session/run evidence, tool use, edits, attributed commits | Devin API (sessions) + Desktop local artifacts (TBD) | T1/T0 | Net-new candidate (operator request, 2026-06-04; docs.devin.ai/desktop). Successor surface to Windsurf/Codeium. Needs a grounded value-add research pass (does the API/Desktop expose stable, read-only, normalizable evidence? interactivity test) before priority/build — BACKLOG B7. |
 
 ### 6.2 Project and Issue Management
 

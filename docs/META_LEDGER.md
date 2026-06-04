@@ -1001,7 +1001,79 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Operator-established cadence — README + governance docs refreshed at every cycle close (`/qor-document`). Brought Tier-1 docs current with the post-Phase-2 reality (the docs lagged at Entry #34 across #35–#40). **SYSTEM_STATE**: seal `06429651`→`aec6c30d` (Entry #40), 13 governed cycles, **15 connectors** (+osv/sentry/pagerduty), **175 tests**, file tree + test-coverage + health (chain #40) + next actions (hardening + build-out queue). **CHANGELOG**: added the Phase-2 connectors (OSV/Sentry/PagerDuty) to `Added`, a `Security` section (CodeQL URL-host fix + action SHA-pins), and the surface-selection criterion to `Changed`; preserved the parallel ADR-0011 (Review-Bot) entry. **GOVERNANCE_INDEX**: Meta-Ledger marker #40→#41. README current (badges + CI-gates section). **Division of labour recorded**: `mods/` is under active build by Codex — this track stays on connectors + hardening and does not edit `mods/`. Doc-currency drift correction; no code/contract change. Chain verifies #1–#41.
 
+### Entry #42: RESEARCH BRIEF (webhook hardening)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(research-brief-webhook-hardening-2026-06-04.md)
+= 4827d99315972adf81df8671258a8236f849a90ef9c1dc42fd556a3f1b03df48
+```
+
+**Previous Hash**: dd9475a9e3790452138746e83b1107713015ed384110901088f08011f5c6236f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f3a36bbaefeef073ead4c31d98b65cfa3b37120719b05143743f31a0bc081fa8
+```
+
+**Decision**: Confirmed the exact webhook signature schemes (cited) to ground an L3 fail-closed verifier for the Phase-2 connectors. **Sentry** `Sentry-Hook-Signature` = single hex HMAC-SHA256 over the body, client secret → reuses `verify_hmac_hex`; **sharp edge**: the JS reference signs `JSON.stringify(request.body)` — operator decision to HMAC the **raw received bytes** (avoids serializer mismatch). **PagerDuty** `X-PagerDuty-Signature` = comma-separated `v1=<hex>` rotation set → needs a new `verify_hmac_hex_multi` (accept if ANY matches). **Neither documents a replay-timestamp window**, and **neither guarantees a per-delivery id** → replay mitigation is best-effort dedup (process when no id; never drop a legitimate event) — weaker than Linear's 60s window, documented honestly. Reinforces SG-2026-06-04-A (per-provider divergence) + SG-2026-06-04-B (fail-closed). Open: PagerDuty first-party signature page human spot-check (BACKLOG B8). Brief: `docs/research-brief-webhook-hardening-2026-06-04.md`. → `/qor-plan` at L3.
+
+### Entry #43: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(plan-webhook-hardening-2026-06-04.md)
+= a3e7e02557387b30e5a7768c2b6d39aff66c197458e24b25f6773e35a1b02941
+```
+
+**Previous Hash**: f3a36bbaefeef073ead4c31d98b65cfa3b37120719b05143743f31a0bc081fa8
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b58a359d64131ad6915160f5dda2f8ea120732d01b78e355eca91ad18c04a708
+```
+
+**Verdict**: **PASS** (iteration 1). Independent fail-open-focused audit (SG-2026-06-04-B weighted dispositive). Traced every path of `verify_hmac_hex_multi` + both `verify()` methods: empty/missing secret, missing/empty/None header, no-`v1=`-entry, all-mismatch, tampered body, and the classic **bare-`v1=` empty-candidate** all raise/return-False — `compare_digest("", expected)` cannot pass because the hexdigest is invariantly 64 chars. `hmac.compare_digest` throughout, no `==`. Grounding traces to research (Sentry raw-body decision handled, not silently adopted; uncertain facts quarantined to best-effort dedup + spot-check). Dedup honestly best-effort (process-on-missing, never drop); no fabricated replay window. normalize_event self-guards (re-verify → json-guard → dedup → parse). Scope/Razor/type-defense hold. No reachable fail-open found. 3 non-blocking recs (bare-`v1=` test by name, wrong-typed-id test, carry the PagerDuty spot-check) — all folded in. Cleared to `/qor-implement`. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+---
+
+### Entry #44: SESSION SEAL (connector hardening — webhook verification)
+
+**Entry ID**: `whverif1harden`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= aded0f4a01af5b74447bdbcdcef0a1702eab8dcffc6007856252f640d54a30ca
+```
+
+**Previous Hash**: b58a359d64131ad6915160f5dda2f8ea120732d01b78e355eca91ad18c04a708
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 2674627280c1ae065ea2d36fe89fd8f13246156091c3c097cb278c7e01464976
+```
+
+**Decision**: PASS-audit (Entry #43) implemented + substantiated. Hardened the Phase-2 connectors with **live webhook signature verification + best-effort dedup**, fail-closed + constant-time, reusing `adapter/core/webhook_security.py`. Added **`verify_hmac_hex_multi`** (PagerDuty `v1=` rotation membership). **Sentry** `verify()`/`normalize_event()` reuse `verify_hmac_hex` over the **raw body**; **PagerDuty** use the multi-sig primitive on the nested `event.data` envelope. Both: self-guard (re-verify) → JSON guard → best-effort dedup (process-on-missing-id; never drop) → parse; no replay-timestamp window (neither provider documents one — dedup TTL is the replay guard, documented honestly). Added a **Verify** column to the connector index (fathom/linear/sentry/pagerduty ✓). **Independent review** (observer + devil's advocate, fail-open-focused): observer Reality==Promise; devil's advocate **0 blocking / 2 non-blocking** (no fail-open found across an exhaustive probe set incl. bare-`v1=`, rotation, whitespace, 100k header) — the 2 MED (validly-signed non-object JSON crash; non-dict-headers/non-bytes-body crash) **fixed** with `isinstance(payload, dict)` guards + broadened fail-closed except, + regression tests. SHADOW_GENOME SG-2026-06-04-A/B reinforced. **Operator items**: added Devin connector candidate (BACKLOG **B7**, value-add research) and PagerDuty first-party spot-check (**B8**). Docs refreshed per the end-of-cycle cadence (SYSTEM_STATE, CHANGELOG, auth.md ×2). **Verification**: pytest **183 passed**, ruff + mypy clean (79 files), governance gate verifies the #1–#44 chain. FEATURE_INDEX **FX-SENTRY-002/FX-PAGERDUTY-002** + FX-WHSEC-001 (`verify_hmac_hex_multi`) Verified (29 total).
+
 ---
 *Chain integrity: VALID*
-*Status: `main` docs fresh + sealed at Entry #41 (`dd9475a9`; L1). 15 connectors, 175 tests; Tier-1 docs reconciled with the Entry #40 state.*
-*Next required action: connector hardening — Sentry/PagerDuty webhook signature verification (HMAC + dedup), via `/qor-auto-dev-1`. `mods/` owned by Codex.*
+*Status: `connectors-hardening` SEALED (Entry #44, `26746272`; L3). Sentry + PagerDuty webhook signature verification + dedup wired (fail-closed, no fail-open found); 183 tests. `mods/` owned by Codex.*
+*Next required action: merge the hardening PR. Open: Devin candidate research (B7), PagerDuty first-party spot-check (B8). Next build-out: Claude Code (P0) from the value-add shortlist.*

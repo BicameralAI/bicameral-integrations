@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **27**
-- **Verified**: 27
+- Total entries: **29**
+- **Verified**: 29
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -26,7 +26,7 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-GRANOLA-001 | Granola transcript → Observation parser | docs/plan-source-connectors-fathom-linear-ports-2026-06-03.md | connectors/granola/connector.py | connectors/granola/tests/test_granola_connector.py | Verified | Port of mcp events/sources/granola.py; PASSIVE; live poll/watermark deferred |
 | FX-LOCALDIR-001 | Local-directory file → Observation parser | docs/plan-source-connectors-fathom-linear-ports-2026-06-03.md | connectors/local_directory/connector.py | connectors/local_directory/tests/test_local_directory_connector.py | Verified | Port of mcp events/sources/local_directory.py; PASSIVE; sha256 path token ref; live scan/watermark deferred |
 | FX-GDRIVE-001 | Google Docs document → Observation parser | docs/plan-source-connectors-fathom-linear-ports-2026-06-03.md | connectors/google_drive/connector.py | connectors/google_drive/tests/test_google_drive_connector.py | Verified | Port of mcp google_drive adapter; structured-body flatten; ACTIVE; _walk_table refactored ≤3 nesting; live Docs API/OAuth deferred |
-| FX-WHSEC-001 | Webhook signature verification + delivery dedup (Svix + hex HMAC) | docs/plan-webhook-verification-dedup-2026-06-04.md | adapter/core/webhook_security.py | adapter/core/tests/test_webhook_security.py | Verified | `verify_standard_webhook` (Svix/Fathom), `verify_hmac_hex` (Linear), `DeliveryDedupCache`; constant-time, fail-closed on all attacker-input paths; L3 |
+| FX-WHSEC-001 | Webhook signature verification + delivery dedup (Svix + hex HMAC + multi-sig) | docs/plan-webhook-verification-dedup-2026-06-04.md | adapter/core/webhook_security.py | adapter/core/tests/test_webhook_security.py | Verified | `verify_standard_webhook` (Svix/Fathom), `verify_hmac_hex` (Linear/Sentry), **`verify_hmac_hex_multi`** (PagerDuty `v1=` rotation membership), `DeliveryDedupCache`; constant-time, fail-closed on all attacker-input paths; L3 |
 | FX-FATHOM-002 | Fathom webhook verify + dedup wiring | docs/plan-webhook-verification-dedup-2026-06-04.md | connectors/fathom/connector.py | connectors/fathom/tests/test_fathom_webhook.py | Verified | `FathomConnector.verify`/`normalize_event` (Svix; injected secret/clock/dedup; self-guarded); live HTTP deferred |
 | FX-LINEAR-002 | Linear webhook verify + dedup wiring | docs/plan-webhook-verification-dedup-2026-06-04.md | connectors/linear/connector.py | connectors/linear/tests/test_linear_webhook.py | Verified | `LinearConnector.verify`/`normalize_event` (Linear-Signature HMAC-first + 60s anti-replay; injected secret/clock/dedup; self-guarded); live GraphQL/HTTP deferred |
 | FX-SARIF-001 | SARIF 2.1.0 result → Observation parser | docs/plan-connectors-phase1-2026-06-04.md | connectors/sarif/connector.py | connectors/sarif/tests/test_sarif_connector.py | Verified | Catalog P0 (security/compliance-evidence, T0); one Observation per `runs[].results[]`; file import only, live CI-collection deferred |
@@ -37,7 +37,9 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-AIDER-001 | Aider attributed git commit → Observation parser | docs/plan-connectors-dev-tools-2026-06-04.md | connectors/aider/connector.py | connectors/aider/tests/test_aider_connector.py | Verified | Catalog P1 (developer-AI tooling, T0); `(aider)` author/committer or Co-authored-by trailer → attributed_by; subject→excerpt with hash→`aider-commit` floor; PASSIVE; live git-log walk + analytics/chat-history deferred |
 | FX-OSV-001 | OSV.dev vulnerability record → Observation parser | docs/plan-connectors-phase2-2026-06-04.md | connectors/osv/connector.py | connectors/osv/tests/test_osv_connector.py | Verified | Catalog P0 (security-evidence, T1 no-auth); supply-chain aggregator (GHSA/PyPA/RustSec); summary→excerpt with details→id floor; ACTIVE; SG-I defensive (all-optional schema); live query client deferred |
 | FX-SENTRY-001 | Sentry issue webhook → Observation parser | docs/plan-connectors-phase2-2026-06-04.md | connectors/sentry/connector.py | connectors/sentry/tests/test_sentry_connector.py | Verified | Catalog P1 (observability/incident, T1); `data.issue` unwrap; title→excerpt with culprit/shortId/id floor; WEBHOOK; live Events-API/`Sentry-Hook-Signature` verify deferred |
-| FX-PAGERDUTY-001 | PagerDuty v3 incident webhook → Observation parser | docs/plan-connectors-phase2-2026-06-04.md | connectors/pagerduty/connector.py | connectors/pagerduty/tests/test_pagerduty_connector.py | Verified | Catalog P1 (observability/incident, T1); nested `event.data` unwrap; title→excerpt with summary/id floor; WEBHOOK; live multi-signature `X-PagerDuty-Signature` verify deferred |
+| FX-PAGERDUTY-001 | PagerDuty v3 incident webhook → Observation parser | docs/plan-connectors-phase2-2026-06-04.md | connectors/pagerduty/connector.py | connectors/pagerduty/tests/test_pagerduty_connector.py | Verified | Catalog P1 (observability/incident, T1); nested `event.data` unwrap; title→excerpt with summary/id floor; WEBHOOK |
+| FX-SENTRY-002 | Sentry webhook verify + dedup wiring | docs/plan-webhook-hardening-2026-06-04.md | connectors/sentry/connector.py | connectors/sentry/tests/test_sentry_connector.py | Verified | `SentryConnector.verify`/`normalize_event` (hex HMAC over RAW body; injected secret/dedup; self-guarded; best-effort dedup, no replay window per Sentry); live HTTP receipt deferred |
+| FX-PAGERDUTY-002 | PagerDuty webhook verify + dedup wiring | docs/plan-webhook-hardening-2026-06-04.md | connectors/pagerduty/connector.py | connectors/pagerduty/tests/test_pagerduty_connector.py | Verified | `PagerDutyConnector.verify`/`normalize_event` (multi-signature `v1=` membership via `verify_hmac_hex_multi`; injected secret/dedup; self-guarded); live HTTP receipt deferred; first-party scheme spot-check pending (BACKLOG) |
 
 ---
 
