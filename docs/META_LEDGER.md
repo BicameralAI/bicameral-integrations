@@ -1528,7 +1528,30 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Hardened CI workflow token permissions to least privilege (closes B13; Scorecard Token-Permissions findings #21-24, HIGH). `codeql.yml`/`scorecard.yml`/`sbom.yml` moved their write scopes from the top level to the **calling job**, with top-level `permissions: contents: read`; `_reusable-sbom.yml` dropped the unneeded `contents: write` → `contents: read` (its steps need `id-token`/`attestations` write, not contents). The reusable-calling-job permission pattern is **PR-verified on CodeQL** (its `pull_request` trigger exercises the exact caller→reusable structure) BEFORE trusting it on the push-only Scorecard (SG-2026-06-04-O — verify by running). Also cleared via API with rationale: stale CodeQL **#17** (`py/incomplete-url-substring-sanitization`) dismissed false-positive (fixed in `2a81142`); accepted Pinned-Dependencies **#18-20** dismissed won't-fix (stdlib-only runtime, dev toolchain version-pinned). **Verification** (SG-2026-06-04-O — observe, don't claim): workflow YAML re-validated locally. The CodeQL PR run is the pre-merge proof (merge gated on it) and the Scorecard push run the post-merge proof; this entry does NOT assert "green" ahead of those observations. Remaining Security-tab items: only #13 (Code-Review) + #1 (Branch-Protection), both closed by branch protection on `main` (B5, repo-admin). `mods/` + connectors untouched. Chain verifies #1–#62.
 
+### Entry #64: RESEARCH BRIEF (CS / support / sales connectors — Zendesk/ServiceNow/ChurnZero/Gainsight)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH (candidate evaluation — no build)
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(research-brief-cs-support-connectors-2026-06-04.md)
+= f697230b0b4a87065f621e46fd5faebadbee96c30ccf1eaee9b8cac2ee5be79d
+```
+
+**Previous Hash**: 4648c151677079e081ae4240db9478ddce6fc28c8be85f2a037953866e10b3b0
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 7bfee942f54b4ef433d8decb8f7ae7a02a577cc925bc398224f8f9e31230364f
+```
+
+**Decision**: Operator asked to evaluate **Zendesk, ServiceNow, ChurnZero, Gainsight** to extend evidence beyond dev tooling into support/sales/CS stakeholder insight. Grounded evaluation (sources verified 2026-06-04) against the SG-2026-06-04-K interactivity test: **all four are read-only evidence adapters (none route to MCP).** **Zendesk → P1** (upgraded from P2) — the only one with a first-class **signed webhook** (HMAC-SHA256 over `timestamp+body`, `x-zendesk-webhook-signature` + anti-replay timestamp) reusable against `webhook_security`; highest decision-relevance (SLA breach + CSAT + ticket state); webhook-first. **ServiceNow → P2** (newly catalogued) — versioned Table API but **poll-only** (no portable signed-webhook; bespoke per-tenant outbound), per-tenant customized; defer behind Zendesk. **ChurnZero / Gainsight → P3** "CS health" pair — both **poll-only** (alerts to app/email/Slack/Teams; Rules-Engine call-out — no managed signing), PII + commercially sensitive; defer as a pair on a demand signal. **Cross-cutting gate:** a customer-PII **redaction model** (confirm `FX-SEC-001` covers ticket/CS free-text) precedes any support/CS build. Catalog §6.8 updated (Zendesk P1, ServiceNow added, Gainsight/ChurnZero notes refreshed). Brief: `docs/research-brief-cs-support-connectors-2026-06-04.md`. No build this pass. Chain verifies #1–#63.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` + Token-Permissions hardening at Entry #63 (`4648c151`; L2). **7 Beta connectors**; CI gates green. #17-20 dismissed (API, with rationale); #21-24 fix applied (calling-job least-privilege) — clear confirmed on the post-merge Scorecard scan; only #13/#1 (branch protection, B5, admin) remain.*
-*Next required action: Zendesk/ServiceNow/ChurnZero/Gainsight CS/support connector evaluation (`/qor-research` + catalog). Admin (you): branch protection (B5) closes the last two findings. Open: B8, B9, B10/B11, B12 (SBOM OIDC), B14 (parse non-dict), bot #109 (Live).*
+*Status: `main` SEALED at Entry #64 (`7bfee942`; L1). **7 Beta connectors**; all six CI gates green; Security tab down to the two admin-gated findings (#13/#1 → B5). CS/support candidates evaluated — **Zendesk P1** next build candidate (gated on PII redaction).*
+*Next required action: operator decision — build Zendesk (P1, after confirming the redaction model) vs. other priorities. Admin (you): branch protection (B5) closes Scorecard #13/#1. Open: B8, B9, B10/B11, B12, B14, bot #109 (Live).*

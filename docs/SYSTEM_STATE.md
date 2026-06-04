@@ -8,7 +8,7 @@
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
 | **Phase** | `main` + **webhook verify-wiring cohort** — GitHub/Slack/Notion gained signature verification and were promoted to Beta via the `runtime/` harness; **7 Beta connectors**, zero cross-repo dep; docs refreshed each cycle close |
 | **Iteration** | 19 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; security-queue remediation; Phase-2 connectors OSV/Sentry/PagerDuty; Claude Code; Jira; phantom-blocker correction; go-live runtime boundary + Linear→Beta; Beta cohort Fathom/Sentry/PagerDuty; Scorecard CI gate green (2 iter); **webhook verify-wiring GitHub/Slack/Notion→Beta**) |
-| **Session Seal** | `f693bb08` (META_LEDGER Entry #62 chain hash) |
+| **Session Seal** | `7bfee942` (META_LEDGER Entry #64 chain hash) |
 
 ---
 
@@ -138,7 +138,7 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #62 (`f693bb08`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #64 (`7bfee942`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs (main README connector+mod index refreshed) + badges current |
 | Section 4 Compliance | PASS | 0 violations |
 | Test Status | PASS | 246 passing; ruff + mypy clean (95 files) |
@@ -157,7 +157,9 @@ bicameral-integrations/
 - [x] **Go-live runtime boundary** (ADR-0012) shipped: `runtime/` library layer (sinks/secrets/delivery, GatewaySink #109-gated stub) + **Linear → Beta** end-to-end (Entry #55, FX-RUNTIME-001).
 - [x] **Beta cohort promoted**: Fathom (Svix) + Sentry (HMAC) + PagerDuty (multi-sig membership) proven end-to-end via the `runtime/` harness — **4 Beta connectors** (incl. Linear), zero cross-repo dep.
 - [x] **GitHub/Slack/Notion verify-wired → Beta** (`verify_slack_signature` primitive + per-connector `verify()`/`normalize_event()`; harness-proven). **7 Beta connectors.**
-- [ ] **Next**: Scorecard Token-Permissions hardening (B13); then Zendesk/ServiceNow/ChurnZero/Gainsight CS/support evaluation; Live-stage prep when bot #109 lands.
+- [x] **Scorecard Token-Permissions hardening (B13)** — done (Entry #63); Security tab down to #13/#1 (branch protection, B5, admin).
+- [x] **CS/support/sales evaluation** (Zendesk/ServiceNow/ChurnZero/Gainsight) — done (Entry #64): all evidence adapters; **Zendesk P1** (webhook-first, gated on PII redaction), ServiceNow P2, ChurnZero/Gainsight P3.
+- [ ] **Next (operator decision)**: build Zendesk (P1, after confirming `FX-SEC-001` redaction covers ticket free-text) vs. other priorities; Live-stage prep when bot #109 lands.
 - [ ] **Connector build-out (next)**: GitHub Copilot / Cursor / OpenAI-Anthropic Admin (P1 read APIs) — from the value-add shortlist; B9 Devin (P1).
 - [ ] `mods/` structure is under active build by **Codex** — not edited by this (connector/hardening) track.
 - [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).

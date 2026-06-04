@@ -13,7 +13,7 @@ MUST be current at every cycle close. Drift signal: wrong version / wrong state 
 
 | Artifact | Path | Freshness marker |
 |----------|------|------------------|
-| Meta Ledger | `docs/META_LEDGER.md` | latest sealed entry (#63) |
+| Meta Ledger | `docs/META_LEDGER.md` | latest sealed entry (#64) |
 | Shadow Genome | `docs/SHADOW_GENOME.md` | latest narrative entry |
 | System State | `docs/SYSTEM_STATE.md` | latest phase snapshot |
 | Concept | `docs/CONCEPT.md` | stable |
@@ -77,6 +77,7 @@ Informational, slow-drift. Drift signal: factual claims diverge from current cod
 | Claude Code connector research brief | `docs/research-brief-claude-code-2026-06-04.md` |
 | Devin connector (B7) research brief | `docs/research-brief-devin-2026-06-04.md` |
 | Jira connector research brief | `docs/research-brief-jira-2026-06-04.md` |
+| CS/support/sales connectors (Zendesk/ServiceNow/ChurnZero/Gainsight) research brief | `docs/research-brief-cs-support-connectors-2026-06-04.md` |
 | Compliance mappings (OWASP/NIST/EU-AI-Act/SOC2/GDPR+HIPAA) | `docs/compliance/` |
 | Reusable gates research brief | `docs/research-brief-reusable-gates-2026-06-04.md` |
 | Ecosystem gate-adoption guide | `docs/ecosystem/consuming-gates.md` |

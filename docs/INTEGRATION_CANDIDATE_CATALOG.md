@@ -213,11 +213,12 @@ connector models the correct relationship: ingest evidence *about* MCP, don't tr
 |---|---:|---|---|---|---|
 | Salesforce | P2 | Account/customer context, customer impact evidence | Read-only first | T1/T5 | High PII and business sensitivity. |
 | HubSpot | P2 | Customer lifecycle, support and marketing events | Read/event ingest | T1/T5 | Useful SMB/mid-market customer context. |
-| Zendesk | P2 | Support tickets, customer issues, escalations | Read-first, webhook ingest | T1/T5 | Strong customer evidence source. |
+| Zendesk | **P1** | Support tickets, CSAT, SLA-breach events, escalations | **Webhook-first** (HMAC-SHA256 `x-zendesk-webhook-signature` + timestamp), REST `/api/v2` backfill | T1/T5 | **Strongest of the support set + only one with a first-class signed webhook** (reuses the existing `verify_*` pattern). Gated on the PII-redaction model before ticket-body ingest. (eval 2026-06-04) |
+| ServiceNow | P2 | ITSM incidents / changes / problems, change-governance evidence | Read-first poll (Table API `/api/now/table`, versioned; OAuth/Basic) | T1/T5 | **Poll-only — no portable signed-webhook contract** (outbound is bespoke per-tenant Business Rules); per-tenant customized. Scope a read-only role. Defer build behind Zendesk. (eval 2026-06-04) |
 | Intercom | P2 | Customer conversations and support signals | Read-first | T1/T5 | Sensitive, useful for customer-facing products. |
 | Help Scout | P3 | Support tickets and conversations | Read-first | T1/T5 | Simpler support target. |
-| Gainsight | P3 | Customer success health and churn signals | Read-first | T1/T5 | Enterprise CS use case. |
-| ChurnZero | P3 | Customer success usage and health signals | Read-first | T1/T5 | CS-specific, useful when customer lifecycle is central. |
+| Gainsight | P3 | Customer success: Scorecard health, ARR/renewal date, NPS, CTAs | Read-first poll (Bulk REST; Access Key/OAuth) | T1/T5 | Enterprise CS. **Poll-only (Rules-Engine "Call External API", no managed signing); most tenant-customized object model** → highest parse/maintenance burden. Defer; gated on demand + redaction. (eval 2026-06-04) |
+| ChurnZero | P3 | Customer success: ChurnScore health, usage events, surveys | Read-first poll (REST Bulk Read; Basic) | T1/T5 | CS-specific. **Poll-only (alerts go to app/email/Slack/Teams, not signed HTTP). Cleanest read API of the CS pair.** Defer; gated on demand + redaction. (eval 2026-06-04) |
 
 ### 6.9 MCP and Agent Ecosystem
 
