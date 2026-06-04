@@ -1,5 +1,13 @@
 # Bicameral Integrations
 
+[![CI](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/ci.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/ci.yml)
+[![Governance Gate](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/governance-gate.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/governance-gate.yml)
+[![CodeQL](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/codeql.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/codeql.yml)
+[![Security Scan](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/security-scan.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/security-scan.yml)
+[![OpenSSF Scorecard](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/scorecard.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/scorecard.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
+
 **Bicameral Integrations** contains open-source source adapters and EM-safe mods for Bicameral.
 
 Integrations are the expressive edge of the system. They understand Jira, Linear, Slack, Notion, GitHub, support email, meetings, and customer-specific workflows. They do not own canonical state.
@@ -36,7 +44,8 @@ local daemon governance + review + storage adapter
 ├── connectors/              # Provider-facing parse surfaces (one folder per source)
 ├── mods/                    # EM-safe advisory mods and fixtures
 ├── docs/                    # Governance artifacts, ADRs, integration strategy, compliance mappings
-├── scripts/                 # Governance gate and CI helper scripts
+├── scripts/                 # Governance gate + CI helper scripts (with tests/)
+├── .github/workflows/       # CI gates + reusable (`workflow_call`) gate templates (_reusable-*.yml)
 └── README.md                # You are here
 ```
 
@@ -53,7 +62,7 @@ Mods may emit candidates, evidence, hints, dependency signals, advisories, and s
 ## Testing
 
 ```bash
-pytest -q adapter/core/tests connectors
+pytest -q adapter/core/tests connectors scripts/tests
 ```
 
 Governance integrity (ledger hash-chain + feature-index test paths) is verified
@@ -62,6 +71,19 @@ separately and in CI:
 ```bash
 python scripts/governance_gate.py
 ```
+
+## CI Gates
+
+Every change runs through SHA-pinned GitHub Actions gates, several of which are
+also published as reusable `workflow_call` templates (`.github/workflows/_reusable-*.yml`)
+for the wider Bicameral ecosystem:
+
+- **lint + type + test** (ruff, mypy, pytest) · **Governance Gate** (ledger hash-chain + feature-index)
+- **CodeQL** · **Bandit** · **Security Scan** · **OpenSSF Scorecard** · **SBOM + attestation** · **dependency-review** · **secret scan** (TruffleHog)
+- **Quality** (workflow-YAML lint, codespell, SPDX headers) · **PR hygiene** (conventional title)
+
+Framework control mappings (OWASP, NIST AI RMF & SSDF, EU AI Act, SOC 2, GDPR/HIPAA)
+live in [`docs/compliance/`](docs/compliance/) — control alignment, not certification.
 
 ## Project Governance
 

@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-04 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | SEALED (cycle 7 — connectors-dev-tools — substantiated; commit/push/PR authorized) |
-| **Iteration** | 7 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; L3 CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; **Continue + Aider developer-AI connectors**) |
-| **Session Seal** | `c8e9ddf3` (META_LEDGER Entry #29 chain hash) |
+| **Phase** | MERGED to `main` — all open PRs reconciled in order (#9/#10/#12/#13/#16/#17); ecosystem current |
+| **Iteration** | 9 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; L3 CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider developer-AI connectors; reusable-workflow gate templates; **AGT-sidecar evaluation**) |
+| **Session Seal** | `06429651` (META_LEDGER Entry #34 chain hash) |
 
 ---
 
@@ -34,9 +34,12 @@ bicameral-integrations/
 |   |-- aider/          (git commit -> Observation; PASSIVE; T0)
 |   `-- jira/           (scaffold — Candidate, no connector.py yet)
 |-- mods/  (dependency_risk, noisy_source_gate, security_mentions — manifests)
-|-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME,
-|          SYSTEM_STATE, GOVERNANCE_INDEX, BACKLOG, FEATURE_INDEX, adr/, research-brief-*)
-|-- .github/workflows/  (ci.yml, secret-scan.yml)
+|-- scripts/  (governance_gate.py + check_license_headers.py + tests/)
+|-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME, SYSTEM_STATE,
+|          GOVERNANCE_INDEX, BACKLOG, FEATURE_INDEX, adr/, compliance/, ecosystem/, research-brief-*)
+|-- .github/workflows/  (10 gate workflows: ci, governance-gate, codeql, dependency-review,
+|          scorecard, sbom, secret-scan, security-scan, quality, pr-hygiene
+|          + 6 reusable `_reusable-*.yml` workflow_call templates)
 `-- (LICENSE, README, CONTRIBUTING, SECURITY, GOVERNANCE, CODE_OF_CONDUCT, CHANGELOG)
 ```
 
@@ -47,8 +50,9 @@ bicameral-integrations/
 | Metric | Value |
 |--------|-------|
 | Source connector packages (with `connector.py`) | 12 (github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider) + jira scaffold |
-| Total Test Files | 17 |
-| Pytest | 136 passed (adapter/core/tests + connectors) |
+| Total Test Files | 19 (adapter/core + connectors + scripts) |
+| Pytest | 152 passed (adapter/core/tests + connectors + scripts/tests) |
+| CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
 | Section 4 Violations | 0 (continue_dev 67 lines, aider 73 lines; fns ≤18, nesting ≤2) |
 
@@ -58,11 +62,11 @@ bicameral-integrations/
 
 | Status | Notes |
 |--------|-------|
-| Delivered | Adapter seam + 6 source connectors + producer secret screen + **L3 webhook signature verification (Svix/Fathom + Linear) + replay dedup** — per ADR-0004/0005/0006 |
+| Delivered | Adapter seam + **12 source connectors** + producer secret screen + L3 webhook signature verification (Svix/Fathom + Linear) + replay dedup + **CI governance/security gate ecosystem** (10 gates + 6 reusable templates) + compliance control mappings — per ADR-0004..0010 |
 | Unplanned | 0 |
 | Missing | 0 (live REST/GraphQL/poll + secret/keyring resolution + HTTP boundary intentionally deferred per connector `auth.md`; gateway bridge blocked on bicameral-bot #99) |
 
-**Compliance**: aligned with `ARCHITECTURE_PLAN.md` and ADR-0004..0007.
+**Compliance**: aligned with `ARCHITECTURE_PLAN.md` and ADR-0004..0010.
 
 ---
 
@@ -71,7 +75,7 @@ bicameral-integrations/
 | Scope | Status |
 |-------|--------|
 | Runtime | stdlib only — no third-party runtime dependencies |
-| Dev/CI | ruff, mypy, pytest (CI gate); TruffleHog (secret scan) |
+| Dev/CI | ruff, mypy, pytest; CodeQL, Bandit, pip-audit, OpenSSF Scorecard, SBOM, dependency-review, TruffleHog, codespell — all SHA-pinned |
 
 ---
 
@@ -106,6 +110,8 @@ bicameral-integrations/
 | MCP Registry connector | connectors/mcp_registry/tests/test_mcp_registry_connector.py | OK |
 | Continue connector | connectors/continue_dev/tests/test_continue_connector.py | OK |
 | Aider connector | connectors/aider/tests/test_aider_connector.py | OK |
+| Governance gate (chain + feature-index + `--repo-root`) | scripts/tests/test_governance_gate.py | OK |
+| License-header scan | scripts/tests/test_check_license_headers.py | OK |
 
 ---
 
@@ -113,19 +119,22 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #29 (`c8e9ddf3`); machine-verified by `scripts/governance_gate.py` |
-| Blueprint Sync | SYNCED | ADRs + research briefs + docs/compliance/ + all README docs current |
+| Ledger Chain | VALID | through Entry #34 (`06429651`); machine-verified by `scripts/governance_gate.py` |
+| Blueprint Sync | SYNCED | ADRs + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 136 passing; ruff + mypy clean (67 files) |
-| CI Gates | GREEN (local) | governance-integrity + CodeQL/Bandit/dep-review/Scorecard/SBOM/quality/PR-hygiene + TruffleHog; SHA-pinned; Review Boundary held (not committed) |
+| Test Status | PASS | 152 passing; ruff + mypy clean (67 files) |
+| CI Gates | GREEN (on `main`) | governance-integrity + CodeQL/Bandit/dep-review/Scorecard/SBOM/quality/PR-hygiene + TruffleHog; SHA-pinned; reusable `workflow_call` templates; all PRs merged + CI-verified |
 
 ---
 
 ## Next Actions
 
-- [x] **connectors-phase1** merged (PR #15, Entry #26).
-- [x] **Continue + Aider** evaluated + built (Entry #27–#29); pending stealth commit + push + PR for `feat/connectors-dev-tools`.
+- [x] **connectors-phase1** merged (PR #15).
+- [x] **reusable-gate templates** + **AGT-sidecar evaluation** merged (PRs #9/#10).
+- [x] **Continue + Aider** connectors merged (PR #16); dependabot CI bumps merged (#12/#13/#17). All open PRs reconciled onto `main` in order (ledger re-anchored to Entry #33).
 - [ ] Remaining live-connector work: REST poll (Fathom/Granola) + Linear GraphQL clients + secret/keyring resolution + watermark/cursor two-phase commit + the live HTTP boundary (webhook signature verification + dedup core DONE). Deferred dev-tool live paths: Continue file-watch/HTTP-sink, Aider git-log walk + analytics/chat-history.
+- [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike in `bicameral-bot` (cross-repo; separate authorization).
+- [ ] BACKLOG B4: enable repo Dependency Graph to flip dependency-review from advisory to blocking.
 - [ ] Add the adapter→gateway conformance test against bicameral-bot `protocol/schemas/v1/` (blocked until bot #99 lands the v1 schema on bot `main`).
 - [ ] Track bot #108/#109 (gateway security) and #73 (release posture) as cross-repo dependencies.
 
