@@ -13,7 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (Svix/Standard-Webhooks + hex HMAC) plus replay dedup.
 - Source connector parse surfaces (read-only evidence adapters, ADR-0008):
   GitHub, Fathom, Linear, Granola, local-directory, Google Drive, SARIF, Slack,
-  Notion, MCP Registry, Continue, and Aider (plus a Jira scaffold).
+  Notion, MCP Registry, Continue, Aider, and the Phase-2 security/operational
+  evidence connectors — OSV.dev (supply-chain vulnerability aggregator), Sentry
+  (runtime issue), and PagerDuty (incident) — plus a Jira scaffold.
 - CI governance/security gate ecosystem: governance-integrity gate
   (ledger hash-chain + feature-index), CodeQL, Bandit, OpenSSF Scorecard, SBOM +
   attestation, dependency-review, secret scan, and quality/PR-hygiene gates —
@@ -30,3 +32,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Standardized all connector READMEs to a consistent Modes/Surface/References
   style; added CI/license status badges to the primary README.
 - Bumped `actions/checkout` to v6 and `actions/setup-python` to v6 across CI.
+- Added a "surface selection (interactivity test)" criterion to the integration
+  candidate catalog: read-only evidence sources default to direct API/webhook
+  adapters; MCP servers are reserved for interactive agent action.
+
+### Security
+
+- Fixed an incomplete URL host check in the GitHub connector
+  (`can_handle_ref`) that matched look-alike hosts (e.g. `github.com.evil.com`);
+  now validates the parsed host exactly. Resolves CodeQL
+  `py/incomplete-url-substring-sanitization`.
+- SHA-pinned the remaining tagged GitHub Actions in `ci.yml` and `secret-scan.yml`
+  (supply-chain hardening; resolves the OpenSSF Scorecard pinned-dependencies
+  findings).

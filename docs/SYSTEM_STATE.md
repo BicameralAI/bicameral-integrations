@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-04 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | MERGED to `main` — all open PRs reconciled in order (#9/#10/#12/#13/#16/#17); ecosystem current |
-| **Iteration** | 9 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; L3 CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider developer-AI connectors; reusable-workflow gate templates; **AGT-sidecar evaluation**) |
-| **Session Seal** | `06429651` (META_LEDGER Entry #34 chain hash) |
+| **Phase** | MERGED to `main` — Phase-2 connectors + security-queue remediation landed; docs refreshed each cycle close |
+| **Iteration** | 13 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; **security-queue remediation**; **Phase-2 connectors OSV/Sentry/PagerDuty**) |
+| **Session Seal** | `aec6c30d` (META_LEDGER Entry #40 chain hash) |
 
 ---
 
@@ -32,8 +32,11 @@ bicameral-integrations/
 |   |-- mcp_registry/   (server.json -> Observation; ACTIVE; T1)
 |   |-- continue_dev/   (dev-data event -> Observation; PASSIVE; T0)
 |   |-- aider/          (git commit -> Observation; PASSIVE; T0)
+|   |-- osv/            (vulnerability record -> Observation; ACTIVE; T1 no-auth)
+|   |-- sentry/         (issue webhook -> Observation; WEBHOOK; T1)
+|   |-- pagerduty/      (incident webhook -> Observation; WEBHOOK; T1)
 |   `-- jira/           (scaffold — Candidate, no connector.py yet)
-|-- mods/  (dependency_risk, noisy_source_gate, security_mentions — manifests)
+|-- mods/  (structure under active build by Codex — not edited by this track)
 |-- scripts/  (governance_gate.py + check_license_headers.py + tests/)
 |-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME, SYSTEM_STATE,
 |          GOVERNANCE_INDEX, BACKLOG, FEATURE_INDEX, adr/, compliance/, ecosystem/, research-brief-*)
@@ -49,9 +52,9 @@ bicameral-integrations/
 
 | Metric | Value |
 |--------|-------|
-| Source connector packages (with `connector.py`) | 12 (github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider) + jira scaffold |
-| Total Test Files | 19 (adapter/core + connectors + scripts) |
-| Pytest | 152 passed (adapter/core/tests + connectors + scripts/tests) |
+| Source connector packages (with `connector.py`) | 15 (+ osv, sentry, pagerduty; + github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider) + jira scaffold |
+| Total Test Files | 22 (adapter/core + connectors + scripts) |
+| Pytest | 175 passed (adapter/core/tests + connectors + scripts/tests) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
 | Section 4 Violations | 0 (continue_dev 67 lines, aider 73 lines; fns ≤18, nesting ≤2) |
@@ -110,6 +113,9 @@ bicameral-integrations/
 | MCP Registry connector | connectors/mcp_registry/tests/test_mcp_registry_connector.py | OK |
 | Continue connector | connectors/continue_dev/tests/test_continue_connector.py | OK |
 | Aider connector | connectors/aider/tests/test_aider_connector.py | OK |
+| OSV connector | connectors/osv/tests/test_osv_connector.py | OK |
+| Sentry connector | connectors/sentry/tests/test_sentry_connector.py | OK |
+| PagerDuty connector | connectors/pagerduty/tests/test_pagerduty_connector.py | OK |
 | Governance gate (chain + feature-index + `--repo-root`) | scripts/tests/test_governance_gate.py | OK |
 | License-header scan | scripts/tests/test_check_license_headers.py | OK |
 
@@ -119,10 +125,10 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #34 (`06429651`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #40 (`aec6c30d`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 152 passing; ruff + mypy clean (67 files) |
+| Test Status | PASS | 175 passing; ruff + mypy clean (79 files) |
 | CI Gates | GREEN (on `main`) | governance-integrity + CodeQL/Bandit/dep-review/Scorecard/SBOM/quality/PR-hygiene + TruffleHog; SHA-pinned; reusable `workflow_call` templates; all PRs merged + CI-verified |
 
 ---
@@ -131,10 +137,13 @@ bicameral-integrations/
 
 - [x] **connectors-phase1** merged (PR #15).
 - [x] **reusable-gate templates** + **AGT-sidecar evaluation** merged (PRs #9/#10).
-- [x] **Continue + Aider** connectors merged (PR #16); dependabot CI bumps merged (#12/#13/#17). All open PRs reconciled onto `main` in order (ledger re-anchored to Entry #33).
-- [ ] Remaining live-connector work: REST poll (Fathom/Granola) + Linear GraphQL clients + secret/keyring resolution + watermark/cursor two-phase commit + the live HTTP boundary (webhook signature verification + dedup core DONE). Deferred dev-tool live paths: Continue file-watch/HTTP-sink, Aider git-log walk + analytics/chat-history.
-- [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike in `bicameral-bot` (cross-repo; separate authorization).
-- [ ] BACKLOG B4: enable repo Dependency Graph to flip dependency-review from advisory to blocking.
+- [x] **Continue + Aider** connectors merged (PR #16); dependabot CI bumps (#12/#13/#17). All open PRs reconciled onto `main` in order.
+- [x] **Security & quality queue** remediated (PR #22, Entry #37): CodeQL URL-host fix + action SHA-pins; 14 alerts closed, 2 admin-gated open (B5).
+- [x] **Phase-2 connectors** OSV/Sentry/PagerDuty merged (PR #23, Entry #40).
+- [ ] **Connector hardening (next)**: Sentry + PagerDuty live webhook signature verification (HMAC + replay dedup) — extend `adapter/core/webhook_security.py`; PagerDuty needs multi-signature rotation membership-check. Then `verify()`/`normalize_event()` wiring per the Linear/Fathom pattern.
+- [ ] **Connector build-out (next)**: Claude Code (P0, passive transcripts/commits), then GitHub Copilot / Cursor / OpenAI-Anthropic Admin (P1 read APIs) — from the value-add shortlist.
+- [ ] `mods/` structure is under active build by **Codex** — not edited by this (connector/hardening) track.
+- [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).
 - [ ] Add the adapter→gateway conformance test against bicameral-bot `protocol/schemas/v1/` (blocked until bot #99 lands the v1 schema on bot `main`).
 - [ ] Track bot #108/#109 (gateway security) and #73 (release posture) as cross-repo dependencies.
 

@@ -978,7 +978,30 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #39, iter 2) implemented + substantiated. Built **3 Phase-2 parse surfaces**, each `parse_*(payload) -> Observation -> pipeline.normalize()`, read-only (ADR-0008), live paths deferred to `auth.md`: **osv** (`parse_vuln`, OSV vuln record, summary→excerpt w/ details→id floor, ACTIVE, T1 no-auth; SG-I-defensive: `_as_list`/`_text`/per-entry guards), **sentry** (`parse_issue`, `data.issue` unwrap, title→excerpt w/ culprit/shortId/id floor, WEBHOOK), **pagerduty** (`parse_event`, nested `event.data` unwrap, title→excerpt w/ summary/id floor, WEBHOOK). Each w/ synthetic fixture + behavioral tests; READMEs Prototype; `__init__` re-exports; catalog §6.6/§6.7 flipped to Prototype, Semgrep→P3 "subsumed by SARIF", CodeQL-API→P2 subsumed, Datadog→P2 deferred; FEATURE_INDEX rows added. **Independent review** (observer + devil's advocate): observer Reality==Promise CONFIRMED; devil's advocate found **4 blockers + 3 non-blocking** — all the SG-2026-06-04-I "truthy non-string LEAF" class: Sentry `title`/`culprit` `.strip()` crash, PagerDuty `title`/`summary` `.strip()` crash, OSV `_packages` `",".join` on non-str name, OSV `_first_ref_url` KeyError when `references` is a dict, + OSV `aliases` char-explosion on a string — all fixed (`_text`/`_as_list`/`isinstance(name,str)` guards) + regression tests; the OSV "defends on wrong type throughout" docstring is now true. SHADOW_GENOME SG-2026-06-04-I reinforced (guard wrong-typed leaves on externally-controlled webhook bodies, not just absence). BACKLOG **B6** added (Scorecard `startup_failure` = admin Actions-token permission). **Verification**: pytest **175 passed**, ruff + mypy clean (79 files), governance gate verifies the #1–#40 chain. FEATURE_INDEX **FX-OSV-001/FX-SENTRY-001/FX-PAGERDUTY-001** Verified (27 total).
 
+### Entry #41: DOCUMENTATION CURRENCY (end-of-cycle freshness)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: DOCUMENT
+**Author**: Technical Writer / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(SYSTEM_STATE.md)
+= 8e0f8d2c595ecda0bb20e7614ce335c2e7695fb6084627f8ed0c568578743bf4
+```
+
+**Previous Hash**: aec6c30d18fcf5ee413686b7b08dcba8d0dcf7bfbe57e03d8a30e0925047cf63
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= dd9475a9e3790452138746e83b1107713015ed384110901088f08011f5c6236f
+```
+
+**Decision**: Operator-established cadence — README + governance docs refreshed at every cycle close (`/qor-document`). Brought Tier-1 docs current with the post-Phase-2 reality (the docs lagged at Entry #34 across #35–#40). **SYSTEM_STATE**: seal `06429651`→`aec6c30d` (Entry #40), 13 governed cycles, **15 connectors** (+osv/sentry/pagerduty), **175 tests**, file tree + test-coverage + health (chain #40) + next actions (hardening + build-out queue). **CHANGELOG**: added the Phase-2 connectors (OSV/Sentry/PagerDuty) to `Added`, a `Security` section (CodeQL URL-host fix + action SHA-pins), and the surface-selection criterion to `Changed`; preserved the parallel ADR-0011 (Review-Bot) entry. **GOVERNANCE_INDEX**: Meta-Ledger marker #40→#41. README current (badges + CI-gates section). **Division of labour recorded**: `mods/` is under active build by Codex — this track stays on connectors + hardening and does not edit `mods/`. Doc-currency drift correction; no code/contract change. Chain verifies #1–#41.
+
 ---
 *Chain integrity: VALID*
-*Status: `connectors-phase2` SEALED (Entry #40, `aec6c30d`; L2). 15 connectors (OSV/Sentry/PagerDuty added); 175 tests green. Security queue remediated (Entry #37).*
-*Next required action: merge the Phase-2 PR; Sentry/PagerDuty live webhook verify (HMAC + dedup) is the queued follow-up; Semgrep/CodeQL-API ingest via `sarif`; Datadog deferred.*
+*Status: `main` docs fresh + sealed at Entry #41 (`dd9475a9`; L1). 15 connectors, 175 tests; Tier-1 docs reconciled with the Entry #40 state.*
+*Next required action: connector hardening — Sentry/PagerDuty webhook signature verification (HMAC + dedup), via `/qor-auto-dev-1`. `mods/` owned by Codex.*
