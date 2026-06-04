@@ -1,0 +1,10 @@
+{
+  "name": "chatInteraction",
+  "schema": "0.2.0",
+  "eventId": "evt-7f3a9c21",
+  "timestamp": "2026-06-03T15:04:22.000Z",
+  "userId": "u-local",
+  "modelTitle": "Claude (Opus)",
+  "prompt": "Refactor the retry helper to use exponential backoff with jitter.",
+  "completion": "Wrapped the call in a backoff loop; capped at 5 attempts with full jitter."
+}

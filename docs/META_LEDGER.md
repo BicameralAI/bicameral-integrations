@@ -741,7 +741,79 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Ecosystem cycle 2 (the "2" of "1→2") — AGT-as-sidecar evaluation for `bicameral-bot`. AGT is **MIT** (no license blocker), Python, ~35 MB; its `agent-governance-gate.yml` is a **reusable `workflow_call`** (inputs: policy YAML, agent manifest, python_version → policy validation + Ed25519 receipts + audit log). **Recommendation: PROCEED with a bounded spike *in* `bicameral-bot` (separate repo, separate authorization)** — consume this repo's portable `_reusable-*` gates + AGT's `agent-governance-gate` as a **CI sidecar** (SHA-pinned), mapping a bot policy YAML to the CRIT-2 authority routes; integration is sidecar/reusable-workflow, **not** Rust↔Python in-process. Complementary to our gates (AGT adds agent-policy + signed receipts + OWASP-Agentic; we add ledger-integrity + ecosystem CI) — caveats: pin a SHA, don't double-gate scanners, reconcile provenance authority (ledger vs Ed25519 receipts). **No changes made to `bicameral-bot` or AGT.** Deliverable: `docs/ecosystem/agt-sidecar-evaluation.md`. Tracked: BACKLOG B3. Gate: `.qor/gates/agt-sidecar-eval-2026-06-04/research.json`. (Re-anchored onto Entry #29 at ecosystem merge; originally #25 on `feat/agt-sidecar-eval`.)
 
+### Entry #31: RESEARCH BRIEF
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-connectors-dev-tools-2026-06-04.md)
+= 44abfdf5404cd02e6ab7c13f49986e9c80431874df1cdb695b8ec161a77adeab
+```
+
+**Previous Hash**: 3eae7a6dd1dab79e62f88e06207f98165eaca7aa70683b73222cb22ce90358b1
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a71085be9e050f3bd642b770be5d5c7c1718f9b9747ff24c85c493a09266ec43
+```
+
+**Decision**: Evaluated **Continue** (continue.dev) + **Aider** (aider.chat) as next candidate connectors (operator request). Both clear the catalog §4 criteria as **read-only T0 file/git-import** evidence sources — neither has a public read API/webhook (grounded web research, cited). **Continue P1**: schema-versioned dev-data JSONL (`.continue/dev_data/`, `schema` 0.1.0/0.2.0, events `chatInteraction`/`editOutcome`/…, native `level: noCode` redaction) → `parse_event`. **Aider P1**: deterministic `(aider)` git-commit attribution (author/committer suffix or `Co-authored-by:` trailer) is the only stable/documented/code-free surface → `parse_commit`; its unversioned `.aider.chat.history.md` transcript + opt-in `--analytics-log` are DEFERRED secondary modes. Both reduce to `parse_*(record) -> Observation -> normalize()` (zero contract change) with the SG-2026-06-04-G terminal-literal excerpt floor. 0 blocking gaps, no DRIFT → `/qor-plan` at L2. SHADOW_GENOME **SG-2026-06-04-H**. Open question: Continue Hub cloud read-API for dev-data unverified (local-file/HTTP-sink paths confirmed). (Re-anchored onto Entry #30 at ecosystem merge; originally #27 on `feat/connectors-dev-tools`.)
+
+### Entry #32: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-connectors-dev-tools-2026-06-04.md)
+= 664a4662cdfed0932a66661f77fca6646437cf889a0b4f6927577a83c4b117db
+```
+
+**Previous Hash**: a71085be9e050f3bd642b770be5d5c7c1718f9b9747ff24c85c493a09266ec43
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 82b927261f48f12e608df1a7d28f02d79e0e1cce78277bea372b34ec71a0503c
+```
+
+**Verdict**: **PASS** (iteration 1). Independent fresh-context audit of the Continue + Aider plan across all 7 passes. **Grounding** — LDs trace to research F1–F5; no version-fragile field is load-bearing (defensive `.get()` + terminal floor). **Contract fit** — `parse_event`/`parse_commit` produce valid `Observation`/`SourceRef`/`SourceMode`; the Python-keyword hazard is correctly resolved (package `continue_dev`, literal `source_id="continue"` matches `_SOURCE_ID_RE`). **Excerpt-blank (the recurring VETO class)** — every excerpt path terminates in a guaranteed non-empty literal (`f"continue {name}"` via the `name` floor; `"aider-commit"`), the degenerate `{}` case is explicitly tested in both suites, and `ref` is non-empty on `{}`; the Notion failure mode is closed (SG-2026-06-04-G honored). **Security/OWASP** — read-only dict→Observation parse, no network/exec/fs-control; code/secrets routed into excerpt are HARD-gated by `_screen_sensitive` (`FX-SEC-001`), Continue `level: noCode` documented. **Test functionality** — tests invoke the unit + assert output incl. terminal floor + end-to-end `normalize()`. **Razor** — both parse fns ≤40 lines, nesting ≤3. **Scope** — only the two parse surfaces; live paths deferred. Two non-dispositive concerns (Aider trailer-entry shape unspecified; `title` empty on `{}` — neither contract-enforced) → harden `_attributed_by` for string|dict trailers at implement. Cleared to `/qor-implement`. (Re-anchored onto Entry #31 at ecosystem merge; originally #28.)
+
+---
+
+### Entry #33: SESSION SEAL (connectors-dev-tools — implementation)
+
+**Entry ID**: `c0nndevt00ls`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= a27c7f5145d743dba2c834150f5abda277a89d2716a97c9ba8e9fb6545ee5b6d
+```
+
+**Previous Hash**: 82b927261f48f12e608df1a7d28f02d79e0e1cce78277bea372b34ec71a0503c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5233f1f66ed2a1e6f65b50ef90bfb06ea286f98d3bd2074daaf876c44beabcec
+```
+
+**Decision**: PASS-audit (Entry #32, iter 1) implemented + substantiated. Built **2 developer-AI parse surfaces** per `plan-connectors-dev-tools-2026-06-04.md`, each `parse_*(record) -> Observation` → `pipeline.normalize()`, read-only (ADR-0008), live paths deferred to `auth.md`: **continue** (`parse_event`, dev-data JSONL event, prompt/completion→excerpt with `continue {name}` floor, PASSIVE, T0; package `continue_dev` because `continue` is a Python keyword, `source_id="continue"`), **aider** (`parse_commit`, `(aider)` git attribution author/committer/co-author → `attributed_by`, subject→excerpt with `aider-commit` floor, PASSIVE, T0). Each with synthetic fixture + behavioral tests; READMEs at Prototype; `__init__` re-exports; catalog §6.1 + FEATURE_INDEX rows added. **Independent review** (objective observer + devil's advocate): observer Reality==Promise CONFIRMED; devil's advocate found **2 blockers + 3 non-blocking** — **HIGH** wrong-typed fields (int/list) crashed both parsers via `.strip()`/`.split()`/`[:7]`/`in` (fixed: coerce to `str` / `isinstance` guards), **HIGH** whitespace-only Aider `hash` produced a whitespace excerpt that skipped the `or`-floor (fixed: `.strip()` before the floor) — both with regression tests; 3 non-blocking accepted (typed `payload: dict` contract; `(aider)` substring + dict-trailers are non-load-bearing metadata). SHADOW_GENOME **SG-2026-06-04-H** (ingest the stable surface) + **SG-2026-06-04-I** (defend on type + whitespace, not just presence). **Verification**: pytest **136 passed**, ruff + mypy clean (67 files), governance gate verifies the chain. FEATURE_INDEX **FX-CONTINUE-001**, **FX-AIDER-001** Verified (24 total after ecosystem merge). (Re-anchored onto Entry #32 at ecosystem merge; originally #29.)
+
 ---
 *Chain integrity: VALID*
-*Status: ecosystem "1→2" COMPLETE on `main` — reusable gates (Entry #29) + AGT-sidecar recommendation (Entry #30, `3eae7a6d`; L1, doc-only). BACKLOG B3 = cross-repo rollout when authorized.*
-*Next required action: merge remaining PRs in order (#12/#13 dependabot, #16 connectors); re-anchor #16's entries onto the advancing tip.*
+*Status: ALL open PRs merged in order (#9 reusable gates, #10 AGT doc, #12/#13 dependabot, #16 connectors). `main` SEALED at Entry #33 (`5233f1f6`; L2). 12 connectors + reusable gate ecosystem + 24 verified features.*
+*Next required action: none queued — ecosystem reconciled on `main`.*

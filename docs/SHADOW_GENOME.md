@@ -5,6 +5,24 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-04-I — A parse surface for a version-fragile schema must defend on TYPE and whitespace, not just presence
+
+**Discovered**: 2026-06-04 (independent devil's-advocate review, connectors-dev-tools implement)
+**Prevents**: a connector that claims "defensive parsing" crashing (or silently emitting blank) on a malformed/version-skewed record.
+
+The `x.get(k) or ""` idiom guards absent/`None` but NOT wrong-type: a non-string field reaches `.strip()`/`.split()`/`[:7]`/`in` and raises a raw `AttributeError`/`TypeError` that aborts the whole `normalize()` batch with a stack trace instead of being floored. And the terminal-literal floor (SG-2026-06-04-G) uses `or`, which only catches the empty string — a **whitespace-only** value (e.g. an Aider commit `hash` of `"   "`) is truthy, skips the literal, and produces a whitespace excerpt that violates the parse surface's own "never blank" invariant (caught only by the downstream `.strip()` gate). Rule for any parse surface over a churning/external schema: coerce to `str` where the contract needs a string (`str(x.get(k) or "")`), skip non-string text fields in the excerpt scan (`isinstance(v, str)`), and `.strip()` a value BEFORE it participates in an `or`-floor. Test the wrong-type and whitespace-only payloads explicitly, not just the happy fixture. Extends SG-2026-06-04-G (terminal literal) and SG-2026-06-04-H (ingest the stable surface).
+
+---
+
+## SG-2026-06-04-H — AI-coding tools expose evidence as local artifacts, not APIs; ingest the stable surface, defer the fragile one
+
+**Discovered**: 2026-06-04 (`/qor-research`, connectors-dev-tools)
+**Prevents**: building a Continue/Aider connector against an API that does not exist, or against an unversioned file format that breaks on the next release.
+
+Continue and Aider are both read-only, **file/git-import (T0)** evidence sources — neither has a public read API or webhook. **Continue** writes purpose-built "development data" as schema-*versioned* JSONL (`schema` 0.1.0/0.2.0) to `.continue/dev_data/` (events: `chatInteraction`/`editOutcome`/`autocomplete`/... ), with a native `level: noCode` redaction lever that strips file contents/prompts/completions. **Aider's** only stable, documented, code-free provenance surface is its deterministic **`(aider)` git-commit attribution** (author/committer name suffix, or a `Co-authored-by:` trailer); its rich transcript `.aider.chat.history.md` has **no versioned schema** (markdown prose) and is scraping-prone, so it is DEFERRED along with the opt-in `--analytics-log` JSONL. Rule: ingest the versioned/deterministic surface (Continue dev-data JSONL, Aider git attribution); defer the unversioned one. Both reduce to the same `parse_*(record) -> Observation -> normalize()` surface; both need the SG-2026-06-04-G terminal-literal excerpt floor (`"continue-event"` / `"aider-commit"`).
+
+---
+
 ## SG-2026-06-04-G — An Observation excerpt needs a TERMINAL non-empty literal, not just a "better field" fallback
 
 **Discovered**: 2026-06-04 (independent devil's-advocate review, connectors-phase1 implement)

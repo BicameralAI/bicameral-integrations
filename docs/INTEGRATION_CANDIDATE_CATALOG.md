@@ -112,6 +112,8 @@ Each integration candidate should be evaluated against the following criteria.
 | GitLab | P1 | Merge requests, issues, pipelines, code review evidence | Read-first, webhook ingest | T1/T3 | Important for self-hosted and enterprise teams. |
 | Bitbucket Cloud | P2 | Pull requests, commits, pipelines | Read-first, webhook ingest | T1/T3 | Useful for Atlassian-heavy teams. |
 | Azure DevOps Repos | P2 | Repos, PRs, work items, build/release data | Read-first, webhook ingest | T1/T3 | Valuable in Microsoft enterprise environments. |
+| Continue (continue.dev) | P1 | Developer-AI interaction evidence: chat/edit/autocomplete outcomes, model+prompt provenance | Read-only, passive file import (dev-data JSONL) | T0 | Schema-versioned dev-data (`level: noCode` redaction lever). No public read API. |
+| Aider (aider.chat) | P1 | Developer-AI implementation provenance via attributed git commits | Read-only, passive git import | T0 | Deterministic `(aider)` attribution is the stable surface; unversioned transcript deferred. |
 
 ### 6.2 Project and Issue Management
 

@@ -29,6 +29,8 @@ payload parsing, exercised against synthetic fixtures.
 | [slack](slack/) | Prototype | webhook | `parse_message` |
 | [notion](notion/) | Prototype | active, webhook | `parse_page` |
 | [mcp_registry](mcp_registry/) | Prototype | active | `parse_server` |
+| [continue_dev](continue_dev/) | Prototype | passive | `parse_event` |
+| [aider](aider/) | Prototype | passive | `parse_commit` |
 | [jira](jira/) | Candidate | — | scaffold (not yet implemented) |
 
 Candidate selection and trust tiers are tracked in the
