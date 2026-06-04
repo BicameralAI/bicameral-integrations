@@ -49,7 +49,7 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 | ID | Feature | Doc | Code | Test | Status | Notes |
 |---|---|---|---|---|---|---|
-| FX-RUNTIME-001 | Operator-runtime boundary layer (sinks + delivery + secret resolver) | docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md, docs/plan-go-live-runtime-2026-06-04.md | runtime/sinks.py, runtime/delivery.py, runtime/secrets.py | runtime/tests/test_runtime.py | Verified | `EmissionSink`/`SecretResolver` Protocols + `CollectingSink` + `GatewaySink` (#109-gated stub raising `GatewayEmissionGated`) + `deliver_webhook`/`deliver_poll`; drives connector ingest→verify→normalize→emit without the repo being a server (ADR-0012); test asserts signed-webhook→1, bad-sig→0, GatewaySink raises, deliver_poll(OSV)→2 |
+| FX-RUNTIME-001 | Operator-runtime boundary layer (sinks + delivery + secret resolver) | docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md, docs/plan-go-live-runtime-2026-06-04.md | runtime/sinks.py, runtime/delivery.py, runtime/secrets.py | runtime/tests/test_runtime.py | Verified | `EmissionSink`/`SecretResolver` Protocols + `CollectingSink` + `GatewaySink` (#109-gated stub raising `GatewayEmissionGated`) + `deliver_webhook`/`deliver_poll`; drives connector ingest→verify→normalize→emit without the repo being a server (ADR-0012). **Beta cohort proven through the harness**: signed-webhook→1 + bad-sig→0 for **linear** (HMAC+replay), **fathom** (Svix), **sentry** (hex HMAC), **pagerduty** (multi-sig membership — valid sig placed 2nd); deliver_poll(OSV)→2; GatewaySink raises |
 
 ---
 

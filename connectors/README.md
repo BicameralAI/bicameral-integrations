@@ -28,7 +28,7 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | Connector | Status | Modes | Surface | Verify |
 |---|---|---|---|---|
 | [github](github/) | Prototype | active, webhook | `parse_pull_request` | — |
-| [fathom](fathom/) | Prototype | passive, webhook | `parse_meeting` | ✓ (Svix) |
+| [fathom](fathom/) | **Beta** | passive, webhook | `parse_meeting` | ✓ (Svix) |
 | [linear](linear/) | **Beta** | webhook, active | `parse_event` | ✓ (HMAC + 60s replay) |
 | [granola](granola/) | Prototype | passive | `parse_transcript` | — |
 | [local_directory](local_directory/) | Prototype | passive | `parse_file` | — |
@@ -41,8 +41,8 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [aider](aider/) | Prototype | passive | `parse_commit` | — |
 | [claude_code](claude_code/) | Prototype | passive | `parse_session_line` | n/a (local file) |
 | [osv](osv/) | Prototype | active | `parse_vuln` | n/a (no-auth) |
-| [sentry](sentry/) | Prototype | webhook | `parse_issue` | ✓ (HMAC) |
-| [pagerduty](pagerduty/) | Prototype | webhook | `parse_event` | ✓ (multi-sig) |
+| [sentry](sentry/) | **Beta** | webhook | `parse_issue` | ✓ (HMAC) |
+| [pagerduty](pagerduty/) | **Beta** | webhook | `parse_event` | ✓ (multi-sig) |
 | [jira](jira/) | Prototype | webhook, active | `parse_issue` | ✓ (HMAC, `sha256=`) |
 
 Candidate selection and trust tiers are tracked in the

@@ -1335,7 +1335,56 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #54) implemented + substantiated. Shipped the **`runtime/` operator-runtime boundary layer** (ADR-0012): `EmissionSink`/`SecretResolver` Protocols + `CollectingSink` (reference) + `GatewaySink` (#109-gated stub raising `GatewayEmissionGated`) + `MappingSecretResolver` + `deliver_webhook`/`deliver_poll` orchestration — driving a connector `ingest→verify→normalize→emit` **without the repo becoming a server** (stdlib-only intact). Promoted **Linear → Beta** (first Beta connector): its signed-webhook → `deliver_webhook` → reference-sink path is proven end-to-end with **zero cross-repo dependency**; readiness ladder legend added to `connectors/README.md`. CI scope extended to `runtime` (ruff/mypy/pytest + codespell/license). **Independent review** (observer + devil's advocate): observer Reality==Promise (D1 library-not-server, D2 protocols+sinks+delivery, D4 all four assertions present/green); devil's advocate **0 blocking / 0 non-blocking** — the layer orchestrates already-hardened pieces (no new untrusted-input parsing); confirmed `GatewaySink` fails-closed (raises, asserted by test), non-dict/bad-sig webhook → 0 emissions (no crash, Linear `verify` self-guards), `EmissionContractError` propagates to operator (documented, atomic-batch). SHADOW_GENOME SG-2026-06-04-B reinforced (gateway emission fails closed). **Verification**: pytest **209 passed**, ruff + mypy clean (92 files), governance gate verifies the #1–#54 chain. FEATURE_INDEX **FX-RUNTIME-001** Verified (32 total). ADR-0012 registered (GOVERNANCE_INDEX Tier 5). Docs refreshed per the end-of-cycle cadence; `mods/` left to Codex.
 
+### Entry #56: GATE TRIBUNAL (Beta cohort — Fathom/Sentry/PagerDuty)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B, fresh context)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-beta-cohort-2026-06-04.md)
+= d3ed9d5c83abdc1f484ed7827e4d5c7ee1297963e7dfbb38c24b050ab3e1b1fc
+```
+
+**Previous Hash**: 8e5f6d1e5d60a52fa2f17059ceedd73214d8dd4556a5d8ab9ff7d97223407caa
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 24a3353402f2c3c040126403be3a88cbee223123cb660579fb03566469ede4ed
+```
+
+**Verdict**: **PASS** (iteration 1). Plan reuses ADR-0012 (no new ADR/brief): promote the three verify-wired webhook connectors (**Fathom**/Svix, **Sentry**/hex-HMAC, **PagerDuty**/multi-sig) to **Beta** by proving each `signed-webhook → runtime.deliver_webhook → reference sink` path end-to-end — a near-exact replay of the Linear precedent (Entry #55), **no connector-code change**. Independent fresh-context audit verified every claim against the repo: (1) the proof is genuinely end-to-end, not presence-only (`deliver_webhook → normalize_event → verify`); (2) fail-closed confirmed — `normalize_event` self-guards (`if not verify: return []`), `deliver_webhook` returns 0 without `sink.emit`; (3) PagerDuty membership genuinely exercised (valid sig placed 2nd in the `v1=,v1=` set); (4) two implementation constraints flagged + already in the plan — Fathom clock MUST be pinned to the fixture timestamp (Svix 300 s freshness) and the SAME body bytes MUST be signed and delivered; (5) ladder-correct (Beta = harness-proven against a reference sink, zero cross-repo dep; nothing Live-gated mislabeled); `mods/` excluded. Cleared to `/qor-implement`.
+
+---
+
+### Entry #57: SESSION SEAL (Beta cohort — Fathom/Sentry/PagerDuty)
+
+**Entry ID**: `betaC0hort03`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 1125a386edace97b238f13325c037314afdbab3bd30a6ee9c492e5ab346aab01
+```
+
+**Previous Hash**: 24a3353402f2c3c040126403be3a88cbee223123cb660579fb03566469ede4ed
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ba09100c4b9cbc4116cca4b07013b15c54c6414d612e4f592e4a994ce46c0ffb
+```
+
+**Decision**: PASS-audit (Entry #56) implemented + substantiated. Promoted **Fathom (Svix), Sentry (hex HMAC), PagerDuty (multi-sig membership) → Beta** via the `runtime/` harness — **4 Beta connectors total** (incl. Linear), zero cross-repo dependency. Implementation is **test + docs only, no connector-code change**: extended `runtime/tests/test_runtime.py` with, per connector, a `signed-webhook → deliver_webhook → CollectingSink → 1` (correct `source_id`) proof + a `bad-signature → 0` fail-closed proof (PagerDuty's valid sig placed **2nd** in the rotation set → proves membership, not equality); flipped each `references.md`/`README.md` + the `connectors/README.md` index to Beta (and corrected stale "verification deferred" prose); broadened FX-RUNTIME-001 Notes (32 total, no new row). **Independent review** (observer + devil's advocate, fresh-context subagents): observer **PASS** (D1–D4 satisfied, no connector-code/`mods/` change, no Reality/Promise gaps); devil's advocate **0 blocking / 0 HIGH** — proofs sound + fail-closed, clock pinned, body bytes identical, membership real, no state leakage, fixtures parse non-blank. Took the one additive LOW (added a **missing-header → fail-closed** case across all three). Deferred two connector-code notes to **BACKLOG B10** (stale module docstrings) + **B11** (align Fathom `verify` exception catch) to preserve this cycle's audited no-connector-change scope. **Verification**: pytest **216 passed**, ruff + mypy clean (92 files), governance gate verifies the #1–#56 chain. SHADOW_GENOME SG-2026-06-04-B reinforced (every webhook path fails closed). Docs refreshed per the end-of-cycle cadence; `mods/` left to Codex.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` + go-live runtime boundary SEALED at Entry #55 (`8e5f6d1e`; L2). `runtime/` library boundary shipped; **Linear is the first Beta connector** (end-to-end, zero cross-repo dep); Live emission remains gated on bot #109 (`GatewaySink` raises).*
-*Next required action: promote a second connector to Beta (Fathom/Sentry/PagerDuty — all verify-wired) via the runtime harness. Open: B8 PagerDuty spot-check, B9 Devin, B5/B6 admin; Live emission on bot #109.*
+*Status: `main` + Beta cohort SEALED at Entry #57 (`ba09100c`; L2). **4 Beta connectors** — linear, fathom, sentry, pagerduty (all verify-wired, harness-proven, zero cross-repo dep); 13 Prototype; Live emission remains gated on bot #109 (`GatewaySink` raises).*
+*Next required action: extend Beta further (GitHub needs verify wiring first) or begin Live-stage prep when bot #109 lands. Open: B8 PagerDuty spot-check, B9 Devin, B10/B11 connector doc+catch cleanup, B5/B6 admin.*

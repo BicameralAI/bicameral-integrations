@@ -1,6 +1,6 @@
 # Sentry Connector
 
-Provider-facing Sentry adapter. **Status: Prototype** (catalog
+Provider-facing Sentry adapter. **Status: Beta** (ADR-0012; catalog
 observability/incident-evidence, priority P1, default trust tier T1). From the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 
@@ -10,9 +10,17 @@ observability/incident-evidence, priority P1, default trust tier T1). From the
   neutral `Observation` (`parse_issue`). Read-only runtime-error/issue evidence;
   no canonical writes (ADR-0008).
 
-The live Events-API receipt and `Sentry-Hook-Signature` (HMAC-SHA256)
-verification are deferred this cycle (see [`auth.md`](auth.md)); this connector
-is the parse surface only.
+`Sentry-Hook-Signature` (hex HMAC-SHA256 over the raw body) verification and
+best-effort dedup are implemented in `verify()` / `normalize_event()`. The live
+Events-API receipt and secret resolution stay in the operator runtime (see
+[`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its signed-webhook → `runtime.deliver_webhook` → reference
+sink path is proven end-to-end by `runtime/tests/test_runtime.py`, with **zero
+cross-repo dependency**. Live (gateway emission) remains gated on bicameral-bot
+#109.
 
 ## Surface
 

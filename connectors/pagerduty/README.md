@@ -1,6 +1,6 @@
 # PagerDuty Connector
 
-Provider-facing PagerDuty adapter. **Status: Prototype** (catalog
+Provider-facing PagerDuty adapter. **Status: Beta** (ADR-0012; catalog
 observability/incident-evidence, priority P1, default trust tier T1). From the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 
@@ -10,8 +10,18 @@ observability/incident-evidence, priority P1, default trust tier T1). From the
   maps to one neutral `Observation` (`parse_event`). Read-only incident/on-call
   evidence; no canonical writes (ADR-0008).
 
-The live webhook receipt and `X-PagerDuty-Signature` verification are deferred
-this cycle (see [`auth.md`](auth.md)); this connector is the parse surface only.
+`X-PagerDuty-Signature` verification (multi-signature `v1=<hex>,v1=<hex>`
+rotation **membership** — accept if any matches) and best-effort dedup are
+implemented in `verify()` / `normalize_event()`. The live webhook receipt and
+secret resolution stay in the operator runtime (see [`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its signed-webhook → `runtime.deliver_webhook` → reference
+sink path is proven end-to-end by `runtime/tests/test_runtime.py` (the test
+places the valid signature second in the rotation set to prove membership), with
+**zero cross-repo dependency**. Live (gateway emission) remains gated on
+bicameral-bot #109.
 
 ## Surface
 
