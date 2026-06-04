@@ -597,6 +597,31 @@ SHA256(content_hash + previous_hash)
 **Decision**: Ecosystem cycle 1 (reusable-workflow template) implemented + substantiated to the local Review Boundary. Portable gates factored into 6 `workflow_call` reusables (`_reusable-{governance-gate,codeql,dependency-review,scorecard,sbom,pr-hygiene}.yml`, SHA-pinned); this repo's 6 gate workflows converted to **thin callers** (`uses: ./...`) — single source, no run-vs-publish drift. `scripts/governance_gate.py` gained `--repo-root`/`--ledger`/`--feature-index` (default unchanged) so a reusable can verify a **consumer's** ledger via side-checkout + `--repo-root "$GITHUB_WORKSPACE"` (closes SG-2026-06-04-E). `docs/ecosystem/consuming-gates.md` documents adoption for bot (Rust→clippy/cargo-audit; CodeQL has no Rust)/mcp/cloud + SHA-pin discipline. **Verification**: governance gate OK default **and** `--repo-root .`; pytest **16 script tests** pass; ruff clean; **16 workflows parse** (10 + 6 reusables). FEATURE_INDEX `FX-CI-GOV-002`/`FX-CI-REUSE-001`/`FX-CI-DOC-002` Verified (18 total). Proportionality note (L2 config refactor): the clean pre-implementation independent audit (Entry #23) + green verification stand in for a post-implementation reviewer panel. **Review Boundary HELD**. New memory: SHADOW_GENOME SG-2026-06-04-E.
 
 ---
+
+### Entry #25: RESEARCH SPIKE (recommendation; no cross-repo changes)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH (spike)
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(ecosystem/agt-sidecar-evaluation.md)
+= 5540b62fda49f2dd90b8de169ac5bbf669c3e548a6015744ddbde706dde75657
+```
+
+**Previous Hash**: 27f6007afd75f3be4479bdfa11ff0f907a5dbdd786a7c0ec560bfa6857232023
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 786a858c7ce91af1c5810064e14c5896468cdf361adcf634fa88f9dc25120f0a
+```
+
+**Decision**: Ecosystem cycle 2 (the "2" of "1→2") — AGT-as-sidecar evaluation for `bicameral-bot`. AGT is **MIT** (no license blocker), Python, ~35 MB; its `agent-governance-gate.yml` is a **reusable `workflow_call`** (inputs: policy YAML, agent manifest, python_version → policy validation + Ed25519 receipts + audit log). **Recommendation: PROCEED with a bounded spike *in* `bicameral-bot` (separate repo, separate authorization)** — consume this repo's portable `_reusable-*` gates + AGT's `agent-governance-gate` as a **CI sidecar** (SHA-pinned), mapping a bot policy YAML to the CRIT-2 authority routes; integration is sidecar/reusable-workflow, **not** Rust↔Python in-process. Complementary to our gates (AGT adds agent-policy + signed receipts + OWASP-Agentic; we add ledger-integrity + ecosystem CI) — caveats: pin a SHA, don't double-gate scanners, reconcile provenance authority (ledger vs Ed25519 receipts). **No changes made to `bicameral-bot` or AGT.** Deliverable: `docs/ecosystem/agt-sidecar-evaluation.md`. Tracked: BACKLOG B3. Gate: `.qor/gates/agt-sidecar-eval-2026-06-04/research.json`.
+
+---
 *Chain integrity: VALID*
-*Status: `reusable-gates-2026-06-04` SUBSTANTIATED at the local Review Boundary (Entry #24, `27f6007a`, L2). On `feat/reusable-gates` (stacked on PR #6). Cycle 1 of "1→2" complete; cycle 2 = AGT sidecar spike next.*
-*Next required action: PR cycle 1 (stacked on #6) in stealth, then cycle 2 (AGT sidecar spike → recommendation doc, no cross-repo changes).*
+*Status: "1→2" ecosystem sequence COMPLETE. Cycle 1 (reusable-workflow template, Entry #24) PR'd as #9; cycle 2 (AGT-sidecar recommendation, Entry #25, `786a858c`) is a doc-only spike. All in-repo work substantiated at the local Review Boundary.*
+*Next required action: USER — review/merge the PR stack (#4→#5→#6→#9) + the AGT recommendation; authorize the cross-repo rollout (BACKLOG B3) as work in bot/mcp/cloud when ready. No further in-repo cycles queued.*
