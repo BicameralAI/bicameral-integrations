@@ -1433,7 +1433,30 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #58) implemented. Fixed the `OpenSSF Scorecard` gate `startup_failure` (the one red CI gate) by dropping the OIDC publish: `_reusable-scorecard.yml` `publish_results: true → false` and removed `id-token: write` from both the reusable job and the `scorecard.yml` caller; `security-events: write` + the `upload-sarif` step (code-scanning ingestion) retained, so the analysis signal is unchanged. BACKLOG **B6 closed** (root cause corrected from the wrong read-only-token theory); **B12 opened** for the SBOM OIDC twin (release-only). YAML re-validated locally (the blocking workflow-lint gate). **D4 is post-merge**: Scorecard runs only on push-to-`main`/schedule, so the green conclusion is observed AFTER merge via `gh run list`; the pre-authorized fallback (inline the canonical top-level Scorecard workflow) applies if it stays red. CodeQL alert **#17** (`py/incomplete-url-substring-sanitization`) is already fixed in code (commit `2a81142`) and auto-clears on the next CodeQL main-run this PR triggers. `mods/` (Codex) + connectors untouched (commit staged to the 2 workflow files + governance docs only). Chain verifies #1–#58.
 
+### Entry #60: CORRECTION + REMEDIATION (Scorecard gate — real root cause)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: DEBUG / REMEDIATE
+**Author**: Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(SHADOW_GENOME.md)
+= 12eadfa52d416006d931537bdba6ecab6705a238fad28f63080fe24d2ebdace0
+```
+
+**Previous Hash**: 9912cb5c3f4502193ff524455af743fd8dde9cca12bbe8b9574627380f5c6fec
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= d5af482626c1bc9f9356bce62a73b1d699090d4a762101b781315ff8f88fe7fe
+```
+
+**Decision**: **Entry #59 over-claimed.** Its fix (drop `id-token` + `publish_results: false`) passed an independent audit on circumstantial evidence but the **post-merge Scorecard run (headSha `61dbc07`) still `startup_failure`'d** — so #59's status line "All six CI gates green" was premature/false (D4 was post-merge and had not been observed). **Real root cause (found by running, then comparing to the passing CodeQL reusable):** `_reusable-scorecard.yml` declared top-level **`permissions: read-all`**, which exceeds the caller `scorecard.yml`'s grant (`contents: read` + `security-events: write`); GitHub rejects a reusable workflow requesting broader permissions than its caller → `startup_failure`. **Fix (this entry):** mirror the working `_reusable-codeql.yml` pattern — reusable top `permissions: contents: read`; job `contents: read` + `security-events: write` + `actions: read`; caller adds `actions: read`. The #59 id-token/publish change is retained (no public-badge need) but was not the cause. New lesson **SG-2026-06-04-O** (a reusable's `permissions:` must stay within the caller's grant; a CI gate is "green" only when an actual run is OBSERVED green — empirical verification outranks audit reasoning for infra). YAML re-validated. **D4 is post-merge** and this time is confirmed before any "green" claim; pre-authorized fallback if still red: inline the canonical top-level Scorecard workflow. Chain verifies #1–#59.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` + Scorecard gate fix SEALED at Entry #59 (`9912cb5c`; L2). **All six CI gates green** (Scorecard OIDC-publish dropped); CodeQL #17 stale-alert auto-clears on next scan. **4 Beta connectors**; 13 Prototype.*
-*Next required action: verify-wiring cycle (GitHub/Slack/Notion → Beta). Admin (you): branch protection on `main` closes Scorecard findings #13 (Code-Review) + #1 (Branch-Protection) (B5). Open: B8, B9, B10/B11, B12 (SBOM OIDC), bot #109 (Live).*
+*Status: `main` + Scorecard remediation at Entry #60 (`d5af4826`; L2). Scorecard fix v2 (reusable `read-all`→`contents: read`, mirror CodeQL); **green pending post-merge observation** (5/6 gates green meanwhile). CodeQL #17 stale-alert auto-clears on next scan. **4 Beta connectors**; 13 Prototype.*
+*Next required action: confirm Scorecard run green post-merge, then verify-wiring cycle (GitHub/Slack/Notion → Beta; plan VETO'd iter-1 — revise for the GitHub PR-envelope `number` unwrap + Notion prefix pin). Admin (you): branch protection on `main` closes Scorecard findings #13/#1 (B5). Open: B8, B9, B10/B11, B12 (SBOM OIDC), bot #109 (Live).*
