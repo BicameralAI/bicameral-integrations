@@ -548,6 +548,105 @@ SHA256(content_hash + previous_hash)
 **Decision**: Incorporated the externally-sourced product-agnostic integration strategy pack (`docs/externally-sourced/` → canonical `docs/`): **GOVERNED_ADAPTER_CONTRACT**, **TRUST_TIER_MODEL** (T0–T5), **DATA_CLASSIFICATION_AND_REDACTION** (Tier-2 policy), **INTEGRATION_CANDIDATE_CATALOG**, **INTEGRATION_DOCS_INDEX**, **INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING** (Tier-5 reference), and three ADRs renumbered to continue our sequence — **0008** (evidence-adapters-not-authorities), **0009** (trust-tiered-governance), **0010** (product-agnostic-harvesting), with H1 titles + cross-refs updated and the staging folder removed. **Connector canonical doc-links**: added a stable `references.md` to every connector folder (github, linear, google_drive, jira, granola, fathom, local_directory) linking the governed contract, trust-tier model, data-classification, the ADRs, and the docs-index provider links — decoupled from the (parallel-edited) README so links don't churn. **New connector folders** for the Phase-1 P0 "next integration criterion" (catalog §8) not yet present: **slack** (T2/T3, notify-first), **notion** (T1/T3), **sarif** (T0, static-import), **mcp_registry** (T1) — each scaffolded (README/references.md/auth.md/__init__/fixtures/tests) at the **Candidate** lifecycle stage (no `connector.py` yet). GOVERNANCE_INDEX updated (Tier 2 + Tier 5 + ADR range 0004..0010 + Meta-Ledger marker). Proportionate governance for L1/L2 doc incorporation of pre-authored, reviewed material (single seal entry; no new code paths). Governance gate verifies the #1–#22 chain. **Review Boundary HELD**.
 
 ---
+
+### Entry #23: RESEARCH BRIEF
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-connectors-phase1-2026-06-04.md)
+= 04959f4c9bfcd17fc48fd23005e8cd72e04eac1dbac7485cf2aa6238de39138c
+```
+
+**Previous Hash**: 26a6fef5efba44d08f456eb1b8ecc4f77f8ac50a1dba8419f157db33e6b0b702
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f40ae8c57621be92f0a62c42425daba9b523d96ff597503b8a37c31a2c03fb6c
+```
+
+**Decision**: Verified payload shapes for the four Phase-1 P0 candidate connectors (catalog §8) — **sarif** (T0, `runs[].results[]`), **slack** (T2 read surface, message/event-callback), **notion** (T1, page title-property), **mcp_registry** (T1, server.json). All reduce to read-only `parse_*(payload) -> Observation` → `pipeline.normalize()` with zero contract change (github precedent); live network/auth/webhook-verify/Slack-notify DEFERRED. Producer sensitive screen (`FX-SEC-001`) guards SARIF/Slack secret/PII; fixtures synthetic. 0 blocking gaps, no DRIFT → `/qor-plan` at L2. SHADOW_GENOME **SG-2026-06-04-F**. Gate: `.qor/gates/connectors-phase1-2026-06-04/research.json`.
+
+---
+
+### Entry #24: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-connectors-phase1-2026-06-04.md)
+= e5ccffdb914532e2be9af240a004ec09039be060cb72600aa6d132076d4667cc
+```
+
+**Previous Hash**: f40ae8c57621be92f0a62c42425daba9b523d96ff597503b8a37c31a2c03fb6c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 38fcaf7b06d93eca70932d4205ccc72dffbe775aadc3585a508510d9a9664b34
+```
+
+**Verdict**: **VETO** (iteration 1). Grounding (4 payload shapes trace to research F1–F4), contract fit (read-only parse→normalize, no writes), SARIF result fan-out + count assertion, trust tiers (sarif T0/slack T2/notion+mcp T1), fixture safety, and scope all PASS. **Dispositive finding (specification-drift + coverage-gap):** the Slack excerpt fallback was left as undecided prose ("`(no text)`-style → such as the ts") rather than a pinned expression, and the Slack test matrix lacked an empty-text fallback test. Slack `message` events with empty `text` are routine (system messages, `message_changed`/`deleted` subtypes, join/leave) → blank excerpt → `validate_emissions` raises `EmissionContractError("evidence_excerpt_blank")` (whitespace-stripped) → crashes the `normalize()` batch. The other three connectors resolve this with concrete fallbacks (ruleId/id/name). All plan-text → `/qor-plan`. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+---
+
+### Entry #25: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-connectors-phase1-2026-06-04.md)
+= 57e807d7db6217d766242a097ead744c10404f09f364875df8ae55d611ed04cb
+```
+
+**Previous Hash**: 38fcaf7b06d93eca70932d4205ccc72dffbe775aadc3585a508510d9a9664b34
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 03761173e863913d0c502e5a895a87c2770b534c77bf67f9f5c3d67c8fdad080
+```
+
+**Verdict**: **PASS** (iteration 2). The iter-1 Slack finding is CLOSED: excerpt is now a pinned `.strip()`-non-empty expression `(msg.get("text") or "").strip() or f"(no text) {channel}:{ts}"` (the static prefix survives `.strip()`, closing the `evidence_excerpt_blank` path at `pipeline.py:39`), with `test_parse_message_falls_back_when_text_empty` added. No regression — sarif/notion/mcp_registry fallbacks (ruleId/id/name) were already clean; scope + contract unchanged. Cleared to `/qor-implement`. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+### Entry #26: SESSION SEAL (local — implementation + documentation)
+
+**Entry ID**: `c0nn3ctph1s1`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement + document)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 98449e089ef70e0056f5185df16a6c7a23bf2ae83d92eb20ddc3d9ddf2a9a2fe
+```
+
+**Previous Hash**: 03761173e863913d0c502e5a895a87c2770b534c77bf67f9f5c3d67c8fdad080
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f5b10cb6e924f266584350f4f16cba370ddc358215e1aaab5f213adbd5509939
+```
+
+**Decision**: PASS-audit (Entry #25, iter 2) implemented + substantiated. Built the **4 Phase-1 P0 parse surfaces** exactly per `plan-connectors-phase1-2026-06-04.md`, each `parse_*(payload) -> Observation` → `pipeline.normalize()`, read-only (ADR-0008), live network/auth/webhook-verify deferred to `auth.md`: **sarif** (`parse_sarif`/`parse_result`, one Observation per `runs[].results[]`, PASSIVE, T0), **slack** (`parse_message`, `event_callback` + edit-subtype unwrap, WEBHOOK, T2), **notion** (`parse_page` via `type=="title"` property, ACTIVE+WEBHOOK, T1), **mcp_registry** (`parse_server`, ACTIVE, T1) — each with synthetic fixture + behavioral tests; READMEs flipped Candidate→Prototype; `__init__` re-exports. **Independent review** (objective observer + devil's advocate): observer Reality==Promise CONFIRMED; devil's advocate found **1 blocker + 4 non-blocking, all fixed** — **BLOCKER** Notion untitled+no-id page produced a blank excerpt → `evidence_excerpt_blank` crash (added terminal `"notion-page"` literal + both-empty test, matching SARIF `"sarif-result"`/MCP `"mcp-server"` floors); **HIGH** Slack empty-`event` envelope leaked envelope type (explicit `event`-dict unwrap) and `message_changed` dropped edited text (nested-`message` extraction); **MED** added terminal-floor tests for sarif/notion/mcp + slack subtype/empty-envelope. SHADOW_GENOME **SG-2026-06-04-G** (excerpt fallbacks need a terminal literal, not just a better-field). **Documentation pass** (`/qor-document`, operator-requested): standardized all repo READMEs to the `Modes`/`Surface`/`References` house style, removed the stale "not yet implemented" scaffold prose from the 4 implemented connectors + their `__init__` docstrings, polished github (bare→full), kept jira honest as Candidate, added connector + mod index tables, corrected the root README's `adapters/` layout + test command. **Verification**: pytest **119 passed** (adapter/core + connectors), ruff + mypy clean (59 files), governance gate verifies the #1–#26 chain, all README links resolve, secret scan clean. FEATURE_INDEX **FX-SARIF/SLACK/NOTION/MCPREG-001** Verified (19 total). **Review Boundary**: operator authorized commit/push/PR for this cycle ("professional output expected before commit, push, PR").
+
+---
 *Chain integrity: VALID*
-*Status: `integration-strategy-docs-2026-06-04` substantiated at the local Review Boundary (Entry #22, `26a6fef5`, L2), branched off `main` (post-#6). Strategy pack canonical; 11 connector folders (7 implemented/port + jira scaffold + slack/notion/sarif/mcp_registry candidates); every connector folder carries `references.md`.*
-*Next required action: PR this (off main) in stealth. Pending stack: #9 (reusable refactor) + #10 (AGT doc) still need rebase onto the advanced main (their ledger entries renumber on rebase — this seal took #22). Then implement the Phase-1 candidate connectors (slack/notion/sarif/mcp_registry) as governed cycles.*
+*Status: `connectors-phase1-2026-06-04` SEALED (Entry #26, `f5b10cb6`; L2). 4 parse surfaces implemented + reviewed + documented; 119 tests green.*
+*Next required action: stealth commit (per-connector split) + push + PR for `feat/connectors-phase1`; then evaluate Continue + Aider as next candidate connectors (operator request).*

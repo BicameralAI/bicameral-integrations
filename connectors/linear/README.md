@@ -19,3 +19,8 @@ the parse surface only.
   `title` → title; `description` → excerpt; `actor.name` → author; `createdAt`
   → timestamp; `action`/`type`/`organizationId` → `metadata`).
 - `LinearConnector` — connector identity and capabilities (`WEBHOOK`, `ACTIVE`).
+
+## References
+
+- Canonical documentation: [references.md](references.md)
+- Auth model (deferred): [auth.md](auth.md)

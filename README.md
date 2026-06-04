@@ -31,10 +31,12 @@ local daemon governance + review + storage adapter
 ## Repository Layout
 
 ```text
-├── adapters/                # Source adapters, added as implementation lands
-├── mods/                    # EM-safe mod examples and fixtures
-├── docs/adr/                # Integration-specific architecture decisions
-├── CONTEXT.md               # Project glossary and resolved terms
+├── adapter/                 # Universal adapter: neutral object model + normalization pipeline
+│   └── core/                # Shared contracts (Observation, AdapterEmission, capabilities)
+├── connectors/              # Provider-facing parse surfaces (one folder per source)
+├── mods/                    # EM-safe advisory mods and fixtures
+├── docs/                    # Governance artifacts, ADRs, integration strategy, compliance mappings
+├── scripts/                 # Governance gate and CI helper scripts
 └── README.md                # You are here
 ```
 
@@ -51,7 +53,14 @@ Mods may emit candidates, evidence, hints, dependency signals, advisories, and s
 ## Testing
 
 ```bash
-pytest -v tests/
+pytest -q adapter/core/tests connectors
+```
+
+Governance integrity (ledger hash-chain + feature-index test paths) is verified
+separately and in CI:
+
+```bash
+python scripts/governance_gate.py
 ```
 
 ## Project Governance

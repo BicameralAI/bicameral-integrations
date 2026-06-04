@@ -16,3 +16,8 @@ the operator runtime (see `auth.md`); this connector is the parse surface only.
   (`transcript_text` → excerpt with title fallback; first participant → author;
   `ended_at` → timestamp; `id` → ref).
 - `GranolaConnector` — connector identity and capabilities (`PASSIVE`).
+
+## References
+
+- Canonical documentation: [references.md](references.md)
+- Auth model (deferred): [auth.md](auth.md)
