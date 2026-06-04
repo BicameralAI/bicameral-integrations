@@ -1,0 +1,20 @@
+{
+  "event": {
+    "id": "01EXAMPLE0EVENT",
+    "event_type": "incident.triggered",
+    "resource_type": "incident",
+    "occurred_at": "2026-06-03T18:45:00Z",
+    "agent": {"type": "user_reference", "id": "PUSER1"},
+    "data": {
+      "id": "PINC123",
+      "type": "incident",
+      "number": 42,
+      "status": "triggered",
+      "title": "Checkout latency p99 above SLO",
+      "urgency": "high",
+      "html_url": "https://example.pagerduty.com/incidents/PINC123",
+      "created_at": "2026-06-03T18:45:00Z",
+      "service": {"id": "PSVC9", "summary": "Checkout API"}
+    }
+  }
+}
