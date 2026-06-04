@@ -1,21 +1,28 @@
 # MCP Registry Connector
 
-Provider-facing MCP Registry adapter. **Status: Candidate** (catalog mcp/agent-ecosystem, priority P0, default trust tier T1).
+Provider-facing MCP Registry adapter. **Status: Prototype** (catalog
+mcp/agent-ecosystem, priority P0, default trust tier T1). A Phase-1 foundation
+candidate from the
+[Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 
-This folder is scaffolded per the Bicameral integration lifecycle; the parse
-surface (`connector.py`) is not yet implemented. It is a Phase-1 foundation
-candidate from the [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
+## Modes
 
-## Intended role
+- **Active** — an MCP Registry `server.json` entry maps to one neutral
+  `Observation` (`parse_server`). Read-only evidence for scoring and allowlist
+  decisions; no canonical-state writes (ADR-0008).
 
-read-only scoring/allowlist — emits provider-neutral `adapter.core` Observations to `pipeline.normalize()`; no canonical-state writes (evidence adapter, not state authority — ADR-0008).
+The live registry-fetch path is deferred this cycle (see [`auth.md`](auth.md));
+this connector is the parse surface only.
+
+## Surface
+
+- `parse_server(entry)` — registry `server.json` entry → `Observation`
+  (`title` or `name` → title; `description` → excerpt, with title/name then a
+  `mcp-server` literal as terminal fallback; `name` → ref; `repository.url` or
+  `websiteUrl` → ref url; `version`/`repository.source` → `metadata`).
+- `McpRegistryConnector` — connector identity and capabilities (`ACTIVE`).
 
 ## References
 
-- Canonical doc links: [references.md](references.md)
+- Canonical documentation: [references.md](references.md)
 - Auth model (deferred): [auth.md](auth.md)
-
-## Connectors
-
-- [Connectors](../README.md)
-- [Adapter Core](../../adapter/core/README.md)

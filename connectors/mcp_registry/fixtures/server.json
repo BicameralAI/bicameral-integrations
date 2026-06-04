@@ -1,0 +1,10 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.example/postgres-mcp",
+  "title": "Postgres MCP Server",
+  "description": "Read-only Postgres inspection MCP server exposing schema and query tools.",
+  "version": "0.3.1",
+  "repository": {"url": "https://github.com/example/postgres-mcp", "source": "github", "id": "example/postgres-mcp"},
+  "websiteUrl": "https://example.com/postgres-mcp",
+  "packages": [{"registryType": "pypi", "identifier": "postgres-mcp"}]
+}
