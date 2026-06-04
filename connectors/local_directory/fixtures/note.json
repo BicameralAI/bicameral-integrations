@@ -1,0 +1,5 @@
+{
+  "path": "decisions/2026-06-01-event-store.md",
+  "content": "# Event store\n\nDecision: the durable event store substrate is Postgres; the ledger view is a read model rebuilt by replay.",
+  "modified": "2026-06-01T09:30:00Z"
+}

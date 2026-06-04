@@ -1,0 +1,36 @@
+{
+  "documentId": "1AbcDEFghIJKlmNOpqRStuVWxyz0123456789ABCDEF",
+  "title": "Event Store Substrate Decision",
+  "body": {
+    "content": [
+      {
+        "paragraph": {
+          "paragraphStyle": {"namedStyleType": "HEADING_1"},
+          "elements": [{"textRun": {"content": "Event Store Substrate Decision\n"}}]
+        }
+      },
+      {
+        "paragraph": {
+          "paragraphStyle": {"namedStyleType": "NORMAL_TEXT"},
+          "elements": [
+            {"textRun": {"content": "We will adopt Postgres as the durable "}},
+            {"textRun": {"content": "event store substrate.\n"}}
+          ]
+        }
+      },
+      {
+        "table": {
+          "tableRows": [
+            {
+              "tableCells": [
+                {"content": [{"paragraph": {"elements": [{"textRun": {"content": "Option\n"}}]}}]},
+                {"content": [{"paragraph": {"elements": [{"textRun": {"content": "Postgres\n"}}]}}]}
+              ]
+            }
+          ]
+        }
+      },
+      {"sectionBreak": {}}
+    ]
+  }
+}

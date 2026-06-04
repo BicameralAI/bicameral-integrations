@@ -1,0 +1,14 @@
+{
+  "secret": "whsec_dGVzdC1zZWNyZXQtZm9yLWZhdGhvbS13ZWJob29rcw==",
+  "webhook_id": "msg_fathom_77",
+  "webhook_timestamp": 1780000000,
+  "body": {
+    "recording_id": 884412,
+    "meeting_title": "Decide retention window for transcripts",
+    "recording_end_time": "2026-06-03T17:00:00Z",
+    "recorded_by": {"name": "Dana Lee", "email": "dana.lee@example.com"},
+    "transcript": [
+      {"speaker": {"display_name": "Dana Lee"}, "text": "Set transcript retention to 90 days.", "timestamp": "00:02:10"}
+    ]
+  }
+}

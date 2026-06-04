@@ -1,0 +1,22 @@
+{
+  "action": "create",
+  "type": "Issue",
+  "actor": {"id": "usr_7f3a", "type": "user", "name": "Jordan Park"},
+  "createdAt": "2026-06-02T18:42:11.000Z",
+  "data": {
+    "id": "b1e2c3d4-5678-49ab-9cde-0123456789ab",
+    "identifier": "PLAT-204",
+    "title": "Adopt Postgres advisory locks for the watermark cursor",
+    "description": "Decision: use Postgres advisory locks to serialize watermark advancement across pollers; avoids the double-ingest race.",
+    "priority": 2,
+    "state": "Todo",
+    "team": {"id": "team_plat", "name": "Platform"},
+    "assignee": {"id": "usr_9c1b", "name": "Robin Vale"},
+    "url": "https://linear.app/acme/issue/PLAT-204"
+  },
+  "url": "https://linear.app/acme/issue/PLAT-204",
+  "updatedFrom": {},
+  "webhookId": "wh_22aa",
+  "webhookTimestamp": 1780000000000,
+  "organizationId": "org_acme"
+}
