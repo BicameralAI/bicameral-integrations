@@ -1,21 +1,30 @@
 # Notion Connector
 
-Provider-facing Notion adapter. **Status: Candidate** (catalog docs, priority P0, default trust tier T1/T3).
+Provider-facing Notion adapter. **Status: Prototype** (catalog docs, priority
+P0, default trust tier T1/T3). A Phase-1 foundation candidate from the
+[Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 
-This folder is scaffolded per the Bicameral integration lifecycle; the parse
-surface (`connector.py`) is not yet implemented. It is a Phase-1 foundation
-candidate from the [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
+## Modes
 
-## Intended role
+- **Active** — a Notion page object maps to one neutral `Observation`
+  (`parse_page`). No canonical-state writes — this is an evidence adapter, not a
+  state authority (ADR-0008).
+- **Webhook** — page-change events carry a page object of the same shape and
+  parse through the same surface.
 
-evidence + event — emits provider-neutral `adapter.core` Observations to `pipeline.normalize()`; no canonical-state writes (evidence adapter, not state authority — ADR-0008).
+The live Notion API fetch, block-content retrieval, and OAuth credential
+resolution are deferred this cycle (see [`auth.md`](auth.md)); this connector is
+the parse surface only.
+
+## Surface
+
+- `parse_page(page)` — Notion page → `Observation` (title read from the property
+  whose `type == "title"`, joining its `plain_text` runs, with `id` then a
+  `notion-page` literal as terminal fallback; title → excerpt; `url` → ref url;
+  `created_by.id` → author; `last_edited_time`/`created_time` → timestamp).
+- `NotionConnector` — connector identity and capabilities (`ACTIVE`, `WEBHOOK`).
 
 ## References
 
-- Canonical doc links: [references.md](references.md)
+- Canonical documentation: [references.md](references.md)
 - Auth model (deferred): [auth.md](auth.md)
-
-## Connectors
-
-- [Connectors](../README.md)
-- [Adapter Core](../../adapter/core/README.md)
