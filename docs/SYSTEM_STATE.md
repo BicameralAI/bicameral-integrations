@@ -8,7 +8,7 @@
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
 | **Phase** | `main` + **Beta cohort** (ADR-0012) — Fathom/Sentry/PagerDuty promoted to Beta via the `runtime/` harness; **4 Beta connectors** (incl. Linear), zero cross-repo dep; docs refreshed each cycle close |
 | **Iteration** | 17 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; security-queue remediation; Phase-2 connectors OSV/Sentry/PagerDuty; Claude Code; Jira; phantom-blocker correction; go-live runtime boundary + Linear→Beta; **Beta cohort Fathom/Sentry/PagerDuty**) |
-| **Session Seal** | `8e5f6d1e` (META_LEDGER Entry #55 chain hash) |
+| **Session Seal** | `9912cb5c` (META_LEDGER Entry #59 chain hash) |
 
 ---
 
@@ -135,11 +135,11 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #55 (`8e5f6d1e`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #59 (`9912cb5c`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs + badges current |
 | Section 4 Compliance | PASS | 0 violations |
 | Test Status | PASS | 216 passing; ruff + mypy clean (92 files) |
-| CI Gates | GREEN (on `main`) | governance-integrity + CodeQL/Bandit/dep-review/Scorecard/SBOM/quality/PR-hygiene + TruffleHog; SHA-pinned; reusable `workflow_call` templates; all PRs merged + CI-verified |
+| CI Gates | GREEN (on `main`) | CI + CodeQL + Governance Gate + Quality + Security Scan + **OpenSSF Scorecard** (B6 fixed 2026-06-04: dropped the OIDC `publish_results` that caused `startup_failure`; analysis + SARIF→code-scanning retained); Bandit/dep-review/PR-hygiene/TruffleHog; SHA-pinned; reusable `workflow_call` templates. SBOM gate carries a latent OIDC twin (B12), runs only on release. |
 
 ---
 
