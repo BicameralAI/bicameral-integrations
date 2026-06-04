@@ -17,8 +17,64 @@ from adapter.core.webhook_security import (
     WebhookVerificationError,
     verify_hmac_hex,
     verify_hmac_hex_multi,
+    verify_slack_signature,
     verify_standard_webhook,
 )
+
+_SLACK_SECRET = "slack-signing-secret"
+_SLACK_TS = "1700000000"
+
+
+def _slack_sig(secret: str, ts: str, body: bytes) -> str:
+    base = b"v0:" + ts.encode() + b":" + body
+    return "v0=" + hmac.new(secret.encode(), base, hashlib.sha256).hexdigest()
+
+
+def test_slack_signature_accepts_valid():
+    body = b'{"event":1}'
+    sig = _slack_sig(_SLACK_SECRET, _SLACK_TS, body)
+    verify_slack_signature(
+        signature=sig, timestamp=_SLACK_TS, body=body, secret=_SLACK_SECRET, now=float(_SLACK_TS)
+    )
+
+
+def test_slack_signature_rejects_tampered_body():
+    body = b'{"event":1}'
+    sig = _slack_sig(_SLACK_SECRET, _SLACK_TS, body)
+    with pytest.raises(WebhookVerificationError):
+        verify_slack_signature(
+            signature=sig, timestamp=_SLACK_TS, body=body + b" ",
+            secret=_SLACK_SECRET, now=float(_SLACK_TS),
+        )
+
+
+def test_slack_signature_rejects_stale_timestamp():
+    body = b'{"event":1}'
+    sig = _slack_sig(_SLACK_SECRET, _SLACK_TS, body)
+    with pytest.raises(WebhookVerificationError):
+        verify_slack_signature(
+            signature=sig, timestamp=_SLACK_TS, body=body,
+            secret=_SLACK_SECRET, now=float(_SLACK_TS) + 1000,
+        )
+
+
+def test_slack_signature_rejects_non_numeric_timestamp():
+    with pytest.raises(WebhookVerificationError):
+        verify_slack_signature(
+            signature="v0=deadbeef", timestamp="not-a-number", body=b"{}",
+            secret=_SLACK_SECRET, now=0.0,
+        )
+
+
+def test_slack_signature_rejects_missing_secret_sig_or_timestamp():
+    body = b'{"event":1}'
+    for kwargs in (
+        {"signature": "v0=x", "timestamp": _SLACK_TS, "secret": ""},
+        {"signature": None, "timestamp": _SLACK_TS, "secret": _SLACK_SECRET},
+        {"signature": "v0=x", "timestamp": None, "secret": _SLACK_SECRET},
+    ):
+        with pytest.raises(WebhookVerificationError):
+            verify_slack_signature(body=body, now=float(_SLACK_TS), **kwargs)
 
 
 def _pd_sig(secret: str, body: bytes) -> str:

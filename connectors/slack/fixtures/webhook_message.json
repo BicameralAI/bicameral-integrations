@@ -1,0 +1,12 @@
+{
+  "type": "event_callback",
+  "event_id": "Ev0EXAMPLE01",
+  "team_id": "T0EXAMPLE",
+  "event": {
+    "type": "message",
+    "channel": "C0EXAMPLE",
+    "user": "U0EXAMPLE",
+    "ts": "1700000000.000100",
+    "text": "Deploying v0.3 to staging now."
+  }
+}

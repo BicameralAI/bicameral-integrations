@@ -1456,7 +1456,56 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: **Entry #59 over-claimed.** Its fix (drop `id-token` + `publish_results: false`) passed an independent audit on circumstantial evidence but the **post-merge Scorecard run (headSha `61dbc07`) still `startup_failure`'d** — so #59's status line "All six CI gates green" was premature/false (D4 was post-merge and had not been observed). **Real root cause (found by running, then comparing to the passing CodeQL reusable):** `_reusable-scorecard.yml` declared top-level **`permissions: read-all`**, which exceeds the caller `scorecard.yml`'s grant (`contents: read` + `security-events: write`); GitHub rejects a reusable workflow requesting broader permissions than its caller → `startup_failure`. **Fix (this entry):** mirror the working `_reusable-codeql.yml` pattern — reusable top `permissions: contents: read`; job `contents: read` + `security-events: write` + `actions: read`; caller adds `actions: read`. The #59 id-token/publish change is retained (no public-badge need) but was not the cause. New lesson **SG-2026-06-04-O** (a reusable's `permissions:` must stay within the caller's grant; a CI gate is "green" only when an actual run is OBSERVED green — empirical verification outranks audit reasoning for infra). YAML re-validated. **D4 is post-merge** and this time is confirmed before any "green" claim; pre-authorized fallback if still red: inline the canonical top-level Scorecard workflow. Chain verifies #1–#59.
 
+### Entry #61: GATE TRIBUNAL (webhook verify-wiring — GitHub/Slack/Notion)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent security-engineer — Option B, fresh context)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(plan-webhook-verify-cohort-2026-06-04.md)
+= 0e56b30796006cfe2f8459d609eb49070269a127c930c942127a48487244c6b9
+```
+
+**Previous Hash**: d5af482626c1bc9f9356bce62a73b1d699090d4a762101b781315ff8f88fe7fe
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= aecd65e6290a3ed15933825118154f386f03f914ea605f76220982ce2e8dfcef
+```
+
+**Verdict**: **PASS** (iteration 2). L3 (signature-verification — fail-open risk). **Iteration 1 VETO** (2 blockers): (1) the GitHub PR-webhook is an envelope — `number` is at the top level, PR fields under `pull_request` — and a naive unwrap would drop `number`; the existing flat fixture hid it (green-over-wrong-shape trap); (2) Notion "robust to both prefix forms" should pin the documented `sha256=` form. Both folded into iter-2: GitHub `normalize_event` rebuilds the flat PR object via `dict(payload["pull_request"])` + `setdefault("number", payload.get("number"))` (isinstance-guarded) and the test asserts `ref == "example-org/example-repo#92"` against a REAL envelope fixture; Notion REQUIRES + strips `sha256=` (bare hex rejected, tested). Re-audit confirmed: schemes correct (GitHub `X-Hub-Signature-256` sha256= hex HMAC; Slack `v0:{ts}:{raw_body}` basestring over the RAW timestamp string + 300 s window; Notion HMAC over raw body with verification token); `verify_slack_signature` fail-closed list complete + constant-time; verify-before-parse, [] on reject, dedup-after-verify; `parse_*` unchanged; secrets injected; `mods/` untouched. Cleared to `/qor-implement`.
+
+---
+
+### Entry #62: SESSION SEAL (webhook verify-wiring — GitHub/Slack/Notion → Beta)
+
+**Entry ID**: `verifyW1r3d7`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= afd00e549ef56003002ffac1874d71d7bc2be73bcbb8c00d9823c6badf707046
+```
+
+**Previous Hash**: aecd65e6290a3ed15933825118154f386f03f914ea605f76220982ce2e8dfcef
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f693bb08776fca66dc7fd20e4f462a88e5e77ac5e38d034eebd023862e09481b
+```
+
+**Decision**: PASS-audit (Entry #61) implemented + substantiated. Wired webhook signature verification into **GitHub, Slack, Notion** and promoted them to **Beta** — **7 Beta connectors** total. New provider-neutral primitive **`verify_slack_signature`** (FX-WHSEC-002 — `v0:{ts}:{raw_body}` HMAC, 300 s replay, fail-closed). Per-connector `verify()`/`normalize_event()` (FX-GH-002 with the PR-envelope `number` unwrap; FX-SLACK-002 with the `url_verification` handshake → `[]`; FX-NOTION-002 prefix-pinned). Real-envelope + signed fixtures; behavioral tests (signed→1, bad-sig→0, missing-header→0, dedup; GitHub ref-equality; Slack stale + tamper-fresh-ts; Notion no-prefix→False); runtime-harness Beta proofs for all three. **No parse-surface change** (the audited scope); readiness flips on each `references.md`/`README.md` + the `connectors/README.md` index; FEATURE_INDEX 36 (FX-WHSEC-002/FX-GH-002/FX-SLACK-002/FX-NOTION-002 + broadened FX-RUNTIME-001). **Main README** rewritten with the full active-connector index + planned-mods index + a documentation map (operator request). **Independent review** (observer + devil's advocate, fresh-context): observer **PASS** (D1–D4, parse_* unchanged, `mods/` untouched); devil's advocate **0 blocking / no fail-open** (full forgery matrix fails closed) — two sub-bar findings deferred to BACKLOG **B14** (parse_* non-dict nested-field hardening — needs a valid sig, not fail-open) + the Notion case-insensitive-prefix note (consistent with GitHub/Jira). **Verification**: pytest **246 passed**, ruff + mypy clean (95 files), governance gate verifies #1–#61. SHADOW_GENOME SG-2026-06-04-A/B reinforced (per-provider signature divergence; fail-closed). Docs refreshed; `mods/` left to Codex.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` + Scorecard remediation at Entry #60 (`d5af4826`; L2). Scorecard fix v2 (reusable `read-all`→`contents: read`, mirror CodeQL); **green pending post-merge observation** (5/6 gates green meanwhile). CodeQL #17 stale-alert auto-clears on next scan. **4 Beta connectors**; 13 Prototype.*
-*Next required action: confirm Scorecard run green post-merge, then verify-wiring cycle (GitHub/Slack/Notion → Beta; plan VETO'd iter-1 — revise for the GitHub PR-envelope `number` unwrap + Notion prefix pin). Admin (you): branch protection on `main` closes Scorecard findings #13/#1 (B5). Open: B8, B9, B10/B11, B12 (SBOM OIDC), bot #109 (Live).*
+*Status: `main` + verify-wiring cohort SEALED at Entry #62 (`f693bb08`; L3). **7 Beta connectors** — linear, fathom, sentry, pagerduty, github, slack, notion (all verify-wired, harness-proven); 10 Prototype. **All six CI gates green** (Scorecard confirmed green run 26980983204).*
+*Next required action: Scorecard Token-Permissions hardening (B13) — agreed next; then Zendesk/ServiceNow/ChurnZero/Gainsight CS/support connector evaluation. Admin (you): branch protection (B5) closes Scorecard #13/#1. Open: B8, B9, B10/B11, B12, B14, bot #109 (Live).*

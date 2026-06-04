@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-04 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | `main` + **Beta cohort** (ADR-0012) — Fathom/Sentry/PagerDuty promoted to Beta via the `runtime/` harness; **4 Beta connectors** (incl. Linear), zero cross-repo dep; docs refreshed each cycle close |
-| **Iteration** | 17 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; security-queue remediation; Phase-2 connectors OSV/Sentry/PagerDuty; Claude Code; Jira; phantom-blocker correction; go-live runtime boundary + Linear→Beta; **Beta cohort Fathom/Sentry/PagerDuty**) |
-| **Session Seal** | `d5af4826` (META_LEDGER Entry #60 chain hash) |
+| **Phase** | `main` + **webhook verify-wiring cohort** — GitHub/Slack/Notion gained signature verification and were promoted to Beta via the `runtime/` harness; **7 Beta connectors**, zero cross-repo dep; docs refreshed each cycle close |
+| **Iteration** | 19 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; security-queue remediation; Phase-2 connectors OSV/Sentry/PagerDuty; Claude Code; Jira; phantom-blocker correction; go-live runtime boundary + Linear→Beta; Beta cohort Fathom/Sentry/PagerDuty; Scorecard CI gate green (2 iter); **webhook verify-wiring GitHub/Slack/Notion→Beta**) |
+| **Session Seal** | `f693bb08` (META_LEDGER Entry #62 chain hash) |
 
 ---
 
@@ -57,11 +57,11 @@ bicameral-integrations/
 | Metric | Value |
 |--------|-------|
 | Source connector packages (with `connector.py`) | 17 (github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) — no Candidates left |
-| Readiness ladder (ADR-0012) | **Beta**: linear, fathom, sentry, pagerduty (4 — all verify-wired, proven end-to-end via the runtime harness) · **Prototype**: 13 · **Live**: 0 (gated on bot #109) |
+| Readiness ladder (ADR-0012) | **Beta**: linear, fathom, sentry, pagerduty, github, slack, notion (7 — verify-wired, proven end-to-end via the runtime harness) · **Prototype**: 10 · **Live**: 0 (gated on bot #109) |
 | Runtime boundary | `runtime/` library layer (sinks + secrets + delivery); GatewaySink #109-gated stub |
-| Total Test Files | 23 (adapter/core + connectors + runtime + scripts) |
-| Pytest | 216 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
-| Webhook verify wired | fathom, linear, sentry, pagerduty, jira (Svix/HMAC/multi-sig/sha256= + dedup, fail-closed) |
+| Total Test Files | 26 (adapter/core + connectors + runtime + scripts) |
+| Pytest | 246 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
+| Webhook verify wired | fathom, linear, sentry, pagerduty, jira, github, slack, notion (Svix/HMAC/multi-sig/sha256=/v0 + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
 | Section 4 Violations | 0 (continue_dev 67 lines, aider 73 lines; fns ≤18, nesting ≤2) |
@@ -125,7 +125,10 @@ bicameral-integrations/
 | PagerDuty connector | connectors/pagerduty/tests/test_pagerduty_connector.py | OK |
 | Claude Code connector | connectors/claude_code/tests/test_claude_code_connector.py | OK |
 | Jira connector | connectors/jira/tests/test_jira_connector.py | OK |
-| Runtime boundary (sinks/delivery/secrets; linear/fathom/sentry/pagerduty Beta end-to-end + OSV poll + missing-header fail-closed) | runtime/tests/test_runtime.py | OK (14) |
+| Runtime boundary (7 Beta connectors end-to-end + OSV poll + missing-header fail-closed) | runtime/tests/test_runtime.py | OK (20) |
+| GitHub webhook verify/dedup (envelope unwrap) | connectors/github/tests/test_github_webhook.py | OK (6) |
+| Slack webhook verify/dedup (v0 + replay) | connectors/slack/tests/test_slack_webhook.py | OK (7) |
+| Notion webhook verify/dedup (sha256= pinned) | connectors/notion/tests/test_notion_webhook.py | OK (6) |
 | Governance gate (chain + feature-index + `--repo-root`) | scripts/tests/test_governance_gate.py | OK |
 | License-header scan | scripts/tests/test_check_license_headers.py | OK |
 
@@ -135,11 +138,11 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #60 (`d5af4826`); machine-verified by `scripts/governance_gate.py` |
-| Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs + badges current |
+| Ledger Chain | VALID | through Entry #62 (`f693bb08`); machine-verified by `scripts/governance_gate.py` |
+| Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs (main README connector+mod index refreshed) + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 216 passing; ruff + mypy clean (92 files) |
-| CI Gates | 5/6 green; **Scorecard fix v2 verification post-merge** | CI + CodeQL + Governance Gate + Quality + Security Scan green. **OpenSSF Scorecard** (B6): `startup_failure` root cause was the reusable's top-level `permissions: read-all` exceeding the caller's grant (SG-2026-06-04-O — the first id-token/publish fix was insufficient; Entry #59 over-claimed "green"). v2 mirrors the working CodeQL permission pattern; green is confirmed by the post-merge push run (D4). SBOM gate carries a latent OIDC twin (B12), release-only. SHA-pinned; reusable `workflow_call` templates. |
+| Test Status | PASS | 246 passing; ruff + mypy clean (95 files) |
+| CI Gates | **6/6 green** (verified) | CI + CodeQL + Governance Gate + Quality + Security Scan + **OpenSSF Scorecard** all `success` on `main` (Scorecard green confirmed by run `26980983204` after the B6 v2 permission fix — SG-2026-06-04-O). Now that Scorecard runs, the Security tab surfaces its true posture: Token-Permissions findings (#21-24, follow-up B13) + Pinned-Dependencies (#18-20, accepted disposition); branch protection (#13/#1) needs repo-admin (B5). SBOM gate carries a latent OIDC twin (B12), release-only. SHA-pinned; reusable `workflow_call` templates. |
 
 ---
 
@@ -153,7 +156,8 @@ bicameral-integrations/
 - [x] **Phase-2 webhook hardening** Sentry + PagerDuty verify/dedup wired (FX-SENTRY-002/FX-PAGERDUTY-002); **Claude Code** (FX-CLAUDECODE-001) + **Jira** (FX-JIRA-001) connectors built — 17 connectors, no Candidates left.
 - [x] **Go-live runtime boundary** (ADR-0012) shipped: `runtime/` library layer (sinks/secrets/delivery, GatewaySink #109-gated stub) + **Linear → Beta** end-to-end (Entry #55, FX-RUNTIME-001).
 - [x] **Beta cohort promoted**: Fathom (Svix) + Sentry (HMAC) + PagerDuty (multi-sig membership) proven end-to-end via the `runtime/` harness — **4 Beta connectors** (incl. Linear), zero cross-repo dep.
-- [ ] **Promote further to Beta (next)**: GitHub (active+webhook — needs verify wiring first), then Live-stage prep when bot #109 lands.
+- [x] **GitHub/Slack/Notion verify-wired → Beta** (`verify_slack_signature` primitive + per-connector `verify()`/`normalize_event()`; harness-proven). **7 Beta connectors.**
+- [ ] **Next**: Scorecard Token-Permissions hardening (B13); then Zendesk/ServiceNow/ChurnZero/Gainsight CS/support evaluation; Live-stage prep when bot #109 lands.
 - [ ] **Connector build-out (next)**: GitHub Copilot / Cursor / OpenAI-Anthropic Admin (P1 read APIs) — from the value-add shortlist; B9 Devin (P1).
 - [ ] `mods/` structure is under active build by **Codex** — not edited by this (connector/hardening) track.
 - [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).

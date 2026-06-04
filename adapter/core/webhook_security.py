@@ -123,6 +123,44 @@ def verify_hmac_hex_multi(*, header_sig: str | None, body: bytes, secret: str) -
         raise WebhookVerificationError("no matching signature")
 
 
+def verify_slack_signature(
+    *,
+    signature: str | None,
+    timestamp: str | None,
+    body: bytes,
+    secret: str,
+    now: float | None = None,
+    tolerance_s: int = 300,
+) -> None:
+    """Verify a Slack ``v0`` request signature, or raise ``WebhookVerificationError``.
+
+    Slack signs the basestring ``v0:{timestamp}:{raw_body}`` with the signing
+    secret (hex HMAC-SHA256) and sends ``X-Slack-Signature: v0=<hex>`` plus
+    ``X-Slack-Request-Timestamp``. The basestring uses the RAW received timestamp
+    string (not a re-stringified int) so a canonical-but-unusual value can never
+    fail-closed on a valid request; the integer parse is only for the replay
+    window. Fail-closed on every path; constant-time compare over the full
+    ``v0=``-prefixed value.
+    """
+    if not secret:
+        raise WebhookVerificationError("no webhook secret configured")
+    if not isinstance(signature, str) or not signature:
+        raise WebhookVerificationError("missing signature header")
+    if not isinstance(timestamp, str) or not timestamp:
+        raise WebhookVerificationError("missing timestamp header")
+    try:
+        ts = int(timestamp)
+    except (TypeError, ValueError) as exc:
+        raise WebhookVerificationError(f"non-numeric timestamp: {timestamp!r}") from exc
+    clock = time.time() if now is None else now
+    if abs(clock - ts) > tolerance_s:
+        raise WebhookVerificationError("timestamp outside tolerance")
+    basestring = b"v0:" + timestamp.encode("utf-8") + b":" + body
+    expected = "v0=" + hmac.new(secret.encode("utf-8"), basestring, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(signature, expected):
+        raise WebhookVerificationError("signature mismatch")
+
+
 class DeliveryDedupCache:
     """Bounded, partitioned LRU + TTL cache for webhook delivery dedup.
 

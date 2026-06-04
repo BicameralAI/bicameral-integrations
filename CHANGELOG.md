@@ -58,6 +58,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+- Wired webhook signature verification + best-effort delivery dedup into the
+  **GitHub** (`X-Hub-Signature-256`), **Slack** (`v0` signing over
+  `v0:{ts}:{body}` + 5-minute replay window), and **Notion**
+  (`X-Notion-Signature`, prefix-pinned) connectors, adding a `verify_slack_signature`
+  primitive. All fail-closed and constant-time; signatures verified over the raw
+  body before parsing. GitHub/Slack/Notion join the verify-wired Beta set
+  (7 Beta connectors total).
 - Wired live webhook signature verification + best-effort delivery dedup
   (fail-closed, constant-time) into the Sentry and PagerDuty connectors —
   including a new multi-signature (`v1=…,v1=…` rotation) HMAC primitive for

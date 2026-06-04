@@ -1,0 +1,13 @@
+{
+  "action": "closed",
+  "number": 92,
+  "pull_request": {
+    "title": "Add health-check route",
+    "body": "Adds GET /healthz returning 200 for liveness probes.",
+    "html_url": "https://github.com/example-org/example-repo/pull/92",
+    "user": {"login": "octo-dev"},
+    "merged_at": "2026-06-03T12:00:00Z",
+    "base": {"repo": {"full_name": "example-org/example-repo"}}
+  },
+  "repository": {"full_name": "example-org/example-repo"}
+}
