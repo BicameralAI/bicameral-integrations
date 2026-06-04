@@ -5,6 +5,15 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-04-K — MCP is for interactive agent action (T3/T5); API/webhook is for read-only evidence (T0/T1) — pick by the interactivity test
+
+**Discovered**: 2026-06-04 (operator design review, connector value-add)
+**Prevents**: routing read-only evidence ingestion through a high-authority MCP/agent surface, or assuming MCP is the default/only connectivity for a candidate.
+
+A candidate system can be reached as a read-only **evidence adapter** (this repo, `parse_* -> Observation -> normalize()`, T0/T1) or as an **MCP server** (`bicameral-mcp`, agent tool-calling, T3/T5 action authority). **Default to the evidence adapter; MCP is the EDGE case** reserved for when an agent must act interactively at inference time. Concrete reasons direct API/webhook wins for *evidence*: (1) webhooks are **push** — MCP is pull-only, so real-time event/decision capture can ONLY come direct; (2) a pure `payload -> Observation` parse is **deterministic + hash-chainable** for the ledger, an agent/tool layer is not; (3) **least authority** — read-only T0/T1 vs T3/T5; (4) no server/protocol/LLM runtime dependency; (5) batch scale (one `querybatch` vs per-item tool calls). A system may warrant **both** surfaces for different purposes (GitHub: MCP for governed action, API/webhook for evidence) — keep them separate so evidence never rides the authority channel. The `mcp_registry` connector already models the correct relationship: ingest evidence *about* MCP, don't transport *through* it. Encoded as the catalog §4 "Surface selection (interactivity test)" triage criterion; companion to ADR-0008 + SG-2026-06-04-J.
+
+---
+
 ## SG-2026-06-04-J — For advisory data build the aggregator; developer-AI evidence is two surfaces, not one
 
 **Discovered**: 2026-06-04 (`/qor-research`, connector value-add pass)

@@ -859,7 +859,30 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Net-new connector value-add research (operator-scoped: emerging tools). Grounded, cited assessment against §4 criteria across three clusters → catalog updated, no code. **Supply chain**: re-prioritized **OSV.dev P2 → P0** — free/no-auth/versioned read-only API that aggregates GHSA-global/PyPA/RustSec, so standalone npm/RustSec/PyPA connectors are redundant (P3). **AI coding tools (§6.1)**: added **Claude Code P0** (passive `~/.claude/**/*.jsonl` transcripts + attributed commits — richest first-party evidence, T0), **GitHub Copilot P1** + **Cursor P1** (official read-only usage/admin APIs, T1), **Windsurf P2/deferred** (no verifiable API). **Model/agent platforms (§6.9)**: added **OpenAI Admin/Audit P1**, **Anthropic Admin P1**, **Hugging Face Hub P2**, **LangSmith P2** (all read-only T1). **Top-5 value-add shortlist**: OSV.dev, Claude Code, GitHub Copilot, Cursor, OpenAI Admin. All reduce to the existing `parse_* -> Observation -> normalize()` seam (zero contract change); live fetch/auth deferred per convention. SHADOW_GENOME **SG-2026-06-04-J** (build the aggregator; developer-AI evidence is two surfaces). Brief: `docs/research-brief-connector-value-add-2026-06-04.md`. Open questions flagged: Cursor Privacy-Mode impact, Claude Code JSONL schema versioning, Anthropic Compliance API scope, Windsurf API existence.
 
+### Entry #36: DOCTRINE — surface-selection (interactivity) triage criterion
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: DOCUMENT
+**Author**: Analyst / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(INTEGRATION_CANDIDATE_CATALOG.md)
+= fc634df891362bbb39dcbfd73788591208635a761693fbffc389a553769666e4
+```
+
+**Previous Hash**: ffb288fff961159843df11af546afc60391659e962d8f2bb97de90eb871cdd16
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 2aa0a36d0ec0a20fa6f8cff2707b69c0672927c4e778bdd74723088b62af57ae
+```
+
+**Decision**: Encoded the operator-raised design distinction as a standing triage criterion (no code). A candidate is often reachable as a read-only **evidence adapter** (this repo, T0/T1) or an **MCP server** (`bicameral-mcp`, T3/T5 agent action); the deciding question is **"does the use case require an agent to act interactively at inference time?"** — **No → evidence adapter (the default); Yes → MCP (the edge case)**. Added the **"Surface selection (the interactivity test)"** subsection to INTEGRATION_CANDIDATE_CATALOG §4 Evaluation Criteria, spelling out why direct API/webhook wins for evidence (push/webhooks vs MCP pull-only; deterministic + hash-chainable provenance; least authority; no runtime dependency; batch scale) and that a system may warrant **both** surfaces kept separate (GitHub: MCP for action, API/webhook for evidence). Recorded as **SHADOW_GENOME SG-2026-06-04-K** (companion to ADR-0008 + SG-2026-06-04-J). Doc-only doctrine note; chain verified #1–#36.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` SEALED at Entry #35 (`ffb288ff`; L1). Catalog extended with net-new candidates; OSV.dev elevated to P0. No build queued — recommendation only.*
+*Status: `main` SEALED at Entry #36 (`2aa0a36d`; L1). Surface-selection interactivity test is now a documented §4 triage criterion + SG-2026-06-04-K.*
 *Next required action: operator selects the next build target from the shortlist (OSV.dev / Claude Code lead) when ready.*
