@@ -31,6 +31,9 @@ payload parsing, exercised against synthetic fixtures.
 | [mcp_registry](mcp_registry/) | Prototype | active | `parse_server` |
 | [continue_dev](continue_dev/) | Prototype | passive | `parse_event` |
 | [aider](aider/) | Prototype | passive | `parse_commit` |
+| [osv](osv/) | Prototype | active | `parse_vuln` |
+| [sentry](sentry/) | Prototype | webhook | `parse_issue` |
+| [pagerduty](pagerduty/) | Prototype | webhook | `parse_event` |
 | [jira](jira/) | Candidate | — | scaffold (not yet implemented) |
 
 Candidate selection and trust tiers are tracked in the

@@ -1,0 +1,16 @@
+{
+  "action": "created",
+  "installation": {"uuid": "inst-abc"},
+  "data": {
+    "issue": {
+      "id": "4571234567",
+      "shortId": "EXAMPLE-PROJECT-7Q",
+      "title": "TypeError: NoneType has no attribute 'strip'",
+      "culprit": "adapter.core.pipeline in normalize",
+      "level": "error",
+      "status": "unresolved",
+      "permalink": "https://example.sentry.io/issues/4571234567/",
+      "firstSeen": "2026-06-03T11:22:33.000000Z"
+    }
+  }
+}
