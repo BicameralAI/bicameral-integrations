@@ -60,7 +60,7 @@ Informational, slow-drift. Drift signal: factual claims diverge from current cod
 
 | Artifact | Path |
 |----------|------|
-| Architecture decision records | `docs/adr/0004..0010-*.md` |
+| Architecture decision records | `docs/adr/0004..0011-*.md` |
 | Integration candidate catalog | `docs/INTEGRATION_CANDIDATE_CATALOG.md` |
 | Integration docs index | `docs/INTEGRATION_DOCS_INDEX.md` |
 | Integration strategy & candidate harvesting | `docs/INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING.md` |

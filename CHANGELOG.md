@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   all SHA-pinned, with six published as reusable `workflow_call` templates.
 - Compliance control mappings (OWASP, NIST AI RMF & SSDF, EU AI Act, SOC 2,
   GDPR/HIPAA) and the integration strategy/candidate-catalog/trust-tier docs.
+- ADR-0011 proposing Bicameral Review Bot as a first-party, evidence-first PR
+  review workflow that can operate without external AI-review rate-limit
+  availability.
 - Repository governance and the Qor lifecycle documentation set.
 
 ### Changed
