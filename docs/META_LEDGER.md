@@ -1168,7 +1168,79 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: BACKLOG **B7** closed — value-add research on **Devin / Devin Desktop** (Cognition, the Windsurf/Codeium successor), run in parallel with the Claude Code build. Meets the bar via the **official versioned v3 REST API** (read-only GET sessions/messages, poll — no webhooks); the **Desktop/Local path has no documented file artifact** (API connector, not file — the opposite of Claude Code). Interactivity test (SG-2026-06-04-K): read session evidence (goals/status/message-trail/linked-PRs/structured-output) = **evidence adapter here (P1/T1)**; launch/steer (`POST`) = `bicameral-mcp` (T3/T5), out of scope. Catalogued **P1, ACTIVE/T1**; **no build this cycle** — queued as **B9** behind the Claude Code P0. Risk: v3 schema churn + mandatory message-body redaction. Brief: `docs/research-brief-devin-2026-06-04.md`.
 
+### Entry #49: RESEARCH BRIEF (Jira connector)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(research-brief-jira-2026-06-04.md)
+= 50d50dac6fe6a624d5372b2568a3fe2e6704060c3b4b3eacd29fb461a6b3d7b0
+```
+
+**Previous Hash**: e267107697a3d5138eb555d57c78b92903aa4339588233d3450728776f2c0d75
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 4a2683a10b7c074256148c6dbb789c7ea89d68fda4728494846e8e27b760dbb6
+```
+
+**Decision**: Grounded the **Jira Cloud** connector (P0 foundation — the one unbuilt catalog scaffold; operator flagged it a priority). Resolved the verify question: classic admin webhooks **do sign** delivery `X-Hub-Signature: sha256=<hex-HMAC-SHA256(secret, raw_body)>` (WebSub) → ships **with `verify()` at parity** (strip `sha256=`, reuse `verify_hmac_hex`). Title = `fields.summary` (str); **`fields.description` is ADF (a dict)** → excerpt uses summary only, `jira-issue` floor. No anti-replay window → best-effort dedup (`X-Atlassian-Webhook-Identifier`→`issue.id`). Connect-JWT/Forge/Automation auth deferred. SHADOW_GENOME **SG-2026-06-04-M** (Jira signs `sha256=`-prefixed; ADF ≠ text). Brief: `docs/research-brief-jira-2026-06-04.md`. → `/qor-plan` at L3.
+
+### Entry #50: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(plan-jira-2026-06-04.md)
+= d0708a41969afc5df7eaed58c147f700aee589b0446068eaace3ec84c746e1a8
+```
+
+**Previous Hash**: 4a2683a10b7c074256148c6dbb789c7ea89d68fda4728494846e8e27b760dbb6
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a6ededd42341d5fa7efc9e0404e0a602c10092dbb20be14bd8c994f090acb888
+```
+
+**Verdict**: **PASS** (iteration 1). Fail-open-focused L3 audit (SG-2026-06-04-B dispositive). The `sha256=` strip is safe — a bare `"sha256="` → empty `header_sig` → `verify_hmac_hex` rejects (empty-header guard); uppercase/case-insensitive strip; no-prefix raw hex only matches via `compare_digest`; tampered/empty-secret/missing-header all fail-closed; `hmac.compare_digest` (no `==`); genuine-match-only. Excerpt never routes ADF `description` (summary→key→`jira-issue` floor; SG-G). SG-I: issue/fields/status/project/issuetype/user isinstance-guarded; ADF dict → `_text` returns "" (never `.strip()`'d). normalize_event self-guards → json-guard → non-dict→[] → best-effort dedup (process-on-missing) → parse. Scope: connector only (reuses `verify_hmac_hex`, no core change); `mods/` untouched. 2 non-binding notes (isinstance-guard `_delivery_id`; fold project into `_nested`) — both folded in. Cleared to `/qor-implement`. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+---
+
+### Entry #51: SESSION SEAL (Jira connector)
+
+**Entry ID**: `j1raP0bu1lt0`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 3c687cdada01018abc30f87bcd2ff3bbaabf63a629b981d9bd00b78d1fa4cbd0
+```
+
+**Previous Hash**: a6ededd42341d5fa7efc9e0404e0a602c10092dbb20be14bd8c994f090acb888
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b5ebb27c999c74ca94476bd09a00513df3343cf57d0dcef70663016d4524d58e
+```
+
+**Decision**: PASS-audit (Entry #50) implemented + substantiated. Built the **Jira** connector (P0 foundation — closes the last catalog scaffold; **17 connectors implemented**, no Candidates remain): `parse_issue` (summary→excerpt, **never the ADF `description`**, `jira-issue` floor; `_text`/`_nested` type-defensive) + `JiraConnector.verify()/normalize_event()` shipping **verify at parity** (`X-Hub-Signature` `sha256=` hex HMAC over the raw body, fail-closed + constant-time; best-effort dedup on `X-Atlassian-Webhook-Identifier`→`issue.id`). Jira README flipped Candidate→Prototype; `__init__` re-exports; synthetic ADF fixture + behavioral tests. **Independent review** (observer + devil's advocate): observer Reality==Promise (both audit notes honored); devil's advocate **0 blocking / 2 non-blocking** — **HIGH** whitespace-only `issue.key` (the one field not run through `_text`) skipped the floor → blank excerpt; **LOW** `verify()` crashed on non-dict headers (`header_value` outside the `try`) — **both fixed** (`_text(key) or _text(id) or floor`; header lookup moved inside `try`) + regression tests; no fail-open found across the `sha256=`/empty-candidate/tamper probe set; sensitive screen confirmed firing. SHADOW_GENOME SG-2026-06-04-M; SG-G/SG-I reinforced (every string field → `_text`). **Verification**: pytest **202 passed**, ruff + mypy clean (86 files), governance gate verifies the #1–#51 chain. FEATURE_INDEX **FX-JIRA-001** Verified (31 total). Docs refreshed per the end-of-cycle cadence; `mods/` left to Codex.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` SEALED at Entry #48 (`e2671076`; L2). Claude Code connector built (16 connectors, 194 tests); Devin researched + catalogued P1 (B9 build queued). `mods/` owned by Codex.*
-*Next required action: merge the PR. Open: B8 PagerDuty spot-check, B9 Devin build, B5/B6 admin. `mods/` = Codex.*
+*Status: `jira-connector` SEALED (Entry #51, `b5ebb27c`; L3). Jira built with verify() at parity — **17 connectors implemented, 0 Candidates left**; 202 tests. `mods/` owned by Codex.*
+*Next required action: merge the PR. Open: go-live depth cycle (GitHub/Linear Prototype→live), B8 PagerDuty spot-check, B9 Devin build, B5/B6 admin.*
