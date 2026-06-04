@@ -523,6 +523,80 @@ SHA256(content_hash + previous_hash)
 **Decision**: PASS-audit (iter 2) L3 CI governance/security gate ecosystem implemented + substantiated to the local Review Boundary, benchmarked against `microsoft/agent-governance-toolkit`. Shipped (additive, on `feat/ci-governance-gates` stacked on the connector branches): **governance-integrity gate** (`scripts/governance_gate.py`, stdlib, genesis-anchor rule per SG-2026-06-04-D — re-verifies the committed `META_LEDGER` hash chain + FEATURE_INDEX test paths; blocking) + **security/supply-chain** (CodeQL, Bandit, dependency-review fail≥moderate + license allowlist, OpenSSF Scorecard, SBOM+attestation, pip-audit, Dependabot — all actions SHA-pinned) + **quality/consistency** (workflow-YAML lint, codespell, advisory SPDX-header scan, conventional PR-title) + **`docs/compliance/`** mappings (OWASP, NIST AI RMF & SSDF, EU AI Act, SOC 2, GDPR/HIPAA — "control alignment, not certification", operator-owned scope marked). Security-critical gates block; posture gates advisory/scheduled. **Verification**: governance gate verifies the real #1–#21 chain; pytest **107 passed** (93 + 14 script tests); ruff + mypy clean (43 files); all 11 workflows parse. **Independent review**: objective-observer Reality==Promise CONFIRMED; devil's-advocate 0 blockers (tampering caught: content/chain mismatch + broken link + missing test path all rejected; stdlib-only; all 9 action SHAs resolve to real commits; advisory-vs-blocking honest; no self-wedge) — 5 LOW findings, all fixed: **G1** removed the false `ssdf_tagger` SSDF-tag claim from nist-mapping (ghost-compliance); **L1** de-duplicated the blocking pytest out of the advisory license-headers job; **B1** verifier now rejects >1 genesis anchor (+test); **P1** scoped the SHA-pin claim + BACKLOG B1 to pin legacy `ci.yml`/`secret-scan.yml` `trufflehog@main`. FEATURE_INDEX `FX-CI-GOV/SEC/QUAL/DOC-001` Verified (15 total). **Review Boundary HELD** (no commit/push/PR/tag). New memory: SHADOW_GENOME SG-2026-06-04-C/D. BACKLOG B3: ecosystem governance rollout + AGT-sidecar (operator request).
 
 ---
+
+### Entry #22: RESEARCH BRIEF
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-reusable-gates-2026-06-04.md)
+= 3ea517f8c6d38893e00a52379c786c3b4a84d3c8ea619bdcfd8bf7b5be38ed0d
+```
+
+**Previous Hash**: 673ad799ffee9be758b1dd7a0c45da2de053fd12a719d719b1f299fb44180eec
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= af574275d499cb484596cbb88ec0ed0bc9fe0a5dbce310a43fbd212e69e639ba
+```
+
+**Decision**: Ecosystem cycle 1 (`reusable-gates-2026-06-04`) — factor the Entry #21 portable gates into `workflow_call` **reusable workflows** so bot/mcp/cloud + this repo consume one source. Gates split into portable (governance-gate, dependency-review, Scorecard, SBOM, secret-scan, PR-hygiene, workflow-lint) and language-specific (CodeQL via `languages` input; Bandit/pip-audit/ruff/mypy/pytest = Python-only, stay local). Real design point (SG-2026-06-04-E): a reusable governance-gate that lives here but verifies a *consumer's* ledger must (a) checkout this repo's script to a side path (SHA-pinned) and (b) run it with a new `--repo-root` arg pointing at the caller's workspace — the script currently derives root from `__file__`. This repo becomes a consumer of its own reusables (thin callers) to prevent run-vs-publish drift. 0 blocking gaps → `/qor-plan` at L2. SHADOW_GENOME **SG-2026-06-04-E**. Gate: `.qor/gates/reusable-gates-2026-06-04/research.json`. Publish status: PRs #4/#5/#6 open (core ← connectors ← ci-gates).
+
+### Entry #23: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-reusable-gates-2026-06-04.md)
+= e2f44fc68d6bbbf4199f773d133d26574c9c353cfa8db4b81a5793dc99246c5b
+```
+
+**Previous Hash**: af574275d499cb484596cbb88ec0ed0bc9fe0a5dbce310a43fbd212e69e639ba
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 0ba3ca9ed4f1577486b7969a8587379f18cdf05d78fa24b49b458d2b7da2c1f7
+```
+
+**Verdict**: **PASS** (iteration 1). Independent audit cleared all 6 axes: the SG-2026-06-04-E cross-repo trap is correctly fixed (`--repo-root "$GITHUB_WORKSPACE"` + side-checkout of the tooling script), every cross-repo reference is SHA-pin-mandated for consumers, the repo dogfoods via thin callers (no run-vs-publish drift), `--repo-root` defaults to current behavior (backward-compatible; FX-CI-GOV-001 tests untouched), scope is additive, and waivers are honest with a real test on the changed logic. Report: `.agent/staging/AUDIT_REPORT.md`. Cleared to implement.
+
+---
+
+### Entry #24: SESSION SEAL (local — Review Boundary held)
+
+**Entry ID**: `f97195725f0e`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (local hold)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= eab407b8d0cb7c2c53c2a6e608bb0ee6627023c596073bbc2c53f34e25227b77
+```
+
+**Previous Hash**: 0ba3ca9ed4f1577486b7969a8587379f18cdf05d78fa24b49b458d2b7da2c1f7
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 27f6007afd75f3be4479bdfa11ff0f907a5dbdd786a7c0ec560bfa6857232023
+```
+
+**Decision**: Ecosystem cycle 1 (reusable-workflow template) implemented + substantiated to the local Review Boundary. Portable gates factored into 6 `workflow_call` reusables (`_reusable-{governance-gate,codeql,dependency-review,scorecard,sbom,pr-hygiene}.yml`, SHA-pinned); this repo's 6 gate workflows converted to **thin callers** (`uses: ./...`) — single source, no run-vs-publish drift. `scripts/governance_gate.py` gained `--repo-root`/`--ledger`/`--feature-index` (default unchanged) so a reusable can verify a **consumer's** ledger via side-checkout + `--repo-root "$GITHUB_WORKSPACE"` (closes SG-2026-06-04-E). `docs/ecosystem/consuming-gates.md` documents adoption for bot (Rust→clippy/cargo-audit; CodeQL has no Rust)/mcp/cloud + SHA-pin discipline. **Verification**: governance gate OK default **and** `--repo-root .`; pytest **16 script tests** pass; ruff clean; **16 workflows parse** (10 + 6 reusables). FEATURE_INDEX `FX-CI-GOV-002`/`FX-CI-REUSE-001`/`FX-CI-DOC-002` Verified (18 total). Proportionality note (L2 config refactor): the clean pre-implementation independent audit (Entry #23) + green verification stand in for a post-implementation reviewer panel. **Review Boundary HELD**. New memory: SHADOW_GENOME SG-2026-06-04-E.
+
+---
 *Chain integrity: VALID*
-*Status: `ci-gates-2026-06-04` SUBSTANTIATED at the local Review Boundary (Entry #21, `673ad799`, L3). On `feat/ci-governance-gates` (stacked on the connector branches); staged, NOT committed. Governance gate verifies the full #1–#21 chain; 107 tests green; all gates honest + SHA-pinned + adversarially verified.*
-*Next required action: USER publish decision (3 stacked PRs: core ← connectors ← ci-gates) + ecosystem-governance direction (BACKLOG B3). Then BACKLOG B1/B2 (pin legacy workflows; backfill SPDX headers → flip license gate blocking).*
+*Status: `reusable-gates-2026-06-04` SUBSTANTIATED at the local Review Boundary (Entry #24, `27f6007a`, L2). On `feat/reusable-gates` (stacked on PR #6). Cycle 1 of "1→2" complete; cycle 2 = AGT sidecar spike next.*
+*Next required action: PR cycle 1 (stacked on #6) in stealth, then cycle 2 (AGT sidecar spike → recommendation doc, no cross-repo changes).*

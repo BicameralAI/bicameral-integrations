@@ -5,6 +5,13 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-04-E — A cross-repo reusable verifier must take its repo-root as a parameter, not from __file__
+
+**Discovered**: 2026-06-04 (`/qor-research`, reusable-gates cycle)
+**Prevents**: a reusable governance-gate workflow that silently verifies the wrong repository.
+
+A reusable workflow (`workflow_call`) that lives in repo A but is consumed by repo B runs in **B's** context. To run A's `governance_gate.py` it must `actions/checkout` A's script to a side path (e.g. `.governance-tooling`, SHA-pinned). But the script derives its repo root from `Path(__file__).resolve().parents[1]` — which, when run from `.governance-tooling/`, points at **A's** checkout, not B's. It would verify the tooling repo's own ledger and pass trivially, never checking the consumer. **Rule:** any verifier intended for cross-repo reuse must accept `--repo-root` (default `__file__`-derived for local use) and the reusable workflow passes the caller's `GITHUB_WORKSPACE`. Consumers SHA-pin both the reusable-workflow ref and the tooling checkout ref. Companion to [[SG-2026-06-04-D]].
+
 ## SG-2026-06-04-D — A ledger-chain verifier must encode the genesis anchor or it false-fails on entry #1
 
 **Discovered**: 2026-06-04 (`/qor-audit` VETO, ci-gates iter 1)

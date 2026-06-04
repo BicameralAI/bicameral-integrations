@@ -1,0 +1,39 @@
+name: _reusable-governance-gate
+
+# Reusable governance-integrity gate. Verifies the CALLER repo's committed
+# META_LEDGER hash chain + FEATURE_INDEX test paths, using the verifier script
+# fetched from the tooling repo. Consumers SHA-pin both `uses:` ref and tooling-ref.
+on:
+  workflow_call:
+    inputs:
+      tooling-repo:
+        description: Repo holding scripts/governance_gate.py
+        type: string
+        default: BicameralAI/bicameral-integrations
+      tooling-ref:
+        description: SHA (pin this) of the tooling repo to fetch the verifier from
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  governance-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout caller
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Fetch governance tooling (pinned)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ inputs.tooling-repo }}
+          ref: ${{ inputs.tooling-ref }}
+          path: .governance-tooling
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+      - name: Verify caller's governance artifacts
+        run: python .governance-tooling/scripts/governance_gate.py --repo-root "$GITHUB_WORKSPACE"
+      - name: Verifier self-tests
+        run: python -m pytest .governance-tooling/scripts/tests -q
