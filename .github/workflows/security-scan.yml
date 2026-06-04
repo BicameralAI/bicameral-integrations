@@ -1,0 +1,36 @@
+name: Security Scan
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  bandit:
+    name: Bandit SAST (blocking)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip bandit==1.8.6
+      - name: Bandit (adapter + connectors + scripts, excluding tests)
+        run: bandit -r adapter connectors scripts -x '*/tests/*' --skip B101
+
+  pip-audit:
+    name: pip-audit (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip pip-audit==2.9.0 ruff mypy pytest bandit
+      - name: Audit the installed dev toolchain for known CVEs
+        run: pip-audit
