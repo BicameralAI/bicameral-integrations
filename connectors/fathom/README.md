@@ -18,3 +18,8 @@ deferred this cycle (see `auth.md`); this connector is the parse surface only.
   excerpt, with summary/title fallback; `recorded_by.name` → author;
   `recording_end_time`/`created_at` → timestamp; `recording_id` → ref).
 - `FathomConnector` — connector identity and capabilities (`PASSIVE`, `WEBHOOK`).
+
+## References
+
+- Canonical documentation: [references.md](references.md)
+- Auth model (deferred): [auth.md](auth.md)

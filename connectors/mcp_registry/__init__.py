@@ -1,1 +1,5 @@
-"""MCP Registry connector package (scaffold — not yet implemented)."""
+"""MCP Registry connector package."""
+
+from .connector import McpRegistryConnector, parse_server
+
+__all__ = ["McpRegistryConnector", "parse_server"]

@@ -19,3 +19,8 @@ parse surface only.
   → excerpt with stem fallback; filename stem → title; sha256 path token → ref;
   `modified` → timestamp).
 - `LocalDirectoryConnector` — connector identity and capabilities (`PASSIVE`).
+
+## References
+
+- Canonical documentation: [references.md](references.md)
+- Auth model (deferred): [auth.md](auth.md)
