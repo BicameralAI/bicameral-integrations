@@ -523,6 +523,31 @@ SHA256(content_hash + previous_hash)
 **Decision**: PASS-audit (iter 2) L3 CI governance/security gate ecosystem implemented + substantiated to the local Review Boundary, benchmarked against `microsoft/agent-governance-toolkit`. Shipped (additive, on `feat/ci-governance-gates` stacked on the connector branches): **governance-integrity gate** (`scripts/governance_gate.py`, stdlib, genesis-anchor rule per SG-2026-06-04-D — re-verifies the committed `META_LEDGER` hash chain + FEATURE_INDEX test paths; blocking) + **security/supply-chain** (CodeQL, Bandit, dependency-review fail≥moderate + license allowlist, OpenSSF Scorecard, SBOM+attestation, pip-audit, Dependabot — all actions SHA-pinned) + **quality/consistency** (workflow-YAML lint, codespell, advisory SPDX-header scan, conventional PR-title) + **`docs/compliance/`** mappings (OWASP, NIST AI RMF & SSDF, EU AI Act, SOC 2, GDPR/HIPAA — "control alignment, not certification", operator-owned scope marked). Security-critical gates block; posture gates advisory/scheduled. **Verification**: governance gate verifies the real #1–#21 chain; pytest **107 passed** (93 + 14 script tests); ruff + mypy clean (43 files); all 11 workflows parse. **Independent review**: objective-observer Reality==Promise CONFIRMED; devil's-advocate 0 blockers (tampering caught: content/chain mismatch + broken link + missing test path all rejected; stdlib-only; all 9 action SHAs resolve to real commits; advisory-vs-blocking honest; no self-wedge) — 5 LOW findings, all fixed: **G1** removed the false `ssdf_tagger` SSDF-tag claim from nist-mapping (ghost-compliance); **L1** de-duplicated the blocking pytest out of the advisory license-headers job; **B1** verifier now rejects >1 genesis anchor (+test); **P1** scoped the SHA-pin claim + BACKLOG B1 to pin legacy `ci.yml`/`secret-scan.yml` `trufflehog@main`. FEATURE_INDEX `FX-CI-GOV/SEC/QUAL/DOC-001` Verified (15 total). **Review Boundary HELD** (no commit/push/PR/tag). New memory: SHADOW_GENOME SG-2026-06-04-C/D. BACKLOG B3: ecosystem governance rollout + AGT-sidecar (operator request).
 
 ---
+
+### Entry #22: INTEGRATION STRATEGY DOCS INCORPORATED + PHASE-1 CONNECTOR SCAFFOLDS
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: IMPLEMENT (doc incorporation; local hold)
+**Author**: Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(INTEGRATION_CANDIDATE_CATALOG.md)
+= 7352b2f0af53c548d7cc5ff30ba31d239ff227c6963ca2a720575c249093af52
+```
+
+**Previous Hash**: 673ad799ffee9be758b1dd7a0c45da2de053fd12a719d719b1f299fb44180eec
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 26a6fef5efba44d08f456eb1b8ecc4f77f8ac50a1dba8419f157db33e6b0b702
+```
+
+**Decision**: Incorporated the externally-sourced product-agnostic integration strategy pack (`docs/externally-sourced/` → canonical `docs/`): **GOVERNED_ADAPTER_CONTRACT**, **TRUST_TIER_MODEL** (T0–T5), **DATA_CLASSIFICATION_AND_REDACTION** (Tier-2 policy), **INTEGRATION_CANDIDATE_CATALOG**, **INTEGRATION_DOCS_INDEX**, **INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING** (Tier-5 reference), and three ADRs renumbered to continue our sequence — **0008** (evidence-adapters-not-authorities), **0009** (trust-tiered-governance), **0010** (product-agnostic-harvesting), with H1 titles + cross-refs updated and the staging folder removed. **Connector canonical doc-links**: added a stable `references.md` to every connector folder (github, linear, google_drive, jira, granola, fathom, local_directory) linking the governed contract, trust-tier model, data-classification, the ADRs, and the docs-index provider links — decoupled from the (parallel-edited) README so links don't churn. **New connector folders** for the Phase-1 P0 "next integration criterion" (catalog §8) not yet present: **slack** (T2/T3, notify-first), **notion** (T1/T3), **sarif** (T0, static-import), **mcp_registry** (T1) — each scaffolded (README/references.md/auth.md/__init__/fixtures/tests) at the **Candidate** lifecycle stage (no `connector.py` yet). GOVERNANCE_INDEX updated (Tier 2 + Tier 5 + ADR range 0004..0010 + Meta-Ledger marker). Proportionate governance for L1/L2 doc incorporation of pre-authored, reviewed material (single seal entry; no new code paths). Governance gate verifies the #1–#22 chain. **Review Boundary HELD**.
+
+---
 *Chain integrity: VALID*
-*Status: `ci-gates-2026-06-04` SUBSTANTIATED at the local Review Boundary (Entry #21, `673ad799`, L3). On `feat/ci-governance-gates` (stacked on the connector branches); staged, NOT committed. Governance gate verifies the full #1–#21 chain; 107 tests green; all gates honest + SHA-pinned + adversarially verified.*
-*Next required action: USER publish decision (3 stacked PRs: core ← connectors ← ci-gates) + ecosystem-governance direction (BACKLOG B3). Then BACKLOG B1/B2 (pin legacy workflows; backfill SPDX headers → flip license gate blocking).*
+*Status: `integration-strategy-docs-2026-06-04` substantiated at the local Review Boundary (Entry #22, `26a6fef5`, L2), branched off `main` (post-#6). Strategy pack canonical; 11 connector folders (7 implemented/port + jira scaffold + slack/notion/sarif/mcp_registry candidates); every connector folder carries `references.md`.*
+*Next required action: PR this (off main) in stealth. Pending stack: #9 (reusable refactor) + #10 (AGT doc) still need rebase onto the advanced main (their ledger entries renumber on rebase — this seal took #22). Then implement the Phase-1 candidate connectors (slack/notion/sarif/mcp_registry) as governed cycles.*

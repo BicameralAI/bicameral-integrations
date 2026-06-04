@@ -13,7 +13,7 @@ MUST be current at every cycle close. Drift signal: wrong version / wrong state 
 
 | Artifact | Path | Freshness marker |
 |----------|------|------------------|
-| Meta Ledger | `docs/META_LEDGER.md` | latest sealed entry (#20) |
+| Meta Ledger | `docs/META_LEDGER.md` | latest sealed entry (#22) |
 | Shadow Genome | `docs/SHADOW_GENOME.md` | latest narrative entry |
 | System State | `docs/SYSTEM_STATE.md` | latest phase snapshot |
 | Concept | `docs/CONCEPT.md` | stable |
@@ -34,6 +34,9 @@ Stable; changes are explicit doctrine events. Drift signal: rules contradict eac
 | Governance policy | `GOVERNANCE.md` |
 | Contribution guide | `CONTRIBUTING.md` |
 | Code of conduct | `CODE_OF_CONDUCT.md` |
+| Governed adapter contract | `docs/GOVERNED_ADAPTER_CONTRACT.md` |
+| Trust tier model | `docs/TRUST_TIER_MODEL.md` |
+| Data classification & redaction | `docs/DATA_CLASSIFICATION_AND_REDACTION.md` |
 
 ## Tier 3 — Active Initiative
 
@@ -57,7 +60,10 @@ Informational, slow-drift. Drift signal: factual claims diverge from current cod
 
 | Artifact | Path |
 |----------|------|
-| Architecture decision records | `docs/adr/0004..0007-*.md` |
+| Architecture decision records | `docs/adr/0004..0010-*.md` |
+| Integration candidate catalog | `docs/INTEGRATION_CANDIDATE_CATALOG.md` |
+| Integration docs index | `docs/INTEGRATION_DOCS_INDEX.md` |
+| Integration strategy & candidate harvesting | `docs/INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING.md` |
 | Adapter-contract research brief | `docs/research-brief-adapter-contract-2026-06-02.md` |
 | Security & governance research brief | `docs/research-brief-security-governance-alignment-2026-06-03.md` |
 | Fathom + Linear connectors research brief | `docs/research-brief-fathom-linear-connectors-2026-06-03.md` |
