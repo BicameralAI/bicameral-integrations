@@ -47,6 +47,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Standardized all connector READMEs to a consistent Modes/Surface/References
   style; added CI/license status badges to the primary README.
 - Bumped `actions/checkout` to v6 and `actions/setup-python` to v6 across CI.
+- Fixed the OpenSSF Scorecard CI gate (was `startup_failure`): disabled the
+  OIDC-based public-results publish (`publish_results: false`, dropped
+  `id-token: write`) that the token policy refused. The Scorecard analysis and
+  its SARIF upload to code-scanning are unchanged; only the public badge
+  publish (unused) is dropped. All CI gates are now green.
 - Added a "surface selection (interactivity test)" criterion to the integration
   candidate catalog: read-only evidence sources default to direct API/webhook
   adapters; MCP servers are reserved for interactive agent action.
