@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **11**
-- **Verified**: 11
+- Total entries: **15**
+- **Verified**: 15
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -29,6 +29,17 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-WHSEC-001 | Webhook signature verification + delivery dedup (Svix + hex HMAC) | docs/plan-webhook-verification-dedup-2026-06-04.md | adapter/core/webhook_security.py | adapter/core/tests/test_webhook_security.py | Verified | `verify_standard_webhook` (Svix/Fathom), `verify_hmac_hex` (Linear), `DeliveryDedupCache`; constant-time, fail-closed on all attacker-input paths; L3 |
 | FX-FATHOM-002 | Fathom webhook verify + dedup wiring | docs/plan-webhook-verification-dedup-2026-06-04.md | connectors/fathom/connector.py | connectors/fathom/tests/test_fathom_webhook.py | Verified | `FathomConnector.verify`/`normalize_event` (Svix; injected secret/clock/dedup; self-guarded); live HTTP deferred |
 | FX-LINEAR-002 | Linear webhook verify + dedup wiring | docs/plan-webhook-verification-dedup-2026-06-04.md | connectors/linear/connector.py | connectors/linear/tests/test_linear_webhook.py | Verified | `LinearConnector.verify`/`normalize_event` (Linear-Signature HMAC-first + 60s anti-replay; injected secret/clock/dedup; self-guarded); live GraphQL/HTTP deferred |
+
+---
+
+## Section: CI & Governance Gates
+
+| ID | Feature | Doc | Code | Test | Status | Notes |
+|---|---|---|---|---|---|---|
+| FX-CI-GOV-001 | Governance-integrity gate (ledger hash-chain + FEATURE_INDEX) | docs/plan-ci-governance-gates-2026-06-04.md | scripts/governance_gate.py | scripts/tests/test_governance_gate.py | Verified | stdlib; genesis-anchor rule (SG-2026-06-04-D); blocking via governance-gate.yml; verifies committed ledger + test paths |
+| FX-CI-SEC-001 | Security + supply-chain gates | docs/plan-ci-governance-gates-2026-06-04.md | .github/workflows/codeql.yml | (D4.d waiver) | Verified | CodeQL/Bandit/dependency-review/Scorecard/SBOM/pip-audit/Dependabot, SHA-pinned; config validated by workflow-lint + tools executing |
+| FX-CI-QUAL-001 | Quality/consistency gates | docs/plan-ci-governance-gates-2026-06-04.md | scripts/check_license_headers.py | scripts/tests/test_check_license_headers.py | Verified | workflow-YAML lint + codespell + SPDX-header scan (advisory) + conventional PR title |
+| FX-CI-DOC-001 | Compliance framework mappings | docs/plan-ci-governance-gates-2026-06-04.md | docs/compliance/README.md | (D4.d waiver) | Verified | OWASP/NIST/EU-AI-Act/SOC2/GDPR+HIPAA control mappings; backbone is FX-CI-GOV-001; "alignment, not certification" |
 
 ---
 

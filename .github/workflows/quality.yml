@@ -1,0 +1,59 @@
+name: Quality
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  workflow-lint:
+    name: workflow YAML validity (blocking)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip "pyyaml==6.0.2"
+      - name: Parse every workflow as valid YAML
+        run: |
+          python - <<'PY'
+          import sys, pathlib, yaml
+          bad = []
+          for p in sorted(pathlib.Path(".github/workflows").glob("*.yml")):
+              try:
+                  yaml.safe_load(p.read_text(encoding="utf-8"))
+              except yaml.YAMLError as exc:
+                  bad.append(f"{p}: {exc}")
+          if bad:
+              print("workflow-lint: FAIL"); [print(" -", b) for b in bad]; sys.exit(1)
+          print("workflow-lint: all workflow YAML parses")
+          PY
+
+  codespell:
+    name: spelling (advisory)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip codespell==2.4.1
+      - run: codespell adapter connectors scripts docs --skip='*.json,*.lock' || true
+
+  license-headers:
+    name: SPDX headers (advisory)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: "3.13"
+      - name: License-header scan (advisory; ramps to blocking once backfilled)
+        run: python scripts/check_license_headers.py adapter connectors scripts
+        # Note: scripts/tests run (blocking) in governance-gate.yml — not duplicated here.

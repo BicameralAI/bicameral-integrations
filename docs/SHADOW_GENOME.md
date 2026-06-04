@@ -5,6 +5,24 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-04-D — A ledger-chain verifier must encode the genesis anchor or it false-fails on entry #1
+
+**Discovered**: 2026-06-04 (`/qor-audit` VETO, ci-gates iter 1)
+**Prevents**: a governance-integrity CI gate that wedges the repo on its own committed history.
+
+The `META_LEDGER` hash chain is NOT uniform from entry #1: **Entry #1 (GENESIS)** carries a `Content Hash` + `Previous Hash: GENESIS (no predecessor)` and **no `Chain Hash`**. **Entry #2's `previous_hash` equals Entry #1's CONTENT hash** (`274bc6…`), not a chain hash (genesis has none). From Entry #3 onward, `previous_N == chain_{N-1}` and `chain_N == sha256(content_N + previous_N)`.
+
+A naive verifier ("every entry has all three hashes; every `previous` == prior `chain`") false-fails at #1 (missing chain) and #1→#2 (content-vs-chain link) — and if it's a *blocking* gate with a `test_repo_ledger_verifies` assertion, it wedges CI on the repo's own ledger. **Rule for any ledger verifier (incl. cross-repo reuse on bot/mcp/cloud):** treat the first entry as the genesis anchor (content hash, no chain hash); the first chained entry links to the genesis *content* hash; thereafter standard linkage + recomputation. Verify recomputation per-entry (tamper-evidence) and run the verifier against the real ledger during implementation before marking the gate blocking. Same Promise-vs-Reality family as [[SG-2026-06-03-K]].
+
+## SG-2026-06-04-C — Compliance frameworks are control-mappings + evidence, not per-law CI checkers
+
+**Discovered**: 2026-06-04 (`/qor-research`, CI gates vs microsoft/agent-governance-toolkit)
+**Prevents**: shipping a `gdpr.yml`/`hipaa.yml`/`soc2.yml` that "passes" a build without verifying any real control (ghost compliance).
+
+Even Microsoft's AGT — which advertises NIST AI RMF / EU AI Act / SOC 2 / OWASP coverage — has **no per-law CI checker**. It satisfies frameworks with three layers: (1) real automated scanners (CodeQL, OpenSSF Scorecard, dependency-review, SBOM+attestation, secret-scanning, supply-chain pinning); (2) a **blocking governance gate** (`scripts/governance_gate.py` → policy validation + Ed25519 provenance receipt + audit-log artifact); (3) **`docs/compliance/` mapping docs** (`owasp-agentic-top10-architecture.md`, `nist-ai-rmf-alignment.md`, `soc2-mapping.md`) over a tamper-evident Merkle audit trail. GDPR/HIPAA/ISO-27001/SSDF aren't even named there.
+
+**Rule for us:** the CI-enforceable layer is SAST/secret/dep/supply-chain/SBOM/Scorecard + a stdlib **governance-integrity gate** that re-verifies the committed `META_LEDGER` hash chain + FEATURE_INDEX (the `.qor/` gate JSONs are gitignored, so CI checks the *committed* chain). Frameworks become `docs/compliance/*.md` that *cite* those gates + the QOR `ai_provenance` (EU AI Act Art. 13/14/50, AI RMF, SSDF) + the `FX-SEC-001` sensitive-data screen (GDPR/HIPAA PII/PHI control) as evidence — control alignment, never certification.
+
 ## SG-2026-06-04-B — Correct crypto can still fail OPEN: every attacker-input path in a verifier must raise the caught error type
 
 **Discovered**: 2026-06-04 (`/qor-audit` VETO, webhook-verify iter 1)
