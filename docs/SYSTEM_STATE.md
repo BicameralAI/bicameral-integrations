@@ -8,7 +8,7 @@
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
 | **Phase** | MERGED to `main` — Phase-2 connectors + security-queue remediation landed; docs refreshed each cycle close |
 | **Iteration** | 13 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; **security-queue remediation**; **Phase-2 connectors OSV/Sentry/PagerDuty**) |
-| **Session Seal** | `26746272` (META_LEDGER Entry #44 chain hash) |
+| **Session Seal** | `e2671076` (META_LEDGER Entry #48 chain hash) |
 
 ---
 
@@ -52,9 +52,9 @@ bicameral-integrations/
 
 | Metric | Value |
 |--------|-------|
-| Source connector packages (with `connector.py`) | 15 (+ osv, sentry, pagerduty; + github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider) + jira scaffold |
+| Source connector packages (with `connector.py`) | 16 (+ claude_code) (+ osv, sentry, pagerduty; + github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider) + jira scaffold |
 | Total Test Files | 22 (adapter/core + connectors + scripts) |
-| Pytest | 183 passed (adapter/core/tests + connectors + scripts/tests) |
+| Pytest | 194 passed (adapter/core/tests + connectors + scripts/tests) |
 | Webhook verify wired | fathom, linear, sentry, pagerduty (HMAC/Svix/multi-sig + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
@@ -126,10 +126,10 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #44 (`26746272`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #48 (`e2671076`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 183 passing; ruff + mypy clean (79 files) |
+| Test Status | PASS | 194 passing; ruff + mypy clean (79 files) |
 | CI Gates | GREEN (on `main`) | governance-integrity + CodeQL/Bandit/dep-review/Scorecard/SBOM/quality/PR-hygiene + TruffleHog; SHA-pinned; reusable `workflow_call` templates; all PRs merged + CI-verified |
 
 ---

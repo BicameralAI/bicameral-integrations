@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **29**
-- **Verified**: 29
+- Total entries: **30**
+- **Verified**: 30
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -40,6 +40,7 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-PAGERDUTY-001 | PagerDuty v3 incident webhook → Observation parser | docs/plan-connectors-phase2-2026-06-04.md | connectors/pagerduty/connector.py | connectors/pagerduty/tests/test_pagerduty_connector.py | Verified | Catalog P1 (observability/incident, T1); nested `event.data` unwrap; title→excerpt with summary/id floor; WEBHOOK |
 | FX-SENTRY-002 | Sentry webhook verify + dedup wiring | docs/plan-webhook-hardening-2026-06-04.md | connectors/sentry/connector.py | connectors/sentry/tests/test_sentry_connector.py | Verified | `SentryConnector.verify`/`normalize_event` (hex HMAC over RAW body; injected secret/dedup; self-guarded; best-effort dedup, no replay window per Sentry); live HTTP receipt deferred |
 | FX-PAGERDUTY-002 | PagerDuty webhook verify + dedup wiring | docs/plan-webhook-hardening-2026-06-04.md | connectors/pagerduty/connector.py | connectors/pagerduty/tests/test_pagerduty_connector.py | Verified | `PagerDutyConnector.verify`/`normalize_event` (multi-signature `v1=` membership via `verify_hmac_hex_multi`; injected secret/dedup; self-guarded); live HTTP receipt deferred; first-party scheme spot-check pending (BACKLOG) |
+| FX-CLAUDECODE-001 | Claude Code transcript line → Observation parser | docs/plan-claude-code-2026-06-04.md | connectors/claude_code/connector.py | connectors/claude_code/tests/test_claude_code_connector.py | Verified | Catalog P0 (developer-AI tooling, T0); `~/.claude/**/*.jsonl` heterogeneous event log → `parse_session_line` filters to user/assistant/summary (meta/unknown→None); `[claude-code:{kind}] {uuid}` terminal floor; depth-capped + type-defensive (SG-I); PASSIVE; live file-watch/history/git-attribution deferred |
 
 ---
 

@@ -34,6 +34,7 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [mcp_registry](mcp_registry/) | Prototype | active | `parse_server` | — |
 | [continue_dev](continue_dev/) | Prototype | passive | `parse_event` | — |
 | [aider](aider/) | Prototype | passive | `parse_commit` | — |
+| [claude_code](claude_code/) | Prototype | passive | `parse_session_line` | n/a (local file) |
 | [osv](osv/) | Prototype | active | `parse_vuln` | n/a (no-auth) |
 | [sentry](sentry/) | Prototype | webhook | `parse_issue` | ✓ (HMAC) |
 | [pagerduty](pagerduty/) | Prototype | webhook | `parse_event` | ✓ (multi-sig) |
