@@ -836,7 +836,30 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Brought all Tier-1 documentation current with the post-ecosystem-merge reality and added status badges to the primary README. **README**: added CI/Governance-Gate/CodeQL/Security-Scan/OpenSSF-Scorecard workflow badges + License-MIT + Python-3.13 (shields.io); added a "CI Gates" section (10 gates + 6 reusable templates + compliance link); refreshed the repository layout (`scripts/`, `.github/workflows/`) and the test command (`scripts/tests`). **SYSTEM_STATE**: refreshed to Entry #33 reality — seal `5233f1f6`→ this entry, 9 governed cycles, 12 connectors, **152 tests**, 10 gates + 6 reusable templates, file tree + health indicators + next actions. **GOVERNANCE_INDEX**: fixed the stale Meta-Ledger freshness marker (#22→#34) and registered the two missing research briefs (connectors-phase1, connectors-dev-tools) in Tier 5. **CHANGELOG**: populated the `Unreleased` section per Keep-a-Changelog (Added/Changed) covering the adapter core, 12 connectors, CI gate ecosystem, compliance mappings, and the badge/action-bump changes. Doc-currency drift correction; no code or contract change. Governance gate verifies the #1–#34 chain.
 
+### Entry #35: RESEARCH BRIEF (connector value-add — net-new candidates)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(research-brief-connector-value-add-2026-06-04.md)
+= ac13b2e594416b16d92572fe1a4cc567e679c658cf64c00f0c6118bdb2b91b88
+```
+
+**Previous Hash**: 06429651f4b095d21d04d24eb79d904a4a965674b1e45bb976a8c96bac3c428a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ffb288fff961159843df11af546afc60391659e962d8f2bb97de90eb871cdd16
+```
+
+**Decision**: Net-new connector value-add research (operator-scoped: emerging tools). Grounded, cited assessment against §4 criteria across three clusters → catalog updated, no code. **Supply chain**: re-prioritized **OSV.dev P2 → P0** — free/no-auth/versioned read-only API that aggregates GHSA-global/PyPA/RustSec, so standalone npm/RustSec/PyPA connectors are redundant (P3). **AI coding tools (§6.1)**: added **Claude Code P0** (passive `~/.claude/**/*.jsonl` transcripts + attributed commits — richest first-party evidence, T0), **GitHub Copilot P1** + **Cursor P1** (official read-only usage/admin APIs, T1), **Windsurf P2/deferred** (no verifiable API). **Model/agent platforms (§6.9)**: added **OpenAI Admin/Audit P1**, **Anthropic Admin P1**, **Hugging Face Hub P2**, **LangSmith P2** (all read-only T1). **Top-5 value-add shortlist**: OSV.dev, Claude Code, GitHub Copilot, Cursor, OpenAI Admin. All reduce to the existing `parse_* -> Observation -> normalize()` seam (zero contract change); live fetch/auth deferred per convention. SHADOW_GENOME **SG-2026-06-04-J** (build the aggregator; developer-AI evidence is two surfaces). Brief: `docs/research-brief-connector-value-add-2026-06-04.md`. Open questions flagged: Cursor Privacy-Mode impact, Claude Code JSONL schema versioning, Anthropic Compliance API scope, Windsurf API existence.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` documentation current + badged; SEALED at Entry #34 (`06429651`; L1). All Tier-1 docs reconciled with the Entry #33 ecosystem state.*
-*Next required action: none queued — repo current.*
+*Status: `main` SEALED at Entry #35 (`ffb288ff`; L1). Catalog extended with net-new candidates; OSV.dev elevated to P0. No build queued — recommendation only.*
+*Next required action: operator selects the next build target from the shortlist (OSV.dev / Claude Code lead) when ready.*
