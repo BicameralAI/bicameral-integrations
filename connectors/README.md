@@ -38,7 +38,7 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [osv](osv/) | Prototype | active | `parse_vuln` | n/a (no-auth) |
 | [sentry](sentry/) | Prototype | webhook | `parse_issue` | ✓ (HMAC) |
 | [pagerduty](pagerduty/) | Prototype | webhook | `parse_event` | ✓ (multi-sig) |
-| [jira](jira/) | Candidate | — | scaffold (not yet implemented) | — |
+| [jira](jira/) | Prototype | webhook, active | `parse_issue` | ✓ (HMAC, `sha256=`) |
 
 Candidate selection and trust tiers are tracked in the
 [Integration Candidate Catalog](../docs/INTEGRATION_CANDIDATE_CATALOG.md) and the

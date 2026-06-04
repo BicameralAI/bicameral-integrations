@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **30**
-- **Verified**: 30
+- Total entries: **31**
+- **Verified**: 31
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -41,6 +41,7 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-SENTRY-002 | Sentry webhook verify + dedup wiring | docs/plan-webhook-hardening-2026-06-04.md | connectors/sentry/connector.py | connectors/sentry/tests/test_sentry_connector.py | Verified | `SentryConnector.verify`/`normalize_event` (hex HMAC over RAW body; injected secret/dedup; self-guarded; best-effort dedup, no replay window per Sentry); live HTTP receipt deferred |
 | FX-PAGERDUTY-002 | PagerDuty webhook verify + dedup wiring | docs/plan-webhook-hardening-2026-06-04.md | connectors/pagerduty/connector.py | connectors/pagerduty/tests/test_pagerduty_connector.py | Verified | `PagerDutyConnector.verify`/`normalize_event` (multi-signature `v1=` membership via `verify_hmac_hex_multi`; injected secret/dedup; self-guarded); live HTTP receipt deferred; first-party scheme spot-check pending (BACKLOG) |
 | FX-CLAUDECODE-001 | Claude Code transcript line → Observation parser | docs/plan-claude-code-2026-06-04.md | connectors/claude_code/connector.py | connectors/claude_code/tests/test_claude_code_connector.py | Verified | Catalog P0 (developer-AI tooling, T0); `~/.claude/**/*.jsonl` heterogeneous event log → `parse_session_line` filters to user/assistant/summary (meta/unknown→None); `[claude-code:{kind}] {uuid}` terminal floor; depth-capped + type-defensive (SG-I); PASSIVE; live file-watch/history/git-attribution deferred |
+| FX-JIRA-001 | Jira Cloud issue webhook → Observation parser + verify | docs/plan-jira-2026-06-04.md | connectors/jira/connector.py | connectors/jira/tests/test_jira_connector.py | Verified | Catalog P0 (project-management, T1); `parse_issue` (summary→excerpt, never ADF description, `jira-issue` floor); `JiraConnector.verify`/`normalize_event` (`X-Hub-Signature` `sha256=` hex HMAC over raw body, fail-closed; best-effort dedup on `X-Atlassian-Webhook-Identifier`); WEBHOOK+ACTIVE; live HTTP/REST + Connect-JWT deferred |
 
 ---
 

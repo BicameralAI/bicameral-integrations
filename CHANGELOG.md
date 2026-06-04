@@ -15,8 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   GitHub, Fathom, Linear, Granola, local-directory, Google Drive, SARIF, Slack,
   Notion, MCP Registry, Continue, Aider, the Phase-2 security/operational
   evidence connectors — OSV.dev (supply-chain vulnerability aggregator), Sentry
-  (runtime issue), and PagerDuty (incident) — and Claude Code (developer-AI
-  session transcripts) — plus a Jira scaffold.
+  (runtime issue), and PagerDuty (incident) — Claude Code (developer-AI
+  session transcripts), and Jira Cloud (issue webhooks, signature-verified) —
+  completing the Phase-1 foundation set.
 - CI governance/security gate ecosystem: governance-integrity gate
   (ledger hash-chain + feature-index), CodeQL, Bandit, OpenSSF Scorecard, SBOM +
   attestation, dependency-review, secret scan, and quality/PR-hygiene gates —
