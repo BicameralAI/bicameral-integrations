@@ -6,8 +6,8 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-04 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | `main` + **go-live runtime boundary** (ADR-0012) — `runtime/` library layer shipped; **Linear promoted to Beta** (end-to-end, zero cross-repo dep); docs refreshed each cycle close |
-| **Iteration** | 16 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; security-queue remediation; Phase-2 connectors OSV/Sentry/PagerDuty; Claude Code; **Jira**; phantom-blocker correction; **go-live runtime boundary + Linear→Beta**) |
+| **Phase** | `main` + **Beta cohort** (ADR-0012) — Fathom/Sentry/PagerDuty promoted to Beta via the `runtime/` harness; **4 Beta connectors** (incl. Linear), zero cross-repo dep; docs refreshed each cycle close |
+| **Iteration** | 17 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; security-queue remediation; Phase-2 connectors OSV/Sentry/PagerDuty; Claude Code; Jira; phantom-blocker correction; go-live runtime boundary + Linear→Beta; **Beta cohort Fathom/Sentry/PagerDuty**) |
 | **Session Seal** | `8e5f6d1e` (META_LEDGER Entry #55 chain hash) |
 
 ---
@@ -57,10 +57,10 @@ bicameral-integrations/
 | Metric | Value |
 |--------|-------|
 | Source connector packages (with `connector.py`) | 17 (github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) — no Candidates left |
-| Readiness ladder (ADR-0012) | **Beta**: linear (1) · **Prototype**: remaining 16 · **Live**: 0 (gated on bot #109) |
+| Readiness ladder (ADR-0012) | **Beta**: linear, fathom, sentry, pagerduty (4 — all verify-wired, proven end-to-end via the runtime harness) · **Prototype**: 13 · **Live**: 0 (gated on bot #109) |
 | Runtime boundary | `runtime/` library layer (sinks + secrets + delivery); GatewaySink #109-gated stub |
 | Total Test Files | 23 (adapter/core + connectors + runtime + scripts) |
-| Pytest | 209 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
+| Pytest | 216 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
 | Webhook verify wired | fathom, linear, sentry, pagerduty, jira (Svix/HMAC/multi-sig/sha256= + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
@@ -125,7 +125,7 @@ bicameral-integrations/
 | PagerDuty connector | connectors/pagerduty/tests/test_pagerduty_connector.py | OK |
 | Claude Code connector | connectors/claude_code/tests/test_claude_code_connector.py | OK |
 | Jira connector | connectors/jira/tests/test_jira_connector.py | OK |
-| Runtime boundary (sinks/delivery/secrets; Linear Beta end-to-end) | runtime/tests/test_runtime.py | OK (7) |
+| Runtime boundary (sinks/delivery/secrets; linear/fathom/sentry/pagerduty Beta end-to-end + OSV poll + missing-header fail-closed) | runtime/tests/test_runtime.py | OK (14) |
 | Governance gate (chain + feature-index + `--repo-root`) | scripts/tests/test_governance_gate.py | OK |
 | License-header scan | scripts/tests/test_check_license_headers.py | OK |
 
@@ -138,7 +138,7 @@ bicameral-integrations/
 | Ledger Chain | VALID | through Entry #55 (`8e5f6d1e`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 209 passing; ruff + mypy clean (92 files) |
+| Test Status | PASS | 216 passing; ruff + mypy clean (92 files) |
 | CI Gates | GREEN (on `main`) | governance-integrity + CodeQL/Bandit/dep-review/Scorecard/SBOM/quality/PR-hygiene + TruffleHog; SHA-pinned; reusable `workflow_call` templates; all PRs merged + CI-verified |
 
 ---
@@ -152,7 +152,8 @@ bicameral-integrations/
 - [x] **Phase-2 connectors** OSV/Sentry/PagerDuty merged (PR #23, Entry #40).
 - [x] **Phase-2 webhook hardening** Sentry + PagerDuty verify/dedup wired (FX-SENTRY-002/FX-PAGERDUTY-002); **Claude Code** (FX-CLAUDECODE-001) + **Jira** (FX-JIRA-001) connectors built — 17 connectors, no Candidates left.
 - [x] **Go-live runtime boundary** (ADR-0012) shipped: `runtime/` library layer (sinks/secrets/delivery, GatewaySink #109-gated stub) + **Linear → Beta** end-to-end (Entry #55, FX-RUNTIME-001).
-- [ ] **Promote a 2nd connector to Beta (next)**: Fathom / Sentry / PagerDuty (all verify-wired) via the `runtime/` harness — same readiness-promotion pattern as Linear.
+- [x] **Beta cohort promoted**: Fathom (Svix) + Sentry (HMAC) + PagerDuty (multi-sig membership) proven end-to-end via the `runtime/` harness — **4 Beta connectors** (incl. Linear), zero cross-repo dep.
+- [ ] **Promote further to Beta (next)**: GitHub (active+webhook — needs verify wiring first), then Live-stage prep when bot #109 lands.
 - [ ] **Connector build-out (next)**: GitHub Copilot / Cursor / OpenAI-Anthropic Admin (P1 read APIs) — from the value-add shortlist; B9 Devin (P1).
 - [ ] `mods/` structure is under active build by **Codex** — not edited by this (connector/hardening) track.
 - [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).

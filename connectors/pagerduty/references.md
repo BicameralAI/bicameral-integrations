@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P1 |
 | Default trust tier | T1 |
 | Integration role | incident/on-call evidence |
-| Readiness (lifecycle) | Prototype |
+| Readiness (lifecycle) | Beta (parse + multi-signature `v1=` membership verify, proven end-to-end through the `runtime/` harness against a reference sink; ADR-0012) |
 
 ## Provider documentation (verify on refresh)
 
