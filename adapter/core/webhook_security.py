@@ -100,6 +100,29 @@ def verify_hmac_hex(*, header_sig: str | None, body: bytes, secret: str) -> None
         raise WebhookVerificationError("signature mismatch")
 
 
+def verify_hmac_hex_multi(*, header_sig: str | None, body: bytes, secret: str) -> None:
+    """Verify a comma-separated ``v1=<hex>`` HMAC-SHA256 set (key rotation), or raise.
+
+    PagerDuty's ``X-PagerDuty-Signature`` sends a digest under every active
+    signing secret during rotation: ``v1=<hex>,v1=<hex>``. Accept if ANY ``v1=``
+    candidate matches (constant-time); fail-closed on every other path. The
+    expected digest is always a 64-char hexdigest, so a bare ``v1=`` (empty
+    candidate) can never match.
+    """
+    if not secret:
+        raise WebhookVerificationError("no webhook secret configured")
+    if not isinstance(header_sig, str) or not header_sig:
+        raise WebhookVerificationError("missing signature header")
+    candidates = [
+        part.strip()[3:] for part in header_sig.split(",") if part.strip().startswith("v1=")
+    ]
+    if not candidates:
+        raise WebhookVerificationError("no v1= signature candidate")
+    expected = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
+    if not any(hmac.compare_digest(candidate, expected) for candidate in candidates):
+        raise WebhookVerificationError("no matching signature")
+
+
 class DeliveryDedupCache:
     """Bounded, partitioned LRU + TTL cache for webhook delivery dedup.
 
