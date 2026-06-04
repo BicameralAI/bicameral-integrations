@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **19**
-- **Verified**: 19
+- Total entries: **21**
+- **Verified**: 21
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -33,6 +33,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-SLACK-001 | Slack message event → Observation parser | docs/plan-connectors-phase1-2026-06-04.md | connectors/slack/connector.py | connectors/slack/tests/test_slack_connector.py | Verified | Catalog P0 (communication, T2); `event_callback` envelope or bare message; edit-subtype nested-message unwrap; pinned non-empty excerpt fallback; live Events-API/signature-verify + notify/write (T3+) deferred |
 | FX-NOTION-001 | Notion page → Observation parser | docs/plan-connectors-phase1-2026-06-04.md | connectors/notion/connector.py | connectors/notion/tests/test_notion_connector.py | Verified | Catalog P0 (docs, T1); title via `type=="title"` property (id → `notion-page` terminal floor); ACTIVE+WEBHOOK declared, live API/OAuth/block-fetch deferred |
 | FX-MCPREG-001 | MCP Registry server entry → Observation parser | docs/plan-connectors-phase1-2026-06-04.md | connectors/mcp_registry/connector.py | connectors/mcp_registry/tests/test_mcp_registry_connector.py | Verified | Catalog P0 (mcp/agent-ecosystem, T1); `server.json` title/description→excerpt, repository.url→url; ACTIVE; read-only scoring/allowlist, live registry-fetch deferred |
+| FX-CONTINUE-001 | Continue dev-data event → Observation parser | docs/plan-connectors-dev-tools-2026-06-04.md | connectors/continue_dev/connector.py | connectors/continue_dev/tests/test_continue_connector.py | Verified | Catalog P1 (developer-AI tooling, T0); dev-data JSONL event, prompt/completion→excerpt with `continue {name}` terminal floor; PASSIVE; package `continue_dev` (keyword), source_id `continue`; live file-watch/HTTP-sink/Hub deferred |
+| FX-AIDER-001 | Aider attributed git commit → Observation parser | docs/plan-connectors-dev-tools-2026-06-04.md | connectors/aider/connector.py | connectors/aider/tests/test_aider_connector.py | Verified | Catalog P1 (developer-AI tooling, T0); `(aider)` author/committer or Co-authored-by trailer → attributed_by; subject→excerpt with hash→`aider-commit` floor; PASSIVE; live git-log walk + analytics/chat-history deferred |
 
 ---
 
