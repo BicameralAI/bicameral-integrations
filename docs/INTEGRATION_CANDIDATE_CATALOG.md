@@ -94,6 +94,27 @@ Each integration candidate should be evaluated against the following criteria.
 - Is there a changelog?
 - Is there an enterprise support path or community maintenance signal?
 
+### Surface selection (the interactivity test)
+
+A candidate can often be reached two ways: a read-only **API / webhook / file adapter**
+(this repo — T0/T1 evidence, `parse_* -> Observation -> normalize()`) or an **MCP server**
+(`bicameral-mcp` — T3/T5 agent tool-calling with action authority). Choose by asking one
+question first: **does the use case require an agent to act interactively at inference time?**
+
+- **No — this is the default.** The system is a source of evidence/provenance to ingest →
+  build a direct evidence adapter here. Benefits over an MCP path: real-time **push**
+  (webhooks); **deterministic, hash-chainable** provenance for the ledger; **least authority**
+  (read-only T0/T1, not T3/T5); no agent/server/protocol runtime dependency; batch scale.
+- **Yes — this is the edge case.** An agent must call tools and cause side effects → that
+  belongs in `bicameral-mcp` as a governed MCP server (policy + approval gates), not here.
+
+MCP is **pull-only**, so any push/webhook evidence (real-time decision/event capture) can
+*only* come through a direct adapter. A system may warrant **both** surfaces for different
+purposes (e.g. GitHub: MCP for governed actions, API/webhook for evidence) — keep them
+separate so read-only evidence never rides a high-authority channel. The `mcp_registry`
+connector models the correct relationship: ingest evidence *about* MCP, don't transport
+*through* it. Companion to §3 and ADR-0008 (evidence adapters, not authorities).
+
 ## 5. Priority Legend
 
 - P0: Foundational. Should be supported early.
