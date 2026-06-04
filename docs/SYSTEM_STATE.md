@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-04 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | MERGED to `main` — Phase-2 connectors + security-queue remediation landed; docs refreshed each cycle close |
-| **Iteration** | 13 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; **security-queue remediation**; **Phase-2 connectors OSV/Sentry/PagerDuty**) |
-| **Session Seal** | `b5ebb27c` (META_LEDGER Entry #51 chain hash) |
+| **Phase** | `main` + **go-live runtime boundary** (ADR-0012) — `runtime/` library layer shipped; **Linear promoted to Beta** (end-to-end, zero cross-repo dep); docs refreshed each cycle close |
+| **Iteration** | 16 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; CI governance/security gate ecosystem; 4 Phase-1 parse surfaces + doc pass; Continue + Aider; reusable-workflow gate templates; AGT-sidecar evaluation; connector value-add research + surface-selection doctrine; security-queue remediation; Phase-2 connectors OSV/Sentry/PagerDuty; Claude Code; **Jira**; phantom-blocker correction; **go-live runtime boundary + Linear→Beta**) |
+| **Session Seal** | `8e5f6d1e` (META_LEDGER Entry #55 chain hash) |
 
 ---
 
@@ -35,7 +35,11 @@ bicameral-integrations/
 |   |-- osv/            (vulnerability record -> Observation; ACTIVE; T1 no-auth)
 |   |-- sentry/         (issue webhook -> Observation; WEBHOOK; T1)
 |   |-- pagerduty/      (incident webhook -> Observation; WEBHOOK; T1)
-|   `-- jira/           (scaffold — Candidate, no connector.py yet)
+|   |-- claude_code/    (transcript line -> Observation; PASSIVE; T0)
+|   `-- jira/           (issue webhook -> Observation + verify; WEBHOOK+ACTIVE; T1)
+|-- runtime/  (operator-runtime boundary, ADR-0012: sinks, secrets, delivery + tests
+|              — EmissionSink/SecretResolver Protocols, deliver_webhook/deliver_poll,
+|              GatewaySink #109-gated stub; drives connector ingest->emit, library-only)
 |-- mods/  (structure under active build by Codex — not edited by this track)
 |-- scripts/  (governance_gate.py + check_license_headers.py + tests/)
 |-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME, SYSTEM_STATE,
@@ -52,9 +56,11 @@ bicameral-integrations/
 
 | Metric | Value |
 |--------|-------|
-| Source connector packages (with `connector.py`) | 17 (+ jira, now implemented — no Candidates left) (+ osv, sentry, pagerduty; + github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider) + jira scaffold |
-| Total Test Files | 22 (adapter/core + connectors + scripts) |
-| Pytest | 202 passed (adapter/core/tests + connectors + scripts/tests) |
+| Source connector packages (with `connector.py`) | 17 (github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) — no Candidates left |
+| Readiness ladder (ADR-0012) | **Beta**: linear (1) · **Prototype**: remaining 16 · **Live**: 0 (gated on bot #109) |
+| Runtime boundary | `runtime/` library layer (sinks + secrets + delivery); GatewaySink #109-gated stub |
+| Total Test Files | 23 (adapter/core + connectors + runtime + scripts) |
+| Pytest | 209 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
 | Webhook verify wired | fathom, linear, sentry, pagerduty, jira (Svix/HMAC/multi-sig/sha256= + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
@@ -117,6 +123,9 @@ bicameral-integrations/
 | OSV connector | connectors/osv/tests/test_osv_connector.py | OK |
 | Sentry connector | connectors/sentry/tests/test_sentry_connector.py | OK |
 | PagerDuty connector | connectors/pagerduty/tests/test_pagerduty_connector.py | OK |
+| Claude Code connector | connectors/claude_code/tests/test_claude_code_connector.py | OK |
+| Jira connector | connectors/jira/tests/test_jira_connector.py | OK |
+| Runtime boundary (sinks/delivery/secrets; Linear Beta end-to-end) | runtime/tests/test_runtime.py | OK (7) |
 | Governance gate (chain + feature-index + `--repo-root`) | scripts/tests/test_governance_gate.py | OK |
 | License-header scan | scripts/tests/test_check_license_headers.py | OK |
 
@@ -126,10 +135,10 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #51 (`b5ebb27c`); machine-verified by `scripts/governance_gate.py` |
-| Blueprint Sync | SYNCED | ADRs + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs + badges current |
+| Ledger Chain | VALID | through Entry #55 (`8e5f6d1e`); machine-verified by `scripts/governance_gate.py` |
+| Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 202 passing; ruff + mypy clean (79 files) |
+| Test Status | PASS | 209 passing; ruff + mypy clean (92 files) |
 | CI Gates | GREEN (on `main`) | governance-integrity + CodeQL/Bandit/dep-review/Scorecard/SBOM/quality/PR-hygiene + TruffleHog; SHA-pinned; reusable `workflow_call` templates; all PRs merged + CI-verified |
 
 ---
@@ -141,8 +150,10 @@ bicameral-integrations/
 - [x] **Continue + Aider** connectors merged (PR #16); dependabot CI bumps (#12/#13/#17). All open PRs reconciled onto `main` in order.
 - [x] **Security & quality queue** remediated (PR #22, Entry #37): CodeQL URL-host fix + action SHA-pins; 14 alerts closed, 2 admin-gated open (B5).
 - [x] **Phase-2 connectors** OSV/Sentry/PagerDuty merged (PR #23, Entry #40).
-- [ ] **Connector hardening (next)**: Sentry + PagerDuty live webhook signature verification (HMAC + replay dedup) — extend `adapter/core/webhook_security.py`; PagerDuty needs multi-signature rotation membership-check. Then `verify()`/`normalize_event()` wiring per the Linear/Fathom pattern.
-- [ ] **Connector build-out (next)**: Claude Code (P0, passive transcripts/commits), then GitHub Copilot / Cursor / OpenAI-Anthropic Admin (P1 read APIs) — from the value-add shortlist.
+- [x] **Phase-2 webhook hardening** Sentry + PagerDuty verify/dedup wired (FX-SENTRY-002/FX-PAGERDUTY-002); **Claude Code** (FX-CLAUDECODE-001) + **Jira** (FX-JIRA-001) connectors built — 17 connectors, no Candidates left.
+- [x] **Go-live runtime boundary** (ADR-0012) shipped: `runtime/` library layer (sinks/secrets/delivery, GatewaySink #109-gated stub) + **Linear → Beta** end-to-end (Entry #55, FX-RUNTIME-001).
+- [ ] **Promote a 2nd connector to Beta (next)**: Fathom / Sentry / PagerDuty (all verify-wired) via the `runtime/` harness — same readiness-promotion pattern as Linear.
+- [ ] **Connector build-out (next)**: GitHub Copilot / Cursor / OpenAI-Anthropic Admin (P1 read APIs) — from the value-add shortlist; B9 Devin (P1).
 - [ ] `mods/` structure is under active build by **Codex** — not edited by this (connector/hardening) track.
 - [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).
 - [ ] adapter→gateway emission: map `AdapterEmission` to the **published** v1 ingest schema (bot PR #95, `protocol/schemas/v1/`) + a conformance test. The schema is NOT a blocker; *safe* live emission gates on the cross-repo deps below.

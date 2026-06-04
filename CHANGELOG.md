@@ -27,6 +27,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - ADR-0011 proposing Bicameral Review Bot as a first-party, evidence-first PR
   review workflow that can operate without external AI-review rate-limit
   availability.
+- Operator-runtime boundary layer (`runtime/`, ADR-0012): a framework-free
+  library seam — `EmissionSink`/`SecretResolver` protocols, a reference
+  `CollectingSink`, `MappingSecretResolver`, and `deliver_webhook`/`deliver_poll`
+  orchestration — that lets an operator host drive a connector's
+  ingest → verify → normalize → emit path without this repo becoming a server.
+  Gateway emission is a stubbed `GatewaySink` that fails closed until the
+  upstream ingest guards land.
+- ADR-0012 introducing the connector readiness ladder
+  (Candidate → Prototype → Beta → Live); **Linear** is the first connector
+  promoted to **Beta** (proven end-to-end through the runtime harness against a
+  reference sink, with no cross-repo dependency).
 - Repository governance and the Qor lifecycle documentation set.
 
 ### Changed

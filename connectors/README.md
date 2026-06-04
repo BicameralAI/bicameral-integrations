@@ -17,6 +17,11 @@ payload parsing, exercised against synthetic fixtures.
 
 ## Index
 
+**Readiness ladder** (ADR-0012): `Candidate → Prototype → Beta → Live`. **Beta**
+= proven end-to-end through the [`runtime/`](../runtime/README.md) harness
+(ingest → verify → normalize → emit) against a reference sink, with zero
+cross-repo dependency. **Live** (gateway emission) is gated on bicameral-bot #109.
+
 "Verify" = webhook signature verification (`verify()`/`normalize_event()` HMAC +
 dedup) is wired; "—" = parse-only or live verification deferred.
 
@@ -24,7 +29,7 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 |---|---|---|---|---|
 | [github](github/) | Prototype | active, webhook | `parse_pull_request` | — |
 | [fathom](fathom/) | Prototype | passive, webhook | `parse_meeting` | ✓ (Svix) |
-| [linear](linear/) | Prototype | webhook, active | `parse_event` | ✓ (HMAC + 60s replay) |
+| [linear](linear/) | **Beta** | webhook, active | `parse_event` | ✓ (HMAC + 60s replay) |
 | [granola](granola/) | Prototype | passive | `parse_transcript` | — |
 | [local_directory](local_directory/) | Prototype | passive | `parse_file` | — |
 | [google_drive](google_drive/) | Prototype | active | `parse_document` | — |

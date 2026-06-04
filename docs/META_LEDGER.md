@@ -1263,7 +1263,79 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Operator caught a **phantom cross-repo blocker**. The repeated claim "gateway bridge blocked on bicameral-bot #99 (v1 protocol schema)" was wrong — **bot #99 is a CLOSED integration PR**, not an open schema issue (verified `gh api`). It had propagated into `docs/SYSTEM_STATE.md` (Missing + Next Actions) and operator memory (META_LEDGER carried no `#99`). **Corrected with verified ground truth (2026-06-04):** the v1 ingest wire schema is **published** (bot PR #95, `protocol/schemas/v1/`); the real OPEN emission-safety gate is bot **#109** (gateway `/api/v1/ingest` lacks size/rate/prompt-injection/sensitive-data guards); internal ingest authority is mid-refactor (MCP→ToolRequest: bot #114/#115/#116/#117/#120 + #123 conformance); #73 (release signing) open; #108 (gateway mutation authority) CLOSED. SYSTEM_STATE Missing + Next-Actions rewritten; memory updated. **Second integrity fix:** the ledger cited **SG-2026-06-04-L** (Entry #47) and **SG-2026-06-04-M** (Entries #49/#51) but those blocks were never written into `SHADOW_GENOME.md` (only A–K existed) — **backfilled L (Claude Code filtering) + M (Jira `sha256=` signing / ADF≠text)** and added **SG-2026-06-04-N** (verify cross-repo citations before putting them in a Tier-1 artifact). Doc-correction only; no code change. Chain verifies #1–#52.
 
+### Entry #53: ADR + DESIGN (connector readiness ladder + live-ingest runtime boundary)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH / DECISION
+**Author**: Analyst / Governor (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md)
+= 85991d5bb2d1be5884620baea38faedc33271ea352c6800cbf639ff60cf68fc7
+```
+
+**Previous Hash**: 458df5b23f53109f8d3f9f7e5f24a14d5bd9152376dd05d5f12f885f3cdd86a4
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5f60de19425fcc3ef1bdb8902177b29bd364762cff33b74310ff0c76062a7077
+```
+
+**Decision**: Answered the operator's breadth-vs-depth concern ("everything is a prototype") with **ADR-0012** — a **connector readiness ladder** (`Candidate → Prototype → Beta → Live`) plus a runtime boundary architecture. Key call: the repo stays a **library, not a server** (preserving stdlib-only + ADR-0006/`auth.md` "operator runtime owns the live HTTP boundary"); a thin `runtime/` layer (EmissionSink + SecretResolver Protocols, `deliver_webhook`/`deliver_poll` orchestration) lets a connector reach **Beta** — proven end-to-end `ingest→verify→normalize→emit` against a reference sink with **zero cross-repo dependency**. Only **Live** (gateway emission) is gated on bicameral-bot **#109**; `GatewaySink` is a #109-gated stub that *raises* rather than guess the `AdapterEmission → protocol/schemas/v1/` field mapping. First Beta target = **Linear** (already verify-wired). → `/qor-plan` (`docs/plan-go-live-runtime-2026-06-04.md`).
+
+### Entry #54: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-go-live-runtime-2026-06-04.md)
+= de0d9e39dbdb8fd658dbe19b4c6fa69ab26e4f3eafae4a5ec0518b3df2be005e
+```
+
+**Previous Hash**: 5f60de19425fcc3ef1bdb8902177b29bd364762cff33b74310ff0c76062a7077
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ffde3486f969c5a78d55a45ae2ea1481ecda4241923c7a9706d9cc7348292951
+```
+
+**Verdict**: **PASS** (iteration 2). Iter-1 **VETO**: the plan would have shipped `runtime/` outside the CI gate scope (`ci.yml`/`quality.yml` only ran `adapter connectors`) — a new package CI-uncovered, including the load-bearing #109 `GatewayEmissionGated` assertion. Remediated: Phase 3 now extends ruff/mypy/pytest (`ci.yml`) + codespell/license (`quality.yml`) scopes to `runtime`. Re-audit clean: boundary is library-only (no server, no live HTTP, stdlib-only intact); `GatewaySink` fails-closed by raising (SG-2026-06-04-B — no fail-open emission); `EmissionContractError` propagates to the operator, never swallowed; Linear→Beta is a readiness promotion (no connector-code change), Beta has zero cross-repo dependency. `mods/` untouched. Cleared to `/qor-implement`. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+---
+
+### Entry #55: SESSION SEAL (go-live runtime boundary + Linear → Beta)
+
+**Entry ID**: `g0l1veBeta01`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 223144fecd3bf2b4ff2f98adb16bd258b755f1dc440f1da5ecb341e907ed896d
+```
+
+**Previous Hash**: ffde3486f969c5a78d55a45ae2ea1481ecda4241923c7a9706d9cc7348292951
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 8e5f6d1e5d60a52fa2f17059ceedd73214d8dd4556a5d8ab9ff7d97223407caa
+```
+
+**Decision**: PASS-audit (Entry #54) implemented + substantiated. Shipped the **`runtime/` operator-runtime boundary layer** (ADR-0012): `EmissionSink`/`SecretResolver` Protocols + `CollectingSink` (reference) + `GatewaySink` (#109-gated stub raising `GatewayEmissionGated`) + `MappingSecretResolver` + `deliver_webhook`/`deliver_poll` orchestration — driving a connector `ingest→verify→normalize→emit` **without the repo becoming a server** (stdlib-only intact). Promoted **Linear → Beta** (first Beta connector): its signed-webhook → `deliver_webhook` → reference-sink path is proven end-to-end with **zero cross-repo dependency**; readiness ladder legend added to `connectors/README.md`. CI scope extended to `runtime` (ruff/mypy/pytest + codespell/license). **Independent review** (observer + devil's advocate): observer Reality==Promise (D1 library-not-server, D2 protocols+sinks+delivery, D4 all four assertions present/green); devil's advocate **0 blocking / 0 non-blocking** — the layer orchestrates already-hardened pieces (no new untrusted-input parsing); confirmed `GatewaySink` fails-closed (raises, asserted by test), non-dict/bad-sig webhook → 0 emissions (no crash, Linear `verify` self-guards), `EmissionContractError` propagates to operator (documented, atomic-batch). SHADOW_GENOME SG-2026-06-04-B reinforced (gateway emission fails closed). **Verification**: pytest **209 passed**, ruff + mypy clean (92 files), governance gate verifies the #1–#54 chain. FEATURE_INDEX **FX-RUNTIME-001** Verified (32 total). ADR-0012 registered (GOVERNANCE_INDEX Tier 5). Docs refreshed per the end-of-cycle cadence; `mods/` left to Codex.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` corrected + SEALED at Entry #52 (`458df5b2`; L1). Phantom bot-#99 blocker removed; real emission gate = bot #109 + MCP→ToolRequest reshaping; SHADOW_GENOME L/M backfilled + N added.*
-*Next required action: go-live depth cycle (GitHub/Linear Prototype→live-ingesting; emission gated on bot #109). Open: B8 PagerDuty spot-check, B9 Devin, B5/B6 admin.*
+*Status: `main` + go-live runtime boundary SEALED at Entry #55 (`8e5f6d1e`; L2). `runtime/` library boundary shipped; **Linear is the first Beta connector** (end-to-end, zero cross-repo dep); Live emission remains gated on bot #109 (`GatewaySink` raises).*
+*Next required action: promote a second connector to Beta (Fathom/Sentry/PagerDuty — all verify-wired) via the runtime harness. Open: B8 PagerDuty spot-check, B9 Devin, B5/B6 admin; Live emission on bot #109.*
