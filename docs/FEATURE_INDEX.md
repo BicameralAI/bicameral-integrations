@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **24**
-- **Verified**: 24
+- Total entries: **27**
+- **Verified**: 27
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -35,6 +35,9 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-MCPREG-001 | MCP Registry server entry → Observation parser | docs/plan-connectors-phase1-2026-06-04.md | connectors/mcp_registry/connector.py | connectors/mcp_registry/tests/test_mcp_registry_connector.py | Verified | Catalog P0 (mcp/agent-ecosystem, T1); `server.json` title/description→excerpt, repository.url→url; ACTIVE; read-only scoring/allowlist, live registry-fetch deferred |
 | FX-CONTINUE-001 | Continue dev-data event → Observation parser | docs/plan-connectors-dev-tools-2026-06-04.md | connectors/continue_dev/connector.py | connectors/continue_dev/tests/test_continue_connector.py | Verified | Catalog P1 (developer-AI tooling, T0); dev-data JSONL event, prompt/completion→excerpt with `continue {name}` terminal floor; PASSIVE; package `continue_dev` (keyword), source_id `continue`; live file-watch/HTTP-sink/Hub deferred |
 | FX-AIDER-001 | Aider attributed git commit → Observation parser | docs/plan-connectors-dev-tools-2026-06-04.md | connectors/aider/connector.py | connectors/aider/tests/test_aider_connector.py | Verified | Catalog P1 (developer-AI tooling, T0); `(aider)` author/committer or Co-authored-by trailer → attributed_by; subject→excerpt with hash→`aider-commit` floor; PASSIVE; live git-log walk + analytics/chat-history deferred |
+| FX-OSV-001 | OSV.dev vulnerability record → Observation parser | docs/plan-connectors-phase2-2026-06-04.md | connectors/osv/connector.py | connectors/osv/tests/test_osv_connector.py | Verified | Catalog P0 (security-evidence, T1 no-auth); supply-chain aggregator (GHSA/PyPA/RustSec); summary→excerpt with details→id floor; ACTIVE; SG-I defensive (all-optional schema); live query client deferred |
+| FX-SENTRY-001 | Sentry issue webhook → Observation parser | docs/plan-connectors-phase2-2026-06-04.md | connectors/sentry/connector.py | connectors/sentry/tests/test_sentry_connector.py | Verified | Catalog P1 (observability/incident, T1); `data.issue` unwrap; title→excerpt with culprit/shortId/id floor; WEBHOOK; live Events-API/`Sentry-Hook-Signature` verify deferred |
+| FX-PAGERDUTY-001 | PagerDuty v3 incident webhook → Observation parser | docs/plan-connectors-phase2-2026-06-04.md | connectors/pagerduty/connector.py | connectors/pagerduty/tests/test_pagerduty_connector.py | Verified | Catalog P1 (observability/incident, T1); nested `event.data` unwrap; title→excerpt with summary/id floor; WEBHOOK; live multi-signature `X-PagerDuty-Signature` verify deferred |
 
 ---
 

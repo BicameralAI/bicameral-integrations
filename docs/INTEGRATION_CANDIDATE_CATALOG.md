@@ -186,21 +186,21 @@ connector models the correct relationship: ingest evidence *about* MCP, don't tr
 | Integration | Priority | Bicameral value | Initial mode | Default trust tier | Notes |
 |---|---:|---|---|---|---|
 | SARIF 2.1.0 | P0 | Standardized static-analysis evidence | File ingest | T0 | Foundational security evidence format. |
-| GitHub Code Scanning / CodeQL | P0 | Code security findings tied to repos and commits | API ingest | T1 | Strong GitHub-native security signal. |
-| Semgrep | P1 | SAST, SCA, secrets, custom rule findings | API/file ingest | T1/T3 | Strong practical scanning integration. |
+| GitHub Code Scanning / CodeQL | P2 | Code security findings tied to repos and commits | API ingest | T1 | **Largely subsumed by SARIF** (the built `sarif` connector); the alerts API is a lossy projection — net-new value is only alert `state`/`dismissed_reason`. Defer; reuse the `sarif` Observation shape if built. |
+| OSV.dev | **P0 — Prototype** | Cross-ecosystem vulnerability evidence by package version or commit | Read-only API (free, no-auth, versioned) | T1 | **Built** (`connectors/osv`, `parse_vuln`). The supply-chain aggregator — covers GHSA-global, PyPA, RustSec, so standalone npm / RustSec / PyPA connectors are redundant (P3). Live query client deferred. |
+| Semgrep | P3 | SAST, SCA, secrets, custom rule findings | Ingest via `sarif` connector (`semgrep --sarif`) | T0 | **Subsumed by SARIF** — `semgrep --sarif` is standard SARIF 2.1.0; no dedicated connector (document, don't duplicate). |
 | Snyk | P1 | Dependency/container/code vulnerability findings | API/webhook ingest | T1/T3 | Webhooks currently require beta-awareness. |
 | Dependabot | P1 | Dependency alerts and update PRs | GitHub API ingest | T1 | Usually captured through GitHub. |
 | Trivy | P2 | Container, filesystem, SBOM, IaC scanning | File/CI ingest | T0/T1 | Good local and CI evidence source. |
-| OSV.dev | P0 | Cross-ecosystem vulnerability evidence by package version or commit | Read-only API (free, no-auth, versioned) | T1 | The supply-chain aggregator — already covers GHSA-global, PyPA (PYSEC), and RustSec, so standalone npm / RustSec / PyPA advisory connectors are redundant (P3). |
 | OWASP Dependency-Track | P2 | SBOM and component risk tracking | API/webhook ingest | T1/T3 | Strong compliance/security pipeline candidate. |
 
 ### 6.7 Observability and Incident Systems
 
 | Integration | Priority | Bicameral value | Initial mode | Default trust tier | Notes |
 |---|---:|---|---|---|---|
-| Sentry | P1 | Runtime error correlation to changes and decisions | Webhook/API ingest | T1/T3 | Strong regression and impact evidence. |
-| Datadog | P1 | Monitors, metrics, logs, events, incidents | Webhook/API ingest | T1/T3 | High enterprise value. |
-| PagerDuty | P1 | Incidents, escalation history, operational impact | Webhook/API ingest | T1/T3 | Strong operational accountability signal. |
+| Sentry | **P1 — Prototype** | Runtime error correlation to changes and decisions | Webhook ingest | T1 | **Built** (`connectors/sentry`, `parse_issue`, `data.issue` unwrap). Live `Sentry-Hook-Signature` verify deferred. |
+| PagerDuty | **P1 — Prototype** | Incidents, escalation history, operational impact | Webhook ingest | T1 | **Built** (`connectors/pagerduty`, `parse_event`, nested `event.data`). Live multi-signature `X-PagerDuty-Signature` verify deferred. |
+| Datadog | P2 | Monitors, metrics, logs, events, incidents | Webhook/API ingest | T2 | Deferred — dual-key (DD-API-KEY + DD-APPLICATION-KEY → T2) auth + noisy mixed-source events needing `alert_type` filtering before evidence-grade. |
 | New Relic | P2 | Alert and observability context | Notification/API ingest | T1/T3 | Useful where New Relic is primary APM. |
 | Grafana | P2 | Alerts, dashboards, incident context | Webhook/API ingest | T1/T3 | Strong OSS/infra signal. |
 | Prometheus Alertmanager | P2 | Alert stream evidence | Webhook ingest | T1 | Good low-level infra signal. |

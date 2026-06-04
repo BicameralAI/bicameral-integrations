@@ -906,7 +906,79 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Triaged the 17 open GitHub code-scanning alerts (parallel triage agent) and converted them to remediation actions. **FIX (code, CodeQL HIGH #17)**: `py/incomplete-url-substring-sanitization` in `GitHubConnector.can_handle_ref` — replaced the `"github.com" in ref.url` substring test (which also matched `github.com.evil.com` / `evil-github.com`) with a `urllib.urlsplit` host check (`host == "github.com" or host.endswith(".github.com")`, lowercased); added `test_can_handle_ref_accepts_github_hosts` + `test_can_handle_ref_rejects_lookalike_hosts` (incl. userinfo/empty-URL vectors). Read-only routing so real impact was low, but a legitimate HIGH. **FIX (supply chain, Scorecard PinnedDependencies)**: SHA-pinned the legacy workflows — `ci.yml` (`actions/checkout@v6.0.3`, `setup-python@v6.2.0`) and `secret-scan.yml` (`actions/checkout@v6.0.3`, `trufflehog@v3.95.5` `d411fff…`, verified latest release) — closing BACKLOG **B1**. **ACCEPT/BACKLOG (posture)**: pip not hash-pinned → accept (stdlib-only runtime); `Maintained`/`SAST`/`Fuzzing` → dismiss-with-reason (transient / covered by CodeQL+Bandit / N/A for a parse library); `Branch-Protection`+`Code-Review` → BACKLOG **B5** (admin; token is push-only); `CII` → accept. Dispositions recorded in `docs/BACKLOG.md`. Several stale pip/line alerts will auto-close on the next Scorecard scan. **Verification**: pytest **154 passed**, ruff + mypy clean (67 files), governance gate verifies the #1–#37 chain, 16 workflows parse. Resolved alerts to be confirmed closed (CodeQL #17 closes as "fixed" on re-scan of `main`; pin alerts on next Scorecard run; posture alerts dismissed via API).
 
+### Entry #38: RESEARCH BRIEF (Phase-2 connectors)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-connectors-phase2-2026-06-04.md)
+= be175491e397e0ca84ac938659cd7b6ed1d435ecc708eadf4d2214a8e591308f
+```
+
+**Previous Hash**: b7c4c69814e0d41e3fb87a84507045996a9d342f6c5dfb46571b5c2eef27c502
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a1f4d769064e3b505967bd7dd8c660f8bd85efc5dc1d349e0c23c34ac16cf436
+```
+
+**Decision**: Phase-2 tranche (security & operational evidence) grounded research (parallel agent, cited). Of six candidates, **three are genuinely new evidence classes** → build: **OSV.dev (P0, vulnerability, ACTIVE/T1 no-auth)**, **Sentry (P1, runtime-error issue, WEBHOOK)**, **PagerDuty (P1, incident, WEBHOOK)**. Three are NOT: **Semgrep ⊂ SARIF** and **GitHub Code Scanning ⊂ SARIF** (don't build — ingest via the `sarif` connector / lossy API projection), **Datadog deferred** (dual-key → T2 + noisy). All reduce to `parse_* -> Observation -> normalize()` (zero contract change); all pass the interactivity test as evidence adapters (SG-2026-06-04-K). Build order: OSV first (no-auth). SHADOW_GENOME SG-2026-06-04-J/K confirmed. Brief: `docs/research-brief-connectors-phase2-2026-06-04.md`. → `/qor-plan` at L2.
+
+### Entry #39: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-connectors-phase2-2026-06-04.md)
+= c3f5c66d7bd33c8420b44b5d8b3a90577408f5b3b4be4b1a351875d626a13d35
+```
+
+**Previous Hash**: a1f4d769064e3b505967bd7dd8c660f8bd85efc5dc1d349e0c23c34ac16cf436
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 852c9ab76a561a917442f80a789c353413b14d757178500fe84fe111c1cfe2a4
+```
+
+**Verdict**: **PASS** (iteration 2). Iter-1 VETO was isolated to the OSV phase — three unguarded wrong-type/length paths (SG-2026-06-04-I): `references[0]` empty-array IndexError, `_severity` per-entry, `aliases` non-str join, plus a test gap. Plan amended: `_first_ref_url` guards presence+type, `_severity` `isinstance`-filters entries, `aliases` `str`-coerces, and the OSV test enumerates the degenerate cases. Iter-2 re-audit confirmed all four resolved with no regression — excerpt/ref terminal floors (osv-vuln/sentry-issue/pagerduty-incident) with `.strip()` before `or`-floors; Sentry `data.issue` + PagerDuty `event.data` isinstance-guarded unwraps; valid Observation/SourceRef/SourceMode; source_ids match `_SOURCE_ID_RE`; read-only scope (Semgrep/CodeQL-API/Datadog excluded; webhook verify deferred); Razor OK. Cleared to `/qor-implement`. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+---
+
+### Entry #40: SESSION SEAL (connectors-phase2 — implementation)
+
+**Entry ID**: `c0nnph2sec0p`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 43a2165b45f539329b052b0ebfb1dce14a9f2ef451ed39765b8cf2b8515ca860
+```
+
+**Previous Hash**: 852c9ab76a561a917442f80a789c353413b14d757178500fe84fe111c1cfe2a4
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= aec6c30d18fcf5ee413686b7b08dcba8d0dcf7bfbe57e03d8a30e0925047cf63
+```
+
+**Decision**: PASS-audit (Entry #39, iter 2) implemented + substantiated. Built **3 Phase-2 parse surfaces**, each `parse_*(payload) -> Observation -> pipeline.normalize()`, read-only (ADR-0008), live paths deferred to `auth.md`: **osv** (`parse_vuln`, OSV vuln record, summary→excerpt w/ details→id floor, ACTIVE, T1 no-auth; SG-I-defensive: `_as_list`/`_text`/per-entry guards), **sentry** (`parse_issue`, `data.issue` unwrap, title→excerpt w/ culprit/shortId/id floor, WEBHOOK), **pagerduty** (`parse_event`, nested `event.data` unwrap, title→excerpt w/ summary/id floor, WEBHOOK). Each w/ synthetic fixture + behavioral tests; READMEs Prototype; `__init__` re-exports; catalog §6.6/§6.7 flipped to Prototype, Semgrep→P3 "subsumed by SARIF", CodeQL-API→P2 subsumed, Datadog→P2 deferred; FEATURE_INDEX rows added. **Independent review** (observer + devil's advocate): observer Reality==Promise CONFIRMED; devil's advocate found **4 blockers + 3 non-blocking** — all the SG-2026-06-04-I "truthy non-string LEAF" class: Sentry `title`/`culprit` `.strip()` crash, PagerDuty `title`/`summary` `.strip()` crash, OSV `_packages` `",".join` on non-str name, OSV `_first_ref_url` KeyError when `references` is a dict, + OSV `aliases` char-explosion on a string — all fixed (`_text`/`_as_list`/`isinstance(name,str)` guards) + regression tests; the OSV "defends on wrong type throughout" docstring is now true. SHADOW_GENOME SG-2026-06-04-I reinforced (guard wrong-typed leaves on externally-controlled webhook bodies, not just absence). BACKLOG **B6** added (Scorecard `startup_failure` = admin Actions-token permission). **Verification**: pytest **175 passed**, ruff + mypy clean (79 files), governance gate verifies the #1–#40 chain. FEATURE_INDEX **FX-OSV-001/FX-SENTRY-001/FX-PAGERDUTY-001** Verified (27 total).
+
 ---
 *Chain integrity: VALID*
-*Status: `main` SEALED at Entry #37 (`b7c4c698`; L2). Security queue remediated — 1 CodeQL fix + 4 action pins + posture dispositions; B1 closed.*
-*Next required action: merge the remediation PR; confirm alerts closed; then Phase-2 connector build (OSV.dev lead).*
+*Status: `connectors-phase2` SEALED (Entry #40, `aec6c30d`; L2). 15 connectors (OSV/Sentry/PagerDuty added); 175 tests green. Security queue remediated (Entry #37).*
+*Next required action: merge the Phase-2 PR; Sentry/PagerDuty live webhook verify (HMAC + dedup) is the queued follow-up; Semgrep/CodeQL-API ingest via `sarif`; Datadog deferred.*
