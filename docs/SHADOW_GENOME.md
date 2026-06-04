@@ -5,6 +5,24 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-04-G — An Observation excerpt needs a TERMINAL non-empty literal, not just a "better field" fallback
+
+**Discovered**: 2026-06-04 (independent devil's-advocate review, connectors-phase1 implement)
+**Prevents**: re-shipping the iter-1 Slack blank-excerpt VETO under a different connector.
+
+`pipeline.normalize` rejects a blank/whitespace excerpt (`evidence_excerpt_blank`). A fallback chain is only safe if its LAST link is a guaranteed-non-empty literal. SARIF (`message or rule_id or ref`, `ref` floors to `"sarif-result"`) and MCP-Registry (`... or "mcp-server"`) had this; Notion's `title or page_id` did NOT — an untitled page arriving without a usable `id` (partial object / webhook envelope) produced `excerpt=""` and crashed the shared seam. The matching test gave false confidence by leaving the fixture `id` populated, so it never exercised the both-empty path. Fix: terminal literal `... or "notion-page"` + a test that feeds `{}` and asserts `normalize` does not raise. Same review found two Slack defects on documented cases: a present-but-empty `event` object was parsed as the envelope (leaking `type="event_callback"`), and `message_changed` edit subtypes dropped their real text (it lives in the nested `message` object). Both fixed by explicit `event`-dict unwrap + nested-`message` text/user extraction. Rule: every `parse_*` excerpt path must end in a literal; every "(no text)"/placeholder branch must be tested on the degenerate payload, not the happy fixture.
+
+---
+
+## SG-2026-06-04-F — The four Phase-1 candidate shapes all reduce to one Observation parse surface
+
+**Discovered**: 2026-06-04 (`/qor-research`, connectors-phase1)
+**Prevents**: over-building per-provider machinery for what are uniform read-only evidence adapters.
+
+SARIF result, Slack message (or `event_callback` envelope), Notion page (title via the `type=="title"` property's `title[].plain_text`), and MCP-Registry `server.json` (`name`/`description`/`repository.url`) all map onto the same `parse_*(payload) -> Observation` -> `normalize()` surface as `connectors/github` — no contract change. SARIF emits one Observation per result. Slack's catalog "notify-first" mode is a deferred T3 write concern, not the read/ingest evidence surface built here (ADR-0008). Trust tiers: sarif T0, notion/mcp_registry T1, slack T2 (read). Live network/auth/webhook-signing deferred; the producer sensitive screen (`FX-SEC-001`) is the PII/secret guard.
+
+---
+
 ## SG-2026-06-04-E — A cross-repo reusable verifier must take its repo-root as a parameter, not from __file__
 
 **Discovered**: 2026-06-04 (`/qor-research`, reusable-gates cycle)

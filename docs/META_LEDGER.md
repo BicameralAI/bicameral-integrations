@@ -524,7 +524,129 @@ SHA256(content_hash + previous_hash)
 
 ---
 
-### Entry #22: RESEARCH BRIEF
+### Entry #22: INTEGRATION STRATEGY DOCS INCORPORATED + PHASE-1 CONNECTOR SCAFFOLDS
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: IMPLEMENT (doc incorporation; local hold)
+**Author**: Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(INTEGRATION_CANDIDATE_CATALOG.md)
+= 7352b2f0af53c548d7cc5ff30ba31d239ff227c6963ca2a720575c249093af52
+```
+
+**Previous Hash**: 673ad799ffee9be758b1dd7a0c45da2de053fd12a719d719b1f299fb44180eec
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 26a6fef5efba44d08f456eb1b8ecc4f77f8ac50a1dba8419f157db33e6b0b702
+```
+
+**Decision**: Incorporated the externally-sourced product-agnostic integration strategy pack (`docs/externally-sourced/` → canonical `docs/`): **GOVERNED_ADAPTER_CONTRACT**, **TRUST_TIER_MODEL** (T0–T5), **DATA_CLASSIFICATION_AND_REDACTION** (Tier-2 policy), **INTEGRATION_CANDIDATE_CATALOG**, **INTEGRATION_DOCS_INDEX**, **INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING** (Tier-5 reference), and three ADRs renumbered to continue our sequence — **0008** (evidence-adapters-not-authorities), **0009** (trust-tiered-governance), **0010** (product-agnostic-harvesting), with H1 titles + cross-refs updated and the staging folder removed. **Connector canonical doc-links**: added a stable `references.md` to every connector folder (github, linear, google_drive, jira, granola, fathom, local_directory) linking the governed contract, trust-tier model, data-classification, the ADRs, and the docs-index provider links — decoupled from the (parallel-edited) README so links don't churn. **New connector folders** for the Phase-1 P0 "next integration criterion" (catalog §8) not yet present: **slack** (T2/T3, notify-first), **notion** (T1/T3), **sarif** (T0, static-import), **mcp_registry** (T1) — each scaffolded (README/references.md/auth.md/__init__/fixtures/tests) at the **Candidate** lifecycle stage (no `connector.py` yet). GOVERNANCE_INDEX updated (Tier 2 + Tier 5 + ADR range 0004..0010 + Meta-Ledger marker). Proportionate governance for L1/L2 doc incorporation of pre-authored, reviewed material (single seal entry; no new code paths). Governance gate verifies the #1–#22 chain. **Review Boundary HELD**.
+
+---
+
+### Entry #23: RESEARCH BRIEF
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-connectors-phase1-2026-06-04.md)
+= 04959f4c9bfcd17fc48fd23005e8cd72e04eac1dbac7485cf2aa6238de39138c
+```
+
+**Previous Hash**: 26a6fef5efba44d08f456eb1b8ecc4f77f8ac50a1dba8419f157db33e6b0b702
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f40ae8c57621be92f0a62c42425daba9b523d96ff597503b8a37c31a2c03fb6c
+```
+
+**Decision**: Verified payload shapes for the four Phase-1 P0 candidate connectors (catalog §8) — **sarif** (T0, `runs[].results[]`), **slack** (T2 read surface, message/event-callback), **notion** (T1, page title-property), **mcp_registry** (T1, server.json). All reduce to read-only `parse_*(payload) -> Observation` → `pipeline.normalize()` with zero contract change (github precedent); live network/auth/webhook-verify/Slack-notify DEFERRED. Producer sensitive screen (`FX-SEC-001`) guards SARIF/Slack secret/PII; fixtures synthetic. 0 blocking gaps, no DRIFT → `/qor-plan` at L2. SHADOW_GENOME **SG-2026-06-04-F**. Gate: `.qor/gates/connectors-phase1-2026-06-04/research.json`.
+
+---
+
+### Entry #24: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-connectors-phase1-2026-06-04.md)
+= e5ccffdb914532e2be9af240a004ec09039be060cb72600aa6d132076d4667cc
+```
+
+**Previous Hash**: f40ae8c57621be92f0a62c42425daba9b523d96ff597503b8a37c31a2c03fb6c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 38fcaf7b06d93eca70932d4205ccc72dffbe775aadc3585a508510d9a9664b34
+```
+
+**Verdict**: **VETO** (iteration 1). Grounding (4 payload shapes trace to research F1–F4), contract fit (read-only parse→normalize, no writes), SARIF result fan-out + count assertion, trust tiers (sarif T0/slack T2/notion+mcp T1), fixture safety, and scope all PASS. **Dispositive finding (specification-drift + coverage-gap):** the Slack excerpt fallback was left as undecided prose ("`(no text)`-style → such as the ts") rather than a pinned expression, and the Slack test matrix lacked an empty-text fallback test. Slack `message` events with empty `text` are routine (system messages, `message_changed`/`deleted` subtypes, join/leave) → blank excerpt → `validate_emissions` raises `EmissionContractError("evidence_excerpt_blank")` (whitespace-stripped) → crashes the `normalize()` batch. The other three connectors resolve this with concrete fallbacks (ruleId/id/name). All plan-text → `/qor-plan`. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+---
+
+### Entry #25: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-connectors-phase1-2026-06-04.md)
+= 57e807d7db6217d766242a097ead744c10404f09f364875df8ae55d611ed04cb
+```
+
+**Previous Hash**: 38fcaf7b06d93eca70932d4205ccc72dffbe775aadc3585a508510d9a9664b34
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 03761173e863913d0c502e5a895a87c2770b534c77bf67f9f5c3d67c8fdad080
+```
+
+**Verdict**: **PASS** (iteration 2). The iter-1 Slack finding is CLOSED: excerpt is now a pinned `.strip()`-non-empty expression `(msg.get("text") or "").strip() or f"(no text) {channel}:{ts}"` (the static prefix survives `.strip()`, closing the `evidence_excerpt_blank` path at `pipeline.py:39`), with `test_parse_message_falls_back_when_text_empty` added. No regression — sarif/notion/mcp_registry fallbacks (ruleId/id/name) were already clean; scope + contract unchanged. Cleared to `/qor-implement`. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+### Entry #26: SESSION SEAL (local — implementation + documentation)
+
+**Entry ID**: `c0nn3ctph1s1`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement + document)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 98449e089ef70e0056f5185df16a6c7a23bf2ae83d92eb20ddc3d9ddf2a9a2fe
+```
+
+**Previous Hash**: 03761173e863913d0c502e5a895a87c2770b534c77bf67f9f5c3d67c8fdad080
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f5b10cb6e924f266584350f4f16cba370ddc358215e1aaab5f213adbd5509939
+```
+
+**Decision**: PASS-audit (Entry #25, iter 2) implemented + substantiated. Built the **4 Phase-1 P0 parse surfaces** exactly per `plan-connectors-phase1-2026-06-04.md`, each `parse_*(payload) -> Observation` → `pipeline.normalize()`, read-only (ADR-0008), live network/auth/webhook-verify deferred to `auth.md`: **sarif** (`parse_sarif`/`parse_result`, one Observation per `runs[].results[]`, PASSIVE, T0), **slack** (`parse_message`, `event_callback` + edit-subtype unwrap, WEBHOOK, T2), **notion** (`parse_page` via `type=="title"` property, ACTIVE+WEBHOOK, T1), **mcp_registry** (`parse_server`, ACTIVE, T1) — each with synthetic fixture + behavioral tests; READMEs flipped Candidate→Prototype; `__init__` re-exports. **Independent review** (objective observer + devil's advocate): observer Reality==Promise CONFIRMED; devil's advocate found **1 blocker + 4 non-blocking, all fixed** — **BLOCKER** Notion untitled+no-id page produced a blank excerpt → `evidence_excerpt_blank` crash (added terminal `"notion-page"` literal + both-empty test, matching SARIF `"sarif-result"`/MCP `"mcp-server"` floors); **HIGH** Slack empty-`event` envelope leaked envelope type (explicit `event`-dict unwrap) and `message_changed` dropped edited text (nested-`message` extraction); **MED** added terminal-floor tests for sarif/notion/mcp + slack subtype/empty-envelope. SHADOW_GENOME **SG-2026-06-04-G** (excerpt fallbacks need a terminal literal, not just a better-field). **Documentation pass** (`/qor-document`, operator-requested): standardized all repo READMEs to the `Modes`/`Surface`/`References` house style, removed the stale "not yet implemented" scaffold prose from the 4 implemented connectors + their `__init__` docstrings, polished github (bare→full), kept jira honest as Candidate, added connector + mod index tables, corrected the root README's `adapters/` layout + test command. **Verification**: pytest **119 passed** (adapter/core + connectors), ruff + mypy clean (59 files), governance gate verifies the #1–#26 chain, all README links resolve, secret scan clean. FEATURE_INDEX **FX-SARIF/SLACK/NOTION/MCPREG-001** Verified (19 total). **Review Boundary**: operator authorized commit/push/PR for this cycle ("professional output expected before commit, push, PR").
+
+### Entry #27: RESEARCH BRIEF
 
 **Timestamp**: 2026-06-04T00:00:00-04:00
 **Phase**: RESEARCH
@@ -537,17 +659,17 @@ SHA256(research-brief-reusable-gates-2026-06-04.md)
 = 3ea517f8c6d38893e00a52379c786c3b4a84d3c8ea619bdcfd8bf7b5be38ed0d
 ```
 
-**Previous Hash**: 673ad799ffee9be758b1dd7a0c45da2de053fd12a719d719b1f299fb44180eec
+**Previous Hash**: f5b10cb6e924f266584350f4f16cba370ddc358215e1aaab5f213adbd5509939
 
 **Chain Hash**:
 ```
 SHA256(content_hash + previous_hash)
-= af574275d499cb484596cbb88ec0ed0bc9fe0a5dbce310a43fbd212e69e639ba
+= 2d171638cf22669433dbe04da5d805f127fe9f8b9c6856917dc9c28013c9c599
 ```
 
-**Decision**: Ecosystem cycle 1 (`reusable-gates-2026-06-04`) — factor the Entry #21 portable gates into `workflow_call` **reusable workflows** so bot/mcp/cloud + this repo consume one source. Gates split into portable (governance-gate, dependency-review, Scorecard, SBOM, secret-scan, PR-hygiene, workflow-lint) and language-specific (CodeQL via `languages` input; Bandit/pip-audit/ruff/mypy/pytest = Python-only, stay local). Real design point (SG-2026-06-04-E): a reusable governance-gate that lives here but verifies a *consumer's* ledger must (a) checkout this repo's script to a side path (SHA-pinned) and (b) run it with a new `--repo-root` arg pointing at the caller's workspace — the script currently derives root from `__file__`. This repo becomes a consumer of its own reusables (thin callers) to prevent run-vs-publish drift. 0 blocking gaps → `/qor-plan` at L2. SHADOW_GENOME **SG-2026-06-04-E**. Gate: `.qor/gates/reusable-gates-2026-06-04/research.json`. Publish status: PRs #4/#5/#6 open (core ← connectors ← ci-gates).
+**Decision**: Ecosystem cycle 1 (`reusable-gates-2026-06-04`) — factor the Entry #21 portable gates into `workflow_call` **reusable workflows** so bot/mcp/cloud + this repo consume one source. Gates split into portable (governance-gate, dependency-review, Scorecard, SBOM, secret-scan, PR-hygiene, workflow-lint) and language-specific (CodeQL via `languages` input; Bandit/pip-audit/ruff/mypy/pytest = Python-only, stay local). Real design point (SG-2026-06-04-E): a reusable governance-gate that lives here but verifies a *consumer's* ledger must (a) checkout this repo's script to a side path (SHA-pinned) and (b) run it with a new `--repo-root` arg pointing at the caller's workspace — the script currently derives root from `__file__`. This repo becomes a consumer of its own reusables (thin callers) to prevent run-vs-publish drift. 0 blocking gaps → `/qor-plan` at L2. SHADOW_GENOME **SG-2026-06-04-E**. Gate: `.qor/gates/reusable-gates-2026-06-04/research.json`. (Re-anchored onto Entry #26 at ecosystem merge; originally authored as #22 on `feat/ci-reusable-gates`.)
 
-### Entry #23: GATE TRIBUNAL
+### Entry #28: GATE TRIBUNAL
 
 **Timestamp**: 2026-06-04T00:00:00-04:00
 **Phase**: AUDIT
@@ -560,45 +682,43 @@ SHA256(plan-reusable-gates-2026-06-04.md)
 = e2f44fc68d6bbbf4199f773d133d26574c9c353cfa8db4b81a5793dc99246c5b
 ```
 
-**Previous Hash**: af574275d499cb484596cbb88ec0ed0bc9fe0a5dbce310a43fbd212e69e639ba
+**Previous Hash**: 2d171638cf22669433dbe04da5d805f127fe9f8b9c6856917dc9c28013c9c599
 
 **Chain Hash**:
 ```
 SHA256(content_hash + previous_hash)
-= 0ba3ca9ed4f1577486b7969a8587379f18cdf05d78fa24b49b458d2b7da2c1f7
+= 226352ba0f512143e1e619a076718e89541210da363ae55cdb8a4681b871e54e
 ```
 
-**Verdict**: **PASS** (iteration 1). Independent audit cleared all 6 axes: the SG-2026-06-04-E cross-repo trap is correctly fixed (`--repo-root "$GITHUB_WORKSPACE"` + side-checkout of the tooling script), every cross-repo reference is SHA-pin-mandated for consumers, the repo dogfoods via thin callers (no run-vs-publish drift), `--repo-root` defaults to current behavior (backward-compatible; FX-CI-GOV-001 tests untouched), scope is additive, and waivers are honest with a real test on the changed logic. Report: `.agent/staging/AUDIT_REPORT.md`. Cleared to implement.
+**Verdict**: **PASS** (iteration 1). Independent audit cleared all 6 axes: the SG-2026-06-04-E cross-repo trap is correctly fixed (`--repo-root "$GITHUB_WORKSPACE"` + side-checkout of the tooling script), every cross-repo reference is SHA-pin-mandated for consumers, the repo dogfoods via thin callers (no run-vs-publish drift), `--repo-root` defaults to current behavior (backward-compatible; FX-CI-GOV-001 tests untouched), scope is additive, and waivers are honest with a real test on the changed logic. Report: `.agent/staging/AUDIT_REPORT.md`. Cleared to implement. (Re-anchored onto Entry #27 at ecosystem merge; originally #23.)
 
 ---
 
-### Entry #24: SESSION SEAL (local — Review Boundary held)
+### Entry #29: SESSION SEAL (reusable-gates — ecosystem cycle 1)
 
 **Entry ID**: `f97195725f0e`
 **Timestamp**: 2026-06-04T00:00:00-04:00
-**Phase**: SUBSTANTIATE (local hold)
+**Phase**: SUBSTANTIATE
 **Author**: Judge / Orchestrator (qor-auto-dev-1)
 **Risk Grade**: L2
 
 **Content Hash**:
 ```
 SHA256(FEATURE_INDEX.md)
-= eab407b8d0cb7c2c53c2a6e608bb0ee6627023c596073bbc2c53f34e25227b77
+= d4fb30d5e93a676b0ff77450757d92633e8ffe68516ba90dc2cce86d3b4687c2
 ```
 
-**Previous Hash**: 0ba3ca9ed4f1577486b7969a8587379f18cdf05d78fa24b49b458d2b7da2c1f7
+**Previous Hash**: 226352ba0f512143e1e619a076718e89541210da363ae55cdb8a4681b871e54e
 
 **Chain Hash**:
 ```
 SHA256(content_hash + previous_hash)
-= 27f6007afd75f3be4479bdfa11ff0f907a5dbdd786a7c0ec560bfa6857232023
+= 515ed99b7ff069af3693e7579d067c837481bda21b012e3831ff9c2e396d26b4
 ```
 
-**Decision**: Ecosystem cycle 1 (reusable-workflow template) implemented + substantiated to the local Review Boundary. Portable gates factored into 6 `workflow_call` reusables (`_reusable-{governance-gate,codeql,dependency-review,scorecard,sbom,pr-hygiene}.yml`, SHA-pinned); this repo's 6 gate workflows converted to **thin callers** (`uses: ./...`) — single source, no run-vs-publish drift. `scripts/governance_gate.py` gained `--repo-root`/`--ledger`/`--feature-index` (default unchanged) so a reusable can verify a **consumer's** ledger via side-checkout + `--repo-root "$GITHUB_WORKSPACE"` (closes SG-2026-06-04-E). `docs/ecosystem/consuming-gates.md` documents adoption for bot (Rust→clippy/cargo-audit; CodeQL has no Rust)/mcp/cloud + SHA-pin discipline. **Verification**: governance gate OK default **and** `--repo-root .`; pytest **16 script tests** pass; ruff clean; **16 workflows parse** (10 + 6 reusables). FEATURE_INDEX `FX-CI-GOV-002`/`FX-CI-REUSE-001`/`FX-CI-DOC-002` Verified (18 total). Proportionality note (L2 config refactor): the clean pre-implementation independent audit (Entry #23) + green verification stand in for a post-implementation reviewer panel. **Review Boundary HELD**. New memory: SHADOW_GENOME SG-2026-06-04-E.
+**Decision**: Ecosystem cycle 1 (reusable-workflow template) implemented + substantiated. Portable gates factored into 6 `workflow_call` reusables (`_reusable-{governance-gate,codeql,dependency-review,scorecard,sbom,pr-hygiene}.yml`, SHA-pinned); this repo's 6 gate workflows converted to **thin callers** (`uses: ./...`) — single source, no run-vs-publish drift. `scripts/governance_gate.py` gained `--repo-root`/`--ledger`/`--feature-index` (default unchanged) so a reusable can verify a **consumer's** ledger via side-checkout + `--repo-root "$GITHUB_WORKSPACE"` (closes SG-2026-06-04-E). `docs/ecosystem/consuming-gates.md` documents adoption for bot (Rust→clippy/cargo-audit; CodeQL has no Rust)/mcp/cloud + SHA-pin discipline. **Ecosystem-merge reconciliation**: the reusable governance-gate template gained the `pip install pytest` step and the reusable dependency-review gained an `advisory` input (both ported from main's post-#21 CI hardening) so the merged main's gates stay green. **Verification**: governance gate OK default **and** `--repo-root .`; ruff clean; workflows parse. FEATURE_INDEX `FX-CI-GOV-002`/`FX-CI-REUSE-001`/`FX-CI-DOC-002` Verified (22 total after ecosystem merge). New memory: SHADOW_GENOME SG-2026-06-04-E. (Re-anchored onto Entry #28 at ecosystem merge; originally #24.)
 
----
-
-### Entry #25: RESEARCH SPIKE (recommendation; no cross-repo changes)
+### Entry #30: RESEARCH SPIKE (recommendation; no cross-repo changes)
 
 **Timestamp**: 2026-06-04T00:00:00-04:00
 **Phase**: RESEARCH (spike)
@@ -611,17 +731,17 @@ SHA256(ecosystem/agt-sidecar-evaluation.md)
 = 5540b62fda49f2dd90b8de169ac5bbf669c3e548a6015744ddbde706dde75657
 ```
 
-**Previous Hash**: 27f6007afd75f3be4479bdfa11ff0f907a5dbdd786a7c0ec560bfa6857232023
+**Previous Hash**: 515ed99b7ff069af3693e7579d067c837481bda21b012e3831ff9c2e396d26b4
 
 **Chain Hash**:
 ```
 SHA256(content_hash + previous_hash)
-= 786a858c7ce91af1c5810064e14c5896468cdf361adcf634fa88f9dc25120f0a
+= 3eae7a6dd1dab79e62f88e06207f98165eaca7aa70683b73222cb22ce90358b1
 ```
 
-**Decision**: Ecosystem cycle 2 (the "2" of "1→2") — AGT-as-sidecar evaluation for `bicameral-bot`. AGT is **MIT** (no license blocker), Python, ~35 MB; its `agent-governance-gate.yml` is a **reusable `workflow_call`** (inputs: policy YAML, agent manifest, python_version → policy validation + Ed25519 receipts + audit log). **Recommendation: PROCEED with a bounded spike *in* `bicameral-bot` (separate repo, separate authorization)** — consume this repo's portable `_reusable-*` gates + AGT's `agent-governance-gate` as a **CI sidecar** (SHA-pinned), mapping a bot policy YAML to the CRIT-2 authority routes; integration is sidecar/reusable-workflow, **not** Rust↔Python in-process. Complementary to our gates (AGT adds agent-policy + signed receipts + OWASP-Agentic; we add ledger-integrity + ecosystem CI) — caveats: pin a SHA, don't double-gate scanners, reconcile provenance authority (ledger vs Ed25519 receipts). **No changes made to `bicameral-bot` or AGT.** Deliverable: `docs/ecosystem/agt-sidecar-evaluation.md`. Tracked: BACKLOG B3. Gate: `.qor/gates/agt-sidecar-eval-2026-06-04/research.json`.
+**Decision**: Ecosystem cycle 2 (the "2" of "1→2") — AGT-as-sidecar evaluation for `bicameral-bot`. AGT is **MIT** (no license blocker), Python, ~35 MB; its `agent-governance-gate.yml` is a **reusable `workflow_call`** (inputs: policy YAML, agent manifest, python_version → policy validation + Ed25519 receipts + audit log). **Recommendation: PROCEED with a bounded spike *in* `bicameral-bot` (separate repo, separate authorization)** — consume this repo's portable `_reusable-*` gates + AGT's `agent-governance-gate` as a **CI sidecar** (SHA-pinned), mapping a bot policy YAML to the CRIT-2 authority routes; integration is sidecar/reusable-workflow, **not** Rust↔Python in-process. Complementary to our gates (AGT adds agent-policy + signed receipts + OWASP-Agentic; we add ledger-integrity + ecosystem CI) — caveats: pin a SHA, don't double-gate scanners, reconcile provenance authority (ledger vs Ed25519 receipts). **No changes made to `bicameral-bot` or AGT.** Deliverable: `docs/ecosystem/agt-sidecar-evaluation.md`. Tracked: BACKLOG B3. Gate: `.qor/gates/agt-sidecar-eval-2026-06-04/research.json`. (Re-anchored onto Entry #29 at ecosystem merge; originally #25 on `feat/agt-sidecar-eval`.)
 
 ---
 *Chain integrity: VALID*
-*Status: "1→2" ecosystem sequence COMPLETE. Cycle 1 (reusable-workflow template, Entry #24) PR'd as #9; cycle 2 (AGT-sidecar recommendation, Entry #25, `786a858c`) is a doc-only spike. All in-repo work substantiated at the local Review Boundary.*
-*Next required action: USER — review/merge the PR stack (#4→#5→#6→#9) + the AGT recommendation; authorize the cross-repo rollout (BACKLOG B3) as work in bot/mcp/cloud when ready. No further in-repo cycles queued.*
+*Status: ecosystem "1→2" COMPLETE on `main` — reusable gates (Entry #29) + AGT-sidecar recommendation (Entry #30, `3eae7a6d`; L1, doc-only). BACKLOG B3 = cross-repo rollout when authorized.*
+*Next required action: merge remaining PRs in order (#12/#13 dependabot, #16 connectors); re-anchor #16's entries onto the advancing tip.*

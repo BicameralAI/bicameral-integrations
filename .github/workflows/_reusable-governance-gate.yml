@@ -35,5 +35,7 @@ jobs:
           python-version: "3.13"
       - name: Verify caller's governance artifacts
         run: python .governance-tooling/scripts/governance_gate.py --repo-root "$GITHUB_WORKSPACE"
+      - name: Install pytest
+        run: python -m pip install --upgrade pip pytest
       - name: Verifier self-tests
         run: python -m pytest .governance-tooling/scripts/tests -q
