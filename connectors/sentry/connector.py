@@ -4,15 +4,27 @@
 A Sentry issue webhook payload (the `installation`/issue-alert event wrapping
 `data.issue`) maps to one provider-neutral Observation (trust tier T1, runtime
 error/issue evidence). The live Events-API receipt and `Sentry-Hook-Signature`
-verification are deferred (see ``auth.md``); this is the parse surface only.
-Read-only evidence, no canonical writes (ADR-0008).
+verification reuse `adapter.core.webhook_security` (`Sentry-Hook-Signature` =
+hex HMAC-SHA256 over the raw body); the live HTTP receipt + secret resolution
+stay in the operator runtime (see ``auth.md``). Read-only evidence, no canonical
+writes (ADR-0008).
 """
 
 from __future__ import annotations
 
+import json
+import time
+from collections.abc import Callable
+
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.webhook_security import (
+    DeliveryDedupCache,
+    WebhookVerificationError,
+    header_value,
+    verify_hmac_hex,
+)
 
 
 def _text(value: object) -> str:
@@ -51,14 +63,68 @@ def parse_issue(event: dict) -> Observation:
 
 
 class SentryConnector:
-    """Sentry connector identity plus the issue-event parse surface.
+    """Sentry connector identity, parse surface, and webhook verification.
 
-    Trust tier T1. The live Events-API receipt + `Sentry-Hook-Signature`
-    verification path is deferred; this is the parse surface.
+    Trust tier T1. ``verify`` checks the ``Sentry-Hook-Signature`` (hex
+    HMAC-SHA256 over the RAW body — not a re-serialized object) fail-closed;
+    Sentry documents no replay-timestamp window, so dedup (best-effort, on a
+    delivery id when one is present) is the only replay guard. The live HTTP
+    receipt + secret/keyring resolution stay in the operator runtime.
     """
 
     source_id = "sentry"
     capabilities = SourceCapabilities(modes=frozenset({SourceMode.WEBHOOK}))
 
+    def __init__(
+        self,
+        *,
+        secret: str = "",
+        dedup: DeliveryDedupCache | None = None,
+        clock: Callable[[], float] | None = None,
+    ) -> None:
+        # Secret injected (keyring resolution stays in the operator runtime).
+        self._secret = secret
+        self._dedup = dedup
+        self._clock = clock or time.time
+
     def observations(self, payload: dict) -> list[Observation]:
+        return [parse_issue(payload)]
+
+    def verify(self, *, headers: dict[str, str], body: bytes) -> bool:
+        """Hex HMAC-SHA256 over the raw body. Fail closed."""
+        try:
+            verify_hmac_hex(
+                header_sig=header_value(headers, "Sentry-Hook-Signature"),
+                body=body,
+                secret=self._secret,
+            )
+            return True
+        except (WebhookVerificationError, AttributeError, TypeError):
+            return False
+
+    def _delivery_id(self, headers: dict[str, str], payload: dict) -> str:
+        """Best-effort delivery id for dedup ('' when none is derivable)."""
+        rid = header_value(headers, "Request-ID")
+        if rid:
+            return rid
+        data = payload.get("data")
+        issue = data.get("issue") if isinstance(data, dict) else None
+        issue = issue if isinstance(issue, dict) else payload
+        return str(issue.get("id") or "")
+
+    def normalize_event(self, *, headers: dict[str, str], body: bytes) -> list[Observation]:
+        """Self-guard (re-verify), best-effort dedup, then parse. ``[]`` on reject."""
+        if not self.verify(headers=headers, body=body):
+            return []
+        try:
+            payload = json.loads(body)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return []
+        if not isinstance(payload, dict):  # valid JSON but not an object
+            return []
+        if self._dedup is not None:
+            delivery_id = self._delivery_id(headers, payload)
+            if delivery_id and self._dedup.is_duplicate("sentry", delivery_id):
+                return []
+            self._dedup.mark_seen("sentry", delivery_id)
         return [parse_issue(payload)]
