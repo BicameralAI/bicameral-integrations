@@ -422,6 +422,107 @@ SHA256(content_hash + previous_hash)
 **Decision**: PASS-audit (iter 2) L3 webhook-security core implemented and substantiated to the local Review Boundary. New `adapter/core/webhook_security.py`: `verify_standard_webhook` (Standard Webhooks/Svix — base64 `whsec_` key, signed content over **bytes** `id.timestamp.body`, base64 HMAC-SHA256, space-delimited `v1,` any-match, 300 s tolerance), `verify_hmac_hex` (Linear hex over raw body), `DeliveryDedupCache` (bounded partitioned LRU+TTL, injectable clock) — all **fail-closed** (every attacker-input path raises only `WebhookVerificationError`), constant-time `compare_digest`. `FathomConnector`/`LinearConnector` gained injected-secret `verify` + self-guarding `normalize_event` (verify→dedup→parse; Linear HMAC-first then 60 s `webhookTimestamp` window). **Verification**: pytest **93 passed** (was 60; +33), ruff clean, mypy clean (43 files). **Independent review**: objective-observer Reality==Promise CONFIRMED; devil's-advocate 0 blockers after 46 adversarial probes (fail-open 20/20, forgery 5/5 incl. empty-candidate trick, timestamp boundaries exact ±300 s/±60000 ms, HMAC-first ordering, constant-time, no tooling-config silencing). FEATURE_INDEX `FX-WHSEC-001`/`FX-FATHOM-002`/`FX-LINEAR-002` Verified (11 total). Substantiate gates: secret-scan clean, merge-velocity healthy, governance-index enforced (Last-Reviewed→2026-06-04), gate-chain complete. **Review Boundary HELD** (no commit/push/PR/tag). Decision-log: (a) live REST/GraphQL/poll + secret/keyring resolution + HTTP boundary remain DEFERRED; (b) this cycle stacks on the still-uncommitted cycle-3 work on the same branch; (c) intent-lock not captured (verify NO-LOCK, non-blocking); (d) governance-index `plan-*.md` unregistered findings expected (gitignored drafts), rc=0. New memory: SHADOW_GENOME SG-2026-06-04-A/B.
 
 ---
+
+### Entry #18: RESEARCH BRIEF
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(research-brief-ci-governance-gates-2026-06-04.md)
+= 144af29984c5668e2cb1f1da33fd8ba4df653001099d057dfcbd5da1969d8a1e
+```
+
+**Previous Hash**: 8a9143017031167dc66f8268f3c88a844a0879590893efebceb5fc699db6613e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f8bad6a3fef755aa2c72d7bb5e814c03f61c7fe1c435d93ebf69db83a87656b0
+```
+
+**Decision**: Benchmarked CI gates against `microsoft/agent-governance-toolkit` (live, ~40 workflows, OWASP Agentic 10/10) for cycle `ci-gates-2026-06-04`. Key finding: **no per-law `gdpr/hipaa/soc2/nist.yml` checkers exist even in AGT** — compliance = real scanners + a blocking governance gate + `docs/compliance/` mappings + a tamper-evident audit trail. Our QOR hash-chained `META_LEDGER` + `ai_provenance` already provide that evidence; the gap is the automated-scanner layer + a CI-runnable governance-integrity gate over the committed ledger + the mapping docs. Enforceable set (with AGT's exact SHA pins): CodeQL (python), OpenSSF Scorecard, dependency-review, SBOM (Anchore SPDX+CycloneDX+attest), Bandit + pip-audit, supply-chain pinning, license/spell/docs/PR-hygiene, Dependabot; security-critical gates block, posture gates advisory/scheduled. Compliance mapped honestly: OWASP/NIST-RMF+SSDF/EU-AI-Act/SOC2 → controls + provenance; GDPR/HIPAA → the `FX-SEC-001` sensitive-data screen + data-minimization, framed as control alignment not certification. Gates are repo-portable (operator's ecosystem note); AGT viable as a `bicameral-bot` sidecar — a follow-on program. 0 blocking gaps, no DRIFT → `/qor-plan`. New memory: SHADOW_GENOME **SG-2026-06-04-C**. Gate: `.qor/gates/ci-gates-2026-06-04/research.json`.
+
+---
+
+### Entry #19: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(plan-ci-governance-gates-2026-06-04.md)
+= 13dfe47a23b8e4da6fbd30f896c11f04e9fc3f5e9e40988b85f24da390b7c958
+```
+
+**Previous Hash**: f8bad6a3fef755aa2c72d7bb5e814c03f61c7fe1c435d93ebf69db83a87656b0
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b2926528ad88a897b63b20e454ded5de86998cd1d96b96d4778f20b07a090c08
+```
+
+**Verdict**: **VETO** (iteration 1). Independent L3 audit cleared the high-stakes items — ghost-compliance avoided (frameworks → docs/compliance mappings + real governance gate, no per-law checkers), governance gate genuinely stdlib-only/CI-runnable, SHA pins match the sealed research, scope strictly additive (no `ci.yml`/`secret-scan.yml` edit), posture correctly phased, Bandit won't false-fail on the HMAC code. **Dispositive finding (infrastructure-mismatch):** the governance-gate parser as specified would **false-fail on our own committed ledger** — Entry #1 (GENESIS) has a Content Hash + `Previous Hash: GENESIS (no predecessor)` but **no Chain Hash**, and Entry #2's `previous_hash` (`274bc6…`) equals Entry #1's **content** hash, not a chain hash; the literal rule "every `previous_hash` == prior `chain_hash`" breaks at #1→#2, so a blocking gate + `test_repo_ledger_verifies` would wedge the repo on its own history. Plus minor: relabel FX-CI-SEC/DOC `test_path` as explicit D4.d waivers; state all `uses:` ship as full 40-char SHAs + restore the dropped `attest-sbom` pin; source a verified `setup-python` SHA (`a309ff8…` v6.2.0). All plan-text → `/qor-plan`. Report: `.agent/staging/AUDIT_REPORT.md`. SHADOW_GENOME **SG-2026-06-04-D**.
+
+---
+
+### Entry #20: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(plan-ci-governance-gates-2026-06-04.md)
+= 9306c8c60dd06644869eacb75dad1b48b66114d1d3dff83f9721670c96aa87bc
+```
+
+**Previous Hash**: b2926528ad88a897b63b20e454ded5de86998cd1d96b96d4778f20b07a090c08
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 735122921942266d27ca848c9f715b4807f9c97935d64ba2f600d8eba0ae649f
+```
+
+**Verdict**: **PASS** (iteration 2). Independent L3 re-audit confirmed all iter-1 (Entry #19) findings CLOSED, verified against the real ledger: **F1** the new "Genesis Anchor Rule" matches reality (Entry #1 = Content Hash `274bc6…` + `Previous Hash: GENESIS (no predecessor)` + no Chain Hash; Entry #2 `previous_hash` == Entry #1 content hash; Entry #3+ `previous == prior.chain` and `chain == sha256(content+previous)`), with a dedicated `test_genesis_anchor_handled` distinct from `test_repo_ledger_verifies`; **F2** FX-CI-SEC/DOC rows relabeled D4.d waivers; **F3** all `uses:` ship full 40-char SHAs + `attest-sbom@c604332…` restored; **F4** `setup-python@a309ff8…` pinned. No regression (stdlib gate, additive scope, ghost-compliance avoided, posture phased, Bandit safe). Report: `.agent/staging/AUDIT_REPORT.md`. Cleared to `/qor-implement`.
+
+---
+
+### Entry #21: SESSION SEAL (local — Review Boundary held)
+
+**Entry ID**: `6aadc5226c22`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (local hold)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= d08cdb89ca50fc8c7503e5414167cfacc1068c9e7cd1eb58eaabe21e72a6ef7d
+```
+
+**Previous Hash**: 735122921942266d27ca848c9f715b4807f9c97935d64ba2f600d8eba0ae649f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 673ad799ffee9be758b1dd7a0c45da2de053fd12a719d719b1f299fb44180eec
+```
+
+**Decision**: PASS-audit (iter 2) L3 CI governance/security gate ecosystem implemented + substantiated to the local Review Boundary, benchmarked against `microsoft/agent-governance-toolkit`. Shipped (additive, on `feat/ci-governance-gates` stacked on the connector branches): **governance-integrity gate** (`scripts/governance_gate.py`, stdlib, genesis-anchor rule per SG-2026-06-04-D — re-verifies the committed `META_LEDGER` hash chain + FEATURE_INDEX test paths; blocking) + **security/supply-chain** (CodeQL, Bandit, dependency-review fail≥moderate + license allowlist, OpenSSF Scorecard, SBOM+attestation, pip-audit, Dependabot — all actions SHA-pinned) + **quality/consistency** (workflow-YAML lint, codespell, advisory SPDX-header scan, conventional PR-title) + **`docs/compliance/`** mappings (OWASP, NIST AI RMF & SSDF, EU AI Act, SOC 2, GDPR/HIPAA — "control alignment, not certification", operator-owned scope marked). Security-critical gates block; posture gates advisory/scheduled. **Verification**: governance gate verifies the real #1–#21 chain; pytest **107 passed** (93 + 14 script tests); ruff + mypy clean (43 files); all 11 workflows parse. **Independent review**: objective-observer Reality==Promise CONFIRMED; devil's-advocate 0 blockers (tampering caught: content/chain mismatch + broken link + missing test path all rejected; stdlib-only; all 9 action SHAs resolve to real commits; advisory-vs-blocking honest; no self-wedge) — 5 LOW findings, all fixed: **G1** removed the false `ssdf_tagger` SSDF-tag claim from nist-mapping (ghost-compliance); **L1** de-duplicated the blocking pytest out of the advisory license-headers job; **B1** verifier now rejects >1 genesis anchor (+test); **P1** scoped the SHA-pin claim + BACKLOG B1 to pin legacy `ci.yml`/`secret-scan.yml` `trufflehog@main`. FEATURE_INDEX `FX-CI-GOV/SEC/QUAL/DOC-001` Verified (15 total). **Review Boundary HELD** (no commit/push/PR/tag). New memory: SHADOW_GENOME SG-2026-06-04-C/D. BACKLOG B3: ecosystem governance rollout + AGT-sidecar (operator request).
+
+---
 *Chain integrity: VALID*
-*Status: `webhook-verify-2026-06-04` SUBSTANTIATED at the local Review Boundary (Entry #17, `8a914301`, L3). Stacks on cycle-3 (`fathom-linear-2026-06-03`) — both on `feat/source-connectors-fathom-linear`, staged, NOT committed. 93 tests green; ruff/mypy clean; webhook verify+dedup fail-closed + independently adversarially verified.*
-*Next required action: USER review + publish decision for the combined branch (5 connectors + webhook verify/dedup). Then remaining live-connector work (REST/GraphQL clients, secret resolution, HTTP boundary). Cross-repo deps unchanged.*
+*Status: `ci-gates-2026-06-04` SUBSTANTIATED at the local Review Boundary (Entry #21, `673ad799`, L3). On `feat/ci-governance-gates` (stacked on the connector branches); staged, NOT committed. Governance gate verifies the full #1–#21 chain; 107 tests green; all gates honest + SHA-pinned + adversarially verified.*
+*Next required action: USER publish decision (3 stacked PRs: core ← connectors ← ci-gates) + ecosystem-governance direction (BACKLOG B3). Then BACKLOG B1/B2 (pin legacy workflows; backfill SPDX headers → flip license gate blocking).*

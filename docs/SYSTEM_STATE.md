@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-03 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | IMPLEMENTING (cycle 4 substantiated; Review Boundary held — local only) |
-| **Iteration** | 4 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; **L3 webhook verify + dedup**) |
-| **Session Seal** | `8a914301` (META_LEDGER Entry #17 chain hash) |
+| **Phase** | IMPLEMENTING (cycle 5 substantiated; Review Boundary held — local only) |
+| **Iteration** | 5 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; **L3 CI governance/security gate ecosystem**) |
+| **Session Seal** | `673ad799` (META_LEDGER Entry #21 chain hash) |
 
 ---
 
@@ -101,11 +101,11 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #17 (`8a914301`) |
-| Blueprint Sync | SYNCED | ADRs + 4 research briefs current (incl. webhook-verification) |
+| Ledger Chain | VALID | through Entry #21 (`673ad799`); machine-verified by `scripts/governance_gate.py` |
+| Blueprint Sync | SYNCED | ADRs + 5 research briefs + docs/compliance/ current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 93 passing; ruff + mypy clean (43 files) |
-| CI Gates | GREEN (local) | ci.yml covers `adapter connectors`; Review Boundary held (not yet committed) |
+| Test Status | PASS | 107 passing; ruff + mypy clean (43 files) |
+| CI Gates | GREEN (local) | governance-integrity + CodeQL/Bandit/dep-review/Scorecard/SBOM/quality/PR-hygiene + TruffleHog; SHA-pinned; Review Boundary held (not committed) |
 
 ---
 
