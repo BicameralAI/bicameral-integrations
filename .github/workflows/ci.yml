@@ -23,6 +23,6 @@ jobs:
       - name: Ruff
         run: ruff check adapter connectors
       - name: Mypy
-        run: mypy adapter/core connectors/github
+        run: mypy adapter connectors
       - name: Pytest
-        run: pytest adapter/core/tests connectors/github/tests -q
+        run: pytest adapter/core/tests connectors -q
