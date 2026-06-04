@@ -66,9 +66,9 @@ bicameral-integrations/
 
 | Status | Notes |
 |--------|-------|
-| Delivered | Adapter seam + **12 source connectors** + producer secret screen + L3 webhook signature verification (Svix/Fathom + Linear) + replay dedup + **CI governance/security gate ecosystem** (10 gates + 6 reusable templates) + compliance control mappings — per ADR-0004..0010 |
+| Delivered | Adapter seam + **17 source connectors** + producer secret screen + L3 webhook signature verification (Svix/Fathom, Linear, Sentry, PagerDuty hex/multi-sig, Jira `sha256=`) + replay dedup + **CI governance/security gate ecosystem** (10 gates + 6 reusable templates) + compliance control mappings — per ADR-0004..0010 |
 | Unplanned | 0 |
-| Missing | 0 (live REST/GraphQL/poll + secret/keyring resolution + HTTP boundary intentionally deferred per connector `auth.md`; gateway bridge blocked on bicameral-bot #99) |
+| Missing | 0 (live HTTP receipt / REST poll + secret/keyring resolution + gateway emission intentionally deferred per connector `auth.md`). Emission **target exists** — bot published the v1 ingest wire schema (bot PR #95, `protocol/schemas/v1/`); *safe* live emission depends on bot **#109** (the gateway `/api/v1/ingest` still lacks size/rate/prompt-injection/sensitive-data guards) and the in-flight MCP→ToolRequest ingest refactor (bot #114/#115/#116/#117/#120, #123 conformance). The earlier "blocked on bot #99 v1 schema" was incorrect (#99 is a closed integration PR) — see SHADOW_GENOME SG-2026-06-04-N. |
 
 **Compliance**: aligned with `ARCHITECTURE_PLAN.md` and ADR-0004..0010.
 
@@ -145,8 +145,8 @@ bicameral-integrations/
 - [ ] **Connector build-out (next)**: Claude Code (P0, passive transcripts/commits), then GitHub Copilot / Cursor / OpenAI-Anthropic Admin (P1 read APIs) — from the value-add shortlist.
 - [ ] `mods/` structure is under active build by **Codex** — not edited by this (connector/hardening) track.
 - [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).
-- [ ] Add the adapter→gateway conformance test against bicameral-bot `protocol/schemas/v1/` (blocked until bot #99 lands the v1 schema on bot `main`).
-- [ ] Track bot #108/#109 (gateway security) and #73 (release posture) as cross-repo dependencies.
+- [ ] adapter→gateway emission: map `AdapterEmission` to the **published** v1 ingest schema (bot PR #95, `protocol/schemas/v1/`) + a conformance test. The schema is NOT a blocker; *safe* live emission gates on the cross-repo deps below.
+- [ ] Cross-repo deps (verified 2026-06-04): bot **#109** OPEN — gateway `/api/v1/ingest` lacks size/rate/prompt-injection/sensitive-data guards (the real emission-safety gate); MCP→ToolRequest ingest refactor bot **#114/#115/#116/#117/#120** + **#123** conformance (internal ingest-authority reshaping); **#73** OPEN (release signing/trust posture). #108 (gateway mutation authority) is now CLOSED. NOTE: the prior "bot #99 v1-schema blocker" was a misattribution — #99 is a closed integration PR (SG-2026-06-04-N).
 
 ---
 

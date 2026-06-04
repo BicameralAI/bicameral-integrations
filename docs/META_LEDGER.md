@@ -1240,7 +1240,30 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #50) implemented + substantiated. Built the **Jira** connector (P0 foundation — closes the last catalog scaffold; **17 connectors implemented**, no Candidates remain): `parse_issue` (summary→excerpt, **never the ADF `description`**, `jira-issue` floor; `_text`/`_nested` type-defensive) + `JiraConnector.verify()/normalize_event()` shipping **verify at parity** (`X-Hub-Signature` `sha256=` hex HMAC over the raw body, fail-closed + constant-time; best-effort dedup on `X-Atlassian-Webhook-Identifier`→`issue.id`). Jira README flipped Candidate→Prototype; `__init__` re-exports; synthetic ADF fixture + behavioral tests. **Independent review** (observer + devil's advocate): observer Reality==Promise (both audit notes honored); devil's advocate **0 blocking / 2 non-blocking** — **HIGH** whitespace-only `issue.key` (the one field not run through `_text`) skipped the floor → blank excerpt; **LOW** `verify()` crashed on non-dict headers (`header_value` outside the `try`) — **both fixed** (`_text(key) or _text(id) or floor`; header lookup moved inside `try`) + regression tests; no fail-open found across the `sha256=`/empty-candidate/tamper probe set; sensitive screen confirmed firing. SHADOW_GENOME SG-2026-06-04-M; SG-G/SG-I reinforced (every string field → `_text`). **Verification**: pytest **202 passed**, ruff + mypy clean (86 files), governance gate verifies the #1–#51 chain. FEATURE_INDEX **FX-JIRA-001** Verified (31 total). Docs refreshed per the end-of-cycle cadence; `mods/` left to Codex.
 
+### Entry #52: CORRECTION — phantom cross-repo blocker + SHADOW_GENOME backfill
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: DOCUMENT (correction)
+**Author**: Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(SYSTEM_STATE.md)
+= 6ca926e05f3237282f1fa50dd39b8bd599ac2f4fd7dbc30bc0f2828e967414b0
+```
+
+**Previous Hash**: b5ebb27c999c74ca94476bd09a00513df3343cf57d0dcef70663016d4524d58e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 458df5b23f53109f8d3f9f7e5f24a14d5bd9152376dd05d5f12f885f3cdd86a4
+```
+
+**Decision**: Operator caught a **phantom cross-repo blocker**. The repeated claim "gateway bridge blocked on bicameral-bot #99 (v1 protocol schema)" was wrong — **bot #99 is a CLOSED integration PR**, not an open schema issue (verified `gh api`). It had propagated into `docs/SYSTEM_STATE.md` (Missing + Next Actions) and operator memory (META_LEDGER carried no `#99`). **Corrected with verified ground truth (2026-06-04):** the v1 ingest wire schema is **published** (bot PR #95, `protocol/schemas/v1/`); the real OPEN emission-safety gate is bot **#109** (gateway `/api/v1/ingest` lacks size/rate/prompt-injection/sensitive-data guards); internal ingest authority is mid-refactor (MCP→ToolRequest: bot #114/#115/#116/#117/#120 + #123 conformance); #73 (release signing) open; #108 (gateway mutation authority) CLOSED. SYSTEM_STATE Missing + Next-Actions rewritten; memory updated. **Second integrity fix:** the ledger cited **SG-2026-06-04-L** (Entry #47) and **SG-2026-06-04-M** (Entries #49/#51) but those blocks were never written into `SHADOW_GENOME.md` (only A–K existed) — **backfilled L (Claude Code filtering) + M (Jira `sha256=` signing / ADF≠text)** and added **SG-2026-06-04-N** (verify cross-repo citations before putting them in a Tier-1 artifact). Doc-correction only; no code change. Chain verifies #1–#52.
+
 ---
 *Chain integrity: VALID*
-*Status: `jira-connector` SEALED (Entry #51, `b5ebb27c`; L3). Jira built with verify() at parity — **17 connectors implemented, 0 Candidates left**; 202 tests. `mods/` owned by Codex.*
-*Next required action: merge the PR. Open: go-live depth cycle (GitHub/Linear Prototype→live), B8 PagerDuty spot-check, B9 Devin build, B5/B6 admin.*
+*Status: `main` corrected + SEALED at Entry #52 (`458df5b2`; L1). Phantom bot-#99 blocker removed; real emission gate = bot #109 + MCP→ToolRequest reshaping; SHADOW_GENOME L/M backfilled + N added.*
+*Next required action: go-live depth cycle (GitHub/Linear Prototype→live-ingesting; emission gated on bot #109). Open: B8 PagerDuty spot-check, B9 Devin, B5/B6 admin.*
