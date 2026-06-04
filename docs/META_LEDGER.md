@@ -220,6 +220,208 @@ SHA256(content_hash + previous_hash)
 **Decision**: PASS-audit plan implemented. (1) Producer-side sensitive-data screen — `adapter/core/sensitive.py` (faithful port of mcp `sensitive_patterns.py` v1: secret/PHI/PAN + Luhn) wired as a HARD gate in `validate_emissions`/`_screen_sensitive`; secret excerpts redacted so the raised error cannot leak a credential (independently verified). (2) CI alignment — `secret-scan.yml` gitleaks→TruffleHog (`--only-verified`, matches mcp; fixes org-license issue); new `ci.yml` (ruff/mypy/pytest); `.pre-commit-config.yaml` gitleaks→ruff. Verification: **26/26 pytest** (was 14; +12), ruff clean, mypy clean (16 files). Independent objective-observer confirmed Reality==Promise + no leak + faithful port + no scope creep. FEATURE_INDEX FX-SEC-001 Verified. **Review Boundary held**: no commit/push/PR. Decision-log note: PHI/PAN excerpts are truncate-only (not asterisked) in the error — mcp parity, design-as-specified; secret-class is fully redacted. bot CRIT-1/CRIT-2 remain bicameral-bot issues (out of scope).
 
 ---
+
+### Entry #10: RESEARCH BRIEF
+
+**Timestamp**: 2026-06-03T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-fathom-linear-connectors-2026-06-03.md)
+= 53802abdeb09853f10ab518e94d2cfbb10512cff883e96bad9cbcf49c97733ad
+```
+
+**Previous Hash**: cad649f622885f5706fa9b4a7672eddf857b86dce3413be36c39d0eebb1b380e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 61900c482f2b4d769504f32a8e7a82a25bec0c119e4cd45282783817182536bf
+```
+
+**Decision**: Verified the Fathom + Linear connector surfaces against official vendor docs (developers.fathom.ai, linear.app/developers) for the next-priority connector cycle. **Both are net-new builds, not ports** — no live Fathom/Linear source exists in `bicameral-mcp` (Linear was backed out per SG-2026-06-02-D). Fathom = meeting/transcript source (REST `GET /meetings` cursor poll + `new-meeting-content-ready` Svix-signed webhook); Linear = issue source (webhook envelope `{action,type,actor,data,updatedFrom,…}` primary, GraphQL fallback). **Both map onto the existing `Observation`→`normalize()` seam with zero contract changes** — same parse-surface shape as `connectors/github` (`FX-GH-001`). No DRIFT vs `ARCHITECTURE_PLAN.md` (both are named sources; read-only emit-to-gateway). 0 blocking contract gaps → research-complete. Two security facts recorded for the live cycle (deferred now): both use HMAC-SHA256 webhook signing (must inherit mcp HMAC+dedup, HIGH-2), and both payloads carry PII/content the producer sensitive screen (`FX-SEC-001`) guards. New memory: SHADOW_GENOME **SG-2026-06-03-I** (Fathom/Svix) + **SG-2026-06-03-J** (Linear webhook richest ingest). Gate: `.qor/gates/fathom-linear-2026-06-03/research.json`.
+
+---
+
+### Entry #11: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-03T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-source-connectors-fathom-linear-ports-2026-06-03.md)
+= da093c8039b3a0f2c068caf3e77ce12ce776283e03745b08bb9ebd8ce6a582c3
+```
+
+**Previous Hash**: 61900c482f2b4d769504f32a8e7a82a25bec0c119e4cd45282783817182536bf
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1d683a455932bf4658ae8969d226ce8a06bbfc2cc851de31d34edcb8580e375e
+```
+
+**Verdict**: **VETO** (iteration 1). Independent fresh-context architect-reviewer audited the plan pre-implementation. APIs grounded (no fabrication), authority boundary clean, Razor feasible (google_drive `_walk_table` 4-deep claim verified + refactor resolves), every FX touch anchored to a behavioral test, no scope creep. **Dispositive finding (coverage-gap):** `.github/workflows/ci.yml` path-allowlists `connectors/github` for both mypy (`:26`) and pytest (`:28`), so the five NEW connector suites + type-checks would never run in CI — the plan's `## CI Commands` (`pytest -q` / `mypy adapter connectors`) is a Promise the on-disk workflow contradicts. Two low-severity findings: `_flatten_transcript` must read `transcript[].speaker.display_name` (not segment-level); Fathom fixture emails must use reserved domains (`example.com`) so the producer sensitive screen doesn't trip. All plan-text → required next skill `/qor-plan`. Report: `.agent/staging/AUDIT_REPORT.md`. SHADOW_GENOME **SG-2026-06-03-K** records the CI-allowlist Promise-vs-Reality pattern.
+
+---
+
+### Entry #12: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-03T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-source-connectors-fathom-linear-ports-2026-06-03.md)
+= 0bb1ca8590677a2338ef2fefd198a87e543b30c73fea0651f70956f33192fd85
+```
+
+**Previous Hash**: 1d683a455932bf4658ae8969d226ce8a06bbfc2cc851de31d34edcb8580e375e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 4d6e3dc4d8a0d9791423a91464c99dc8457cf8fce592fdc857dec3bc63be320a
+```
+
+**Verdict**: **PASS** (iteration 2). Independent fresh-context re-audit confirmed all three iter-1 (Entry #11) findings CLOSED with file-cited evidence and zero new violation. (1) coverage-gap: Phase 5 now adds `.github/workflows/ci.yml` + widens Mypy→`adapter connectors`, Pytest→`adapter/core/tests connectors -q`; the plan's from-strings are byte-accurate against the real workflow (`:24,26,28`) and `## CI Commands` match verbatim. (2) specification-drift: `_flatten_transcript` reads `transcript[].speaker.display_name` per research F1. (3) security: fixtures mandate reserved `example.com`. Authority boundary (read-only parse→normalize), Section 4 Razor (google_drive `_walk_table` refactor verified), test functionality (every FX touch invokes the unit + asserts output), and scope (5 connectors + ci.yml only) all re-checked clean. Report: `.agent/staging/AUDIT_REPORT.md`. Cleared to `/qor-implement`.
+
+---
+
+### Entry #13: SESSION SEAL (local — Review Boundary held)
+
+**Entry ID**: `6cf6d2e1ae01`
+**Timestamp**: 2026-06-03T00:00:00-04:00
+**Phase**: SUBSTANTIATE (local hold)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= f609237b5f336d081718730c2e06dbf56b470bd95a2fe2e8cbb9d1accd86bc42
+```
+
+**Previous Hash**: 4d6e3dc4d8a0d9791423a91464c99dc8457cf8fce592fdc857dec3bc63be320a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1d755d60e4d5dee29b0b9c4f3d6fe565746f60157ed173f51d2ef89a6d9ea2c2
+```
+
+**Decision**: PASS-audit plan (iter 2) implemented and substantiated to the local Review Boundary. **Five source connectors** shipped as provider-neutral parse surfaces feeding `pipeline.normalize()`: **fathom** + **linear** (net-new, built from official API docs — `parse_meeting`/`parse_event`) and **granola** + **local_directory** (ports of mcp `events/sources/*`) + **google_drive** legitimized (the previously-ungoverned draft, with `_walk_table` refactored to ≤3 nesting). `.github/workflows/ci.yml` widened so the new suites are gated (`mypy adapter connectors`; `pytest adapter/core/tests connectors -q`). **Verification**: pytest **60 passed** (was 26; +34), ruff clean, mypy clean (39 files). **Independent review**: objective-observer confirmed Reality==Promise; devil's-advocate 0 blockers, 2 advisories fixed (google_drive table test now asserts a table-exclusive token; `_flatten_transcript` hardened against a string `speaker`). FEATURE_INDEX `FX-FATHOM-001`/`FX-LINEAR-001`/`FX-GRANOLA-001`/`FX-LOCALDIR-001`/`FX-GDRIVE-001` Verified (8 total). Substantiate gates: secret-scan clean, dod_check clean, merge-velocity healthy, gate-chain complete, governance-health OK. **Review Boundary HELD**: no commit/push/PR/tag. Decision-log: (a) live network/auth/webhook-signature-verification DEFERRED per connector `auth.md` (Svix for Fathom, `Linear-Signature` for Linear) — to inherit mcp HMAC+dedup at the live cycle (security brief HIGH-2); (b) intent-lock was not captured at implement Step 5.5 (verify returned NO-LOCK, non-blocking) — minor process gap; (c) governance-index `--enforce` flags `plan-*.md` as unregistered, expected since they are gitignored local drafts per GOVERNANCE_INDEX Tier 4 (non-blocking, rc=0); (d) no version manifest → version-bump/tag steps disclosed-SKIP (no tag this cycle). New memory: SHADOW_GENOME SG-2026-06-03-I/J/K.
+
+---
+
+### Entry #14: RESEARCH BRIEF
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(research-brief-webhook-verification-2026-06-04.md)
+= 0a2ee8ddb18726360427dd5f547e9f0d88a8e140e59108f830df14074fdb5d65
+```
+
+**Previous Hash**: 1d755d60e4d5dee29b0b9c4f3d6fe565746f60157ed173f51d2ef89a6d9ea2c2
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 19670b54be376d3e324be508835701f585d20017a7a746e7238b16651631695e
+```
+
+**Decision**: Verified the **webhook security core** for the live-connector work (new cycle `webhook-verify-2026-06-04`, scope chosen by operator: webhook verify+dedup first, offline-testable). The `adapter.core.WebhookConnector` contract is `verify(headers,body:bytes)->bool` + `normalize_event(...)` with **no secret param** → secret is connector-injected (keyring deferred). Confirmed two signing schemes against primary sources: **Fathom = Standard Webhooks/Svix** (content `id.timestamp.body`, `whsec_` base64-decoded key, HMAC-SHA256 base64, space-delimited `v1,` sigs, ~300 s tolerance — standardwebhooks.com spec) and **Linear = `Linear-Signature`** (hex HMAC-SHA256 over raw body, 60 s `webhookTimestamp` ms anti-replay). Port targets exist in `bicameral-mcp`: `webhooks/github.py::verify_signature` (constant-time, verify-before-parse, fail-closed empty secret) + `webhooks/dedup.py::DeliveryDedupCache` (bounded partitioned LRU+TTL). Pure crypto → offline-testable with an injected clock for anti-replay; live HTTP/keyring/poll stay out of scope. **L3** (security logic). 0 blocking gaps, no DRIFT → proceed to `/qor-plan`. New memory: SHADOW_GENOME **SG-2026-06-04-A**. Gate: `.qor/gates/webhook-verify-2026-06-04/research.json`.
+
+---
+
+### Entry #15: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(plan-webhook-verification-dedup-2026-06-04.md)
+= 23719f94ad2a085df9c68e9d04f9f23b6b0d4432cccae29c6fbb23042f68da83
+```
+
+**Previous Hash**: 19670b54be376d3e324be508835701f585d20017a7a746e7238b16651631695e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= d558d08f4db050be8d2547ffe572ff8fd78b7e2fc984b730dd13975234e9124d
+```
+
+**Verdict**: **VETO** (iteration 1). Independent L3 audit confirmed the **crypto math is spec-correct** (Svix `id.timestamp.body` + `whsec_` base64 key + base64 HMAC + space-delim `v1,` any-match + 300 s; Linear hex-over-raw-body + 60 000 ms) with no encoding/unit confusion — but found the security **fail-closed boundary** leaky: four attacker-input paths escape the verifier as **uncaught exceptions** rather than a clean reject (the connector maps only `WebhookVerificationError`→False): **F1** Linear `verify` parses the body for `webhookTimestamp` before the HMAC passes (parse-before-verify + `JSONDecodeError` escape); **F2** `verify_hmac_hex` has no missing/`None` `Linear-Signature` guard (`TypeError`); **F3** Svix `body.decode()` crashes on non-UTF-8; **F4** `int(timestamp)` crashes on non-numeric. **F5** the verify→normalize_event trust handoff is documentation-only (must self-guard). Plus coverage gaps (malformed-ts/json, missing-sig, empty-id negative tests). All plan-text → `/qor-plan`. Report: `.agent/staging/AUDIT_REPORT.md`. SHADOW_GENOME **SG-2026-06-04-B** records the fail-open-via-uncaught-exception pattern.
+
+---
+
+### Entry #16: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(plan-webhook-verification-dedup-2026-06-04.md)
+= aec129d2f7cc7bfc3452e463f7ba04ad01ab11d6ee77b144a37ea105532bd130
+```
+
+**Previous Hash**: d558d08f4db050be8d2547ffe572ff8fd78b7e2fc984b730dd13975234e9124d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 58932b61ddeee200a4b7dfcd6516f8ba05a2c4632995fd97feda3ac302d5c59c
+```
+
+**Verdict**: **PASS** (iteration 2). Independent L3 re-audit confirmed all five iter-1 (Entry #15) findings CLOSED with cited evidence and zero new violation: **F1** Linear `verify` HMAC-first, parses body only after pass, broadened catch (`JSONDecodeError`/`KeyError`/`ValueError`/`TypeError`→False); **F2** `verify_hmac_hex` rejects missing/`None`/empty/non-`str` sig → `WebhookVerificationError`; **F3** Svix signed content built over **bytes** (no `body.decode()`); **F4** `int(timestamp)` wrapped → fail-closed on non-numeric; **F5** `normalize_event` self-guards (re-runs `verify`, `[]` on False) for **both** connectors. Coverage gap closed (malformed-ts/json, missing-sig, empty-id negatives). Crypto still spec-correct, constant-time compare retained, Section 4 factoring named, `WebhookConnector` contract + scope + impact_assessment intact. Report: `.agent/staging/AUDIT_REPORT.md`. Cleared to `/qor-implement`.
+
+---
+
+### Entry #17: SESSION SEAL (local — Review Boundary held)
+
+**Entry ID**: `f9c2d7f4363d`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (local hold)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 200421b0fad9ea145c227a501625460ab9c3496bd52f550fd3edaf9eb39316b5
+```
+
+**Previous Hash**: 58932b61ddeee200a4b7dfcd6516f8ba05a2c4632995fd97feda3ac302d5c59c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 8a9143017031167dc66f8268f3c88a844a0879590893efebceb5fc699db6613e
+```
+
+**Decision**: PASS-audit (iter 2) L3 webhook-security core implemented and substantiated to the local Review Boundary. New `adapter/core/webhook_security.py`: `verify_standard_webhook` (Standard Webhooks/Svix — base64 `whsec_` key, signed content over **bytes** `id.timestamp.body`, base64 HMAC-SHA256, space-delimited `v1,` any-match, 300 s tolerance), `verify_hmac_hex` (Linear hex over raw body), `DeliveryDedupCache` (bounded partitioned LRU+TTL, injectable clock) — all **fail-closed** (every attacker-input path raises only `WebhookVerificationError`), constant-time `compare_digest`. `FathomConnector`/`LinearConnector` gained injected-secret `verify` + self-guarding `normalize_event` (verify→dedup→parse; Linear HMAC-first then 60 s `webhookTimestamp` window). **Verification**: pytest **93 passed** (was 60; +33), ruff clean, mypy clean (43 files). **Independent review**: objective-observer Reality==Promise CONFIRMED; devil's-advocate 0 blockers after 46 adversarial probes (fail-open 20/20, forgery 5/5 incl. empty-candidate trick, timestamp boundaries exact ±300 s/±60000 ms, HMAC-first ordering, constant-time, no tooling-config silencing). FEATURE_INDEX `FX-WHSEC-001`/`FX-FATHOM-002`/`FX-LINEAR-002` Verified (11 total). Substantiate gates: secret-scan clean, merge-velocity healthy, governance-index enforced (Last-Reviewed→2026-06-04), gate-chain complete. **Review Boundary HELD** (no commit/push/PR/tag). Decision-log: (a) live REST/GraphQL/poll + secret/keyring resolution + HTTP boundary remain DEFERRED; (b) this cycle stacks on the still-uncommitted cycle-3 work on the same branch; (c) intent-lock not captured (verify NO-LOCK, non-blocking); (d) governance-index `plan-*.md` unregistered findings expected (gitignored drafts), rc=0. New memory: SHADOW_GENOME SG-2026-06-04-A/B.
+
+---
 *Chain integrity: VALID*
-*Status: PR #1 merged to `main` (2026-06-03) — adapter seam + GitHub connector + producer secret screen + TruffleHog/CI alignment shipped. Scaffold seeded (SYSTEM_STATE.md, GOVERNANCE_INDEX.md).*
-*Next required action: integrations conformance test against bicameral-bot `protocol/schemas/v1/` — blocked until bot #99 (dev→main) lands the v1 schema on bot `main`. Gateway guards tracked in bot #108/#109.*
+*Status: `webhook-verify-2026-06-04` SUBSTANTIATED at the local Review Boundary (Entry #17, `8a914301`, L3). Stacks on cycle-3 (`fathom-linear-2026-06-03`) — both on `feat/source-connectors-fathom-linear`, staged, NOT committed. 93 tests green; ruff/mypy clean; webhook verify+dedup fail-closed + independently adversarially verified.*
+*Next required action: USER review + publish decision for the combined branch (5 connectors + webhook verify/dedup). Then remaining live-connector work (REST/GraphQL clients, secret resolution, HTTP boundary). Cross-repo deps unchanged.*

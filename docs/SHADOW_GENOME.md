@@ -5,6 +5,61 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-04-B — Correct crypto can still fail OPEN: every attacker-input path in a verifier must raise the caught error type
+
+**Discovered**: 2026-06-04 (`/qor-audit` VETO, webhook-verify iter 1)
+**Prevents**: shipping a webhook verifier whose HMAC math is right but which crashes (instead of rejecting) on malformed attacker input.
+
+A verifier's `verify()` is specified to map only `WebhookVerificationError → False`. So any OTHER exception on an attacker-controlled path escapes the contract boundary as an uncaught raise — and depending on the (out-of-scope) caller's handling, a crash can become a retry storm or a swallowed truthy path. The L3 audit found four such paths even though the HMAC construction was spec-perfect:
+- `json.loads(body)` to read a timestamp **before** the HMAC check → `JSONDecodeError` escape **and** parse-before-verify.
+- `headers.get("Linear-Signature")` → `None` into `compare_digest` → `TypeError`.
+- `body.decode()` on a non-UTF-8 body → `UnicodeDecodeError` (also: HMAC the signed content over **bytes**, not a decoded str).
+- `int(timestamp)` on a non-numeric header → `ValueError`.
+
+**Rule:** in a security verifier, (1) do the HMAC/`compare_digest` FIRST over raw bytes; (2) parse/inspect the body only after it verifies; (3) wrap every attacker-input conversion so it raises the ONE error type the connector maps to `False` (fail closed); (4) self-guard the parse step (`normalize_event` re-checks `verify`) — a documentation-only "assumes prior verify" is not a code guarantee; (5) test the malformed/missing/replay/empty negatives, not just tamper+wrong-secret. Correct math is necessary, not sufficient.
+
+## SG-2026-06-04-A — Fathom (Svix) and Linear webhook verification differ on three axes; don't share one verifier blindly
+
+**Discovered**: 2026-06-04 (`/qor-research`, webhook verification core)
+**Prevents**: writing one HMAC verifier and assuming both providers fit it — they differ in encoding, signed content, and timestamp unit.
+
+| Axis | Fathom (Standard Webhooks / Svix) | Linear (`Linear-Signature`) |
+|---|---|---|
+| Header(s) | `webhook-id`, `webhook-timestamp` (unix **s**), `webhook-signature` (space-delim `v1,<b64>`) | `Linear-Signature` (single hex digest) |
+| Signed content | `{id}.{timestamp}.{body}` (constructed) | the **raw body** alone |
+| Secret → key | `whsec_<base64>` → **base64-decode** to key bytes | secret used as-is |
+| MAC encoding | HMAC-SHA256 → **base64** | HMAC-SHA256 → **hex** |
+| Anti-replay | `webhook-timestamp` within ~**300 s** (Svix ref) | `webhookTimestamp` (**ms**) within **60 s** |
+| Dedup id | `webhook-id` header | `webhookId` (in body) |
+
+Shared discipline (port from `bicameral-mcp/webhooks/github.py` + `dedup.py`): constant-time `hmac.compare_digest`; **verify before parse**; **dedup only after verify** (don't let unverified ids poison the cache); fail-closed on missing/empty secret; bounded LRU+TTL dedup. Inject a clock for deterministic anti-replay tests. The `WebhookConnector` contract carries no secret → inject it into the connector (keyring resolution deferred). (standardwebhooks.com spec; linear.app/developers.)
+
+## SG-2026-06-03-K — A widened CI command in the plan is a lie if ci.yml path-allowlists the old dirs
+
+**Discovered**: 2026-06-03 (`/qor-audit` VETO, fathom-linear cycle iteration 1)
+**Prevents**: shipping new connector tests that never run in CI because the workflow's hardcoded path allowlist wasn't widened.
+
+`.github/workflows/ci.yml` runs `mypy adapter/core connectors/github` and `pytest adapter/core/tests connectors/github/tests -q` — both **path-allowlisted to github**. A plan whose `## CI Commands` reads `pytest -q` / `mypy adapter connectors` describes intent, not reality: the new `connectors/{fathom,linear,granola,local_directory,google_drive}` suites + type-checks would be silently ungated, so a broken connector ships green. **Rule:** any cycle adding a connector dir MUST add `.github/workflows/ci.yml` to its Affected Files and widen the mypy/pytest steps to `adapter connectors` / `adapter/core/tests connectors`. The `ci_coverage_lint` WARN at audit Step 0.6 surfaces this; treat it as load-bearing, not noise. The plan's `## CI Commands` must match what ci.yml actually executes.
+
+## SG-2026-06-03-J — Linear's richest ingest point is the webhook envelope, not a GraphQL poll
+
+**Discovered**: 2026-06-03 (`/qor-research`, Fathom + Linear connector surface)
+**Prevents**: building Linear as a GraphQL poller and losing change context that only the webhook carries.
+
+- Linear's API is GraphQL (`https://api.linear.app/graphql`, personal API key via `Authorization`), but the **webhook** delivers a fully-serialized entity plus change context a poll cannot: `{action(create|update|remove), type, actor, createdAt, data, url, updatedFrom, webhookId, webhookTimestamp(ms), organizationId}`. `updatedFrom` (prior values of changed fields) exists **only** on the webhook — invaluable for decision-candidate diffing.
+- Issue `data`: `id`(uuid), `identifier`(e.g. `PROJ-123`), `title`, `description`, `priority`, `state`, `team{id,name}`, `assignee{id,name}`, `url`.
+- Signature: `Linear-Signature` = **hex** HMAC-SHA256 over the **raw** body with the signing secret; anti-replay rejects `abs(now − webhookTimestamp) > 60000 ms`. Treat WEBHOOK as primary, ACTIVE GraphQL as fallback fetch.
+- No live Linear code survives in MCP to port (backed out per SG-2026-06-02-D) — clean-room build from the public contract. (linear.app/developers.) Live verification deferred this cycle.
+
+## SG-2026-06-03-I — Fathom signs webhooks with the Standard Webhooks (Svix) scheme
+
+**Discovered**: 2026-06-03 (`/qor-research`, Fathom + Linear connector surface)
+**Prevents**: hand-rolling a Fathom signature verifier and confusing its epoch-seconds timestamp with Linear's milliseconds.
+
+- Fathom's `new-meeting-content-ready` webhook uses the **Standard Webhooks / Svix** envelope: headers `webhook-id`, `webhook-timestamp` (epoch **seconds**), `webhook-signature` (base64, space-delimited *versioned* sigs e.g. `v1,<b64>`). Secret prefixed `whsec_`; verify = `HMAC-SHA256(base64decode(secret), "${id}.${timestamp}.${body}")` → base64 → constant-time compare.
+- REST: base `https://api.fathom.ai/external/v1`, API-key auth, **60 req/60 s** (`RateLimit-*` headers). `GET /meetings` cursor-paginates via `next_cursor`/`cursor`; transcript/summary/action-items are opt-in expansions. Webhook payload **is a meeting object** (same shape as list items).
+- Implication: reuse a Svix-style verifier when live; do **not** hand-roll. Seconds-vs-ms timestamp differs from Linear (SG-J). (developers.fathom.ai.) Live verification deferred this cycle.
+
 ## SG-2026-06-03-H — Security/governance standards: mcp is the baseline; bot under-enforces
 
 **Discovered**: 2026-06-03 (`/qor-research`, cross-repo security+governance alignment)

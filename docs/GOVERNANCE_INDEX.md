@@ -1,6 +1,6 @@
 # Governance Index
 
-**Last Reviewed**: 2026-06-03
+**Last Reviewed**: 2026-06-04
 
 A single authoritative map of every governance artifact in this project, organized
 into six freshness tiers with explicit drift contracts. A stale entry here is
@@ -60,6 +60,8 @@ Informational, slow-drift. Drift signal: factual claims diverge from current cod
 | Architecture decision records | `docs/adr/0004..0007-*.md` |
 | Adapter-contract research brief | `docs/research-brief-adapter-contract-2026-06-02.md` |
 | Security & governance research brief | `docs/research-brief-security-governance-alignment-2026-06-03.md` |
+| Fathom + Linear connectors research brief | `docs/research-brief-fathom-linear-connectors-2026-06-03.md` |
+| Webhook verification research brief | `docs/research-brief-webhook-verification-2026-06-04.md` |
 
 ## Tier 6 — Archived
 
