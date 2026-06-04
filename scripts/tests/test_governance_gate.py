@@ -10,7 +10,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from governance_gate import verify_feature_index, verify_ledger_chain  # noqa: E402
+from governance_gate import main, verify_feature_index, verify_ledger_chain  # noqa: E402
 
 _REPO = Path(__file__).resolve().parents[2]
 
@@ -118,6 +118,16 @@ def test_repo_ledger_verifies():
     # Guards our own committed chain — must stay clean.
     ledger = (_REPO / "docs" / "META_LEDGER.md").read_text(encoding="utf-8")
     assert verify_ledger_chain(ledger) == []
+
+
+def test_main_accepts_repo_root():
+    # --repo-root pointed at the real repo verifies clean (cross-repo contract).
+    assert main(["--repo-root", str(_REPO)]) == 0
+
+
+def test_main_missing_ledger_root_fails_cleanly(tmp_path):
+    # A root with no ledger returns non-zero, not a traceback.
+    assert main(["--repo-root", str(tmp_path)]) == 1
 
 
 def test_repo_feature_index_paths_exist():

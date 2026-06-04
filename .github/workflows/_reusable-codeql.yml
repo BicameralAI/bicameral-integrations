@@ -1,0 +1,26 @@
+name: _reusable-codeql
+
+on:
+  workflow_call:
+    inputs:
+      languages:
+        description: Comma/space-separated CodeQL languages (e.g. "python", "python,javascript")
+        type: string
+        default: python
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    permissions:
+      security-events: write
+      actions: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: github/codeql-action/init@87557b9c84dde89fdd9b10e88954ac2f4248e463 # v4
+        with:
+          languages: ${{ inputs.languages }}
+          queries: security-extended
+      - uses: github/codeql-action/analyze@87557b9c84dde89fdd9b10e88954ac2f4248e463 # v4

@@ -70,6 +70,9 @@ Informational, slow-drift. Drift signal: factual claims diverge from current cod
 | Webhook verification research brief | `docs/research-brief-webhook-verification-2026-06-04.md` |
 | CI governance gates research brief | `docs/research-brief-ci-governance-gates-2026-06-04.md` |
 | Compliance mappings (OWASP/NIST/EU-AI-Act/SOC2/GDPR+HIPAA) | `docs/compliance/` |
+| Reusable gates research brief | `docs/research-brief-reusable-gates-2026-06-04.md` |
+| Ecosystem gate-adoption guide | `docs/ecosystem/consuming-gates.md` |
+| AGT sidecar evaluation (bicameral-bot) | `docs/ecosystem/agt-sidecar-evaluation.md` |
 
 ## Tier 6 — Archived
 

@@ -1,0 +1,30 @@
+name: _reusable-dependency-review
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-severity:
+        type: string
+        default: moderate
+      advisory:
+        description: When true, the review never fails the build (use until the caller's Dependency Graph is enabled).
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        continue-on-error: ${{ inputs.advisory }}
+        with:
+          fail-on-severity: ${{ inputs.fail-on-severity }}
+          comment-summary-in-pr: always
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, PSF-2.0, Python-2.0, 0BSD, Unlicense, CC0-1.0, MPL-2.0, BSL-1.0

@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **21**
-- **Verified**: 21
+- Total entries: **24**
+- **Verified**: 24
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -46,6 +46,9 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-CI-SEC-001 | Security + supply-chain gates | docs/plan-ci-governance-gates-2026-06-04.md | .github/workflows/codeql.yml | (D4.d waiver) | Verified | CodeQL/Bandit/dependency-review/Scorecard/SBOM/pip-audit/Dependabot, SHA-pinned; config validated by workflow-lint + tools executing |
 | FX-CI-QUAL-001 | Quality/consistency gates | docs/plan-ci-governance-gates-2026-06-04.md | scripts/check_license_headers.py | scripts/tests/test_check_license_headers.py | Verified | workflow-YAML lint + codespell + SPDX-header scan (advisory) + conventional PR title |
 | FX-CI-DOC-001 | Compliance framework mappings | docs/plan-ci-governance-gates-2026-06-04.md | docs/compliance/README.md | (D4.d waiver) | Verified | OWASP/NIST/EU-AI-Act/SOC2/GDPR+HIPAA control mappings; backbone is FX-CI-GOV-001; "alignment, not certification" |
+| FX-CI-GOV-002 | Governance gate `--repo-root` (cross-repo verify) | docs/plan-reusable-gates-2026-06-04.md | scripts/governance_gate.py | scripts/tests/test_governance_gate.py | Verified | `main(--repo-root/--ledger/--feature-index)`; default unchanged; enables reusable cross-repo verification (SG-2026-06-04-E) |
+| FX-CI-REUSE-001 | Reusable-workflow gate template | docs/plan-reusable-gates-2026-06-04.md | .github/workflows/_reusable-governance-gate.yml | (D4.d waiver) | Verified | portable gates as `workflow_call`; this repo dogfoods via thin callers; validated by workflow-lint + governance gate exit 0 |
+| FX-CI-DOC-002 | Ecosystem gate-adoption guide | docs/plan-reusable-gates-2026-06-04.md | docs/ecosystem/consuming-gates.md | (D4.d waiver) | Verified | how bot/mcp/cloud consume the reusables + SHA-pin + --repo-root contract; backed by FX-CI-REUSE-001 |
 
 ---
 
