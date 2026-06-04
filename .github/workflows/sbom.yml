@@ -6,12 +6,17 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
 
 jobs:
   sbom:
+    # Write scopes scoped to the calling job (top-level read-only). SBOM needs
+    # id-token + attestations write for provenance; it does NOT write repo
+    # contents, so `contents` stays read (Scorecard Token-Permissions).
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     uses: ./.github/workflows/_reusable-sbom.yml
     with:
       attest: ${{ github.event_name == 'release' }}

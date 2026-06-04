@@ -49,9 +49,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Bumped `actions/checkout` to v6 and `actions/setup-python` to v6 across CI.
 - Fixed the OpenSSF Scorecard CI gate (was `startup_failure`): disabled the
   OIDC-based public-results publish (`publish_results: false`, dropped
-  `id-token: write`) that the token policy refused. The Scorecard analysis and
+  `id-token: write`) and corrected the reusable workflow's top-level
+  `permissions` to stay within the caller's grant. The Scorecard analysis and
   its SARIF upload to code-scanning are unchanged; only the public badge
   publish (unused) is dropped. All CI gates are now green.
+- Hardened CI workflow token permissions to least privilege: `codeql.yml`,
+  `scorecard.yml`, and `sbom.yml` now declare top-level `permissions: contents:
+  read` and grant write scopes only at the calling job; SBOM no longer requests
+  `contents: write`. Resolves the Scorecard Token-Permissions findings.
 - Added a "surface selection (interactivity test)" criterion to the integration
   candidate catalog: read-only evidence sources default to direct API/webhook
   adapters; MCP servers are reserved for interactive agent action.

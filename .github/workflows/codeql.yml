@@ -17,11 +17,16 @@ concurrency:
 
 permissions:
   contents: read
-  security-events: write
-  actions: read
 
 jobs:
   codeql:
+    # Write scopes scoped to the calling job (top-level stays read-only) so the
+    # Scorecard Token-Permissions check passes; the reusable's effective token is
+    # the intersection of this job's grant and its own job permissions.
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     uses: ./.github/workflows/_reusable-codeql.yml
     with:
       languages: python
