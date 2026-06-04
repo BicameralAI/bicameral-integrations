@@ -13,7 +13,7 @@ MUST be current at every cycle close. Drift signal: wrong version / wrong state 
 
 | Artifact | Path | Freshness marker |
 |----------|------|------------------|
-| Meta Ledger | `docs/META_LEDGER.md` | latest sealed entry (#52) |
+| Meta Ledger | `docs/META_LEDGER.md` | latest sealed entry (#55) |
 | Shadow Genome | `docs/SHADOW_GENOME.md` | latest narrative entry |
 | System State | `docs/SYSTEM_STATE.md` | latest phase snapshot |
 | Concept | `docs/CONCEPT.md` | stable |
@@ -60,7 +60,7 @@ Informational, slow-drift. Drift signal: factual claims diverge from current cod
 
 | Artifact | Path |
 |----------|------|
-| Architecture decision records | `docs/adr/0004..0011-*.md` |
+| Architecture decision records | `docs/adr/0004..0012-*.md` |
 | Integration candidate catalog | `docs/INTEGRATION_CANDIDATE_CATALOG.md` |
 | Integration docs index | `docs/INTEGRATION_DOCS_INDEX.md` |
 | Integration strategy & candidate harvesting | `docs/INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING.md` |

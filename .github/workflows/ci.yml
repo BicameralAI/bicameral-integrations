@@ -21,8 +21,8 @@ jobs:
       - name: Install tools
         run: python -m pip install --upgrade pip ruff mypy pytest
       - name: Ruff
-        run: ruff check adapter connectors
+        run: ruff check adapter connectors runtime
       - name: Mypy
-        run: mypy adapter connectors
+        run: mypy adapter connectors runtime
       - name: Pytest
-        run: pytest adapter/core/tests connectors -q
+        run: pytest adapter/core/tests connectors runtime -q

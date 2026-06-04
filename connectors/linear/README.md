@@ -9,9 +9,17 @@ Provider-facing Linear (issue tracking) client and auth documentation.
   poll cannot; `parse_event` maps an Issue event to a neutral `Observation`.
 - **Active** — GraphQL fetch as a fallback (deferred this cycle).
 
-The live GraphQL path, API-key resolution, and `Linear-Signature` verification
-(+ 60 s anti-replay) are deferred this cycle (see `auth.md`); this connector is
-the parse surface only.
+`Linear-Signature` verification (hex HMAC-SHA256 over the raw body + 60 s
+anti-replay window) and best-effort `webhookId` dedup are implemented in
+`verify()` / `normalize_event()`. The live HTTP receipt, GraphQL path, and
+API-key/secret resolution stay in the operator runtime (see `auth.md`).
+
+## Readiness: Beta (ADR-0012)
+
+First connector promoted to **Beta**: its signed-webhook →
+`runtime.deliver_webhook` → reference sink path is proven end-to-end by
+`runtime/tests/test_runtime.py`, with **zero cross-repo dependency**. Live
+(gateway emission) remains gated on bicameral-bot #109.
 
 ## Surface
 
