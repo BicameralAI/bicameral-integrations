@@ -5,6 +5,33 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-04-N — Never cite a cross-repo issue/PR number in a governance artifact without verifying it
+
+**Discovered**: 2026-06-04 (operator challenge — "I don't see anything open that fits #99").
+**Prevents**: a phantom cross-repo blocker propagating through SYSTEM_STATE / ledger / BACKLOG / memory as fact.
+
+A hand-off summary referenced "bot #99 / #108 / #109"; `#99` was over-specified into a concrete claim never verified ("blocked until bot #99 lands the v1 protocol schema"). Live check: **bicameral-bot #99 is a CLOSED PR** ("Integration: dev → main … ingest gateway …"), unrelated to a pending schema — wrong on every count, and it had spread into `docs/SYSTEM_STATE.md` + memory. **Ground truth (verified 2026-06-04):** v1 ingest wire schema is **published** (bot PR #95, `protocol/schemas/v1/`); real OPEN emission-safety gate is bot **#109** (gateway `/api/v1/ingest` lacks size/rate/prompt-injection/sensitive-data guards); internal ingest authority mid-refactor (MCP→ToolRequest: bot #114/#115/#116/#117/#120 + #123 conformance); #73 (release signing) open; #108 CLOSED. **Rule:** any external issue/PR/commit citation in a Tier-1 governance artifact must be verified against the source repo at write time (`gh api repos/<r>/issues/<n>`) + tagged with the verification date; a half-remembered number is an Open Question, not a blocker. Cross-repo analogue of the SG-2026-06-04-F grounding discipline.
+
+---
+
+## SG-2026-06-04-M — Jira Cloud classic webhooks DO sign (sha256=-prefixed); ADF description is not text
+
+**Discovered**: 2026-06-04 (`/qor-research`, jira connector).
+**Prevents**: assuming Jira webhooks are unsigned (skipping verify), and routing the ADF description object into the excerpt.
+
+Contrary to the initial assumption that Jira classic webhooks are unsigned, a webhook with a configured `secret` signs delivery `X-Hub-Signature: sha256=<hex-HMAC-SHA256(secret, raw_body)>` (WebSub) — so Jira ships `verify()` at parity, but the **`sha256=` prefix must be stripped** before a bare-hex verifier (`verify_hmac_hex`). And `issue.fields.description` (and comment `body`) is an **Atlassian Document Format object** (`{type:"doc", content:[…]}`), NOT a string — the excerpt must use `fields.summary` (str), never description; routing the ADF dict in is both meaningless and a PII-smuggle risk. Connect-JWT (HS256/RS256 `qsh`) / Forge / Automation use different auth — deferred. Reinforces SG-2026-06-04-A (per-provider signature divergence) + SG-2026-06-04-I (a dict is not text).
+
+---
+
+## SG-2026-06-04-L — A connector over an undocumented heterogeneous event log must FILTER, not assume
+
+**Discovered**: 2026-06-04 (`/qor-research` + devil's-advocate, claude-code connector).
+**Prevents**: a parser that crashes (or emits junk) on the meta/unknown line types in Claude Code's transcript JSONL.
+
+Claude Code transcripts (`~/.claude/projects/<slug>/<session>.jsonl`) are an undocumented, **unversioned, heterogeneous** event log — `type` ∈ user/assistant/summary/system/mode/permission-mode/file-history-snapshot/attachment/last-prompt/… and one assistant turn **splits across multiple lines** (one per content block). Rule: parse it with a **filtering** surface — `parse_session_line(line) -> Observation | None`, keep only the evidence types, **skip unknown/meta types (return None), never error**; one line ≠ one message; and a sibling time format (`history.jsonl` is epoch-ms int, transcripts are ISO str) must never leak into the str timestamp. Devil's advocate also found unbounded recursion on deeply-nested `tool_result.content` lists → **depth-cap recursion** on hostile nested input. Extends SG-2026-06-04-I (skip-don't-crash on unknown record kinds + depth-cap).
+
+---
+
 ## SG-2026-06-04-K — MCP is for interactive agent action (T3/T5); API/webhook is for read-only evidence (T0/T1) — pick by the interactivity test
 
 **Discovered**: 2026-06-04 (operator design review, connector value-add)
