@@ -8,9 +8,13 @@ on:
 
 permissions:
   contents: read
-  security-events: write
-  actions: read
 
 jobs:
   scorecard:
+    # Write scopes scoped to the calling job (top-level read-only) for the
+    # Scorecard Token-Permissions check; mirrors the codeql.yml pattern.
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
     uses: ./.github/workflows/_reusable-scorecard.yml

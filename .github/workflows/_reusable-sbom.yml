@@ -15,7 +15,7 @@ jobs:
   sbom:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       id-token: write
       attestations: write
     steps:

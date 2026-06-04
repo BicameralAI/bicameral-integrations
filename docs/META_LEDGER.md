@@ -1505,7 +1505,30 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #61) implemented + substantiated. Wired webhook signature verification into **GitHub, Slack, Notion** and promoted them to **Beta** — **7 Beta connectors** total. New provider-neutral primitive **`verify_slack_signature`** (FX-WHSEC-002 — `v0:{ts}:{raw_body}` HMAC, 300 s replay, fail-closed). Per-connector `verify()`/`normalize_event()` (FX-GH-002 with the PR-envelope `number` unwrap; FX-SLACK-002 with the `url_verification` handshake → `[]`; FX-NOTION-002 prefix-pinned). Real-envelope + signed fixtures; behavioral tests (signed→1, bad-sig→0, missing-header→0, dedup; GitHub ref-equality; Slack stale + tamper-fresh-ts; Notion no-prefix→False); runtime-harness Beta proofs for all three. **No parse-surface change** (the audited scope); readiness flips on each `references.md`/`README.md` + the `connectors/README.md` index; FEATURE_INDEX 36 (FX-WHSEC-002/FX-GH-002/FX-SLACK-002/FX-NOTION-002 + broadened FX-RUNTIME-001). **Main README** rewritten with the full active-connector index + planned-mods index + a documentation map (operator request). **Independent review** (observer + devil's advocate, fresh-context): observer **PASS** (D1–D4, parse_* unchanged, `mods/` untouched); devil's advocate **0 blocking / no fail-open** (full forgery matrix fails closed) — two sub-bar findings deferred to BACKLOG **B14** (parse_* non-dict nested-field hardening — needs a valid sig, not fail-open) + the Notion case-insensitive-prefix note (consistent with GitHub/Jira). **Verification**: pytest **246 passed**, ruff + mypy clean (95 files), governance gate verifies #1–#61. SHADOW_GENOME SG-2026-06-04-A/B reinforced (per-provider signature divergence; fail-closed). Docs refreshed; `mods/` left to Codex.
 
+### Entry #63: HARDENING (Scorecard Token-Permissions — B13)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: IMPLEMENT / HARDEN
+**Author**: Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-scorecard-token-permissions-2026-06-04.md)
+= 31f1b1e8eba89ad819e48c2c8d61877092b0462f7b3124d342fd5641f3bdad6c
+```
+
+**Previous Hash**: f693bb08776fca66dc7fd20e4f462a88e5e77ac5e38d034eebd023862e09481b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 4648c151677079e081ae4240db9478ddce6fc28c8be85f2a037953866e10b3b0
+```
+
+**Decision**: Hardened CI workflow token permissions to least privilege (closes B13; Scorecard Token-Permissions findings #21-24, HIGH). `codeql.yml`/`scorecard.yml`/`sbom.yml` moved their write scopes from the top level to the **calling job**, with top-level `permissions: contents: read`; `_reusable-sbom.yml` dropped the unneeded `contents: write` → `contents: read` (its steps need `id-token`/`attestations` write, not contents). The reusable-calling-job permission pattern is **PR-verified on CodeQL** (its `pull_request` trigger exercises the exact caller→reusable structure) BEFORE trusting it on the push-only Scorecard (SG-2026-06-04-O — verify by running). Also cleared via API with rationale: stale CodeQL **#17** (`py/incomplete-url-substring-sanitization`) dismissed false-positive (fixed in `2a81142`); accepted Pinned-Dependencies **#18-20** dismissed won't-fix (stdlib-only runtime, dev toolchain version-pinned). **Verification** (SG-2026-06-04-O — observe, don't claim): workflow YAML re-validated locally. The CodeQL PR run is the pre-merge proof (merge gated on it) and the Scorecard push run the post-merge proof; this entry does NOT assert "green" ahead of those observations. Remaining Security-tab items: only #13 (Code-Review) + #1 (Branch-Protection), both closed by branch protection on `main` (B5, repo-admin). `mods/` + connectors untouched. Chain verifies #1–#62.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` + verify-wiring cohort SEALED at Entry #62 (`f693bb08`; L3). **7 Beta connectors** — linear, fathom, sentry, pagerduty, github, slack, notion (all verify-wired, harness-proven); 10 Prototype. **All six CI gates green** (Scorecard confirmed green run 26980983204).*
-*Next required action: Scorecard Token-Permissions hardening (B13) — agreed next; then Zendesk/ServiceNow/ChurnZero/Gainsight CS/support connector evaluation. Admin (you): branch protection (B5) closes Scorecard #13/#1. Open: B8, B9, B10/B11, B12, B14, bot #109 (Live).*
+*Status: `main` + Token-Permissions hardening at Entry #63 (`4648c151`; L2). **7 Beta connectors**; CI gates green. #17-20 dismissed (API, with rationale); #21-24 fix applied (calling-job least-privilege) — clear confirmed on the post-merge Scorecard scan; only #13/#1 (branch protection, B5, admin) remain.*
+*Next required action: Zendesk/ServiceNow/ChurnZero/Gainsight CS/support connector evaluation (`/qor-research` + catalog). Admin (you): branch protection (B5) closes the last two findings. Open: B8, B9, B10/B11, B12 (SBOM OIDC), B14 (parse non-dict), bot #109 (Live).*
