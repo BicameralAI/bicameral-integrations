@@ -3,12 +3,23 @@
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
 from pathlib import Path
 
 from adapter.core.emissions import AdapterEmission
 from adapter.core.pipeline import normalize
+from adapter.core.webhook_security import DeliveryDedupCache
 from connectors.sentry.connector import SentryConnector, parse_issue
+
+_SECRET = "client-secret"
+
+
+def _signed(payload: dict) -> tuple[dict, bytes]:
+    body = json.dumps(payload).encode("utf-8")
+    sig = hmac.new(_SECRET.encode(), body, hashlib.sha256).hexdigest()
+    return {"Sentry-Hook-Signature": sig}, body
 
 _FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "issue_event.json"
 
@@ -62,3 +73,41 @@ def test_end_to_end_normalizes():
     out = normalize(SentryConnector().observations(_event()), adapter_version="sentry/0.1.0")
     assert len(out) == 1
     assert isinstance(out[0], AdapterEmission) and out[0].source_id == "sentry"
+
+
+def test_verify_true_on_signed_false_on_tampered():
+    c = SentryConnector(secret=_SECRET)
+    headers, body = _signed(_event())
+    assert c.verify(headers=headers, body=body) is True
+    assert c.verify(headers=headers, body=body + b" ") is False          # tampered body
+    assert c.verify(headers={}, body=body) is False                      # missing header
+    assert SentryConnector(secret="").verify(headers=headers, body=body) is False  # no secret
+
+
+def test_normalize_event_rejects_bad_sig_and_dedups():
+    headers, body = _signed(_event())
+    dedup = DeliveryDedupCache()
+    c = SentryConnector(secret=_SECRET, dedup=dedup)
+    assert c.normalize_event(headers={"Request-ID": "d1"} | headers, body=body)  # 1st: parsed
+    # same delivery id again -> deduped to []
+    assert c.normalize_event(headers={"Request-ID": "d1"} | headers, body=body) == []
+    # bad signature -> []
+    assert c.normalize_event(headers={"Sentry-Hook-Signature": "bad"}, body=body) == []
+
+
+def test_normalize_event_rejects_non_object_json_and_verify_survives_bad_args():
+    c = SentryConnector(secret=_SECRET)
+    headers, body = _signed([1, 2])  # validly-signed, but JSON is a list not an object
+    assert c.normalize_event(headers=headers, body=body) == []
+    # caller-contract violations fail closed, not crash
+    assert c.verify(headers=None, body=body) is False  # type: ignore[arg-type]
+    assert c.verify(headers=headers, body="notbytes") is False  # type: ignore[arg-type]
+
+
+def test_normalize_event_processes_when_no_delivery_id():
+    # No Request-ID and an empty-id payload -> best-effort dedup must NOT drop it.
+    payload = {"data": {"issue": {"title": "boom"}}}
+    headers, body = _signed(payload)
+    c = SentryConnector(secret=_SECRET, dedup=DeliveryDedupCache())
+    out = c.normalize_event(headers=headers, body=body)
+    assert len(out) == 1 and out[0].excerpt == "boom"

@@ -19,6 +19,8 @@
 - [ ] [B4] Enable repo Dependency Graph (admin) to flip `dependency-review` from advisory to blocking.
 - [ ] [B5] **Branch protection on `main`** (admin): require PR + passing status checks (CI, Security Scan, Governance Gate) + ≥1 approval. Resolves Scorecard `Branch-Protection` + `Code-Review`. Needs repo-admin (current token is push-only).
 - [ ] [B6] **OpenSSF Scorecard `startup_failure` on `main`** (admin): every Scorecard run fails at startup — almost certainly the repo's default Actions workflow-token permission is read-only, blocking Scorecard's `security-events: write`. Set default workflow permissions to allow `security-events: write` (Settings → Actions → Workflow permissions). Until fixed, Scorecard cannot re-evaluate/auto-close PinnedDependencies alerts (the action-pin fixes in Entry #37 were dismissed as resolved-stale). Needs repo-admin.
+- [ ] [B7] **Devin / Devin Desktop connector — value-add research** (operator request, 2026-06-04; docs.devin.ai/desktop): grounded research pass on Cognition's agentic coding harness — does the Devin API (sessions/runs) and/or Desktop local artifacts expose stable, documented, read-only, normalizable evidence? Apply the §4 criteria + interactivity test; it's the Windsurf/Codeium successor. Set priority + trust tier + build only after the research brief.
+- [ ] [B8] **PagerDuty signature first-party spot-check**: confirm `developer.pagerduty.com/docs/verifying-signatures` (JS-rendered) in a browser before relying on the `X-PagerDuty-Signature` multi-sig verifier in production. Scheme cross-verified (support docs + third parties), implemented fail-closed in Entry #44.
 
 ## Security posture dispositions (Scorecard checks — recorded, not code-fixable)
 

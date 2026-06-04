@@ -16,8 +16,39 @@ from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
     verify_hmac_hex,
+    verify_hmac_hex_multi,
     verify_standard_webhook,
 )
+
+
+def _pd_sig(secret: str, body: bytes) -> str:
+    return "v1=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+
+
+def test_hmac_multi_accepts_single_and_rotated():
+    body, secret = b'{"x":1}', "shhh"
+    good = _pd_sig(secret, body)
+    verify_hmac_hex_multi(header_sig=good, body=body, secret=secret)  # single
+    # rotation set: a stale digest under an old secret + the valid one
+    rotated = _pd_sig("old-secret", body) + ", " + good
+    verify_hmac_hex_multi(header_sig=rotated, body=body, secret=secret)
+
+
+def test_hmac_multi_fail_closed_paths():
+    body, secret = b'{"x":1}', "shhh"
+    good = _pd_sig(secret, body)
+    for bad in [
+        None,                       # missing header
+        "",                         # empty header
+        "garbage",                  # no v1= entry
+        "v1=",                      # bare v1= -> empty candidate must NOT match
+        _pd_sig(secret, b'{"x":2}'),  # tampered body
+        _pd_sig("wrong", body),     # wrong secret
+    ]:
+        with pytest.raises(WebhookVerificationError):
+            verify_hmac_hex_multi(header_sig=bad, body=body, secret=secret)
+    with pytest.raises(WebhookVerificationError):  # empty secret
+        verify_hmac_hex_multi(header_sig=good, body=body, secret="")
 
 _SECRET = "whsec_" + base64.b64encode(b"super-secret-key-0123456789").decode()
 _BODY = b'{"recording_id": 1, "meeting_title": "x"}'
