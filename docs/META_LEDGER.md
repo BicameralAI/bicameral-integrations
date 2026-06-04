@@ -1073,7 +1073,102 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #43) implemented + substantiated. Hardened the Phase-2 connectors with **live webhook signature verification + best-effort dedup**, fail-closed + constant-time, reusing `adapter/core/webhook_security.py`. Added **`verify_hmac_hex_multi`** (PagerDuty `v1=` rotation membership). **Sentry** `verify()`/`normalize_event()` reuse `verify_hmac_hex` over the **raw body**; **PagerDuty** use the multi-sig primitive on the nested `event.data` envelope. Both: self-guard (re-verify) → JSON guard → best-effort dedup (process-on-missing-id; never drop) → parse; no replay-timestamp window (neither provider documents one — dedup TTL is the replay guard, documented honestly). Added a **Verify** column to the connector index (fathom/linear/sentry/pagerduty ✓). **Independent review** (observer + devil's advocate, fail-open-focused): observer Reality==Promise; devil's advocate **0 blocking / 2 non-blocking** (no fail-open found across an exhaustive probe set incl. bare-`v1=`, rotation, whitespace, 100k header) — the 2 MED (validly-signed non-object JSON crash; non-dict-headers/non-bytes-body crash) **fixed** with `isinstance(payload, dict)` guards + broadened fail-closed except, + regression tests. SHADOW_GENOME SG-2026-06-04-A/B reinforced. **Operator items**: added Devin connector candidate (BACKLOG **B7**, value-add research) and PagerDuty first-party spot-check (**B8**). Docs refreshed per the end-of-cycle cadence (SYSTEM_STATE, CHANGELOG, auth.md ×2). **Verification**: pytest **183 passed**, ruff + mypy clean (79 files), governance gate verifies the #1–#44 chain. FEATURE_INDEX **FX-SENTRY-002/FX-PAGERDUTY-002** + FX-WHSEC-001 (`verify_hmac_hex_multi`) Verified (29 total).
 
+### Entry #45: RESEARCH BRIEF (Claude Code connector)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-claude-code-2026-06-04.md)
+= aa6788460430d346675dd3061a9bbf837699192a1723768c586d1d9320725b4d
+```
+
+**Previous Hash**: 2674627280c1ae065ea2d36fe89fd8f13246156091c3c097cb278c7e01464976
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= dcd6fd4adf3dc3226400516b78e12007cf3bc78992c0b266dcccfa09f06cb2ae
+```
+
+**Decision**: Grounded the Claude Code connector (P0, value-add Entry #35) against official docs + on-disk inspection (CLI 2.1.160). Transcripts are local JSONL at `~/.claude/projects/<slug>/<session>.jsonl` — a **heterogeneous unversioned event log** (`type` ∈ user/assistant/summary/system/mode/permission-mode/file-history-snapshot/attachment/last-prompt/…). Only user/assistant/summary carry evidence; one assistant turn splits across multiple lines (one per content block). Surface: `parse_session_line(line) -> Observation | None` (filter non-evidence → None), excerpt from str/list content + summary with a `[claude-code:{kind}] {uuid}` terminal floor; defend every field (the dominant risk is SG-2026-06-04-I). Transcripts carry secrets/PII → `FX-SEC-001` is the guard (no self-redaction). Git-attribution path is lower-value (this repo strips `Co-Authored-By` per stealth). T0 passive file import. SHADOW_GENOME **SG-2026-06-04-L** (proposed). Brief: `docs/research-brief-claude-code-2026-06-04.md`. → `/qor-plan` at L2.
+
+### Entry #46: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-claude-code-2026-06-04.md)
+= 69b4e8175c11bdf7d086c70601b5ab07978423b29966adf9bc504af577af7d17
+```
+
+**Previous Hash**: dcd6fd4adf3dc3226400516b78e12007cf3bc78992c0b266dcccfa09f06cb2ae
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a40643b74d3043a0a1e2452387109003dbe12f0208f6299780dde905d1dd8495
+```
+
+**Verdict**: **PASS** (iteration 1). All 7 passes clear. Grounding traces to research. Contract: `Observation | None` + connector drops Nones so `normalize()` sees only valid emissions; source_id `claude-code` matches `_SOURCE_ID_RE`. **Excerpt-blank (SG-G)**: every path (str/list/empty-list/empty-thinking/absent-message/summary) terminates in the non-empty `[claude-code:{kind}] {ref}` floor; `ref` never blank (uuid→sessionId→literal); `.strip()` before truthiness. **SG-I**: line/message/content/blocks all isinstance-guarded; unknown `type`→None (skip, not crash); the **int-timestamp leak** is closed (`isinstance(ts, str) else ""`). Filtering: meta/unknown→None; empty-content assistant floored+kept (intentional, tested). Razor ≤40/≤3. Scope: connector + Devin catalog/research (no Devin code) + index/docs; `adapter/core` + `mods/` untouched. 3 non-binding recs (drop dead `role`; docstring-note the floor-over-drop; coercion in `_text`) — all folded in. Cleared to `/qor-implement`. Report: `.agent/staging/AUDIT_REPORT.md`.
+
+---
+
+### Entry #47: SESSION SEAL (Claude Code connector)
+
+**Entry ID**: `c1aud3c0d3p0`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= eba80ee555da6456d5c165ae64e1d60b4b1f85326d20500642e3b21f0327f1ad
+```
+
+**Previous Hash**: a40643b74d3043a0a1e2452387109003dbe12f0208f6299780dde905d1dd8495
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= af0836e67a937899a23ac1a7ae25229542b226982ff3fc251ae3cb0367cf4885
+```
+
+**Decision**: PASS-audit (Entry #46) implemented + substantiated. Built the **Claude Code** connector (P0, **16 connectors total**): `parse_session_line(line) -> Observation | None` filters the heterogeneous transcript JSONL to user/assistant/summary (meta/unknown → None), excerpt from str/list content + tool_use/tool_result blocks + summary with the `[claude-code:{kind}] {uuid}` terminal floor; `ClaudeCodeConnector.observations` accepts one line or `{"lines":[...]}` and drops Nones; PASSIVE, T0. Synthetic JSONL fixture + behavioral tests. **Independent review** (observer + devil's advocate): observer Reality==Promise (3 audit recs honored); devil's advocate **1 BLOCKER + 0 non-blocking** — unbounded `_text` recursion on deeply-nested `tool_result.content` lists → uncaught `RecursionError` losing the batch (reachable from a corrupt transcript) — **fixed** with a depth cap (`_depth < 4`) + regression test; no blank-excerpt or other crash found across an exhaustive probe set; sensitive screen confirmed firing. SHADOW_GENOME SG-2026-06-04-I reinforced (depth-cap recursion on hostile nested input). **Verification**: pytest **194 passed**, ruff + mypy clean (83 files), governance gate verifies the #1–#48 chain. FEATURE_INDEX **FX-CLAUDECODE-001** Verified (30 total). Docs refreshed per the end-of-cycle cadence; `mods/` left to Codex.
+
+### Entry #48: RESEARCH BRIEF (Devin connector — B7)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(research-brief-devin-2026-06-04.md)
+= f1193438233980211f47f3c5f451516df91af80bfad8afd12f3d2a238e29f106
+```
+
+**Previous Hash**: af0836e67a937899a23ac1a7ae25229542b226982ff3fc251ae3cb0367cf4885
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= e267107697a3d5138eb555d57c78b92903aa4339588233d3450728776f2c0d75
+```
+
+**Decision**: BACKLOG **B7** closed — value-add research on **Devin / Devin Desktop** (Cognition, the Windsurf/Codeium successor), run in parallel with the Claude Code build. Meets the bar via the **official versioned v3 REST API** (read-only GET sessions/messages, poll — no webhooks); the **Desktop/Local path has no documented file artifact** (API connector, not file — the opposite of Claude Code). Interactivity test (SG-2026-06-04-K): read session evidence (goals/status/message-trail/linked-PRs/structured-output) = **evidence adapter here (P1/T1)**; launch/steer (`POST`) = `bicameral-mcp` (T3/T5), out of scope. Catalogued **P1, ACTIVE/T1**; **no build this cycle** — queued as **B9** behind the Claude Code P0. Risk: v3 schema churn + mandatory message-body redaction. Brief: `docs/research-brief-devin-2026-06-04.md`.
+
 ---
 *Chain integrity: VALID*
-*Status: `connectors-hardening` SEALED (Entry #44, `26746272`; L3). Sentry + PagerDuty webhook signature verification + dedup wired (fail-closed, no fail-open found); 183 tests. `mods/` owned by Codex.*
-*Next required action: merge the hardening PR. Open: Devin candidate research (B7), PagerDuty first-party spot-check (B8). Next build-out: Claude Code (P0) from the value-add shortlist.*
+*Status: `main` SEALED at Entry #48 (`e2671076`; L2). Claude Code connector built (16 connectors, 194 tests); Devin researched + catalogued P1 (B9 build queued). `mods/` owned by Codex.*
+*Next required action: merge the PR. Open: B8 PagerDuty spot-check, B9 Devin build, B5/B6 admin. `mods/` = Codex.*
