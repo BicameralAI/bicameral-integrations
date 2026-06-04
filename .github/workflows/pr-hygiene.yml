@@ -9,21 +9,5 @@ permissions:
   contents: read
 
 jobs:
-  conventional-title:
-    name: conventional PR title (blocking)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check PR title matches Conventional Commits
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: |
-          python3 - <<'PY'
-          import os, re, sys
-          title = os.environ.get("PR_TITLE", "")
-          pattern = r"^(feat|fix|docs|chore|refactor|test|ci|build|perf|style|revert)(\([\w./-]+\))?!?: .+"
-          if not re.match(pattern, title):
-              print(f"PR title not Conventional Commits: {title!r}")
-              print("Expected e.g. 'feat(connectors): add X' or 'docs: update Y'")
-              sys.exit(1)
-          print(f"PR title OK: {title}")
-          PY
+  pr-hygiene:
+    uses: ./.github/workflows/_reusable-pr-hygiene.yml

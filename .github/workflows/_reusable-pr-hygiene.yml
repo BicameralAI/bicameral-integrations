@@ -1,0 +1,25 @@
+name: _reusable-pr-hygiene
+
+on:
+  workflow_call: {}
+
+permissions:
+  contents: read
+
+jobs:
+  conventional-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title matches Conventional Commits
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          python3 - <<'PY'
+          import os, re, sys
+          title = os.environ.get("PR_TITLE", "")
+          pattern = r"^(feat|fix|docs|chore|refactor|test|ci|build|perf|style|revert)(\([\w./-]+\))?!?: .+"
+          if not re.match(pattern, title):
+              print(f"PR title not Conventional Commits: {title!r}")
+              sys.exit(1)
+          print(f"PR title OK: {title}")
+          PY

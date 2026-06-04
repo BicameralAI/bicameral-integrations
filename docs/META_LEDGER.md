@@ -646,7 +646,79 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #25, iter 2) implemented + substantiated. Built the **4 Phase-1 P0 parse surfaces** exactly per `plan-connectors-phase1-2026-06-04.md`, each `parse_*(payload) -> Observation` → `pipeline.normalize()`, read-only (ADR-0008), live network/auth/webhook-verify deferred to `auth.md`: **sarif** (`parse_sarif`/`parse_result`, one Observation per `runs[].results[]`, PASSIVE, T0), **slack** (`parse_message`, `event_callback` + edit-subtype unwrap, WEBHOOK, T2), **notion** (`parse_page` via `type=="title"` property, ACTIVE+WEBHOOK, T1), **mcp_registry** (`parse_server`, ACTIVE, T1) — each with synthetic fixture + behavioral tests; READMEs flipped Candidate→Prototype; `__init__` re-exports. **Independent review** (objective observer + devil's advocate): observer Reality==Promise CONFIRMED; devil's advocate found **1 blocker + 4 non-blocking, all fixed** — **BLOCKER** Notion untitled+no-id page produced a blank excerpt → `evidence_excerpt_blank` crash (added terminal `"notion-page"` literal + both-empty test, matching SARIF `"sarif-result"`/MCP `"mcp-server"` floors); **HIGH** Slack empty-`event` envelope leaked envelope type (explicit `event`-dict unwrap) and `message_changed` dropped edited text (nested-`message` extraction); **MED** added terminal-floor tests for sarif/notion/mcp + slack subtype/empty-envelope. SHADOW_GENOME **SG-2026-06-04-G** (excerpt fallbacks need a terminal literal, not just a better-field). **Documentation pass** (`/qor-document`, operator-requested): standardized all repo READMEs to the `Modes`/`Surface`/`References` house style, removed the stale "not yet implemented" scaffold prose from the 4 implemented connectors + their `__init__` docstrings, polished github (bare→full), kept jira honest as Candidate, added connector + mod index tables, corrected the root README's `adapters/` layout + test command. **Verification**: pytest **119 passed** (adapter/core + connectors), ruff + mypy clean (59 files), governance gate verifies the #1–#26 chain, all README links resolve, secret scan clean. FEATURE_INDEX **FX-SARIF/SLACK/NOTION/MCPREG-001** Verified (19 total). **Review Boundary**: operator authorized commit/push/PR for this cycle ("professional output expected before commit, push, PR").
 
+### Entry #27: RESEARCH BRIEF
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-reusable-gates-2026-06-04.md)
+= 3ea517f8c6d38893e00a52379c786c3b4a84d3c8ea619bdcfd8bf7b5be38ed0d
+```
+
+**Previous Hash**: f5b10cb6e924f266584350f4f16cba370ddc358215e1aaab5f213adbd5509939
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 2d171638cf22669433dbe04da5d805f127fe9f8b9c6856917dc9c28013c9c599
+```
+
+**Decision**: Ecosystem cycle 1 (`reusable-gates-2026-06-04`) — factor the Entry #21 portable gates into `workflow_call` **reusable workflows** so bot/mcp/cloud + this repo consume one source. Gates split into portable (governance-gate, dependency-review, Scorecard, SBOM, secret-scan, PR-hygiene, workflow-lint) and language-specific (CodeQL via `languages` input; Bandit/pip-audit/ruff/mypy/pytest = Python-only, stay local). Real design point (SG-2026-06-04-E): a reusable governance-gate that lives here but verifies a *consumer's* ledger must (a) checkout this repo's script to a side path (SHA-pinned) and (b) run it with a new `--repo-root` arg pointing at the caller's workspace — the script currently derives root from `__file__`. This repo becomes a consumer of its own reusables (thin callers) to prevent run-vs-publish drift. 0 blocking gaps → `/qor-plan` at L2. SHADOW_GENOME **SG-2026-06-04-E**. Gate: `.qor/gates/reusable-gates-2026-06-04/research.json`. (Re-anchored onto Entry #26 at ecosystem merge; originally authored as #22 on `feat/ci-reusable-gates`.)
+
+### Entry #28: GATE TRIBUNAL
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-reusable-gates-2026-06-04.md)
+= e2f44fc68d6bbbf4199f773d133d26574c9c353cfa8db4b81a5793dc99246c5b
+```
+
+**Previous Hash**: 2d171638cf22669433dbe04da5d805f127fe9f8b9c6856917dc9c28013c9c599
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 226352ba0f512143e1e619a076718e89541210da363ae55cdb8a4681b871e54e
+```
+
+**Verdict**: **PASS** (iteration 1). Independent audit cleared all 6 axes: the SG-2026-06-04-E cross-repo trap is correctly fixed (`--repo-root "$GITHUB_WORKSPACE"` + side-checkout of the tooling script), every cross-repo reference is SHA-pin-mandated for consumers, the repo dogfoods via thin callers (no run-vs-publish drift), `--repo-root` defaults to current behavior (backward-compatible; FX-CI-GOV-001 tests untouched), scope is additive, and waivers are honest with a real test on the changed logic. Report: `.agent/staging/AUDIT_REPORT.md`. Cleared to implement. (Re-anchored onto Entry #27 at ecosystem merge; originally #23.)
+
+---
+
+### Entry #29: SESSION SEAL (reusable-gates — ecosystem cycle 1)
+
+**Entry ID**: `f97195725f0e`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= d4fb30d5e93a676b0ff77450757d92633e8ffe68516ba90dc2cce86d3b4687c2
+```
+
+**Previous Hash**: 226352ba0f512143e1e619a076718e89541210da363ae55cdb8a4681b871e54e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 515ed99b7ff069af3693e7579d067c837481bda21b012e3831ff9c2e396d26b4
+```
+
+**Decision**: Ecosystem cycle 1 (reusable-workflow template) implemented + substantiated. Portable gates factored into 6 `workflow_call` reusables (`_reusable-{governance-gate,codeql,dependency-review,scorecard,sbom,pr-hygiene}.yml`, SHA-pinned); this repo's 6 gate workflows converted to **thin callers** (`uses: ./...`) — single source, no run-vs-publish drift. `scripts/governance_gate.py` gained `--repo-root`/`--ledger`/`--feature-index` (default unchanged) so a reusable can verify a **consumer's** ledger via side-checkout + `--repo-root "$GITHUB_WORKSPACE"` (closes SG-2026-06-04-E). `docs/ecosystem/consuming-gates.md` documents adoption for bot (Rust→clippy/cargo-audit; CodeQL has no Rust)/mcp/cloud + SHA-pin discipline. **Ecosystem-merge reconciliation**: the reusable governance-gate template gained the `pip install pytest` step and the reusable dependency-review gained an `advisory` input (both ported from main's post-#21 CI hardening) so the merged main's gates stay green. **Verification**: governance gate OK default **and** `--repo-root .`; ruff clean; workflows parse. FEATURE_INDEX `FX-CI-GOV-002`/`FX-CI-REUSE-001`/`FX-CI-DOC-002` Verified (22 total after ecosystem merge). New memory: SHADOW_GENOME SG-2026-06-04-E. (Re-anchored onto Entry #28 at ecosystem merge; originally #24.)
+
 ---
 *Chain integrity: VALID*
-*Status: `connectors-phase1-2026-06-04` SEALED (Entry #26, `f5b10cb6`; L2). 4 parse surfaces implemented + reviewed + documented; 119 tests green.*
-*Next required action: stealth commit (per-connector split) + push + PR for `feat/connectors-phase1`; then evaluate Continue + Aider as next candidate connectors (operator request).*
+*Status: `reusable-gates-2026-06-04` SEALED + ecosystem-merged (Entry #29, `515ed99b`; L2). Reusable gate templates + `--repo-root` verifier on `main`.*
+*Next required action: merge stacked PRs in order (#10 AGT doc, #12/#13 dependabot, #16 connectors); re-anchor each onto the advancing tip.*

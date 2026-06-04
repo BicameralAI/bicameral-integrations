@@ -19,7 +19,16 @@ research. Each entry prevents a future drift. Newest first.
 **Discovered**: 2026-06-04 (`/qor-research`, connectors-phase1)
 **Prevents**: over-building per-provider machinery for what are uniform read-only evidence adapters.
 
-SARIF result, Slack message (or `event_callback` envelope), Notion page (title via the `type=="title"` property's `title[].plain_text`), and MCP-Registry `server.json` (`name`/`description`/`repository.url`) all map onto the same `parse_*(payload) -> Observation` -> `normalize()` surface as `connectors/github` — no contract change. SARIF emits one Observation per result. Slack's catalog "notify-first" mode is a deferred T3 write concern, not the read/ingest evidence surface built here (ADR-0008). Trust tiers: sarif T0, notion/mcp_registry T1, slack T2 (read). Live network/auth/webhook-signing deferred; the producer sensitive screen (`FX-SEC-001`) is the PII/secret guard. (SG-2026-06-04-E lives on the unmerged reusable-gates branch.)
+SARIF result, Slack message (or `event_callback` envelope), Notion page (title via the `type=="title"` property's `title[].plain_text`), and MCP-Registry `server.json` (`name`/`description`/`repository.url`) all map onto the same `parse_*(payload) -> Observation` -> `normalize()` surface as `connectors/github` — no contract change. SARIF emits one Observation per result. Slack's catalog "notify-first" mode is a deferred T3 write concern, not the read/ingest evidence surface built here (ADR-0008). Trust tiers: sarif T0, notion/mcp_registry T1, slack T2 (read). Live network/auth/webhook-signing deferred; the producer sensitive screen (`FX-SEC-001`) is the PII/secret guard.
+
+---
+
+## SG-2026-06-04-E — A cross-repo reusable verifier must take its repo-root as a parameter, not from __file__
+
+**Discovered**: 2026-06-04 (`/qor-research`, reusable-gates cycle)
+**Prevents**: a reusable governance-gate workflow that silently verifies the wrong repository.
+
+A reusable workflow (`workflow_call`) that lives in repo A but is consumed by repo B runs in **B's** context. To run A's `governance_gate.py` it must `actions/checkout` A's script to a side path (e.g. `.governance-tooling`, SHA-pinned). But the script derives its repo root from `Path(__file__).resolve().parents[1]` — which, when run from `.governance-tooling/`, points at **A's** checkout, not B's. It would verify the tooling repo's own ledger and pass trivially, never checking the consumer. **Rule:** any verifier intended for cross-repo reuse must accept `--repo-root` (default `__file__`-derived for local use) and the reusable workflow passes the caller's `GITHUB_WORKSPACE`. Consumers SHA-pin both the reusable-workflow ref and the tooling checkout ref. Companion to [[SG-2026-06-04-D]].
 
 ## SG-2026-06-04-D — A ledger-chain verifier must encode the genesis anchor or it false-fails on entry #1
 

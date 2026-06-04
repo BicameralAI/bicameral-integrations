@@ -109,9 +109,25 @@ def verify_feature_index(text: str, repo_root: Path) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    repo_root = Path(__file__).resolve().parents[1]
-    ledger = (repo_root / "docs" / "META_LEDGER.md").read_text(encoding="utf-8")
-    feature_index = (repo_root / "docs" / "FEATURE_INDEX.md").read_text(encoding="utf-8")
+    import argparse
+
+    default_root = Path(__file__).resolve().parents[1]
+    parser = argparse.ArgumentParser(description="Verify committed governance artifacts.")
+    parser.add_argument("--repo-root", default=str(default_root))
+    parser.add_argument("--ledger", default=None)
+    parser.add_argument("--feature-index", default=None)
+    args = parser.parse_args(argv)
+
+    repo_root = Path(args.repo_root)
+    ledger_path = Path(args.ledger) if args.ledger else repo_root / "docs" / "META_LEDGER.md"
+    fi_path = (
+        Path(args.feature_index) if args.feature_index else repo_root / "docs" / "FEATURE_INDEX.md"
+    )
+    if not ledger_path.exists():
+        print(f"governance-gate: FAIL\n  - ledger not found: {ledger_path}")
+        return 1
+    ledger = ledger_path.read_text(encoding="utf-8")
+    feature_index = fi_path.read_text(encoding="utf-8") if fi_path.exists() else ""
     errors = verify_ledger_chain(ledger) + verify_feature_index(feature_index, repo_root)
     if errors:
         print("governance-gate: FAIL")
