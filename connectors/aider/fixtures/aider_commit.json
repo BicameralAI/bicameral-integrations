@@ -1,0 +1,10 @@
+{
+  "hash": "9c1e4f7a2b6d8e0f1a3c5b7d9e1f2a4c6b8d0e2f",
+  "message": "aider: add exponential backoff to the retry helper\n\nWrap the call in a capped backoff loop with full jitter.",
+  "author_name": "Dev Example (aider)",
+  "committer_name": "Dev Example (aider)",
+  "authored_at": "2026-06-03T15:06:10-04:00",
+  "trailers": [
+    {"key": "Co-authored-by", "value": "aider (claude) <noreply@aider.chat>"}
+  ]
+}
