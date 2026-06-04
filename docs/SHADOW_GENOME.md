@@ -5,6 +5,12 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-04-O — A reusable workflow's `permissions:` must stay within the caller's grant; verify CI fixes by RUNNING, not by reasoning
+
+**Discovered**: 2026-06-04 (Scorecard gate `startup_failure`, two-iteration fix).
+
+The `OpenSSF Scorecard` gate `startup_failure`'d on every push. **First fix** (drop `id-token: write` + `publish_results: false`) was reasoned-PASS by an independent audit on strong circumstantial evidence (0–2 s runs; CodeQL passes with `security-events: write`) — but the post-merge run **still failed**, proving the reasoning wrong. **Real root cause:** `_reusable-scorecard.yml` declared top-level `permissions: read-all`, which **exceeds** the caller's grant (`scorecard.yml`: `contents: read` + `security-events: write`). GitHub rejects a reusable workflow that requests broader permissions than its caller provides → `startup_failure` ("workflow file issue"). The working `_reusable-codeql.yml` declares the minimal `permissions: contents: read` (a subset) and passes. **Fix:** mirror the proven CodeQL pattern — reusable top `permissions: contents: read`, job `contents/security-events: write/actions: read`, caller grants the same. **Rules:** (1) a called (reusable) workflow's `permissions:` can only REDUCE, never widen, the caller's grant — never `read-all` in a reusable unless the caller also grants it; (2) a CI gate is only "green" when an actual run is OBSERVED green — a workflow fix whose verification is structurally post-merge (push/schedule-only triggers) must NOT be sealed as "all gates green" before the run is seen (Entry #59 over-claimed; corrected by #60). Empirical verification outranks audit reasoning for CI/infra. Extends SG-2026-06-04-B (fail-closed) with a process rule: prove-by-running.
+
 ## SG-2026-06-04-N — Never cite a cross-repo issue/PR number in a governance artifact without verifying it
 
 **Discovered**: 2026-06-04 (operator challenge — "I don't see anything open that fits #99").
