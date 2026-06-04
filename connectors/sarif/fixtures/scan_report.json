@@ -1,0 +1,26 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {"driver": {"name": "ExampleScanner", "version": "1.2.3"}},
+      "results": [
+        {
+          "ruleId": "PY.no-eval",
+          "level": "error",
+          "message": {"text": "Use of eval() on untrusted input."},
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "src/handler.py"}, "region": {"startLine": 42}}}
+          ]
+        },
+        {
+          "ruleId": "PY.broad-except",
+          "level": "warning",
+          "message": {"text": "Broad except clause swallows errors."},
+          "locations": [
+            {"physicalLocation": {"artifactLocation": {"uri": "src/util.py"}, "region": {"startLine": 88}}}
+          ]
+        }
+      ]
+    }
+  ]
+}

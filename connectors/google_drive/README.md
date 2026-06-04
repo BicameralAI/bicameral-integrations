@@ -19,4 +19,9 @@ Provider-facing Google Drive and Google Docs client and auth documentation.
 - `GoogleDriveConnector` — connector identity and capabilities.
 
 The live Docs API call and OAuth credential resolution stay in the operator
-runtime (see `auth.md`); this connector is the parse surface only.
+runtime (see [`auth.md`](auth.md)); this connector is the parse surface only.
+
+## References
+
+- Canonical documentation: [references.md](references.md)
+- Auth model (deferred): [auth.md](auth.md)

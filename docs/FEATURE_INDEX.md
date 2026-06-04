@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **18**
-- **Verified**: 18
+- Total entries: **22**
+- **Verified**: 22
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -29,6 +29,10 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-WHSEC-001 | Webhook signature verification + delivery dedup (Svix + hex HMAC) | docs/plan-webhook-verification-dedup-2026-06-04.md | adapter/core/webhook_security.py | adapter/core/tests/test_webhook_security.py | Verified | `verify_standard_webhook` (Svix/Fathom), `verify_hmac_hex` (Linear), `DeliveryDedupCache`; constant-time, fail-closed on all attacker-input paths; L3 |
 | FX-FATHOM-002 | Fathom webhook verify + dedup wiring | docs/plan-webhook-verification-dedup-2026-06-04.md | connectors/fathom/connector.py | connectors/fathom/tests/test_fathom_webhook.py | Verified | `FathomConnector.verify`/`normalize_event` (Svix; injected secret/clock/dedup; self-guarded); live HTTP deferred |
 | FX-LINEAR-002 | Linear webhook verify + dedup wiring | docs/plan-webhook-verification-dedup-2026-06-04.md | connectors/linear/connector.py | connectors/linear/tests/test_linear_webhook.py | Verified | `LinearConnector.verify`/`normalize_event` (Linear-Signature HMAC-first + 60s anti-replay; injected secret/clock/dedup; self-guarded); live GraphQL/HTTP deferred |
+| FX-SARIF-001 | SARIF 2.1.0 result → Observation parser | docs/plan-connectors-phase1-2026-06-04.md | connectors/sarif/connector.py | connectors/sarif/tests/test_sarif_connector.py | Verified | Catalog P0 (security/compliance-evidence, T0); one Observation per `runs[].results[]`; file import only, live CI-collection deferred |
+| FX-SLACK-001 | Slack message event → Observation parser | docs/plan-connectors-phase1-2026-06-04.md | connectors/slack/connector.py | connectors/slack/tests/test_slack_connector.py | Verified | Catalog P0 (communication, T2); `event_callback` envelope or bare message; edit-subtype nested-message unwrap; pinned non-empty excerpt fallback; live Events-API/signature-verify + notify/write (T3+) deferred |
+| FX-NOTION-001 | Notion page → Observation parser | docs/plan-connectors-phase1-2026-06-04.md | connectors/notion/connector.py | connectors/notion/tests/test_notion_connector.py | Verified | Catalog P0 (docs, T1); title via `type=="title"` property (id → `notion-page` terminal floor); ACTIVE+WEBHOOK declared, live API/OAuth/block-fetch deferred |
+| FX-MCPREG-001 | MCP Registry server entry → Observation parser | docs/plan-connectors-phase1-2026-06-04.md | connectors/mcp_registry/connector.py | connectors/mcp_registry/tests/test_mcp_registry_connector.py | Verified | Catalog P0 (mcp/agent-ecosystem, T1); `server.json` title/description→excerpt, repository.url→url; ACTIVE; read-only scoring/allowlist, live registry-fetch deferred |
 
 ---
 

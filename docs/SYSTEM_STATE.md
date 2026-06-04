@@ -4,11 +4,11 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Last Updated** | 2026-06-03 |
+| **Last Updated** | 2026-06-04 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | IMPLEMENTING (cycle 5 substantiated; Review Boundary held — local only) |
-| **Iteration** | 5 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; **L3 CI governance/security gate ecosystem**) |
-| **Session Seal** | `673ad799` (META_LEDGER Entry #21 chain hash) |
+| **Phase** | SEALED (cycle 6 — connectors-phase1 — substantiated + documented; commit/push/PR authorized) |
+| **Iteration** | 6 governed cycles (adapter seam + GitHub; secret screen + CI; 5 connectors; L3 webhook verify; L3 CI governance/security gate ecosystem; **4 Phase-1 parse surfaces + doc pass**) |
+| **Session Seal** | `f5b10cb6` (META_LEDGER Entry #26 chain hash) |
 
 ---
 
@@ -26,7 +26,11 @@ bicameral-integrations/
 |   |-- granola/        (transcript -> Observation; PASSIVE)
 |   |-- local_directory/(file -> Observation; PASSIVE)
 |   |-- google_drive/   (document -> Observation; ACTIVE)
-|   `-- jira/           (scaffold — no MCP impl; research-only)
+|   |-- sarif/          (SARIF result -> Observation; PASSIVE; T0)
+|   |-- slack/          (message event -> Observation; WEBHOOK; T2)
+|   |-- notion/         (page -> Observation; ACTIVE+WEBHOOK; T1)
+|   |-- mcp_registry/   (server.json -> Observation; ACTIVE; T1)
+|   `-- jira/           (scaffold — Candidate, no connector.py yet)
 |-- mods/  (dependency_risk, noisy_source_gate, security_mentions — manifests)
 |-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME,
 |          SYSTEM_STATE, GOVERNANCE_INDEX, BACKLOG, FEATURE_INDEX, adr/, research-brief-*)
@@ -40,11 +44,11 @@ bicameral-integrations/
 
 | Metric | Value |
 |--------|-------|
-| Source connector packages (with `connector.py`) | 6 (github, fathom, linear, granola, local_directory, google_drive) |
-| Total Test Files | 11 |
-| Pytest | 93 passed (adapter/core/tests + connectors) |
+| Source connector packages (with `connector.py`) | 10 (github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry) + jira scaffold |
+| Total Test Files | 15 |
+| Pytest | 119 passed (adapter/core/tests + connectors) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
-| Section 4 Violations | 0 (google_drive `_walk_table` refactored to ≤3 nesting this cycle) |
+| Section 4 Violations | 0 (all 4 new connectors ≤69 lines, fns ≤21, nesting ≤2) |
 
 ---
 
@@ -94,6 +98,10 @@ bicameral-integrations/
 | Webhook security (Svix+Linear verify, dedup) | adapter/core/tests/test_webhook_security.py | OK (16) |
 | Fathom webhook verify/dedup | connectors/fathom/tests/test_fathom_webhook.py | OK (7) |
 | Linear webhook verify/dedup | connectors/linear/tests/test_linear_webhook.py | OK (10) |
+| SARIF connector | connectors/sarif/tests/test_sarif_connector.py | OK |
+| Slack connector | connectors/slack/tests/test_slack_connector.py | OK |
+| Notion connector | connectors/notion/tests/test_notion_connector.py | OK |
+| MCP Registry connector | connectors/mcp_registry/tests/test_mcp_registry_connector.py | OK |
 
 ---
 
@@ -101,18 +109,19 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #21 (`673ad799`); machine-verified by `scripts/governance_gate.py` |
-| Blueprint Sync | SYNCED | ADRs + 5 research briefs + docs/compliance/ current |
+| Ledger Chain | VALID | through Entry #26 (`f5b10cb6`); machine-verified by `scripts/governance_gate.py` |
+| Blueprint Sync | SYNCED | ADRs + research briefs + docs/compliance/ + all README docs current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 107 passing; ruff + mypy clean (43 files) |
+| Test Status | PASS | 119 passing; ruff + mypy clean (59 files) |
 | CI Gates | GREEN (local) | governance-integrity + CodeQL/Bandit/dep-review/Scorecard/SBOM/quality/PR-hygiene + TruffleHog; SHA-pinned; Review Boundary held (not committed) |
 
 ---
 
 ## Next Actions
 
-- [ ] **User review of cycles 3+4** (held at Review Boundary): both stack on `feat/source-connectors-fathom-linear` (5 connectors + L3 webhook verify/dedup). Review staged tree + governance updates, then commit/PR when ready.
-- [ ] Remaining live-connector work: REST poll (Fathom/Granola) + Linear GraphQL clients + secret/keyring resolution + watermark/cursor two-phase commit + the live HTTP boundary (webhook signature verification + dedup core now DONE this cycle).
+- [ ] **Publish connectors-phase1** (commit authorized): stealth commit (per-connector split) + push + PR for `feat/connectors-phase1` (4 parse surfaces + doc pass).
+- [ ] **Evaluate Continue + Aider** as next candidate connectors against the integration criterion (operator request); governed cycle.
+- [ ] Remaining live-connector work: REST poll (Fathom/Granola) + Linear GraphQL clients + secret/keyring resolution + watermark/cursor two-phase commit + the live HTTP boundary (webhook signature verification + dedup core DONE).
 - [ ] Add the adapter→gateway conformance test against bicameral-bot `protocol/schemas/v1/` (blocked until bot #99 lands the v1 schema on bot `main`).
 - [ ] Track bot #108/#109 (gateway security) and #73 (release posture) as cross-repo dependencies.
 
