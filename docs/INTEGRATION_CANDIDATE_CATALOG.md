@@ -114,6 +114,10 @@ Each integration candidate should be evaluated against the following criteria.
 | Azure DevOps Repos | P2 | Repos, PRs, work items, build/release data | Read-first, webhook ingest | T1/T3 | Valuable in Microsoft enterprise environments. |
 | Continue (continue.dev) | P1 | Developer-AI interaction evidence: chat/edit/autocomplete outcomes, model+prompt provenance | Read-only, passive file import (dev-data JSONL) | T0 | Schema-versioned dev-data (`level: noCode` redaction lever). No public read API. |
 | Aider (aider.chat) | P1 | Developer-AI implementation provenance via attributed git commits | Read-only, passive git import | T0 | Deterministic `(aider)` attribution is the stable surface; unversioned transcript deferred. |
+| Claude Code | P0 | Developer-AI session transcripts + attributed commits (decision/implementation/provenance evidence) | Read-only, passive file import (JSONL) | T0 | `~/.claude/**/*.jsonl`; richest first-party evidence, no API dependency; transcripts are secret-laden + schema unversioned (mandatory redaction + tolerant parser). |
+| GitHub Copilot | P1 | AI-leverage usage/acceptance metrics by org/enterprise/team | Read-only API | T1 | Official usage-metrics endpoints (post-2026-04 set); per-user data is PII; needs admin permission + policy enabled. |
+| Cursor | P1 | Per-user activity, model/token usage, spend, audit logs | Read-only Admin API (read endpoints only) | T1 | Verify Privacy-Mode effect on the usage surface; admin-only key custody. |
+| Windsurf (Codeium) | P2 | AI-authored-code %, usage, tool calls | UI export (no confirmed API) | T0/T1 | Deferred — no verifiable official API in current docs (post-acquisition redirect to Devin). |
 
 ### 6.2 Project and Issue Management
 
@@ -166,7 +170,7 @@ Each integration candidate should be evaluated against the following criteria.
 | Snyk | P1 | Dependency/container/code vulnerability findings | API/webhook ingest | T1/T3 | Webhooks currently require beta-awareness. |
 | Dependabot | P1 | Dependency alerts and update PRs | GitHub API ingest | T1 | Usually captured through GitHub. |
 | Trivy | P2 | Container, filesystem, SBOM, IaC scanning | File/CI ingest | T0/T1 | Good local and CI evidence source. |
-| OSV | P2 | Vulnerability lookup and package version evidence | API lookup | T1 | Useful for dependency risk enrichment. |
+| OSV.dev | P0 | Cross-ecosystem vulnerability evidence by package version or commit | Read-only API (free, no-auth, versioned) | T1 | The supply-chain aggregator — already covers GHSA-global, PyPA (PYSEC), and RustSec, so standalone npm / RustSec / PyPA advisory connectors are redundant (P3). |
 | OWASP Dependency-Track | P2 | SBOM and component risk tracking | API/webhook ingest | T1/T3 | Strong compliance/security pipeline candidate. |
 
 ### 6.7 Observability and Incident Systems
@@ -203,6 +207,10 @@ Each integration candidate should be evaluated against the following criteria.
 | Database MCP servers | P1 | Database inspection and evidence | Policy audit first | T3/T5 | High data sensitivity. |
 | Browser automation MCP servers | P2 | Web-based workflow evidence/action | Policy audit first | T3/T5 | High risk due to session access and side effects. |
 | IDE coding agents | P2 | Agent intent, changes, and tool use | Observe first | T3/T5 | Adapter should collect run evidence, not grant authority. |
+| OpenAI Admin/Audit API | P1 | Access-governance audit log + API usage by project/user/model | Read-only API | T1 | Immutable `audit_logs`; no prompts/outputs exposed; org-owner admin key. |
+| Anthropic Admin API | P1 | Usage + cost reports; Enterprise compliance activity feed | Read-only API | T1 | Pairs with Claude Code for org-side provenance; admin-role key; Compliance API Enterprise-gated. |
+| Hugging Face Hub | P2 | Model/dataset provenance: license, eval results, card metadata | Read-only API | T1 | Author-supplied card metadata is inconsistently populated. |
+| LangSmith | P2 | Agent runs/traces + evaluation scores | Read-only API / Bulk Data Export | T1 | Traces carry prompts/secrets/PII — redaction required (same class as Claude Code transcripts). |
 
 ### 6.10 Data and Analytics Systems
 

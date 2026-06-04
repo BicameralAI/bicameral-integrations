@@ -5,6 +5,15 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-04-J — For advisory data build the aggregator; developer-AI evidence is two surfaces, not one
+
+**Discovered**: 2026-06-04 (`/qor-research`, connector value-add pass)
+**Prevents**: building N redundant per-ecosystem advisory connectors, and conflating two different AI-tool evidence surfaces.
+
+**Advisory data:** **OSV.dev** is a free, no-auth, versioned, read-only API that already aggregates GHSA-global, PyPA (PYSEC), and RustSec — so standalone npm / RustSec / PyPA advisory connectors are redundant (P3). Build the aggregator (P0); add GitHub's GHSA only for the *unique* per-repo **Dependabot alerts** signal. **Developer-AI evidence splits in two:** (1) local **transcripts/commits** — T0 passive file import, the richest first-party decision/implementation evidence (Claude Code `~/.claude/**/*.jsonl`, Continue dev-data, Aider git attribution), but secret-laden and schema-unversioned (mandatory `FX-SEC-001` redaction + SG-2026-06-04-I tolerant parser); and (2) vendor **admin/usage-metrics APIs** — T1 read-only governance/leverage evidence (GitHub Copilot, Cursor, OpenAI/Anthropic Admin), no source code but org-admin-key gated and per-user (PII). Choose the surface to the evidence class you want; don't assume a vendor has an API (Windsurf does not — deferred). Extends SG-2026-06-04-H (ingest the stable surface).
+
+---
+
 ## SG-2026-06-04-I — A parse surface for a version-fragile schema must defend on TYPE and whitespace, not just presence
 
 **Discovered**: 2026-06-04 (independent devil's-advocate review, connectors-dev-tools implement)
