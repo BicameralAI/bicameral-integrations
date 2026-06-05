@@ -1,8 +1,8 @@
 # Aider Connector
 
-Provider-facing Aider (aider.chat) adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
-source-control/developer-AI tooling, priority P1, default trust tier T0). A
-candidate from the
+Read-only evidence connector: it parses Aider (aider.chat) attributed commits
+into neutral `Observation`s. **Status: Beta** (ADR-0012; catalog source-control/
+developer-AI tooling, priority P1, default trust tier T0). A candidate from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 
 ## Modes
@@ -14,9 +14,15 @@ candidate from the
   surface. No canonical-state writes — evidence adapter, not state authority
   (ADR-0008).
 
-The live git-log walk, the opt-in `--analytics-log` JSONL, and the unversioned
-`.aider.chat.history.md` transcript are deferred this cycle (see
-[`auth.md`](auth.md)); this connector is the parse surface only.
+The live boundary — the git-log walk, the opt-in `--analytics-log` JSONL, the
+unversioned `.aider.chat.history.md` transcript, and secret resolution — stays
+in the operator runtime (see [`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its `runtime.deliver_poll` → reference sink path is proven
+end-to-end by `runtime/tests/test_runtime.py`, with **zero cross-repo
+dependency**. Live (gateway emission) remains gated on bicameral-bot #109.
 
 ## Surface
 

@@ -1649,7 +1649,30 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #67) implemented + substantiated. **Every connector graduated to Beta — 18 Beta / 0 Prototype**, each promotion **earned** by a real runtime-harness proof (NOT a doc flip): `deliver_poll → emission` for granola/local_directory/google_drive/sarif(→2)/mcp_registry/continue/aider/claude_code(→4, the filtering parse proven: meta line dropped + empty line floored)/osv(→2 existing); `deliver_webhook` signed→1 + bad-sig→0 for jira (`X-Hub-Signature` sha256=). **No connector-code change** — proofs in `runtime/tests/test_runtime.py` (+10 cases → 32 runtime tests); readiness flips on all 10 `references.md` + the 7 README Status lines + the `connectors/README.md` index (0 Prototype rows remain); FX-RUNTIME-001 Notes broadened. All 4 audit tightenings (F1–F4) honored. **Independent review** confirmed earned-not-cosmetic, consistent ADR-0012 bar, honest 18/0 claim. **Verification**: pytest **274 passed**, ruff + mypy clean (100 files), governance gate verifies #1–#67. Posted the integrations-side dependency on **bot #109** (the Live-emission gate; 8→now all connectors queued behind it). SHADOW_GENOME SG-2026-06-04-B reinforced. Docs refreshed; `mods/` left to Codex.
 
+### Entry #69: DOCUMENT (professional README upcycle + mods/ doc recovery)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: DELIVER (`/qor-document`)
+**Author**: Technical Writer (qor-document)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(README.md)
+= 572ed9e6b84e3e463e83db7c6f328872f38960033da607fb952723e688272073
+```
+
+**Previous Hash**: 5b0351283879cafd3aa9fef6d842dcd8dc1e184d886e914bc312204ebccf2ff9
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1eded8538d673fc92954a76bb23da1934fb01b369ecdbaeef1cad7fe16ecb804
+```
+
+**Decision**: Professional documentation pass across all READMEs (operator request). **Primary README**: added a value-prop tagline + a project-signal badge row (connectors-18-Beta, stdlib-only, mypy, Ruff, Conventional Commits, PRs-welcome, security-policy — alongside the existing CI/security badges), a maturity/footprint/safety/assurance table, and a **Design Principles** section (evidence-not-authority, library-not-server, fail-closed, earned-readiness, provable-not-asserted) — pro-tier signals of a well-designed repo. **All 18 connector READMEs** refreshed to a confident Beta posture via two parallel `qor-technical-writer` subagents (10 graduated connectors) + the 8 already-Beta ones: corrected stale "parse surface only" / "deferred this cycle" prose to accurately frame the LIVE boundary (HTTP receipt / poll / file-watch / secret resolution / gateway emission) as the deferred part, with a consistent "Readiness: Beta (ADR-0012)" section. **Recovered the `mods/` documentation set** (the 4 tracked README files clobbered earlier by a `git reset --hard` over Codex's uncommitted edits — SG-2026-06-04-P / the new shared-worktree memory): rewrote `mods/README.md` (framework + safety contract + the 3 tracked mods linked + the 10-mod planned suite, no broken in-repo links since those dirs are Codex's untracked work) and the 3 tracked mod specs (dependency_risk / noisy_source_gate / security_mentions) to Scoped quality. No code change; no AI attribution; only the 3 tracked mod dirs touched (Codex's untracked mod dirs left untouched, unstaged). Verification: governance gate OK, runtime suite green, no accidental AI-attribution, badge endpoints valid. Chain verifies #1–#68.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` + Beta graduation SEALED at Entry #68 (`5b035128`; L2). **18 Beta / 0 Prototype** — every connector earned Beta via a real harness proof; all six CI gates green. Live emission (GatewaySink) gated on bot #109 (integrations dependency posted to the issue).*
-*Next required action: operator decision — the PII redaction-and-pass model (unblocks live Zendesk + CS set) / ServiceNow (P2) / Copilot-Cursor-Admin (P1) / Live-stage wiring when bot #109 lands. Admin (you): branch protection (B5). Open: B8-B14, bot #109.*
+*Status: `main` + documentation upcycle SEALED at Entry #69 (`1eded853`; L1). **18 Beta / 0 Prototype**; all six CI gates green; READMEs at pro-tier; `mods/` docs recovered. Live emission gated on bot #109.*
+*Next required action: operator decision — the PII redaction-and-pass model (unblocks live Zendesk + CS set) / ServiceNow (P2) / Copilot-Cursor-Admin (P1) / Live-stage wiring when bot #109 lands. Admin (you): branch protection (B5). Open: B8-B14, bot #109. NOTE: Codex should re-apply / supersede the recovered `mods/` README content when it commits its untracked mod dirs.*

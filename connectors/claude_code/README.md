@@ -1,7 +1,8 @@
 # Claude Code Connector
 
-Provider-facing Claude Code adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
-developer-AI tooling, priority P0, default trust tier T0). From the
+Read-only evidence connector: it parses Claude Code session transcripts into
+neutral `Observation`s. **Status: Beta** (ADR-0012; catalog developer-AI
+tooling, priority P0, default trust tier T0). From the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 
 ## Modes
@@ -12,10 +13,16 @@ developer-AI tooling, priority P0, default trust tier T0). From the
   (`parse_session_line`); meta/unknown line types are skipped. No canonical
   writes — evidence adapter, not state authority (ADR-0008).
 
-The live file-watch path, the global `~/.claude/history.jsonl`, and a
-git-attribution path (`Co-Authored-By: Claude`, off in this repo by stealth
-policy) are deferred this cycle (see [`auth.md`](auth.md)); this connector is
-the parse surface only.
+The live boundary — the file-watch path, the global `~/.claude/history.jsonl`,
+a git-attribution path (`Co-Authored-By: Claude`, off in this repo by stealth
+policy), and secret resolution — stays in the operator runtime (see
+[`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its `runtime.deliver_poll` → reference sink path is proven
+end-to-end by `runtime/tests/test_runtime.py`, with **zero cross-repo
+dependency**. Live (gateway emission) remains gated on bicameral-bot #109.
 
 ## Surface
 

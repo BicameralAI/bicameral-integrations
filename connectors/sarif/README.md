@@ -1,6 +1,7 @@
 # SARIF 2.1.0 Connector
 
-Provider-facing SARIF 2.1.0 adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
+Read-only SARIF 2.1.0 evidence adapter: flattens a static-analysis report into
+neutral `Observation`s. **Status: Beta** (ADR-0012; catalog
 security/compliance-evidence, priority P0, default trust tier T0). A Phase-1
 foundation candidate from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
@@ -12,8 +13,14 @@ foundation candidate from the
   across every run (`parse_sarif`). No canonical-state writes — this is an
   evidence adapter, not a state authority (ADR-0008).
 
-The live CI/file-watch collection path is deferred this cycle (see
-[`auth.md`](auth.md)); this connector is the parse surface only.
+The live CI/file-watch collection path remains **deferred** to the operator
+runtime (see [`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its `runtime.deliver_poll` → reference sink path is proven
+end-to-end by `runtime/tests/test_runtime.py`, with **zero cross-repo
+dependency**. Live (gateway emission) remains gated on bicameral-bot #109.
 
 ## Surface
 

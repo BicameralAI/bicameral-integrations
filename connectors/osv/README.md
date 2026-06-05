@@ -1,9 +1,10 @@
 # OSV Connector
 
-Provider-facing OSV.dev adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
-security/compliance-evidence, priority P0, default trust tier T1). The
-supply-chain vulnerability **aggregator** — the OSV schema covers GHSA-global,
-PyPA, and RustSec — from the
+Read-only evidence connector: it parses OSV.dev vulnerability records into
+neutral `Observation`s. **Status: Beta** (ADR-0012; catalog security/
+compliance-evidence, priority P0, default trust tier T1). The supply-chain
+vulnerability **aggregator** — the OSV schema covers GHSA-global, PyPA, and
+RustSec — from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 
 ## Modes
@@ -12,8 +13,14 @@ PyPA, and RustSec — from the
   API) maps to one neutral `Observation` (`parse_vuln`). Read-only evidence; no
   canonical writes (ADR-0008).
 
-The live OSV.dev query client (`/v1/query`, `/v1/querybatch`) is deferred this
-cycle (see [`auth.md`](auth.md)); this connector is the parse surface only.
+The live boundary — the OSV.dev query client (`/v1/query`, `/v1/querybatch`) and
+its REST poll — stays in the operator runtime (see [`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its `runtime.deliver_poll` → reference sink path is proven
+end-to-end by `runtime/tests/test_runtime.py`, with **zero cross-repo
+dependency**. Live (gateway emission) remains gated on bicameral-bot #109.
 
 ## Surface
 
