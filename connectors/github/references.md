@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | https://docs.github.com/en/apps/oauth-apps |
 | Changelog/notes | https://docs.github.com/en/rest/overview/api-versions |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Pull-request payload (parsed)**: `parse_pull_request` reads a flat PR object — `{number, title, body, html_url, base.repo.full_name, user.login, merged_at}`; excerpt is `body` falling back to `title`. `normalize_event` unwraps the webhook envelope (`{action, number, pull_request, repository}`) injecting the top-level `number` into the nested PR dict before parsing.
+- **Verification (built)**: `X-Hub-Signature-256: sha256=<hex HMAC-SHA256(secret, raw_body)>`; `verify()` strips `"sha256="` prefix and calls `verify_hmac_hex` (fail-closed, constant-time). Dedup on `X-GitHub-Delivery` header GUID.
+- **Auth (deferred)**: `api_key` + `webhook_secret` resolved by operator runtime (keyring). Live REST fetch deferred; no live network this cycle.
+- **Modes**: active (REST) + webhook (`pull_request` event); both share `parse_pull_request`.
+- **PII handling**: PR body and title emitted; `user.login` (not display name) as author. Producer sensitive screen (`FX-SEC-001`) is the guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | GitHub/auth model depending on usage |
 | Changelog/notes | https://github.com/modelcontextprotocol/registry/releases |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Server entry (parsed)**: `parse_server` reads `{name, title, description, repository.{url, source}, websiteUrl, version}`; ref is `name` or `title`; excerpt is `description` falling back to `title`/`name`; metadata carries `version` and `repository_source`.
+- **Verification**: no verify — active poll/import; no webhook delivery, no signature.
+- **Auth (deferred)**: GitHub/auth model depending on usage; live registry fetch deferred. No live network this cycle.
+- **Modes**: active only (read-only scoring/allowlist); no webhooks.
+- **PII handling**: server metadata (name, description, repo URL) emitted; no user PII in the registry schema.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

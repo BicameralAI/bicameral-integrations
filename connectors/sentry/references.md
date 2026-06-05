@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | `Sentry-Hook-Signature` HMAC-SHA256 (confirm header/algo before live) |
 | Changelog/notes | https://docs.sentry.io/ |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Issue webhook event (parsed)**: `parse_issue` unwraps `{action, data.issue.{id, title, culprit, shortId, permalink, firstSeen, level, status}}`; falls back to treating the payload as a bare issue object when `data.issue` is absent. Excerpt is `title` falling back to `culprit`, `shortId`, then `id`.
+- **Verification (built)**: `Sentry-Hook-Signature` = hex HMAC-SHA256 of the **raw received bytes** (not re-serialized); `verify()` calls `verify_hmac_hex` (fail-closed, constant-time). Dedup on `Request-ID` header then `issue.id`; no anti-replay timestamp window.
+- **Auth (deferred)**: integration client secret injected by operator runtime; REST API issue fetch (active fallback) deferred. No live network this cycle.
+- **Modes**: webhook only; no active/passive modes declared.
+- **PII handling**: issue `title`, `culprit`, `permalink` emitted; `level` and `status` in metadata. Producer sensitive screen (`FX-SEC-001`) is the guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

@@ -24,6 +24,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | None (local file) |
 | Changelog/notes | https://code.claude.com/docs |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Session-line record (parsed)**: `parse_session_line` reads one JSONL line dict; only `type` values in `{"user", "assistant", "summary"}` produce an Observation — all other types (e.g. `mode`, `attachment`, `file-history-snapshot`, `last-prompt`, unknown future kinds) return `None` (skipped, not errored). Key fields: `uuid`/`sessionId` (ref), `timestamp` (ISO string), `message.content` (text or block list), `message.model`, `cwd`.
+- **Verification**: no verify — passive file import; no network delivery, no signature.
+- **Auth (deferred)**: none (T0 local file import); reads `~/.claude/projects/<slug>/<session-id>.jsonl` the operator already has on disk. Live file-watch and `history.jsonl` paths deferred.
+- **Modes**: passive only; no webhooks.
+- **PII handling**: transcripts are plaintext and may contain file contents, command stdout/stderr, and pasted text (potential secrets/PII). This connector performs no redaction; the producer sensitive screen (`FX-SEC-001`) is the in-pipeline guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

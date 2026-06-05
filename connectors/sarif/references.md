@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | Not applicable (file ingest) |
 | Changelog/notes | https://github.com/oasis-tcs/sarif-spec |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **SARIF 2.1.0 report (parsed)**: `parse_sarif` flattens `runs[].results[]` — one Observation per result; `parse_result` reads `{ruleId, message.text, locations[0].physicalLocation.{artifactLocation.uri, region.startLine}}`; ref is `"{ruleId}@{uri}:{startLine}"`; tool name from `run.tool.driver.name`.
+- **Verification**: no verify — file import (T0); no network delivery, no signature.
+- **Auth (deferred)**: none applicable (file ingest); live file-watch/CI-collection path deferred.
+- **Modes**: passive only (file import); no webhooks.
+- **PII handling**: static-analysis finding messages, file URIs, and rule IDs emitted; no user PII in the SARIF schema by design.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):
