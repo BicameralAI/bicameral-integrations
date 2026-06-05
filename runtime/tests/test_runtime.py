@@ -19,6 +19,7 @@ from connectors.osv.connector import OsvConnector
 from connectors.pagerduty.connector import PagerDutyConnector
 from connectors.sentry.connector import SentryConnector
 from connectors.slack.connector import SlackConnector
+from connectors.zendesk.connector import ZendeskConnector
 from runtime import (
     CollectingSink,
     GatewayEmissionGated,
@@ -252,6 +253,30 @@ def test_deliver_webhook_notion_bad_sig_emits_nothing():
     # bare hex without the required sha256= prefix -> rejected
     assert deliver_webhook(conn, headers={"X-Notion-Signature": _hex_hmac("notion-token", body)},
                            body=body, sink=sink) == 0
+    assert sink.emissions == []
+
+
+def _signed_zendesk() -> tuple[ZendeskConnector, dict, bytes]:
+    body = _fixture_body("zendesk", "ticket_event.json")
+    ts = "2026-06-03T10:00:00Z"
+    digest = hmac.new(b"zendesk-secret", ts.encode() + body, hashlib.sha256).digest()
+    sig = base64.b64encode(digest).decode("ascii")
+    headers = {"X-Zendesk-Webhook-Signature": sig, "X-Zendesk-Webhook-Signature-Timestamp": ts}
+    return ZendeskConnector(secret="zendesk-secret"), headers, body
+
+
+def test_deliver_webhook_zendesk_beta():
+    conn, headers, body = _signed_zendesk()
+    sink = CollectingSink()
+    assert deliver_webhook(conn, headers=headers, body=body, sink=sink) == 1
+    assert sink.emissions[0].source_id == "zendesk"
+
+
+def test_deliver_webhook_zendesk_bad_sig_emits_nothing():
+    conn, _headers, body = _signed_zendesk()
+    sink = CollectingSink()
+    bad = {"X-Zendesk-Webhook-Signature": "bad", "X-Zendesk-Webhook-Signature-Timestamp": "2026-06-03T10:00:00Z"}
+    assert deliver_webhook(conn, headers=bad, body=body, sink=sink) == 0
     assert sink.emissions == []
 
 

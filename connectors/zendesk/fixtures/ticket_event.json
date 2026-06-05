@@ -1,0 +1,18 @@
+{
+  "type": "zen:event-type:ticket.created",
+  "account_id": 12345,
+  "id": "01HZEXAMPLE0DELIVERY",
+  "subject": "zen:ticket:4571",
+  "time": "2026-06-03T10:00:00Z",
+  "event": {"type": "ticket.created"},
+  "detail": {
+    "id": "4571",
+    "subject": "Login fails after password reset",
+    "status": "open",
+    "priority": "high",
+    "requester_id": "9001",
+    "url": "https://example.zendesk.com/agent/tickets/4571",
+    "updated_at": "2026-06-03T10:00:00Z",
+    "via": {"channel": "web"}
+  }
+}
