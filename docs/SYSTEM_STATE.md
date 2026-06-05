@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-05 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | `main` + **new source connectors** — GitLab (webhook, plaintext `X-Gitlab-Token` verify) + Confluence (active/passive, verify deferred) earned Beta via the runtime harness. 20 Beta connectors; Live emission seam real + operator-actionable |
-| **Iteration** | 23 governed cycles (… CS/support evaluation; Zendesk connector → Beta; Beta graduation — all connectors earned Beta; README/mods doc upcycle; Live emission seam — GatewaySink real; **GitLab + Confluence connectors → Beta**) |
-| **Session Seal** | `<pending Entry #73>` (prior tip `91605f9f` — Entry #71) |
+| **Phase** | `main` + **developer-AI usage connectors** — Copilot (aggregate, PII-free) + Cursor (PII dropped at parse) earned Beta via the runtime poll harness; both poll-only REST (no webhooks/MCP). 22 Beta connectors; Live emission seam real + operator-actionable |
+| **Iteration** | 24 governed cycles (… Zendesk → Beta; Beta graduation — all connectors earned Beta; Live emission seam — GatewaySink real; GitLab + Confluence → Beta; README accuracy; **Copilot + Cursor → Beta**) |
+| **Session Seal** | `<pending Entry #76>` (prior tip `517fd837` — Entry #73; research #74 `ff363259`) |
 
 ---
 
@@ -57,12 +57,12 @@ bicameral-integrations/
 
 | Metric | Value |
 |--------|-------|
-| Source connector packages (with `connector.py`) | 20 (+ gitlab, confluence; zendesk, github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
-| Readiness ladder (ADR-0012) | **Beta: 20 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof · **Prototype: 0** · **Live: 0 connectors** (the **Live seam is implemented + operator-actionable** now bot #109 landed — Live is earned by an operator wiring `GatewaySink` against a real gateway, not by the repo) |
+| Source connector packages (with `connector.py`) | 22 (+ copilot, cursor; gitlab, confluence, zendesk, github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
+| Readiness ladder (ADR-0012) | **Beta: 22 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof · **Prototype: 0** · **Live: 0 connectors** (the **Live seam is implemented + operator-actionable** now bot #109 landed — Live is earned by an operator wiring `GatewaySink` against a real gateway, not by the repo) |
 | Runtime boundary | `runtime/` library layer (sinks + secrets + delivery + **gateway_mapping**); **GatewaySink = real Live emission** (v1 IngestRequest → `POST /api/v1/ingest`, default-safe + fail-closed + secret-safe) |
-| Total Test Files | 28 (adapter/core + connectors + runtime + scripts) |
-| Pytest | 286 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
-| Webhook verify wired | fathom, linear, sentry, pagerduty, jira, github, slack, notion, zendesk (Svix/HMAC/multi-sig/sha256=/v0/Base64 + dedup, fail-closed) |
+| Total Test Files | 35 (adapter/core + connectors + runtime + scripts) |
+| Pytest | 310 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
+| Webhook verify wired | fathom, linear, sentry, pagerduty, jira, github, slack, notion, zendesk, gitlab (Svix/HMAC/multi-sig/sha256=/v0/Base64/plaintext-token + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
 | Section 4 Violations | 0 (continue_dev 67 lines, aider 73 lines; fns ≤18, nesting ≤2) |
@@ -128,7 +128,9 @@ bicameral-integrations/
 | Jira connector | connectors/jira/tests/test_jira_connector.py | OK |
 | GitLab connector | connectors/gitlab/tests/test_gitlab_connector.py | OK |
 | Confluence connector | connectors/confluence/tests/test_confluence_connector.py | OK |
-| Runtime boundary (all 20 connectors end-to-end: deliver_webhook + deliver_poll; full-path → GatewaySink) | runtime/tests/test_runtime.py | OK (37) |
+| Copilot connector | connectors/copilot/tests/test_copilot_connector.py | OK |
+| Cursor connector (PII-drop proven) | connectors/cursor/tests/test_cursor_connector.py | OK |
+| Runtime boundary (all 22 connectors end-to-end: deliver_webhook + deliver_poll; full-path → GatewaySink) | runtime/tests/test_runtime.py | OK (39) |
 | Live emission seam (emission→v1 mapping; GatewaySink POST: 201-only, gated, token-safe, real round-trip) | runtime/tests/test_gateway_mapping.py | OK (12) |
 | Zendesk connector + webhook verify/dedup (Base64 HMAC) | connectors/zendesk/tests/ | OK (11) |
 | GitHub webhook verify/dedup (envelope unwrap) | connectors/github/tests/test_github_webhook.py | OK (6) |
@@ -143,10 +145,10 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #71 (`91605f9f`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #76 (`1a61c81a`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs (main README connector+mod index refreshed) + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 286 passing; ruff + mypy clean (102 files) |
+| Test Status | PASS | 310 passing; ruff + mypy clean |
 | CI Gates | **6/6 green** (verified) | CI + CodeQL + Governance Gate + Quality + Security Scan + **OpenSSF Scorecard** all `success` on `main` (Scorecard green confirmed by run `26980983204` after the B6 v2 permission fix — SG-2026-06-04-O). Security-tab posture hardened (B13): Token-Permissions #21-24 fixed (write scopes moved to the calling-job level, top-level read-only); stale CodeQL #17 + accepted Pinned-Dependencies #18-20 dismissed via API with rationale. Only #13/#1 (Code-Review, Branch-Protection) remain — they need branch protection (B5, repo-admin). SBOM gate carries a latent OIDC twin (B12), release-only. SHA-pinned; reusable `workflow_call` templates. |
 
 ---

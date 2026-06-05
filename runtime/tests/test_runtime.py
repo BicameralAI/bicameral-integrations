@@ -15,6 +15,8 @@ from connectors.aider.connector import AiderConnector
 from connectors.claude_code.connector import ClaudeCodeConnector
 from connectors.confluence.connector import ConfluenceConnector
 from connectors.continue_dev.connector import ContinueConnector
+from connectors.copilot.connector import CopilotConnector
+from connectors.cursor.connector import CursorConnector
 from connectors.fathom.connector import FathomConnector
 from connectors.github.connector import GitHubConnector
 from connectors.gitlab.connector import GitLabConnector
@@ -429,6 +431,19 @@ def test_deliver_webhook_gitlab_missing_token_fails_closed():
 
 def test_deliver_poll_confluence_beta():
     _poll_one(ConfluenceConnector(), "confluence", "page_content.json", "confluence", 1)
+
+
+def test_deliver_poll_copilot_beta():
+    _poll_one(CopilotConnector(), "copilot", "metrics_day.json", "copilot", 1)
+
+
+def test_deliver_poll_cursor_beta():
+    # Earned Beta + end-to-end PII-drop: the fixture row carries an example.com email;
+    # assert it is absent from the emitted (post-normalize) evidence.
+    sink = _poll_one(CursorConnector(), "cursor", "daily_usage_row.json", "cursor", 1)
+    emission = sink.emissions[0]
+    assert "@example.com" not in emission.title
+    assert all("@example.com" not in ev.excerpt for ev in emission.evidence)
 
 
 def test_deliver_webhook_missing_signature_header_fails_closed():

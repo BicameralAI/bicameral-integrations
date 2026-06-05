@@ -1803,6 +1803,123 @@ ruff clean, mypy clean (9 files), governance gate verifies #1–#73. FEATURE_IND
 (18→**20** Beta) updated. Connectors **20 Beta / 0 Prototype**; Live remains operator-actionable.
 
 ---
+
+### Entry #74: RESEARCH BRIEF — GitHub Copilot + Cursor connectivity
+
+**Entry ID**: `copilotCursor74res`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-research, prior to qor-auto-dev-1 build)
+**Risk Grade**: L2 (read-only evidence adapters; one PII-dense source)
+
+**Content Hash**:
+```
+SHA256(research-brief-copilot-cursor-2026-06-05.md)
+= 7d732749cf55e1bb757e1404e362b17a2e954abebb0d3dc0ae33a2860c15d49f
+```
+
+**Previous Hash**: 517fd8376a3e0468364e780f175afec885dd6ee31560c31ccdfef8afb9a8bf69
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ff3632592a3faf90f4d3d05d1c037359a60b160f2352b076b4a93850bc6a2255
+```
+
+**Decision**: Grounded the `copilot` + `cursor` connectors before build (verify-before-cite).
+Both providers are **poll-only REST APIs** — no webhooks, no first-party evidence MCP (a
+third-party Cursor MCP exists but is interactive/agentic → `bicameral-mcp`'s domain, SG-K).
+**Copilot** `GET /orgs/{org}/copilot/metrics` returns **aggregate, PII-free** daily objects
+(auth `manage_billing:copilot`/`read:org`; legacy "usage" API closed 2026-04-02; the per-user
+NDJSON report API carries PII → deferred). **Cursor** `POST /teams/daily-usage-data` (basic-auth,
+API key as username) is **PII-dense — every row carries `email` + `name`**. **Critical DRIFT
+corrected (→ SG-2026-06-05-A):** the prior assumption that FX-SEC-001 is a hard reject-on-PII
+screen is FALSE — `adapter/core/sensitive.py` screens **secret/PHI/PAN only**, does NOT detect a
+generic email, and never scans `Observation.metadata`. So there is **no PII backstop**; the Cursor
+connector must drop `email`/`name`/`userId` at parse time as the sole control (proven non-vacuously).
+SHADOW_GENOME updated. No blocking blueprint drift — both fit the parse-surface + poll-harness pattern.
+Cleared to `/qor-plan` → `/qor-audit` → `/qor-implement`.
+
+---
+
+### Entry #75: GATE AUDIT — GitHub Copilot + Cursor connectors (PASS)
+
+**Entry ID**: `copilotCursor75aud`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: AUDIT (gate tribunal)
+**Author**: Independent auditor (fresh-context, Option B — author-momentum SG-007)
+**Risk Grade**: L2 (read-only evidence adapters; one PII-dense source)
+
+**Content Hash**:
+```
+SHA256(plan-source-connectors-copilot-cursor-2026-06-05.md)
+= 6219da194e8642ac689e05f3ba41d1c9ebe4ae8e7c0e13fbfc641a8036929235
+```
+
+**Previous Hash**: ff3632592a3faf90f4d3d05d1c037359a60b160f2352b076b4a93850bc6a2255
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 4872e9dcaf447dabd8a2dd7dafa98c59b1cdc07ed65127dceaf21b48d109a0d8
+```
+
+**Verdict**: **PASS**, with one HIGH corrective finding (amended pre-implement, not a control defect).
+Plan to add two poll-only developer-AI usage connectors, grounded in research Entry #74. Independent
+fresh-context audit ground-truthed every cited symbol + the chain continuation from `ff363259` and the
+count math (20→22, FEATURE_INDEX 41→43). The HIGH finding: the plan's prose wrongly called FX-SEC-001 a
+"HARD reject-on-PII screen" — ground truth is **secret/PHI/PAN only, NO generic-email detection, and it
+never scans `Observation.metadata`** → there is **no downstream PII backstop** for Cursor; the sole
+control is parse-time exclusion of `email`/`name`/`userId`. Plan prose corrected; the design already
+implemented the correct control. Auditor confirmed the PII-drop test is non-vacuous (fixture contains
+the email/name it proves absent). Six passes (security/PII, grounding, test-functionality, razor, scope,
+consistency) → 0 VETO. Cleared to `/qor-implement`.
+
+---
+
+### Entry #76: SESSION SEAL — GitHub Copilot + Cursor connectors → Beta
+
+**Entry ID**: `copilotCursor76seal`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 311be635c1632cc605725bea3789feef05c39bab00ba1419fc6c3b554807749f
+```
+
+**Previous Hash**: 4872e9dcaf447dabd8a2dd7dafa98c59b1cdc07ed65127dceaf21b48d109a0d8
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1a61c81ae1fa305efd73c640e469731a0e21dc27c4873236579e1d50e3e8a87d
+```
+
+**Decision**: PASS-audit (Entry #75) implemented + substantiated. **Two poll-only developer-AI usage
+connectors earned Beta via real runtime-harness proofs**, grounded in research Entry #74 (verify-before-cite:
+both poll-only REST, no webhooks/MCP). **Copilot** (`connectors/copilot/`): `parse_metrics_day` summarizes the
+**aggregate, PII-free** `GET /orgs/{org}/copilot/metrics` object (active/engaged + IDE-completions/chat/
+dotcom-chat/PR-summaries) into a review excerpt; no per-developer identity by design. **Cursor**
+(`connectors/cursor/`): `parse_usage_day` summarizes `POST /teams/daily-usage-data` aggregate metrics via a
+**strict allowlist** and **drops `email`/`name`/`userId`/`clientVersion` at parse time** — the SOLE PII
+control, because **FX-SEC-001 screens secret/PHI/PAN only, not generic email** (SG-2026-06-05-A; no metadata
+path, no downstream backstop). **Independent review** (fresh-context observer + devil's advocate): PII control
+**verified airtight** (no leak path to any Observation field; non-vacuous PII-drop unit test + end-to-end
+no-`@example.com` harness proof); one HIGH gap caught — missing `connectors/cursor/README.md` + `auth.md` —
+**now written** in this seal; SYSTEM_STATE figures reconciled (pytest 286→310, test files →35, ledger tip,
+gitlab added to verify-wired). **`mods/` untouched.** **README accuracy catch-up** (your ask): top-level
+README badge 18→**22**, Maturity line, and the connector tables restructured to two accurate Beta groups
+(10 webhook-verify-wired + 12 poll/parse) — the prior "Prototype" section (0 Prototypes) corrected and the
+previously-missing zendesk/gitlab/confluence rows added alongside copilot/cursor. **Verification**: pytest
+**310 passed** (was 286; +24 across this + the gitlab/confluence cycle; +8 this cycle), ruff + mypy clean,
+governance gate verifies the ledger chain #1–#76. FEATURE_INDEX **FX-COPILOT-001** + **FX-CURSOR-001**
+Verified (**43** total). Connectors **22 Beta / 0 Prototype**; Live remains operator-actionable.
+
+---
 *Chain integrity: VALID*
-*Status: `main` + GitLab & Confluence connectors SEALED at Entry #73 (`517fd837`; L2). **20 Beta connectors / 0 Prototype** — GitLab (plaintext `X-Gitlab-Token` verify) + Confluence (verify deferred) earned Beta via the runtime harness. Live emission seam real + operator-actionable; bot #109 CLOSED. All six CI gates expected green.*
-*Next required action: operator decision — continue building next unbuilt connectors (Copilot/Cursor P1 metrics-API, ServiceNow P2, or other catalog targets) / promote a connector to Live (operator deployment) / the PII redaction-and-pass model (live Zendesk + CS set). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` + Copilot & Cursor connectors SEALED at Entry #76 (`1a61c81a`; L2). **22 Beta connectors / 0 Prototype** — Copilot (aggregate, PII-free) + Cursor (PII dropped at parse, SG-2026-06-05-A) earned Beta via the runtime poll harness; both poll-only REST (no webhooks/MCP). Top-level README accurate at 22 Beta. Live emission seam real + operator-actionable; bot #109 CLOSED.*
+*Next required action: operator decision — next unbuilt connectors (ServiceNow P2 / Devin B9 / GitLab signing-token path) / promote a connector to Live (operator deployment) / the PII redaction-and-pass model (unblocks live Zendesk + Cursor per-developer attribution). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

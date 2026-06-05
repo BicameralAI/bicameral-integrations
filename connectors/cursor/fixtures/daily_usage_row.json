@@ -1,0 +1,23 @@
+{
+  "userId": 4471,
+  "day": "2026-06-04",
+  "date": 1780531200000,
+  "email": "jane.doe@example.com",
+  "name": "Jane Doe",
+  "isActive": true,
+  "totalLinesAdded": 540,
+  "totalLinesDeleted": 120,
+  "acceptedLinesAdded": 210,
+  "acceptedLinesDeleted": 40,
+  "totalApplies": 40,
+  "totalAccepts": 34,
+  "totalRejects": 6,
+  "totalTabsShown": 900,
+  "totalTabsAccepted": 310,
+  "composerRequests": 12,
+  "chatRequests": 22,
+  "agentRequests": 18,
+  "cmdkUsages": 5,
+  "mostUsedModel": "claude-4-sonnet",
+  "clientVersion": "0.45.2"
+}
