@@ -37,8 +37,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `CollectingSink`, `MappingSecretResolver`, and `deliver_webhook`/`deliver_poll`
   orchestration — that lets an operator host drive a connector's
   ingest → verify → normalize → emit path without this repo becoming a server.
-  Gateway emission is a stubbed `GatewaySink` that fails closed until the
-  upstream ingest guards land.
+- **Live emission**: `GatewaySink` maps each `AdapterEmission` to the pinned v1
+  `IngestRequest` and POSTs it to `/api/v1/ingest` (stdlib `urllib`) now that the
+  upstream gateway ingest guards landed. Default-safe (no endpoint → gated),
+  fail-closed (re-screens at the emission boundary; only HTTP 201 succeeds; any
+  other status or transport fault raises `GatewayEmissionError`), and secret-safe
+  (the operator-injected auth token never appears in an error or log). Connectors
+  reach **Live** when an operator wires a configured `GatewaySink` against a real
+  gateway.
 - ADR-0012 introducing the connector readiness ladder
   (Candidate → Prototype → Beta → Live). **All 18 connectors** are now **Beta** —
   each promotion earned by a real end-to-end runtime-harness proof against a
