@@ -20,7 +20,7 @@ payload parsing, exercised against synthetic fixtures.
 **Readiness ladder** (ADR-0012): `Candidate → Prototype → Beta → Live`. **Beta**
 = proven end-to-end through the [`runtime/`](../runtime/README.md) harness
 (ingest → verify → normalize → emit) against a reference sink, with zero
-cross-repo dependency. **Live** (gateway emission) is gated on bicameral-bot #109.
+cross-repo dependency. **Live** (gateway emission) is now operator-actionable — `GatewaySink` is real (bot #109 landed, PR #131); an operator configures it against a real gateway to go Live.
 
 "Verify" = webhook signature verification (`verify()`/`normalize_event()` HMAC +
 dedup) is wired; "—" = parse-only or live verification deferred.
