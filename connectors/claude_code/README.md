@@ -1,6 +1,6 @@
 # Claude Code Connector
 
-Provider-facing Claude Code adapter. **Status: Prototype** (catalog
+Provider-facing Claude Code adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
 developer-AI tooling, priority P0, default trust tier T0). From the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 

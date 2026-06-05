@@ -30,20 +30,20 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [github](github/) | **Beta** | active, webhook | `parse_pull_request` | ✓ (HMAC, `sha256=`) |
 | [fathom](fathom/) | **Beta** | passive, webhook | `parse_meeting` | ✓ (Svix) |
 | [linear](linear/) | **Beta** | webhook, active | `parse_event` | ✓ (HMAC + 60s replay) |
-| [granola](granola/) | Prototype | passive | `parse_transcript` | — |
-| [local_directory](local_directory/) | Prototype | passive | `parse_file` | — |
-| [google_drive](google_drive/) | Prototype | active | `parse_document` | — |
-| [sarif](sarif/) | Prototype | passive | `parse_sarif` / `parse_result` | — |
+| [granola](granola/) | **Beta** | passive | `parse_transcript` | — |
+| [local_directory](local_directory/) | **Beta** | passive | `parse_file` | — |
+| [google_drive](google_drive/) | **Beta** | active | `parse_document` | — |
+| [sarif](sarif/) | **Beta** | passive | `parse_sarif` / `parse_result` | — |
 | [slack](slack/) | **Beta** | webhook | `parse_message` | ✓ (v0 + 5m replay) |
 | [notion](notion/) | **Beta** | active, webhook | `parse_page` | ✓ (HMAC, `sha256=`) |
-| [mcp_registry](mcp_registry/) | Prototype | active | `parse_server` | — |
-| [continue_dev](continue_dev/) | Prototype | passive | `parse_event` | — |
-| [aider](aider/) | Prototype | passive | `parse_commit` | — |
-| [claude_code](claude_code/) | Prototype | passive | `parse_session_line` | n/a (local file) |
-| [osv](osv/) | Prototype | active | `parse_vuln` | n/a (no-auth) |
+| [mcp_registry](mcp_registry/) | **Beta** | active | `parse_server` | — |
+| [continue_dev](continue_dev/) | **Beta** | passive | `parse_event` | — |
+| [aider](aider/) | **Beta** | passive | `parse_commit` | — |
+| [claude_code](claude_code/) | **Beta** | passive | `parse_session_line` | n/a (local file) |
+| [osv](osv/) | **Beta** | active | `parse_vuln` | n/a (no-auth) |
 | [sentry](sentry/) | **Beta** | webhook | `parse_issue` | ✓ (HMAC) |
 | [pagerduty](pagerduty/) | **Beta** | webhook | `parse_event` | ✓ (multi-sig) |
-| [jira](jira/) | Prototype | webhook, active | `parse_issue` | ✓ (HMAC, `sha256=`) |
+| [jira](jira/) | **Beta** | webhook, active | `parse_issue` | ✓ (HMAC, `sha256=`) |
 | [zendesk](zendesk/) | **Beta** | webhook, active | `parse_ticket` | ✓ (Base64 HMAC) |
 
 Candidate selection and trust tiers are tracked in the

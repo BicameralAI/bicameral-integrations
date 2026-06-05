@@ -1,6 +1,6 @@
 # SARIF 2.1.0 Connector
 
-Provider-facing SARIF 2.1.0 adapter. **Status: Prototype** (catalog
+Provider-facing SARIF 2.1.0 adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
 security/compliance-evidence, priority P0, default trust tier T0). A Phase-1
 foundation candidate from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).

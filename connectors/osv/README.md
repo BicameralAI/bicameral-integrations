@@ -1,6 +1,6 @@
 # OSV Connector
 
-Provider-facing OSV.dev adapter. **Status: Prototype** (catalog
+Provider-facing OSV.dev adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
 security/compliance-evidence, priority P0, default trust tier T1). The
 supply-chain vulnerability **aggregator** — the OSV schema covers GHSA-global,
 PyPA, and RustSec — from the

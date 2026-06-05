@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-04 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | `main` + **Zendesk connector** (P1, first support/CS evidence source) — `parse_ticket` + Base64-HMAC webhook verify, harness-proven → Beta; **8 Beta connectors / 18 connector packages**; docs refreshed each cycle close |
-| **Iteration** | 20 governed cycles (… Beta cohort Fathom/Sentry/PagerDuty; Scorecard CI gate green (2 iter); webhook verify-wiring GitHub/Slack/Notion→Beta; Scorecard Token-Permissions hardening; CS/support evaluation; **Zendesk connector → Beta**) |
-| **Session Seal** | `1ee8a187` (META_LEDGER Entry #66 chain hash) |
+| **Phase** | `main` + **Beta graduation** — every remaining Prototype connector earned Beta via a real `runtime/`-harness proof; **18 Beta / 0 Prototype**; docs refreshed each cycle close |
+| **Iteration** | 21 governed cycles (… webhook verify-wiring GitHub/Slack/Notion→Beta; Scorecard Token-Permissions hardening; CS/support evaluation; Zendesk connector → Beta; **Beta graduation — all 18 connectors earned Beta**) |
+| **Session Seal** | `5b035128` (META_LEDGER Entry #68 chain hash) |
 
 ---
 
@@ -58,10 +58,10 @@ bicameral-integrations/
 | Metric | Value |
 |--------|-------|
 | Source connector packages (with `connector.py`) | 18 (+ zendesk; github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
-| Readiness ladder (ADR-0012) | **Beta**: linear, fathom, sentry, pagerduty, github, slack, notion, zendesk (8 — verify-wired, proven end-to-end via the runtime harness) · **Prototype**: 10 · **Live**: 0 (gated on bot #109) |
+| Readiness ladder (ADR-0012) | **Beta: 18 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof (deliver_webhook for the 7 verify-wired; deliver_poll for the 11 passive/active) · **Prototype: 0** · **Live: 0** (gated on bot #109) |
 | Runtime boundary | `runtime/` library layer (sinks + secrets + delivery); GatewaySink #109-gated stub |
 | Total Test Files | 28 (adapter/core + connectors + runtime + scripts) |
-| Pytest | 264 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
+| Pytest | 274 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
 | Webhook verify wired | fathom, linear, sentry, pagerduty, jira, github, slack, notion, zendesk (Svix/HMAC/multi-sig/sha256=/v0/Base64 + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
@@ -126,7 +126,7 @@ bicameral-integrations/
 | PagerDuty connector | connectors/pagerduty/tests/test_pagerduty_connector.py | OK |
 | Claude Code connector | connectors/claude_code/tests/test_claude_code_connector.py | OK |
 | Jira connector | connectors/jira/tests/test_jira_connector.py | OK |
-| Runtime boundary (8 Beta connectors end-to-end + OSV poll + missing-header fail-closed) | runtime/tests/test_runtime.py | OK (22) |
+| Runtime boundary (all 18 connectors end-to-end: deliver_webhook + deliver_poll; missing-header/bad-sig fail-closed) | runtime/tests/test_runtime.py | OK (32) |
 | Zendesk connector + webhook verify/dedup (Base64 HMAC) | connectors/zendesk/tests/ | OK (11) |
 | GitHub webhook verify/dedup (envelope unwrap) | connectors/github/tests/test_github_webhook.py | OK (6) |
 | Slack webhook verify/dedup (v0 + replay) | connectors/slack/tests/test_slack_webhook.py | OK (7) |
@@ -140,10 +140,10 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #66 (`1ee8a187`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #68 (`5b035128`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs (main README connector+mod index refreshed) + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 264 passing; ruff + mypy clean (100 files) |
+| Test Status | PASS | 274 passing; ruff + mypy clean (100 files) |
 | CI Gates | **6/6 green** (verified) | CI + CodeQL + Governance Gate + Quality + Security Scan + **OpenSSF Scorecard** all `success` on `main` (Scorecard green confirmed by run `26980983204` after the B6 v2 permission fix — SG-2026-06-04-O). Security-tab posture hardened (B13): Token-Permissions #21-24 fixed (write scopes moved to the calling-job level, top-level read-only); stale CodeQL #17 + accepted Pinned-Dependencies #18-20 dismissed via API with rationale. Only #13/#1 (Code-Review, Branch-Protection) remain — they need branch protection (B5, repo-admin). SBOM gate carries a latent OIDC twin (B12), release-only. SHA-pinned; reusable `workflow_call` templates. |
 
 ---
@@ -161,8 +161,9 @@ bicameral-integrations/
 - [x] **GitHub/Slack/Notion verify-wired → Beta** (`verify_slack_signature` primitive + per-connector `verify()`/`normalize_event()`; harness-proven). **7 Beta connectors.**
 - [x] **Scorecard Token-Permissions hardening (B13)** — done (Entry #63); Security tab down to #13/#1 (branch protection, B5, admin).
 - [x] **CS/support/sales evaluation** (Zendesk/ServiceNow/ChurnZero/Gainsight) — done (Entry #64): all evidence adapters; **Zendesk P1** (webhook-first, gated on PII redaction), ServiceNow P2, ChurnZero/Gainsight P3.
-- [x] **Zendesk connector → Beta** (Entry #66): P1 support evidence; `parse_ticket` (subject-only excerpt) + `verify_zendesk_signature` (Base64 HMAC); live REST/OAuth + PII redaction-and-pass model deferred (`auth.md`).
-- [ ] **Next (operator decision)**: build ServiceNow (P2 ITSM, poll) or the PII **redaction-and-pass model** (unblocks live Zendesk + the CS/support set); GitHub Copilot/Cursor/Admin (P1); Live-stage prep when bot #109 lands.
+- [x] **Zendesk connector → Beta** (Entry #66): P1 support evidence; `parse_ticket` + `verify_zendesk_signature` (Base64 HMAC).
+- [x] **Beta graduation (Entry #68): every connector earned Beta** — 18 Beta / 0 Prototype; each via a real runtime-harness proof (deliver_webhook / deliver_poll), not a doc flip. Posted the integrations-side dependency on bot #109 (Live gate).
+- [ ] **Next (operator decision)**: the PII **redaction-and-pass model** (unblocks live Zendesk + CS set); ServiceNow (P2); GitHub Copilot/Cursor/Admin (P1); **Live-stage wiring when bot #109 lands** (GatewaySink → real emission). Admin: branch protection (B5).
 - [ ] **Connector build-out (next)**: GitHub Copilot / Cursor / OpenAI-Anthropic Admin (P1 read APIs) — from the value-add shortlist; B9 Devin (P1).
 - [ ] `mods/` structure is under active build by **Codex** — not edited by this (connector/hardening) track.
 - [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).

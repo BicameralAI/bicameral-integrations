@@ -40,11 +40,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   Gateway emission is a stubbed `GatewaySink` that fails closed until the
   upstream ingest guards land.
 - ADR-0012 introducing the connector readiness ladder
-  (Candidate → Prototype → Beta → Live). **Linear, Fathom, Sentry, and
-  PagerDuty** are promoted to **Beta** — each verify-wired connector proven
-  end-to-end through the runtime harness against a reference sink (signed
-  webhook → deliver → emission; fail-closed on a bad signature), with no
-  cross-repo dependency.
+  (Candidate → Prototype → Beta → Live). **All 18 connectors** are now **Beta** —
+  each promotion earned by a real end-to-end runtime-harness proof against a
+  reference sink (signed webhook → `deliver_webhook` → emission for the
+  verify-wired connectors; `deliver_poll` → emission for the passive/active
+  connectors), with no cross-repo dependency. Live (gateway emission) remains
+  gated on the upstream ingest guards.
 - Repository governance and the Qor lifecycle documentation set.
 
 ### Changed

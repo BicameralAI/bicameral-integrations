@@ -1,6 +1,6 @@
 # Aider Connector
 
-Provider-facing Aider (aider.chat) adapter. **Status: Prototype** (catalog
+Provider-facing Aider (aider.chat) adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
 source-control/developer-AI tooling, priority P1, default trust tier T0). A
 candidate from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
