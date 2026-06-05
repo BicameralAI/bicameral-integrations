@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P-internal |
 | Default trust tier | T0 |
 | Integration role | evidence |
-| Readiness (lifecycle) | Prototype (port, parse surface) |
+| Readiness (lifecycle) | Beta (proven end-to-end through the `runtime/` harness against a reference sink; ADR-0012) |
 
 ## Provider documentation (verify on refresh)
 

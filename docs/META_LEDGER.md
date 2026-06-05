@@ -1600,7 +1600,56 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: PASS-audit (Entry #65) implemented + substantiated. Built the **Zendesk** connector (P1 — first support/customer-success evidence source; **8 Beta connectors / 18 packages**). New primitive **`verify_zendesk_signature`** (FX-WHSEC-003 — Base64 HMAC over `timestamp+body`, no separator, empty-body accepted, fail-closed) + `parse_ticket` (FX-ZENDESK-001 — subject-only excerpt, never the PII-dense body; `zendesk-ticket` floor; SG-I defensive) + `ZendeskConnector.verify/normalize_event` (dedup-as-replay-guard, no window). Synthetic fixture (example.com); behavioral tests (sig valid/tamper/wrong-ts/empty-body/missing; parser id+subject+floors+wrong-type; webhook signed→1/bad-sig→0/dedup) + runtime-harness Beta proof. All **9 audit constraints honored**; live REST/OAuth + the **PII redaction-and-pass model** deferred to `auth.md` (the catalog out-of-scope line). **Independent review** (observer + devil's advocate, fresh-context): observer **PASS** (D1–D6, Base64-not-hex confirmed, subject-only, `mods/` untouched, FEATURE_INDEX 38); devil's advocate **0 blocking / no fail-open** — dynamically verified hex-scheme + separator-injection rejection, full malformed-input matrix fails closed. **Verification**: pytest **264 passed**, ruff + mypy clean (100 files), governance gate verifies #1–#65. SHADOW_GENOME SG-2026-06-04-A/K/M reinforced (per-provider signature divergence; evidence-adapter-not-MCP; summary-not-body). Catalog §6.8 Zendesk → BUILT/Beta. Docs refreshed; `mods/` left to Codex.
 
+### Entry #67: GATE TRIBUNAL (Beta graduation — all remaining Prototypes)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent architect-reviewer — Option B, fresh context)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-beta-graduation-2026-06-04.md)
+= add41bd529c09220fd0b729d85c0b2cd6e231cc6ab3a27df8f7a031ac435dc9d
+```
+
+**Previous Hash**: 1ee8a187e375047d9ca79dc2d6634c9e1613eab9f25cafe55787ad6e78b9b2f5
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1799d18504afd708eae35f42fa6d31cbab2ffc4135f49501dbdbbd17b6b55d02
+```
+
+**Verdict**: **PASS** (iteration 1). Operator bar: "every connector graduates past Prototype to **earned** Beta." Plan promotes the 10 remaining Prototypes (granola, local_directory, google_drive, sarif, mcp_registry, continue_dev, aider, claude_code, osv, jira) via a real `runtime/`-harness proof each — `deliver_poll(connector, [fixture], sink)` for the 8 non-webhook + jira `deliver_webhook` (sha256=) + osv's existing proof. Independent fresh-context audit confirmed: (1) **earned, not cosmetic** — every proof runs `observations`→`adapter.core.pipeline.normalize` (which enforces source_id/non-blank-excerpt/`_screen_sensitive` HARD gate) → a real `CollectingSink`, asserting count + source_id (materially stronger than a doc flip); (2) `deliver_poll`-over-fixture IS the legitimate ADR-0012 Beta bar (live ingest is the Live stage by design; OSV/Linear precedent) — applied consistently; (3) **honest** — 8+10=18 Beta / 0 Prototype, no connector papered over; (4) traced every fixture: all emit (none trips FX-SEC-001, none blank) — sarif→2, claude_code→4 (mode line dropped, empty line floored). 4 non-blocking tightenings (F1 jira canonical body, F2 sarif==2, F3 claude_code==4, F4 update both SYSTEM_STATE counts) — all taken. Cleared to `/qor-implement`.
+
+---
+
+### Entry #68: SESSION SEAL (Beta graduation — 18 Beta / 0 Prototype)
+
+**Entry ID**: `allBeta18cc`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 0746b8f6cc3c017b3a90682bd11a5dc7816be7cd8b9c47cbeb4e0bade3cf3916
+```
+
+**Previous Hash**: 1799d18504afd708eae35f42fa6d31cbab2ffc4135f49501dbdbbd17b6b55d02
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5b0351283879cafd3aa9fef6d842dcd8dc1e184d886e914bc312204ebccf2ff9
+```
+
+**Decision**: PASS-audit (Entry #67) implemented + substantiated. **Every connector graduated to Beta — 18 Beta / 0 Prototype**, each promotion **earned** by a real runtime-harness proof (NOT a doc flip): `deliver_poll → emission` for granola/local_directory/google_drive/sarif(→2)/mcp_registry/continue/aider/claude_code(→4, the filtering parse proven: meta line dropped + empty line floored)/osv(→2 existing); `deliver_webhook` signed→1 + bad-sig→0 for jira (`X-Hub-Signature` sha256=). **No connector-code change** — proofs in `runtime/tests/test_runtime.py` (+10 cases → 32 runtime tests); readiness flips on all 10 `references.md` + the 7 README Status lines + the `connectors/README.md` index (0 Prototype rows remain); FX-RUNTIME-001 Notes broadened. All 4 audit tightenings (F1–F4) honored. **Independent review** confirmed earned-not-cosmetic, consistent ADR-0012 bar, honest 18/0 claim. **Verification**: pytest **274 passed**, ruff + mypy clean (100 files), governance gate verifies #1–#67. Posted the integrations-side dependency on **bot #109** (the Live-emission gate; 8→now all connectors queued behind it). SHADOW_GENOME SG-2026-06-04-B reinforced. Docs refreshed; `mods/` left to Codex.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` + Zendesk connector SEALED at Entry #66 (`1ee8a187`; L3). **8 Beta connectors** (incl. zendesk — first support/CS evidence source); 18 packages; all six CI gates green. Zendesk live ingest gated on the PII redaction-and-pass model; Live emission on bot #109.*
-*Next required action: operator decision — ServiceNow (P2, poll) / the PII redaction-and-pass model (unblocks live Zendesk + CS set) / Copilot-Cursor-Admin (P1). Admin (you): branch protection (B5) closes Scorecard #13/#1; bot #109 (Live). Open: B8-B14.*
+*Status: `main` + Beta graduation SEALED at Entry #68 (`5b035128`; L2). **18 Beta / 0 Prototype** — every connector earned Beta via a real harness proof; all six CI gates green. Live emission (GatewaySink) gated on bot #109 (integrations dependency posted to the issue).*
+*Next required action: operator decision — the PII redaction-and-pass model (unblocks live Zendesk + CS set) / ServiceNow (P2) / Copilot-Cursor-Admin (P1) / Live-stage wiring when bot #109 lands. Admin (you): branch protection (B5). Open: B8-B14, bot #109.*

@@ -11,12 +11,21 @@ from pathlib import Path
 
 import pytest
 
+from connectors.aider.connector import AiderConnector
+from connectors.claude_code.connector import ClaudeCodeConnector
+from connectors.continue_dev.connector import ContinueConnector
 from connectors.fathom.connector import FathomConnector
 from connectors.github.connector import GitHubConnector
+from connectors.google_drive.connector import GoogleDriveConnector
+from connectors.granola.connector import GranolaConnector
+from connectors.jira.connector import JiraConnector
 from connectors.linear.connector import LinearConnector
+from connectors.local_directory.connector import LocalDirectoryConnector
+from connectors.mcp_registry.connector import McpRegistryConnector
 from connectors.notion.connector import NotionConnector
 from connectors.osv.connector import OsvConnector
 from connectors.pagerduty.connector import PagerDutyConnector
+from connectors.sarif.connector import SarifConnector
 from connectors.sentry.connector import SentryConnector
 from connectors.slack.connector import SlackConnector
 from connectors.zendesk.connector import ZendeskConnector
@@ -277,6 +286,85 @@ def test_deliver_webhook_zendesk_bad_sig_emits_nothing():
     sink = CollectingSink()
     bad = {"X-Zendesk-Webhook-Signature": "bad", "X-Zendesk-Webhook-Signature-Timestamp": "2026-06-03T10:00:00Z"}
     assert deliver_webhook(conn, headers=bad, body=body, sink=sink) == 0
+    assert sink.emissions == []
+
+
+# --- Beta graduation: every remaining Prototype earned via the runtime harness ---
+
+
+def _fixture_payload(connector_name: str, fixture: str) -> dict:
+    path = _FIXTURES / connector_name / "fixtures" / fixture
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _poll_one(connector, connector_name: str, fixture: str, source_id: str, expected: int):
+    sink = CollectingSink()
+    payload = _fixture_payload(connector_name, fixture)
+    n = deliver_poll(connector, [payload], sink=sink)
+    assert n == expected
+    assert all(e.source_id == source_id for e in sink.emissions)
+    return sink
+
+
+def test_deliver_poll_granola_beta():
+    _poll_one(GranolaConnector(), "granola", "transcript.json", "granola", 1)
+
+
+def test_deliver_poll_local_directory_beta():
+    _poll_one(LocalDirectoryConnector(), "local_directory", "note.json", "local_directory", 1)
+
+
+def test_deliver_poll_google_drive_beta():
+    _poll_one(GoogleDriveConnector(), "google_drive", "doc_decision.json", "google_drive", 1)
+
+
+def test_deliver_poll_sarif_beta():
+    # one Observation per SARIF result (the fixture carries 2) — exact count, not >=1.
+    _poll_one(SarifConnector(), "sarif", "scan_report.json", "sarif", 2)
+
+
+def test_deliver_poll_mcp_registry_beta():
+    _poll_one(McpRegistryConnector(), "mcp_registry", "server.json", "mcp_registry", 1)
+
+
+def test_deliver_poll_continue_beta():
+    _poll_one(ContinueConnector(), "continue_dev", "dev_data_event.json", "continue", 1)
+
+
+def test_deliver_poll_aider_beta():
+    _poll_one(AiderConnector(), "aider", "aider_commit.json", "aider", 1)
+
+
+def test_deliver_poll_claude_code_beta():
+    # The JSONL transcript filters: a meta `mode` line drops, an empty assistant
+    # line floors to a non-blank literal -> the filtering parse is proven end-to-end.
+    path = _FIXTURES / "claude_code" / "fixtures" / "session_lines.jsonl"
+    lines = [json.loads(ln) for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    sink = CollectingSink()
+    n = deliver_poll(ClaudeCodeConnector(), [{"lines": lines}], sink=sink)
+    # 5 lines -> the meta `mode` line drops and the empty assistant line floors
+    # (it emits rather than vanishing, else the count would be 3) -> 4 emissions.
+    assert n == 4
+    assert all(e.source_id == "claude-code" for e in sink.emissions)
+
+
+def _signed_jira() -> tuple[JiraConnector, dict, bytes]:
+    body = _fixture_body("jira", "issue_created.json")  # same bytes signed and delivered (F1)
+    sig = "sha256=" + _hex_hmac("jira-secret", body)
+    return JiraConnector(secret="jira-secret"), {"X-Hub-Signature": sig}, body
+
+
+def test_deliver_webhook_jira_beta():
+    conn, headers, body = _signed_jira()
+    sink = CollectingSink()
+    assert deliver_webhook(conn, headers=headers, body=body, sink=sink) == 1
+    assert sink.emissions[0].source_id == "jira"
+
+
+def test_deliver_webhook_jira_bad_sig_emits_nothing():
+    conn, _headers, body = _signed_jira()
+    sink = CollectingSink()
+    assert deliver_webhook(conn, headers={"X-Hub-Signature": "sha256=bad"}, body=body, sink=sink) == 0
     assert sink.emissions == []
 
 

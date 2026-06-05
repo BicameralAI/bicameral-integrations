@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P0 |
 | Default trust tier | T0 (local file import) |
 | Integration role | developer-AI session evidence + provenance |
-| Readiness (lifecycle) | Prototype |
+| Readiness (lifecycle) | Beta (proven end-to-end through the `runtime/` harness against a reference sink; ADR-0012) |
 
 ## Provider documentation (verify on refresh)
 

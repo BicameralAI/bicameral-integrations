@@ -1,6 +1,6 @@
 # Jira Connector
 
-Provider-facing Jira Cloud adapter. **Status: Prototype** (catalog
+Provider-facing Jira Cloud adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
 project-management, priority P0, default trust tier T1/T3). A Phase-1 foundation
 connector from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).

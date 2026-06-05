@@ -1,6 +1,6 @@
 # MCP Registry Connector
 
-Provider-facing MCP Registry adapter. **Status: Prototype** (catalog
+Provider-facing MCP Registry adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
 mcp/agent-ecosystem, priority P0, default trust tier T1). A Phase-1 foundation
 candidate from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
