@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **39**
-- **Verified**: 39
+- Total entries: **41**
+- **Verified**: 41
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -48,6 +48,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-JIRA-001 | Jira Cloud issue webhook → Observation parser + verify | docs/plan-jira-2026-06-04.md | connectors/jira/connector.py | connectors/jira/tests/test_jira_connector.py | Verified | Catalog P0 (project-management, T1); `parse_issue` (summary→excerpt, never ADF description, `jira-issue` floor); `JiraConnector.verify`/`normalize_event` (`X-Hub-Signature` `sha256=` hex HMAC over raw body, fail-closed; best-effort dedup on `X-Atlassian-Webhook-Identifier`); WEBHOOK+ACTIVE; live HTTP/REST + Connect-JWT deferred |
 | FX-WHSEC-003 | Zendesk Base64 request-signature primitive | docs/plan-zendesk-connector-2026-06-04.md | adapter/core/webhook_security.py | adapter/core/tests/test_webhook_security.py | Verified | `verify_zendesk_signature` — **Base64** HMAC-SHA256 over `timestamp + body` (no separator; raw timestamp string; empty body accepted for GET/DELETE); fail-closed on missing secret/sig/timestamp, mismatch; constant-time; no window (dedup-as-replay-guard); L3 |
 | FX-ZENDESK-001 | Zendesk support-ticket webhook → Observation parser + verify | docs/plan-zendesk-connector-2026-06-04.md | connectors/zendesk/connector.py | connectors/zendesk/tests/test_zendesk_connector.py | Verified | Catalog P1 (support/CS, T1); `parse_ticket` (subject→excerpt, **never the ticket body** — PII-dense; `zendesk-ticket` floor, id via `detail.id` or `zen:ticket:<id>` subject parse; SG-I defensive); `ZendeskConnector.verify`/`normalize_event` (`X-Zendesk-Webhook-Signature` Base64 HMAC over `timestamp+body`, fail-closed; best-effort dedup); WEBHOOK+ACTIVE; live REST/OAuth + **PII redaction-and-pass model** deferred |
+| FX-GITLAB-001 | GitLab merge-request / issue webhook → Observation parser + plaintext-token verify | docs/plan-source-connectors-gitlab-confluence-2026-06-05.md | connectors/gitlab/connector.py | connectors/gitlab/tests/test_gitlab_connector.py | Verified | Catalog P1 (source-control, T1/T3); `parse_merge_request`/`parse_issue` (`object_attributes.description`→excerpt, `!iid`/`#iid` ref, `gitlab-merge-request`/`gitlab-issue` floor); `observations` dispatch on `object_kind`; `GitLabConnector.verify`/`normalize_event` (**plaintext `X-Gitlab-Token` shared-secret, constant-time, fail-closed — NOT HMAC**; new `verify_shared_token` helper; best-effort dedup on `X-Gitlab-Event-UUID`); WEBHOOK+ACTIVE; harness-proven webhook + fail-closed negatives; Standard-Webhooks signing-token path + live REST deferred |
+| FX-CONFLUENCE-001 | Confluence Cloud page content → Observation parser (verify deferred) | docs/plan-source-connectors-gitlab-confluence-2026-06-05.md | connectors/confluence/connector.py | connectors/confluence/tests/test_confluence_connector.py | Verified | Catalog P1 (documentation, T1/T3); `parse_content` (`body.storage.value` XHTML flattened via lossy `_strip_storage_html` — tags/entities/whitespace, **not a sanitizer**; `confluence-page` floor; `_links.base+webui` url); ACTIVE+PASSIVE+WEBHOOK; **verify deferred** (Cloud signature scheme unverifiable from docs — Data-Center-only `X-Hub-Signature`); poll-harness-proven |
 
 ---
 

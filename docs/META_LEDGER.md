@@ -1722,6 +1722,87 @@ SHA256(content_hash + previous_hash)
 **Decision**: PASS-audit (Entry #70) implemented + substantiated. **Made `GatewaySink` real — the Live emission seam.** Bot **#109 verified CLOSED/COMPLETED** (PR #131) → the Live gate is lifted. New `runtime/gateway_mapping.py` (`emission_to_ingest_request`: title/description/source floored, evidence excerpt, dimensional confidence NOT collapsed) against a **vendored, provenance-pinned** v1 schema (`runtime/schemas/ingest_request_v1.schema.json`, upstream commit `4f077998…`). `GatewaySink` POSTs via stdlib `urllib`: **default-safe** (no endpoint → `GatewayEmissionGated`), **fail-closed** (audit F-1: re-runs `validate_emissions` at the boundary; only HTTP 201 succeeds; else `GatewayEmissionError(status, reason)` from the parsed `IngestRejection`), **secret-safe** (operator token never in any error/log — tested on both HTTPError + URLError paths). All **8 audit constraints honored**. **Independent review** (observer + devil's advocate, fresh-context): observer **PASS** (8/8 constraints with file:line evidence; the 2 doc-staleness concerns resolved in this seal); devil's advocate **0 blocking / 0 HIGH** — full adversarial trace confirmed no fail-open, no token leak, no wrong-scheme payload, no swallowed rejection (the LOW notes are the deliberate no-jsonschema choice). **No connector-code change; `mods/` untouched.** Connectors stay **Beta** (18); **Live is now operator-actionable** (the repo ships the verified seam; the operator deployment earns Live). **Verification**: pytest **286 passed**, ruff + mypy clean (102 files), governance gate verifies #1–#70. FEATURE_INDEX **FX-RUNTIME-002** Verified (39 total). ADR-0012 §3 + SYSTEM_STATE corrected (GatewaySink no longer a stub; #109 CLOSED). Docs refreshed; `mods/` left to Codex.
 
 ---
+
+### Entry #72: GATE AUDIT — GitLab + Confluence connectors (PASS)
+
+**Entry ID**: `gitlabConfl72aud`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: AUDIT (gate tribunal)
+**Author**: Independent auditor (fresh-context, Option B — author-momentum SG-007)
+**Risk Grade**: L2 (read-only evidence adapters; new inbound webhook verify surface)
+
+**Content Hash**:
+```
+SHA256(plan-source-connectors-gitlab-confluence-2026-06-05.md)
+= 6ed2dd7ff00665f9b26c52303a21f497adfd506897409ec2310bd9f99d14077d
+```
+
+**Previous Hash**: 91605f9f47b75e54ca8de6407b7dbd5deb0b0199d217e11682dfeef4d298149a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 8ed588067d822374dbbaed30bc57d4aac41b15e925a676bbf985792d2af08c8f
+```
+
+**Verdict**: **PASS**. Plan to add two net-new source connectors (GitLab P1 source-control,
+Confluence P1 documentation) earned through the runtime harness. Independent fresh-context
+audit ground-truthed every cited symbol (`SourceRef`/`Observation`/`SourceMode`/
+`SourceCapabilities`/`verify_hmac_hex`/`DeliveryDedupCache`/`header_value`), the harness-call
+alignment (`deliver_webhook`→`normalize_event`, `deliver_poll`→`observations`), the connector
+count (18→20), and the chain-hash continuation from `91605f9f`. Verified the external contracts:
+GitLab uses a **plaintext `X-Gitlab-Token` shared secret (constant-time, NOT HMAC)**; Confluence
+Cloud has **no doc-confirmed signature** → verification correctly deferred (verify-before-cite).
+Six adversarial passes (security/L3, OWASP, grounding, test-functionality, razor, scope) found
+**0 VETO**. 3 non-blocking advisories: (LOW) `verify_shared_token` error must not echo token/secret;
+(MED→advisory) document `_strip_storage_html` as a lossy flattener, not a sanitizer; (LOW)
+Confluence fixture `_links` must carry base+webui so the URL-join assertion is non-vacuous — all
+three honored in implementation. Cleared to `/qor-implement`.
+
+---
+
+### Entry #73: SESSION SEAL — GitLab + Confluence connectors → Beta
+
+**Entry ID**: `gitlabConfl73seal`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 3d27ad4661e5caba5c21f80e0e1f3ffbf6d00edfccae8fcc822354c6080824de
+```
+
+**Previous Hash**: 8ed588067d822374dbbaed30bc57d4aac41b15e925a676bbf985792d2af08c8f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 517fd8376a3e0468364e780f175afec885dd6ee31560c31ccdfef8afb9a8bf69
+```
+
+**Decision**: PASS-audit (Entry #72) implemented + substantiated. **Two net-new connectors
+earned Beta via real runtime-harness proofs** (not doc flips). **GitLab** (`connectors/gitlab/`):
+`parse_merge_request`/`parse_issue` (dispatch on `object_kind`; `!iid`/`#iid` refs; floors),
+`GitLabConnector.verify`/`normalize_event` over a **plaintext `X-Gitlab-Token` shared secret** —
+the first connector whose verify is constant-time token equality, not an HMAC (new
+`adapter.core.webhook_security.verify_shared_token`, fail-closed, token never echoed). **Confluence**
+(`connectors/confluence/`): `parse_content` flattening the REST `body.storage.value` XHTML via the
+lossy `_strip_storage_html` (documented **not a sanitizer**); **verify deferred** (Confluence Cloud
+signature scheme unverifiable from docs — verify-before-cite), proven through the poll path.
+**Independent review** (fresh-context observer + devil's advocate): all six adversarial probes
+defended with file:line evidence — no fail-open (wrong/blank/missing token → 0 emissions, proven
+in the harness), no secret leak, no blank-excerpt/zero-evidence contract breach (floors +
+`validate_emissions`), safe `object_kind` dispatch, no ReDoS in the flattener, **`mods/` untouched**;
+the lone BLOCKING finding was the then-unwritten D3 governance plane, now completed in this seal.
+**Verification**: pytest **302 passed** (was 286; +16 — gitlab 9 + confluence 3 + 4 harness proofs),
+ruff clean, mypy clean (9 files), governance gate verifies #1–#73. FEATURE_INDEX **FX-GITLAB-001**
++ **FX-CONFLUENCE-001** Verified (**41** total). `connectors/README.md` index + SYSTEM_STATE
+(18→**20** Beta) updated. Connectors **20 Beta / 0 Prototype**; Live remains operator-actionable.
+
+---
 *Chain integrity: VALID*
-*Status: `main` + Live emission seam SEALED at Entry #71 (`91605f9f`; L3). **GatewaySink is real** (v1 IngestRequest → `POST /api/v1/ingest`; default-safe + fail-closed + secret-safe); bot #109 CLOSED. 18 Beta connectors; all six CI gates green. **Live is operator-actionable** — earned by wiring `GatewaySink(endpoint, token)` against a real gateway.*
-*Next required action: operator decision — promote a connector to Live (operator deployment) / the PII redaction-and-pass model (live Zendesk + CS set) / ServiceNow (P2) / Copilot-Cursor-Admin (P1). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` + GitLab & Confluence connectors SEALED at Entry #73 (`517fd837`; L2). **20 Beta connectors / 0 Prototype** — GitLab (plaintext `X-Gitlab-Token` verify) + Confluence (verify deferred) earned Beta via the runtime harness. Live emission seam real + operator-actionable; bot #109 CLOSED. All six CI gates expected green.*
+*Next required action: operator decision — continue building next unbuilt connectors (Copilot/Cursor P1 metrics-API, ServiceNow P2, or other catalog targets) / promote a connector to Live (operator deployment) / the PII redaction-and-pass model (live Zendesk + CS set). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

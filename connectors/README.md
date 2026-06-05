@@ -45,6 +45,8 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [pagerduty](pagerduty/) | **Beta** | webhook | `parse_event` | ✓ (multi-sig) |
 | [jira](jira/) | **Beta** | webhook, active | `parse_issue` | ✓ (HMAC, `sha256=`) |
 | [zendesk](zendesk/) | **Beta** | webhook, active | `parse_ticket` | ✓ (Base64 HMAC) |
+| [gitlab](gitlab/) | **Beta** | webhook, active | `parse_merge_request` / `parse_issue` | ✓ (shared token) |
+| [confluence](confluence/) | **Beta** | active, passive | `parse_content` | — |
 
 Candidate selection and trust tiers are tracked in the
 [Integration Candidate Catalog](../docs/INTEGRATION_CANDIDATE_CATALOG.md) and the

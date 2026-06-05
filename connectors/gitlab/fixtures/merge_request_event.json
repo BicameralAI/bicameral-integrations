@@ -1,0 +1,19 @@
+{
+  "object_kind": "merge_request",
+  "event_type": "merge_request",
+  "user": {"username": "devuser", "name": "Dev User"},
+  "project": {
+    "path_with_namespace": "acme/widgets",
+    "web_url": "https://gitlab.example.com/acme/widgets"
+  },
+  "object_attributes": {
+    "iid": 42,
+    "title": "Add /health readiness route",
+    "description": "Adds a /health endpoint returning 200 once the worker pool is warm.",
+    "url": "https://gitlab.example.com/acme/widgets/-/merge_requests/42",
+    "action": "open",
+    "state": "opened",
+    "source_branch": "feat/health-route",
+    "target_branch": "main"
+  }
+}
