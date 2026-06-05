@@ -52,16 +52,27 @@ ADR-0006 / `auth.md` "operator runtime owns the live HTTP boundary" convention).
   `deliver_poll(connector, payloads, sink)` for ACTIVE connectors. The actual
   HTTP server / cron stays in the operator runtime, which calls these.
 
-### 3. Gateway emission is a #109-gated stub
+### 3. Gateway emission — implemented (bot #109 landed 2026-06-05)
 
-`GatewaySink` documents the production target (map `AdapterEmission` → the v1
-ingest payload, `POST /api/v1/ingest`) but **does not emit**: its `emit` raises
-`GatewayEmissionGated` with the reason (bot #109 ingest guards pending; the exact
-`protocol/schemas/v1/` field mapping to be pinned when #109 lands). This makes
-the emission *contract* explicit and testable (the gate is asserted, not
-silently skipped) without fabricating an unverified wire mapping or pushing
-traffic at an unhardened endpoint. Promoting a connector to **Live** = wiring a
-real `GatewaySink` once #109 is done.
+`GatewaySink` is now the real **Live** seam. It maps each `AdapterEmission` to the
+v1 `IngestRequest` (the mapping is pinned in `runtime/gateway_mapping.py` against
+a vendored copy of `bicameral-bot:protocol/schemas/v1/ingest-request.schema.json`)
+and `POST`s it to a configured `/api/v1/ingest` with stdlib `urllib`. It is:
+- **default-safe** — with no endpoint, `emit` still raises `GatewayEmissionGated`
+  (the operator opts in by configuring `GatewaySink(endpoint=…)`);
+- **fail-closed** — `emit` re-runs the producer contract + secret/PII/PAN screen
+  at the emission boundary (so a hand-built emission cannot bypass it), accepts
+  only HTTP **201**, and raises `GatewayEmissionError(status, reason)` on any
+  other status or transport fault (the operator handles rejections/retries);
+- **secret-safe** — the auth token is operator-injected (`token` →
+  `Authorization: Bearer`) and never appears in an error or log.
+
+Bot **#109** (gateway ingest guards: body-size / rate / sensitive-data) merged
+(PR #131), so the endpoint is hardened. Dimensional confidence is deliberately
+not collapsed into the v1 scalar `confidence` (SG-2026-06-02-B). Promoting a
+connector to **Live** = an operator wiring a configured `GatewaySink` against a
+real gateway — the repo delivers the verified seam; the operator deployment is
+what earns Live (a mock test does not promote a connector to Live).
 
 ## Consequences
 

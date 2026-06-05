@@ -1672,7 +1672,56 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Professional documentation pass across all READMEs (operator request). **Primary README**: added a value-prop tagline + a project-signal badge row (connectors-18-Beta, stdlib-only, mypy, Ruff, Conventional Commits, PRs-welcome, security-policy — alongside the existing CI/security badges), a maturity/footprint/safety/assurance table, and a **Design Principles** section (evidence-not-authority, library-not-server, fail-closed, earned-readiness, provable-not-asserted) — pro-tier signals of a well-designed repo. **All 18 connector READMEs** refreshed to a confident Beta posture via two parallel `qor-technical-writer` subagents (10 graduated connectors) + the 8 already-Beta ones: corrected stale "parse surface only" / "deferred this cycle" prose to accurately frame the LIVE boundary (HTTP receipt / poll / file-watch / secret resolution / gateway emission) as the deferred part, with a consistent "Readiness: Beta (ADR-0012)" section. **Recovered the `mods/` documentation set** (the 4 tracked README files clobbered earlier by a `git reset --hard` over Codex's uncommitted edits — SG-2026-06-04-P / the new shared-worktree memory): rewrote `mods/README.md` (framework + safety contract + the 3 tracked mods linked + the 10-mod planned suite, no broken in-repo links since those dirs are Codex's untracked work) and the 3 tracked mod specs (dependency_risk / noisy_source_gate / security_mentions) to Scoped quality. No code change; no AI attribution; only the 3 tracked mod dirs touched (Codex's untracked mod dirs left untouched, unstaged). Verification: governance gate OK, runtime suite green, no accidental AI-attribution, badge endpoints valid. Chain verifies #1–#68.
 
+### Entry #70: GATE TRIBUNAL (Live emission seam — GatewaySink real)
+
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent security-engineer — Option B, fresh context)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(plan-live-emission-2026-06-05.md)
+= 77fac2df20e64b3a06ed96e616230864e225541595a7c2160e2fb646f5450d6e
+```
+
+**Previous Hash**: 1eded8538d673fc92954a76bb23da1934fb01b369ecdbaeef1cad7fe16ecb804
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c5c9afa7b2c87126c82890e23f8e77b961cbc19ec5422e45d6dac0bbfad786f2
+```
+
+**Verdict**: **PASS** with 8 binding constraints. L3 (outbound emission boundary — the security surface #109 exists for). Plan makes `GatewaySink` real now bot **#109 CLOSED** (PR #131 ingest guards): map `AdapterEmission → vendored v1 IngestRequest` + POST to `/api/v1/ingest` (stdlib urllib). Independent fresh-context audit ground-truthed the v1 schema + the gateway route (`ingest_candidate`: success is **201 only**; 429/422/500 are errors) and bound: (F-1, HIGH) `emit` MUST re-run `validate_emissions` at the boundary (re-screen secret/PII/PAN + evidence floor — closes a fail-open bypass for hand-built emissions); only HTTP 201 succeeds, else `GatewayEmissionError(status, reason)` carrying the parsed `IngestRejection`; the **auth token never enters any error/log** (built from status+gateway-reason only); auth operator-configurable; dimensional confidence NOT collapsed to scalar (SG-2026-06-02-B); vendored schema carries upstream-SHA + pin-date provenance, conformance offline (no jsonschema dep); stdlib-only, `mods/` untouched, no connector change; **connectors stay Beta — a mock test does not promote to Live**. Cleared to `/qor-implement`.
+
+---
+
+### Entry #71: SESSION SEAL (Live emission seam — GatewaySink real)
+
+**Entry ID**: `liveEmit71gw`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= bc798f062c936950813629dfabf9eb18d5e22458492c1b7d89d41f913053c5aa
+```
+
+**Previous Hash**: c5c9afa7b2c87126c82890e23f8e77b961cbc19ec5422e45d6dac0bbfad786f2
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 91605f9f47b75e54ca8de6407b7dbd5deb0b0199d217e11682dfeef4d298149a
+```
+
+**Decision**: PASS-audit (Entry #70) implemented + substantiated. **Made `GatewaySink` real — the Live emission seam.** Bot **#109 verified CLOSED/COMPLETED** (PR #131) → the Live gate is lifted. New `runtime/gateway_mapping.py` (`emission_to_ingest_request`: title/description/source floored, evidence excerpt, dimensional confidence NOT collapsed) against a **vendored, provenance-pinned** v1 schema (`runtime/schemas/ingest_request_v1.schema.json`, upstream commit `4f077998…`). `GatewaySink` POSTs via stdlib `urllib`: **default-safe** (no endpoint → `GatewayEmissionGated`), **fail-closed** (audit F-1: re-runs `validate_emissions` at the boundary; only HTTP 201 succeeds; else `GatewayEmissionError(status, reason)` from the parsed `IngestRejection`), **secret-safe** (operator token never in any error/log — tested on both HTTPError + URLError paths). All **8 audit constraints honored**. **Independent review** (observer + devil's advocate, fresh-context): observer **PASS** (8/8 constraints with file:line evidence; the 2 doc-staleness concerns resolved in this seal); devil's advocate **0 blocking / 0 HIGH** — full adversarial trace confirmed no fail-open, no token leak, no wrong-scheme payload, no swallowed rejection (the LOW notes are the deliberate no-jsonschema choice). **No connector-code change; `mods/` untouched.** Connectors stay **Beta** (18); **Live is now operator-actionable** (the repo ships the verified seam; the operator deployment earns Live). **Verification**: pytest **286 passed**, ruff + mypy clean (102 files), governance gate verifies #1–#70. FEATURE_INDEX **FX-RUNTIME-002** Verified (39 total). ADR-0012 §3 + SYSTEM_STATE corrected (GatewaySink no longer a stub; #109 CLOSED). Docs refreshed; `mods/` left to Codex.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` + documentation upcycle SEALED at Entry #69 (`1eded853`; L1). **18 Beta / 0 Prototype**; all six CI gates green; READMEs at pro-tier; `mods/` docs recovered. Live emission gated on bot #109.*
-*Next required action: operator decision — the PII redaction-and-pass model (unblocks live Zendesk + CS set) / ServiceNow (P2) / Copilot-Cursor-Admin (P1) / Live-stage wiring when bot #109 lands. Admin (you): branch protection (B5). Open: B8-B14, bot #109. NOTE: Codex should re-apply / supersede the recovered `mods/` README content when it commits its untracked mod dirs.*
+*Status: `main` + Live emission seam SEALED at Entry #71 (`91605f9f`; L3). **GatewaySink is real** (v1 IngestRequest → `POST /api/v1/ingest`; default-safe + fail-closed + secret-safe); bot #109 CLOSED. 18 Beta connectors; all six CI gates green. **Live is operator-actionable** — earned by wiring `GatewaySink(endpoint, token)` against a real gateway.*
+*Next required action: operator decision — promote a connector to Live (operator deployment) / the PII redaction-and-pass model (live Zendesk + CS set) / ServiceNow (P2) / Copilot-Cursor-Admin (P1). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

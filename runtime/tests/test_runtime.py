@@ -96,10 +96,37 @@ def test_deliver_webhook_bad_signature_emits_nothing():
 
 
 def test_deliver_webhook_into_gateway_sink_raises_gated():
-    # A valid delivery reaches the sink; the #109 gate is asserted, not skipped.
+    # No endpoint configured -> default-safe gate, asserted not skipped.
     conn, headers, body = _signed_linear()
     with pytest.raises(GatewayEmissionGated):
         deliver_webhook(conn, headers=headers, body=body, sink=GatewaySink())
+
+
+def test_full_path_signed_webhook_to_configured_gateway_sink():
+    # D1: ingest -> verify -> normalize -> emit -> POST a conforming v1 IngestRequest.
+    captured: dict = {}
+
+    class _R:
+        status = 201
+
+    class _Ctx:
+        def __enter__(self):
+            return _R()
+
+        def __exit__(self, *_a):
+            return False
+
+    def _opener(request, timeout=None):
+        captured["body"] = json.loads(request.data.decode("utf-8"))
+        return _Ctx()
+
+    conn, body, sig = _signed_sentry()
+    sink = GatewaySink(endpoint="https://gw.example/api/v1/ingest", opener=_opener)
+    n = deliver_webhook(conn, headers={"Sentry-Hook-Signature": sig}, body=body, sink=sink)
+    assert n == 1
+    assert captured["body"]["source_type"] == "sentry"
+    assert captured["body"]["title"] and captured["body"]["description"]
+    assert captured["body"]["evidence"][0]["excerpt"]
 
 
 def test_deliver_poll_over_osv():

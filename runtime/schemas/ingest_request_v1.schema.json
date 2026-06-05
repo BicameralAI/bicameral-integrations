@@ -1,0 +1,131 @@
+{
+  "$comment": "VENDORED copy \u2014 pinned for offline conformance. Upstream: bicameral-bot:protocol/schemas/v1/ingest-request.schema.json @ commit 4f0779984adc40066776efe2ccbd44991e873465; pinned 2026-06-05. Re-verify on bot schema changes (BACKLOG drift note).",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IngestRequest",
+  "description": "Ingest request aligned with MCP v0.2 spec \u00a72.2 `bicameral.ingest`.\n\nAccepts source + snapshot + evidence + candidate fields. Source/snapshot/evidence are optional for backward compatibility \u2014 plain title+description ingest still works.",
+  "type": "object",
+  "required": [
+    "description",
+    "source",
+    "title"
+  ],
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "evidence": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/IngestEvidenceItem"
+      }
+    },
+    "label": {
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "level": {
+      "default": null,
+      "anyOf": [
+        {
+          "$ref": "#/definitions/DecisionLevel"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "snapshot_content": {
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_type": {
+      "default": null,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tags": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "DecisionLevel": {
+      "description": "Decision tier classification.\n\nSeparating levels prevents collapsing product intent, architectural constraint, and implementation detail into a single undifferentiated pile.",
+      "oneOf": [
+        {
+          "description": "L1: Product-level decisions (what and why)",
+          "type": "string",
+          "enum": [
+            "product"
+          ]
+        },
+        {
+          "description": "L2: Architecture-level decisions (structural how)",
+          "type": "string",
+          "enum": [
+            "architecture"
+          ]
+        },
+        {
+          "description": "L3: Implementation-level decisions (tactical how)",
+          "type": "string",
+          "enum": [
+            "implementation"
+          ]
+        }
+      ]
+    },
+    "IngestEvidenceItem": {
+      "type": "object",
+      "required": [
+        "excerpt"
+      ],
+      "properties": {
+        "confidence": {
+          "default": 0.5,
+          "type": "number",
+          "format": "double"
+        },
+        "excerpt": {
+          "type": "string"
+        },
+        "span_end": {
+          "default": null,
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint",
+          "minimum": 0.0
+        },
+        "span_start": {
+          "default": null,
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint",
+          "minimum": 0.0
+        }
+      }
+    }
+  }
+}

@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-04 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | `main` + **Beta graduation** — every remaining Prototype connector earned Beta via a real `runtime/`-harness proof; **18 Beta / 0 Prototype**; docs refreshed each cycle close |
-| **Iteration** | 21 governed cycles (… webhook verify-wiring GitHub/Slack/Notion→Beta; Scorecard Token-Permissions hardening; CS/support evaluation; Zendesk connector → Beta; **Beta graduation — all 18 connectors earned Beta**) |
-| **Session Seal** | `5b035128` (META_LEDGER Entry #68 chain hash) |
+| **Phase** | `main` + **Live emission seam** — bot #109 landed (PR #131), so `GatewaySink` is real: AdapterEmission → v1 IngestRequest → `POST /api/v1/ingest` (default-safe + fail-closed + secret-safe). 18 Beta connectors; Live now operator-actionable |
+| **Iteration** | 22 governed cycles (… Scorecard Token-Permissions hardening; CS/support evaluation; Zendesk connector → Beta; Beta graduation — all 18 connectors earned Beta; README/mods doc upcycle; **Live emission seam — GatewaySink real**) |
+| **Session Seal** | `91605f9f` (META_LEDGER Entry #71 chain hash) |
 
 ---
 
@@ -40,7 +40,7 @@ bicameral-integrations/
 |   `-- zendesk/        (ticket webhook -> Observation + verify; WEBHOOK+ACTIVE; T1)
 |-- runtime/  (operator-runtime boundary, ADR-0012: sinks, secrets, delivery + tests
 |              — EmissionSink/SecretResolver Protocols, deliver_webhook/deliver_poll,
-|              GatewaySink #109-gated stub; drives connector ingest->emit, library-only)
+|              GatewaySink real Live emission seam (POST /api/v1/ingest); library-only)
 |-- mods/  (structure under active build by Codex — not edited by this track)
 |-- scripts/  (governance_gate.py + check_license_headers.py + tests/)
 |-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME, SYSTEM_STATE,
@@ -58,10 +58,10 @@ bicameral-integrations/
 | Metric | Value |
 |--------|-------|
 | Source connector packages (with `connector.py`) | 18 (+ zendesk; github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
-| Readiness ladder (ADR-0012) | **Beta: 18 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof (deliver_webhook for the 7 verify-wired; deliver_poll for the 11 passive/active) · **Prototype: 0** · **Live: 0** (gated on bot #109) |
-| Runtime boundary | `runtime/` library layer (sinks + secrets + delivery); GatewaySink #109-gated stub |
+| Readiness ladder (ADR-0012) | **Beta: 18 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof · **Prototype: 0** · **Live: 0 connectors** (the **Live seam is implemented + operator-actionable** now bot #109 landed — Live is earned by an operator wiring `GatewaySink` against a real gateway, not by the repo) |
+| Runtime boundary | `runtime/` library layer (sinks + secrets + delivery + **gateway_mapping**); **GatewaySink = real Live emission** (v1 IngestRequest → `POST /api/v1/ingest`, default-safe + fail-closed + secret-safe) |
 | Total Test Files | 28 (adapter/core + connectors + runtime + scripts) |
-| Pytest | 274 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
+| Pytest | 286 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
 | Webhook verify wired | fathom, linear, sentry, pagerduty, jira, github, slack, notion, zendesk (Svix/HMAC/multi-sig/sha256=/v0/Base64 + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
@@ -75,7 +75,7 @@ bicameral-integrations/
 |--------|-------|
 | Delivered | Adapter seam + **17 source connectors** + producer secret screen + L3 webhook signature verification (Svix/Fathom, Linear, Sentry, PagerDuty hex/multi-sig, Jira `sha256=`) + replay dedup + **CI governance/security gate ecosystem** (10 gates + 6 reusable templates) + compliance control mappings — per ADR-0004..0010 |
 | Unplanned | 0 |
-| Missing | 0 (live HTTP receipt / REST poll + secret/keyring resolution + gateway emission intentionally deferred per connector `auth.md`). Emission **target exists** — bot published the v1 ingest wire schema (bot PR #95, `protocol/schemas/v1/`); *safe* live emission depends on bot **#109** (the gateway `/api/v1/ingest` still lacks size/rate/prompt-injection/sensitive-data guards) and the in-flight MCP→ToolRequest ingest refactor (bot #114/#115/#116/#117/#120, #123 conformance). The earlier "blocked on bot #99 v1 schema" was incorrect (#99 is a closed integration PR) — see SHADOW_GENOME SG-2026-06-04-N. |
+| Missing | 0. **Gateway emission is now implemented** — `GatewaySink` maps to the pinned v1 `IngestRequest` and POSTs to `/api/v1/ingest`; bot **#109 CLOSED/COMPLETED** (PR #131 ingest guards: body-size/rate/sensitive-data). What remains operator-owned (per connector `auth.md`, not "missing"): the live HTTP receiver/poller + secret/keyring resolution + configuring `GatewaySink(endpoint=…, token=…)` against a real gateway — i.e. the operator deployment that earns a connector **Live**. |
 
 **Compliance**: aligned with `ARCHITECTURE_PLAN.md` and ADR-0004..0010.
 
@@ -126,7 +126,8 @@ bicameral-integrations/
 | PagerDuty connector | connectors/pagerduty/tests/test_pagerduty_connector.py | OK |
 | Claude Code connector | connectors/claude_code/tests/test_claude_code_connector.py | OK |
 | Jira connector | connectors/jira/tests/test_jira_connector.py | OK |
-| Runtime boundary (all 18 connectors end-to-end: deliver_webhook + deliver_poll; missing-header/bad-sig fail-closed) | runtime/tests/test_runtime.py | OK (32) |
+| Runtime boundary (all 18 connectors end-to-end: deliver_webhook + deliver_poll; full-path → GatewaySink) | runtime/tests/test_runtime.py | OK (33) |
+| Live emission seam (emission→v1 mapping; GatewaySink POST: 201-only, gated, token-safe, real round-trip) | runtime/tests/test_gateway_mapping.py | OK (12) |
 | Zendesk connector + webhook verify/dedup (Base64 HMAC) | connectors/zendesk/tests/ | OK (11) |
 | GitHub webhook verify/dedup (envelope unwrap) | connectors/github/tests/test_github_webhook.py | OK (6) |
 | Slack webhook verify/dedup (v0 + replay) | connectors/slack/tests/test_slack_webhook.py | OK (7) |
@@ -140,10 +141,10 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #68 (`5b035128`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #71 (`91605f9f`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs (main README connector+mod index refreshed) + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 274 passing; ruff + mypy clean (100 files) |
+| Test Status | PASS | 286 passing; ruff + mypy clean (102 files) |
 | CI Gates | **6/6 green** (verified) | CI + CodeQL + Governance Gate + Quality + Security Scan + **OpenSSF Scorecard** all `success` on `main` (Scorecard green confirmed by run `26980983204` after the B6 v2 permission fix — SG-2026-06-04-O). Security-tab posture hardened (B13): Token-Permissions #21-24 fixed (write scopes moved to the calling-job level, top-level read-only); stale CodeQL #17 + accepted Pinned-Dependencies #18-20 dismissed via API with rationale. Only #13/#1 (Code-Review, Branch-Protection) remain — they need branch protection (B5, repo-admin). SBOM gate carries a latent OIDC twin (B12), release-only. SHA-pinned; reusable `workflow_call` templates. |
 
 ---
@@ -168,7 +169,8 @@ bicameral-integrations/
 - [ ] `mods/` structure is under active build by **Codex** — not edited by this (connector/hardening) track.
 - [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).
 - [ ] adapter→gateway emission: map `AdapterEmission` to the **published** v1 ingest schema (bot PR #95, `protocol/schemas/v1/`) + a conformance test. The schema is NOT a blocker; *safe* live emission gates on the cross-repo deps below.
-- [ ] Cross-repo deps (verified 2026-06-04): bot **#109** OPEN — gateway `/api/v1/ingest` lacks size/rate/prompt-injection/sensitive-data guards (the real emission-safety gate); MCP→ToolRequest ingest refactor bot **#114/#115/#116/#117/#120** + **#123** conformance (internal ingest-authority reshaping); **#73** OPEN (release signing/trust posture). #108 (gateway mutation authority) is now CLOSED. NOTE: the prior "bot #99 v1-schema blocker" was a misattribution — #99 is a closed integration PR (SG-2026-06-04-N).
+- [x] Cross-repo deps (verified 2026-06-05): bot **#109 CLOSED/COMPLETED** (PR #131 — gateway `/api/v1/ingest` ingest guards landed: body-size/rate/sensitive-data). The Live-emission gate is **lifted**; `GatewaySink` is now real (Entry #71). Remaining bot context: **#73** OPEN (release signing/trust posture); MCP→ToolRequest refactor ongoing. #108 CLOSED. (Prior "bot #99 v1-schema blocker" was a misattribution — SG-2026-06-04-N.)
+- [ ] **Live operator-actionable (next)**: an operator configures `GatewaySink(endpoint, token)` against a real gateway to promote a connector to **Live** (the repo delivers the verified seam; the deployment earns Live).
 
 ---
 

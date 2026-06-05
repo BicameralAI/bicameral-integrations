@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **38**
-- **Verified**: 38
+- Total entries: **39**
+- **Verified**: 39
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -55,7 +55,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 | ID | Feature | Doc | Code | Test | Status | Notes |
 |---|---|---|---|---|---|---|
-| FX-RUNTIME-001 | Operator-runtime boundary layer (sinks + delivery + secret resolver) | docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md, docs/plan-go-live-runtime-2026-06-04.md | runtime/sinks.py, runtime/delivery.py, runtime/secrets.py | runtime/tests/test_runtime.py | Verified | `EmissionSink`/`SecretResolver` Protocols + `CollectingSink` + `GatewaySink` (#109-gated stub raising `GatewayEmissionGated`) + `deliver_webhook`/`deliver_poll`; drives connector ingest→verify→normalize→emit without the repo being a server (ADR-0012). **Beta cohort proven through the harness**: signed-webhook→1 + bad-sig→0 for **linear** (HMAC+replay), **fathom** (Svix), **sentry** (hex HMAC), **pagerduty** (multi-sig membership — valid sig placed 2nd), **github** (sha256= + envelope unwrap), **slack** (v0 basestring), **notion** (sha256= prefix-pinned), **zendesk** (Base64 over timestamp+body), **jira** (sha256=); **deliver_poll** earns Beta for the non-webhook connectors — granola/local_directory/google_drive/sarif(→2)/mcp_registry/continue/aider/claude_code(→4, filtered)/osv(→2); **all 18 connectors Beta**; GatewaySink raises |
+| FX-RUNTIME-001 | Operator-runtime boundary layer (sinks + delivery + secret resolver) | docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md, docs/plan-go-live-runtime-2026-06-04.md | runtime/sinks.py, runtime/delivery.py, runtime/secrets.py | runtime/tests/test_runtime.py | Verified | `EmissionSink`/`SecretResolver` Protocols + `CollectingSink` + `GatewaySink` (#109-gated stub raising `GatewayEmissionGated`) + `deliver_webhook`/`deliver_poll`; drives connector ingest→verify→normalize→emit without the repo being a server (ADR-0012). **Beta cohort proven through the harness**: signed-webhook→1 + bad-sig→0 for **linear** (HMAC+replay), **fathom** (Svix), **sentry** (hex HMAC), **pagerduty** (multi-sig membership — valid sig placed 2nd), **github** (sha256= + envelope unwrap), **slack** (v0 basestring), **notion** (sha256= prefix-pinned), **zendesk** (Base64 over timestamp+body), **jira** (sha256=); **deliver_poll** earns Beta for the non-webhook connectors — granola/local_directory/google_drive/sarif(→2)/mcp_registry/continue/aider/claude_code(→4, filtered)/osv(→2); **all 18 connectors Beta**; GatewaySink raises when unconfigured |
+| FX-RUNTIME-002 | Live emission seam — AdapterEmission → v1 IngestRequest + GatewaySink POST | docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md, docs/plan-live-emission-2026-06-05.md | runtime/gateway_mapping.py, runtime/sinks.py, runtime/schemas/ingest_request_v1.schema.json | runtime/tests/test_gateway_mapping.py | Verified | `emission_to_ingest_request` maps to the pinned/vendored v1 `IngestRequest` (title/description/source floored; evidence excerpt; dimensional confidence NOT collapsed — SG-2026-06-02-B). `GatewaySink` real `POST /api/v1/ingest` (stdlib urllib): **default-safe** (no endpoint → `GatewayEmissionGated`), **fail-closed** (re-screens at the boundary; only HTTP 201 succeeds; else `GatewayEmissionError(status, reason)`), **secret-safe** (operator token never in any error/log). Bot #109 landed (PR #131); Live is now operator-actionable. L3 |
 
 ---
 
