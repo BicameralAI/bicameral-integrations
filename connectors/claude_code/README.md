@@ -22,7 +22,7 @@ policy), and secret resolution — stays in the operator runtime (see
 
 Promoted to **Beta**: its `runtime.deliver_poll` → reference sink path is proven
 end-to-end by `runtime/tests/test_runtime.py`, with **zero cross-repo
-dependency**. Live (gateway emission) remains gated on bicameral-bot #109.
+dependency**. Live (gateway emission) is now operator-actionable — `GatewaySink` is real (bot #109 landed, PR #131); an operator configures it against a real gateway to go Live.
 
 ## Surface
 
