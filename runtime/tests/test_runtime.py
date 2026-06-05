@@ -317,6 +317,9 @@ def test_deliver_webhook_zendesk_beta():
     sink = CollectingSink()
     assert deliver_webhook(conn, headers=headers, body=body, sink=sink) == 1
     assert sink.emissions[0].source_id == "zendesk"
+    # body now emitted via redact-and-pass: the fixture description's secret + email are scrubbed.
+    excerpt = sink.emissions[0].evidence[0].excerpt
+    assert "AKIAABCDEFGHIJKLMNOP" not in excerpt and "@example.com" not in excerpt
 
 
 def test_deliver_webhook_zendesk_bad_sig_emits_nothing():

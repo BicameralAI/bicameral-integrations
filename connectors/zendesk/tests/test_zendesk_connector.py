@@ -6,7 +6,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from adapter.core.capabilities import SourceMode
+from adapter.core.emissions import SourceRef
+from adapter.core.observations import Observation
+from adapter.core.pipeline import EmissionContractError, normalize
 from connectors.zendesk.connector import ZendeskConnector, parse_ticket
 
 _FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "ticket_event.json"
@@ -20,12 +25,37 @@ def test_parse_ticket_maps_subject_and_metadata():
     obs = parse_ticket(_event())
     assert obs.source_ref.source_id == "zendesk"
     assert obs.source_ref.ref == "4571"
-    assert obs.excerpt == "Login fails after password reset"
+    assert obs.excerpt.startswith("Login fails after password reset")  # subject preserved
     assert obs.title == "Login fails after password reset"
     assert obs.mode == SourceMode.WEBHOOK
     assert obs.metadata["status"] == "open"
     assert obs.metadata["priority"] == "high"
     assert obs.metadata["via"] == "web"
+
+
+def test_ticket_body_redacted_and_emitted():
+    # Body (description) now emitted via redact-and-pass, with PII scrubbed.
+    obs = parse_ticket(_event())
+    assert "Customer cannot log in" in obs.excerpt  # body text emitted
+    assert "user@example.com" not in obs.excerpt and "@" not in obs.excerpt
+    assert "AKIAABCDEFGHIJKLMNOP" not in obs.excerpt
+    assert "[redacted:email]" in obs.excerpt and "[redacted:secret]" in obs.excerpt
+
+
+def test_raw_body_would_be_rejected_then_redacted_passes():
+    # Companion non-vacuity: the RAW description trips FX-SEC-001 (secret) -> rejected;
+    # the connector's redacted emission passes the same gate.
+    raw = _event()["detail"]["description"]
+    bad = Observation(source_ref=SourceRef(source_id="zendesk", ref="x"), excerpt=raw)
+    with pytest.raises(EmissionContractError):
+        normalize([bad], adapter_version="x")
+    normalize(ZendeskConnector().observations(_event()), adapter_version="x")  # no raise
+
+
+def test_subject_only_when_no_body():
+    event = {"subject": "zen:ticket:8899", "detail": {"id": "8899", "subject": "Billing question"}}
+    obs = parse_ticket(event)
+    assert obs.excerpt == "Billing question"  # subject only when no description
 
 
 def test_parse_ticket_id_from_subject_when_detail_id_missing():

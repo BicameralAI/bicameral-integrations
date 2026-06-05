@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-05 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | `main` + **AI-vendor admin connectors** — OpenAI Admin (audit-log governance evidence; actor identity dropped) + Anthropic Admin (usage/cost leverage; aggregate, PII-free) earned Beta via the runtime poll harness; both poll-only REST (no webhooks/MCP). 26 Beta connectors; PII redaction-and-pass model + Live emission seam real |
-| **Iteration** | 26 governed cycles (… Live emission seam — GatewaySink real; GitLab + Confluence → Beta; Copilot + Cursor → Beta; PII redaction-and-pass + Devin + ServiceNow → Beta; **OpenAI Admin + Anthropic Admin → Beta**) |
-| **Session Seal** | `<pending Entry #82>` (prior tip `fe3b13bb` — Entry #80) |
+| **Phase** | `main` + **redaction retrofit** — Zendesk now ingests the ticket **body** via redact-and-pass (`subject — redact(description)`); Cursor adds **per-developer attribution via the opaque `userId`** (SG-2026-06-05-D supersedes -A for userId; email/name still never read). 26 Beta connectors (unchanged); PII redaction-and-pass + Live emission seam real |
+| **Iteration** | 27 governed cycles (… GitLab + Confluence → Beta; Copilot + Cursor → Beta; PII redaction-and-pass + Devin + ServiceNow → Beta; OpenAI Admin + Anthropic Admin → Beta; **redaction retrofit — Zendesk body + Cursor per-developer**) |
+| **Session Seal** | `<pending Entry #84>` (prior tip `4b641eba` — Entry #82) |
 
 ---
 
@@ -59,10 +59,10 @@ bicameral-integrations/
 |--------|-------|
 | Source connector packages (with `connector.py`) | 26 (+ openai_admin, anthropic_admin; devin, servicenow, copilot, cursor, gitlab, confluence, zendesk, github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
 | Readiness ladder (ADR-0012) | **Beta: 26 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof · **Prototype: 0** · **Live: 0 connectors** (the **Live seam is implemented + operator-actionable** now bot #109 landed — Live is earned by an operator wiring `GatewaySink` against a real gateway, not by the repo) |
-| PII handling | FX-SEC-001 hard screen (secret/PHI/PAN reject) + **`adapter/core/redaction.py::redact` redact-and-pass** (scrubs secret/PHI/PAN value-consuming + email/phone; invariant `detect_sensitive(redact(x))==[]`; composes with, never replaces, the screen). Used by devin/servicenow; cursor/zendesk/openai_admin drop-at-parse (openai_admin drops actor email/IP — FX-SEC-001 + redact cover neither) |
+| PII handling | FX-SEC-001 hard screen (secret/PHI/PAN reject) + **`adapter/core/redaction.py::redact` redact-and-pass** (scrubs secret/PHI/PAN value-consuming + email/phone; invariant `detect_sensitive(redact(x))==[]`; composes with, never replaces, the screen). Used by devin/servicenow/**zendesk** (ticket body now redact-and-pass); openai_admin/copilot drop-at-parse (openai_admin drops actor email/IP). **Cursor**: email/name dropped, opaque `userId` surfaced for per-developer attribution (SG-2026-06-05-D; residual re-id risk = operator holds id→identity mapping, accepted) |
 | Runtime boundary | `runtime/` library layer (sinks + secrets + delivery + **gateway_mapping**); **GatewaySink = real Live emission** (v1 IngestRequest → `POST /api/v1/ingest`, default-safe + fail-closed + secret-safe) |
 | Total Test Files | 40 (adapter/core + connectors + runtime + scripts) |
-| Pytest | 333 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
+| Pytest | 337 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
 | Webhook verify wired | fathom, linear, sentry, pagerduty, jira, github, slack, notion, zendesk, gitlab (Svix/HMAC/multi-sig/sha256=/v0/Base64/plaintext-token + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
@@ -151,10 +151,10 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #82 (`4b641eba`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #84 (`070bf87d`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs (main README connector+mod index refreshed) + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 333 passing; ruff + mypy clean |
+| Test Status | PASS | 337 passing; ruff + mypy clean |
 | CI Gates | **6/6 green** (verified) | CI + CodeQL + Governance Gate + Quality + Security Scan + **OpenSSF Scorecard** all `success` on `main` (Scorecard green confirmed by run `26980983204` after the B6 v2 permission fix — SG-2026-06-04-O). Security-tab posture hardened (B13): Token-Permissions #21-24 fixed (write scopes moved to the calling-job level, top-level read-only); stale CodeQL #17 + accepted Pinned-Dependencies #18-20 dismissed via API with rationale. Only #13/#1 (Code-Review, Branch-Protection) remain — they need branch protection (B5, repo-admin). SBOM gate carries a latent OIDC twin (B12), release-only. SHA-pinned; reusable `workflow_call` templates. |
 
 ---

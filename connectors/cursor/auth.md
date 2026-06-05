@@ -17,12 +17,14 @@ Auth model recorded for the live cycle; this connector ships the **parse surface
 - The `daily-usage-data` rows are **PII-dense**: every row carries `email`; `name` appears in the
   members/spend endpoints. **FX-SEC-001 screens secret/PHI/PAN only — it does NOT detect a generic
   email**, and never scans `Observation.metadata` ([SG-2026-06-05-A](../../docs/SHADOW_GENOME.md)).
-- The **sole** PII control is parse-time exclusion: `parse_usage_day` reads only a non-PII aggregate
-  allowlist and never reads `email` / `name` / `userId` / `clientVersion`. Do **not** relax this to
-  rely on a downstream screen — there isn't one.
-- **Deferred — per-developer attribution**: emitting per-user usage (joining identity to metrics)
-  requires a PII redaction-and-pass model (the same gate as live Zendesk ticket bodies) and is not
-  built this cycle.
+- The PII control is parse-time exclusion: `parse_usage_day` reads only a non-PII allowlist and
+  **never reads `email` / `name` / `clientVersion`**. Do **not** relax this to rely on a downstream
+  screen — there isn't one (FX-SEC-001 doesn't detect generic email).
+- **Per-developer attribution (IMPLEMENTED — SG-2026-06-05-D supersedes -A for `userId` only)**: the
+  **opaque integer `userId`** is now surfaced (in `ref` + excerpt) as the attribution key. A bare vendor
+  id is pseudonymous on its own; `email`/`name` are still never read, so identity is never emitted.
+  **Residual risk (accepted):** an operator holding the vendor id→identity mapping can re-identify —
+  acceptable for an operator-run evidence adapter.
 
 ## Expected secret keys (operator runtime)
 
@@ -31,7 +33,6 @@ Auth model recorded for the live cycle; this connector ships the **parse surface
 ## Deferred live paths
 
 - Live REST poll of `POST /teams/daily-usage-data` (+ members/spend) + API-key resolution + pagination.
-- Per-developer-attributed ingest (gated on the PII redaction-and-pass model).
 
 Credentials are resolved by the operator runtime, never stored in this package.
 See [TRUST_TIER_MODEL](../../docs/TRUST_TIER_MODEL.md).

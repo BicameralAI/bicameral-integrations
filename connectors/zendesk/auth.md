@@ -24,15 +24,18 @@ deferred to the operator runtime, consistent with every other connector.
 - **REST poll / Events ingest** (`/api/v2`, API token or OAuth scopes, rate
   limits 200–2,500 req/min by plan).
 - **Secret/keyring resolution.**
-- **PII redaction-and-pass model for live ticket-body ingest.** Ticket bodies
-  are customer-PII-dense. The producer sensitive screen (`FX-SEC-001`) HARD-
-  screens (rejects) any emission containing secret/PHI/PAN — safe but
-  reject-on-PII; before *live* ticket ingest, a redaction-and-pass model (strip
-  PII, keep the rest) should land so support evidence flows without leaking PII.
-  This connector deliberately scopes the excerpt to the ticket **subject** (low
-  PII) and never the body, but live ingest must clear this gate first
-  (catalog out-of-scope line: "connectors that require broad customer PII access
-  before a redaction model exists").
+- **Secret/keyring resolution.**
+
+## PII / ticket body (IMPLEMENTED — redact-and-pass, Entry #84)
+
+Ticket bodies are customer-PII-dense. The excerpt now emits the ticket **subject plus
+the body** (`detail.description`) passed through `adapter.core.redaction.redact`
+(**redact-and-pass**: secret/PHI/PAN + email/phone scrubbed to placeholders), so support
+evidence flows without leaking PII; the producer sensitive screen (`FX-SEC-001`) remains
+the fail-closed backstop (`detect_sensitive(redact(x)) == []` by construction). This
+replaces the earlier subject-only posture — the redaction-and-pass model that was the gate
+for live ticket-body ingest is now built (`adapter/core/redaction.py`). Comment threads /
+attachments remain out of scope (the first `description` only).
 
 ## Out of scope (different repo)
 

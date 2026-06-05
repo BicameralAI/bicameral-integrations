@@ -2133,6 +2133,79 @@ actor-drop test (fixture carries email+IP). **`mods/` untouched.** **Verificatio
 badge 24→**26**, SYSTEM_STATE 24→26. Connectors **26 Beta / 0 Prototype**.
 
 ---
+
+### Entry #83: GATE AUDIT — redaction retrofit (Zendesk body + Cursor attribution) (PASS, conditional)
+
+**Entry ID**: `redactRetrofit83aud`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: AUDIT (gate tribunal)
+**Author**: Independent auditor (fresh-context, Option B — author-momentum SG-007)
+**Risk Grade**: L2 (PII-handling change to two existing Beta connectors)
+
+**Content Hash**:
+```
+SHA256(plan-redaction-retrofit-zendesk-cursor-2026-06-05.md)
+= 0ac7691f627599ff53c947012963982c335ceafc1a3714475eac661fc385684b
+```
+
+**Previous Hash**: 4b641ebafe883a89ebaa3e34b98af32c1460f5776d1c2636cca25fced9075088
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c9b8ff6204501432b75733aa7c3fd9b07a71a2dd105f0c9b16c4deff6ae39806
+```
+
+**Verdict**: **PASS (conditional)** — the design is sound (Zendesk body redact-and-pass is well-precedented
+by ServiceNow; the Cursor opaque-`userId` decision is defensible by operator-holds-mapping), but the plan's
+*justification* had defects, fixed as binding conditions: (HIGH) a **false precedent** claim (Anthropic does
+NOT surface `workspace_id`/`api_key_id` — corrected; only the partial Zendesk `requester_id` analogue kept);
+(HIGH) reversing **SG-2026-06-05-A** without superseding it → recorded **SG-2026-06-05-D** (authorizes opaque
+`userId`, residual risk documented); (MED) a test "tightening" that was really an assertion reversal → stated
+honestly (`"4471"`-absent removed, `"@"`-absent retained); (MED) a would-be-vacuous Zendesk fixture → pinned
+a valid `AKIA` + email + a raw-would-raise companion. All four applied to the plan pre-implement. Cleared to
+`/qor-implement`.
+
+---
+
+### Entry #84: SESSION SEAL — redaction retrofit: Zendesk ticket body + Cursor per-developer attribution
+
+**Entry ID**: `redactRetrofit84seal`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= e8fd8e2947e68c412c554c89d402f55de6d4825bbe840b6e606bd4ecfe28db58
+```
+
+**Previous Hash**: c9b8ff6204501432b75733aa7c3fd9b07a71a2dd105f0c9b16c4deff6ae39806
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 070bf87daf0e70f1dad2f885387597400f5f5c56d3ee07d7e1d613619ace93d1
+```
+
+**Decision**: PASS-audit (Entry #83) implemented + substantiated. **The redaction model's payoff** — two
+existing Beta connectors retrofitted onto `redact()`. **Zendesk** (`parse_ticket`): now emits `subject —
+redact(description)` — the **ticket body** (previously the PII-dense surface deferred behind the redaction
+model) is ingested via **redact-and-pass** (secret/PHI/PAN/email/phone scrubbed; FX-SEC-001 backstop); proven
+non-vacuously (fixture body carries a valid `AKIA` + email; companion asserts the RAW body WOULD be rejected,
+the redacted emission passes). **Cursor** (`parse_usage_day`): adds **per-developer attribution via the OPAQUE
+`userId`** (in `ref` + excerpt) — **SG-2026-06-05-D supersedes -A for `userId` only**; `email`/`name` remain
+NEVER read (identity never emitted; bare vendor id is pseudonymous, operator holds the mapping — residual
+re-id risk accepted + documented). **Independent review (observer + devil's advocate): CLEARED-TO-SEAL** —
+no email/name/secret leak on any traced path; it caught a HIGH doc-drift (both `auth.md` + READMEs still
+asserted pre-retrofit behavior) → **fixed** (4 connector docs updated to match shipped behavior). **`mods/`
+untouched.** **Verification**: pytest **337 passed** (was 333; +4), ruff + mypy clean, governance gate verifies
+chain #1–#84. FX-ZENDESK-001 + FX-CURSOR-001 updated (MODIFIED; 48 total, count unchanged). Connectors **26
+Beta / 0 Prototype** (count unchanged — retrofit of existing connectors).
+
+---
 *Chain integrity: VALID*
-*Status: `main` + OpenAI Admin & Anthropic Admin connectors SEALED at Entry #82 (`4b641eba`; L2). **26 Beta connectors / 0 Prototype.** OpenAI Admin (audit-log governance evidence, actor identity dropped) + Anthropic Admin (usage/cost leverage, aggregate PII-free) earned Beta via the runtime poll harness; both poll-only REST (no webhooks/MCP). PII redaction-and-pass model + Live emission seam real + operator-actionable; bot #109 CLOSED.*
-*Next required action: operator decision — retrofit Zendesk (ticket body) + Cursor (per-developer) onto `redact()` / next unbuilt connectors (GitLab signing-token, Bitbucket/Azure DevOps, Teams-Graph/Zoom/SharePoint, Hugging Face/LangSmith P2) / promote a connector to Live (operator deployment). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` + redaction retrofit SEALED at Entry #84 (`070bf87d`; L2). **26 Beta connectors / 0 Prototype.** Zendesk now ingests the ticket **body** via redact-and-pass (`subject — redact(description)`); Cursor adds **per-developer attribution via the opaque `userId`** (SG-2026-06-05-D; email/name still never read). The PII redaction-and-pass model is now consumed by devin/servicenow/zendesk; Live emission seam real; bot #109 CLOSED.*
+*Next required action: operator decision — next unbuilt connectors (GitLab Standard-Webhooks signing-token, Bitbucket / Azure DevOps / Boards, MS Teams-Graph / Zoom / SharePoint, Hugging Face / LangSmith P2) / promote a connector to Live (operator deployment wiring `GatewaySink`). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

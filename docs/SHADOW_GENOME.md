@@ -365,3 +365,22 @@ admin connectors: the org-admin surface splits into two evidence types with oppo
 - **Per-user** cost/analytics is always a SEPARATE, PII-bearing API (Anthropic's Claude Code Analytics;
   OpenAI's per-actor filters) → deferred behind the redact-and-pass model. Both are poll-only REST with
   org-admin keys (Bearer / `x-api-key`), no webhooks, no evidence MCP (SG-K).
+
+## SG-2026-06-05-D — Opaque vendor user-id MAY be surfaced for per-developer attribution (supersedes -A for userId only)
+
+**Supersedes**: SG-2026-06-05-A's "drop `userId`" clause, for `userId` ONLY. The email/name drop is unchanged.
+
+SG-2026-06-05-A made dropping Cursor's `email`/`name`/`userId` the sole PII control. The redaction-retrofit
+cycle (Entry #84) revisited the `userId` clause to enable **per-developer attribution** (an explicit
+operator ask). Decision: the **opaque vendor integer `userId` MAY be surfaced** as a grouping/attribution
+token (in `ref` + excerpt), while **`email`/`name` remain NEVER read**. Rationale: a bare vendor id is
+**pseudonymous on its own** — re-identification requires the org's id→identity mapping, which the operator
+already holds (operator already has full Cursor-admin access); the connector never emits the identity.
+**Residual risk (accepted, documented here + SYSTEM_STATE):** an operator with the mapping can re-identify;
+this is acceptable for an operator-run evidence adapter. **Scope:** applies to `userId` only; `redact()`
+would scrub an email (defeating attribution), so attribution uses the opaque id, not redact-and-pass.
+**Correction:** an earlier plan draft cited Anthropic `workspace_id`/`api_key_id` as precedent for surfacing
+opaque ids — that was FALSE (the anthropic_admin connector deliberately does NOT surface them); the honest
+analogue is Zendesk's emitted `requester_id` (a support-requester id), and even that is partial. This is a
+deliberate narrow exception, not a general "surface all opaque ids" pattern. Reaffirms SG-2026-06-05-A for
+generic email/PII (FX-SEC-001 is not a backstop) and the redact-and-pass model for free-text bodies.

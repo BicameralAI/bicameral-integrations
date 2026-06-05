@@ -4,11 +4,12 @@ The Cursor Admin API (``POST /teams/daily-usage-data``) returns per-user-day row
 row carries ``email`` and ``name`` (PII) alongside aggregate usage metrics. FX-SEC-001
 (``adapter.core.sensitive``) screens secret / PHI / PAN only — it does **NOT** detect a
 generic email and never scans Observation metadata, so there is **no downstream backstop**
-(audit #74, HIGH). The SOLE PII control is therefore here: ``parse_usage_day`` reads ONLY a
-strict allowlist of non-PII aggregate fields (numeric metrics + ``mostUsedModel``) and
-**never reads ``email`` / ``name`` / ``userId`` / ``clientVersion``**. Per-developer-attributed
-ingest is deferred behind a future PII redaction-and-pass model. Poll-only — no webhooks;
-the live REST poll + API-key (basic-auth) resolution stay in the operator runtime
+(audit #74, HIGH). The PII control is therefore here: ``parse_usage_day`` reads a strict
+allowlist of non-PII fields (numeric metrics + ``mostUsedModel``) and **never reads ``email``
+/ ``name`` / ``clientVersion``**. **Per-developer attribution uses the OPAQUE integer ``userId``**
+(SG-2026-06-05-D supersedes -A for ``userId`` only): a bare vendor id is pseudonymous on its own
+(the operator holds the id→identity mapping; the connector never emits the identity). Poll-only —
+no webhooks; the live REST poll + API-key (basic-auth) resolution stay in the operator runtime
 (see ``auth.md``).
 """
 
@@ -24,15 +25,27 @@ def _int(value: object) -> int:
     return value if isinstance(value, int) else 0
 
 
+def _uid(row: dict) -> str:
+    """Opaque vendor user id (str) for per-developer attribution; ``''`` when absent.
+
+    ``email``/``name`` are NEVER read — the bare integer id is pseudonymous (the operator
+    holds the id→identity mapping). SG-2026-06-05-D supersedes -A for ``userId`` only.
+    """
+    uid = row.get("userId")
+    return str(uid) if isinstance(uid, int) else ""
+
+
 def _usage_summary(row: dict) -> str:
     """PII-free evidence excerpt from a daily-usage row's aggregate metrics ONLY.
 
-    Reads a strict allowlist of numeric metrics + ``mostUsedModel``;
-    ``email`` / ``name`` / ``userId`` / ``clientVersion`` are never touched.
+    Reads a strict allowlist of numeric metrics + ``mostUsedModel`` + the opaque
+    ``userId``; ``email`` / ``name`` / ``clientVersion`` are never touched.
     """
     day = (row.get("day") or "").strip() or "usage"
+    uid = _uid(row)
+    who = f" user {uid}" if uid else ""
     summary = (
-        f"Cursor usage {day}: +{_int(row.get('acceptedLinesAdded'))} accepted lines, "
+        f"Cursor usage{who} {day}: +{_int(row.get('acceptedLinesAdded'))} accepted lines, "
         f"{_int(row.get('totalAccepts'))}/{_int(row.get('totalApplies'))} accepts, "
         f"{_int(row.get('agentRequests'))} agent + {_int(row.get('chatRequests'))} chat + "
         f"{_int(row.get('composerRequests'))} composer requests"
@@ -44,16 +57,18 @@ def _usage_summary(row: dict) -> str:
 
 
 def parse_usage_day(row: dict) -> Observation:
-    """Map one Cursor daily-usage row into a PII-free aggregate Observation.
+    """Map one Cursor daily-usage row into an Observation.
 
-    ``email`` / ``name`` / ``userId`` are deliberately NOT read — FX-SEC-001 does not
-    screen generic email, so this parse-time exclusion is the sole PII control.
+    ``email`` / ``name`` are NEVER read (FX-SEC-001 does not screen generic email).
+    Per-developer attribution uses the OPAQUE ``userId`` (pseudonymous; SG-2026-06-05-D).
     """
     day = (row.get("day") or "").strip()
+    base = f"cursor:usage:{day}" if day else "cursor-usage"
+    uid = _uid(row)
     return Observation(
         source_ref=SourceRef(
             source_id="cursor",
-            ref=f"cursor:usage:{day}" if day else "cursor-usage",
+            ref=f"{base}:user:{uid}" if uid else base,
             kind="usage_metrics",
         ),
         excerpt=_usage_summary(row),

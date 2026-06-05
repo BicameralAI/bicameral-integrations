@@ -15,9 +15,9 @@ support/customer-success, priority P1, default trust tier T1/T5). From the
 
 `X-Zendesk-Webhook-Signature` (Base64 HMAC-SHA256 over `timestamp + body`) +
 `X-Zendesk-Webhook-Signature-Timestamp` verification and best-effort dedup are
-implemented in `verify()` / `normalize_event()`. The live REST receipt, OAuth,
-secret resolution, and a **redaction-and-pass model for live ticket-body
-ingest** stay in the operator runtime (see [`auth.md`](auth.md)).
+implemented in `verify()` / `normalize_event()`. The ticket **body** is now ingested
+via **redact-and-pass** (`subject — redact(description)`); the live REST receipt, OAuth,
+and secret resolution stay in the operator runtime (see [`auth.md`](auth.md)).
 
 ## Readiness: Beta (ADR-0012)
 
@@ -28,8 +28,9 @@ cross-repo dependency**. Live (gateway emission) is now operator-actionable — 
 ## Surface
 
 - `parse_ticket(event)` — Zendesk ticket event → `Observation`. Excerpt is the
-  ticket **subject** (a plain string), never a description/comment body
-  (customer-PII-dense); `detail.id` → ref (falls back to parsing `zen:ticket:<id>`
+  ticket **subject + the body** (`detail.description`) passed through `redact()`
+  (redact-and-pass — secret/PHI/PAN/email/phone scrubbed; the raw body is never emitted);
+  `detail.id` → ref (falls back to parsing `zen:ticket:<id>`
   from `subject`, then a `zendesk-ticket` floor); `detail.url` → ref url;
   `requester_id` → author; `updated_at`/`time` → timestamp;
   `type`/`status`/`priority`/`via.channel` → metadata. Type-defensive (SG-I).

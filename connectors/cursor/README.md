@@ -32,10 +32,12 @@ operator configures it against a real gateway to go Live.
 Every Cursor daily-usage row carries `email` (PII), and `name` appears in the members/spend
 endpoints. **FX-SEC-001 screens secret / PHI / PAN only — it does NOT detect a generic email**,
 and it never scans `Observation.metadata`, so there is **no downstream backstop**
-([SG-2026-06-05-A](../../docs/SHADOW_GENOME.md)). The **sole** PII control is therefore at parse
-time: `parse_usage_day` reads a strict allowlist of non-PII aggregate fields and **never reads
-`email` / `name` / `userId` / `clientVersion`**. Per-developer-attributed ingest is deferred
-behind a future PII redaction-and-pass model (the same gate as live Zendesk ticket bodies).
+([SG-2026-06-05-A](../../docs/SHADOW_GENOME.md)). The PII control is therefore at parse time:
+`parse_usage_day` reads a strict allowlist of non-PII fields and **never reads `email` / `name`
+/ `clientVersion`**. **Per-developer attribution** uses the **opaque integer `userId`**
+([SG-2026-06-05-D](../../docs/SHADOW_GENOME.md) supersedes -A for `userId` only): a bare vendor id
+is pseudonymous (the operator holds the id→identity mapping); identity is never emitted. Residual
+re-identification risk is accepted for an operator-run adapter.
 
 ## References
 
