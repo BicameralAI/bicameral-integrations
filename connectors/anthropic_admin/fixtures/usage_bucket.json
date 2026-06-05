@@ -1,0 +1,24 @@
+{
+  "starting_at": "2026-06-04T00:00:00Z",
+  "ending_at": "2026-06-05T00:00:00Z",
+  "results": [
+    {
+      "workspace_id": "wrkspc_01JwQvzr7rXLA5AGx3HKfFUJ",
+      "api_key_id": "apikey_01Rj2N8SVvo6BePZj99NhmiT",
+      "model": "claude-opus-4-8",
+      "service_tier": "standard",
+      "uncached_input_tokens": 120000,
+      "cache_read_input_tokens": 30000,
+      "cache_creation_input_tokens": 5000,
+      "output_tokens": 42000
+    },
+    {
+      "workspace_id": null,
+      "api_key_id": null,
+      "model": "claude-sonnet-4-6",
+      "service_tier": "batch",
+      "uncached_input_tokens": 60000,
+      "output_tokens": 18000
+    }
+  ]
+}

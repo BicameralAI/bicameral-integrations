@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from connectors.aider.connector import AiderConnector
+from connectors.anthropic_admin.connector import AnthropicAdminConnector
 from connectors.claude_code.connector import ClaudeCodeConnector
 from connectors.confluence.connector import ConfluenceConnector
 from connectors.continue_dev.connector import ContinueConnector
@@ -28,6 +29,7 @@ from connectors.linear.connector import LinearConnector
 from connectors.local_directory.connector import LocalDirectoryConnector
 from connectors.mcp_registry.connector import McpRegistryConnector
 from connectors.notion.connector import NotionConnector
+from connectors.openai_admin.connector import OpenAIAdminConnector
 from connectors.osv.connector import OsvConnector
 from connectors.pagerduty.connector import PagerDutyConnector
 from connectors.sarif.connector import SarifConnector
@@ -466,6 +468,17 @@ def test_deliver_poll_servicenow_beta():
     sink = _poll_one(ServiceNowConnector(), "servicenow", "incident.json", "servicenow", 1)
     excerpt = sink.emissions[0].evidence[0].excerpt
     assert "AKIAABCDEFGHIJKLMNOP" not in excerpt and "@example.com" not in excerpt
+
+
+def test_deliver_poll_openai_admin_beta():
+    # Actor identity dropped end-to-end: the fixture event carries an email + IP.
+    sink = _poll_one(OpenAIAdminConnector(), "openai_admin", "audit_event.json", "openai_admin", 1)
+    excerpt = sink.emissions[0].evidence[0].excerpt
+    assert "@example.com" not in excerpt and "203.0.113.7" not in excerpt
+
+
+def test_deliver_poll_anthropic_admin_beta():
+    _poll_one(AnthropicAdminConnector(), "anthropic_admin", "usage_bucket.json", "anthropic_admin", 1)
 
 
 def test_deliver_webhook_missing_signature_header_fails_closed():

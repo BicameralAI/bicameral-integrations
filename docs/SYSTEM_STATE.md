@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-05 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | `main` + **PII redaction-and-pass model + Devin + ServiceNow** — `adapter/core/redaction.py::redact` scrubs secret/PHI/PAN + email/phone so PII-dense free-text PASSES FX-SEC-001 (composes with, never replaces, the hard screen). Devin (agentic sessions, body redacted) + ServiceNow (incidents, redact-and-pass, caller dropped) earned Beta. 24 Beta connectors; Live emission seam real + operator-actionable |
-| **Iteration** | 25 governed cycles (… Beta graduation — all connectors earned Beta; Live emission seam — GatewaySink real; GitLab + Confluence → Beta; Copilot + Cursor → Beta; **PII redaction-and-pass model + Devin + ServiceNow → Beta**) |
-| **Session Seal** | `<pending Entry #79>` (prior tip `1a61c81a` — Entry #76; research #77) |
+| **Phase** | `main` + **AI-vendor admin connectors** — OpenAI Admin (audit-log governance evidence; actor identity dropped) + Anthropic Admin (usage/cost leverage; aggregate, PII-free) earned Beta via the runtime poll harness; both poll-only REST (no webhooks/MCP). 26 Beta connectors; PII redaction-and-pass model + Live emission seam real |
+| **Iteration** | 26 governed cycles (… Live emission seam — GatewaySink real; GitLab + Confluence → Beta; Copilot + Cursor → Beta; PII redaction-and-pass + Devin + ServiceNow → Beta; **OpenAI Admin + Anthropic Admin → Beta**) |
+| **Session Seal** | `<pending Entry #82>` (prior tip `fe3b13bb` — Entry #80) |
 
 ---
 
@@ -57,12 +57,12 @@ bicameral-integrations/
 
 | Metric | Value |
 |--------|-------|
-| Source connector packages (with `connector.py`) | 24 (+ devin, servicenow; copilot, cursor, gitlab, confluence, zendesk, github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
-| Readiness ladder (ADR-0012) | **Beta: 24 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof · **Prototype: 0** · **Live: 0 connectors** (the **Live seam is implemented + operator-actionable** now bot #109 landed — Live is earned by an operator wiring `GatewaySink` against a real gateway, not by the repo) |
-| PII handling | FX-SEC-001 hard screen (secret/PHI/PAN reject) + **`adapter/core/redaction.py::redact` redact-and-pass** (scrubs secret/PHI/PAN value-consuming + email/phone; invariant `detect_sensitive(redact(x))==[]`; composes with, never replaces, the screen). Used by devin/servicenow; cursor/zendesk drop-at-parse |
+| Source connector packages (with `connector.py`) | 26 (+ openai_admin, anthropic_admin; devin, servicenow, copilot, cursor, gitlab, confluence, zendesk, github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
+| Readiness ladder (ADR-0012) | **Beta: 26 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof · **Prototype: 0** · **Live: 0 connectors** (the **Live seam is implemented + operator-actionable** now bot #109 landed — Live is earned by an operator wiring `GatewaySink` against a real gateway, not by the repo) |
+| PII handling | FX-SEC-001 hard screen (secret/PHI/PAN reject) + **`adapter/core/redaction.py::redact` redact-and-pass** (scrubs secret/PHI/PAN value-consuming + email/phone; invariant `detect_sensitive(redact(x))==[]`; composes with, never replaces, the screen). Used by devin/servicenow; cursor/zendesk/openai_admin drop-at-parse (openai_admin drops actor email/IP — FX-SEC-001 + redact cover neither) |
 | Runtime boundary | `runtime/` library layer (sinks + secrets + delivery + **gateway_mapping**); **GatewaySink = real Live emission** (v1 IngestRequest → `POST /api/v1/ingest`, default-safe + fail-closed + secret-safe) |
-| Total Test Files | 38 (adapter/core + connectors + runtime + scripts) |
-| Pytest | 324 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
+| Total Test Files | 40 (adapter/core + connectors + runtime + scripts) |
+| Pytest | 333 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
 | Webhook verify wired | fathom, linear, sentry, pagerduty, jira, github, slack, notion, zendesk, gitlab (Svix/HMAC/multi-sig/sha256=/v0/Base64/plaintext-token + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
@@ -134,7 +134,9 @@ bicameral-integrations/
 | Devin connector (session body redacted) | connectors/devin/tests/test_devin_connector.py | OK |
 | ServiceNow connector (redact-and-pass; caller dropped) | connectors/servicenow/tests/test_servicenow_connector.py | OK |
 | Redaction-and-pass primitive (invariant `detect(redact(x))==[]`) | adapter/core/tests/test_redaction.py | OK |
-| Runtime boundary (all 24 connectors end-to-end: deliver_webhook + deliver_poll; full-path → GatewaySink) | runtime/tests/test_runtime.py | OK (41) |
+| OpenAI Admin connector (actor identity dropped) | connectors/openai_admin/tests/test_openai_admin_connector.py | OK |
+| Anthropic Admin connector (aggregate, PII-free) | connectors/anthropic_admin/tests/test_anthropic_admin_connector.py | OK |
+| Runtime boundary (all 26 connectors end-to-end: deliver_webhook + deliver_poll; full-path → GatewaySink) | runtime/tests/test_runtime.py | OK (43) |
 | Live emission seam (emission→v1 mapping; GatewaySink POST: 201-only, gated, token-safe, real round-trip) | runtime/tests/test_gateway_mapping.py | OK (12) |
 | Zendesk connector + webhook verify/dedup (Base64 HMAC) | connectors/zendesk/tests/ | OK (11) |
 | GitHub webhook verify/dedup (envelope unwrap) | connectors/github/tests/test_github_webhook.py | OK (6) |
@@ -149,10 +151,10 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #79 (`97a76c85`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #82 (`4b641eba`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs (main README connector+mod index refreshed) + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 324 passing; ruff + mypy clean |
+| Test Status | PASS | 333 passing; ruff + mypy clean |
 | CI Gates | **6/6 green** (verified) | CI + CodeQL + Governance Gate + Quality + Security Scan + **OpenSSF Scorecard** all `success` on `main` (Scorecard green confirmed by run `26980983204` after the B6 v2 permission fix — SG-2026-06-04-O). Security-tab posture hardened (B13): Token-Permissions #21-24 fixed (write scopes moved to the calling-job level, top-level read-only); stale CodeQL #17 + accepted Pinned-Dependencies #18-20 dismissed via API with rationale. Only #13/#1 (Code-Review, Branch-Protection) remain — they need branch protection (B5, repo-admin). SBOM gate carries a latent OIDC twin (B12), release-only. SHA-pinned; reusable `workflow_call` templates. |
 
 ---
