@@ -10,7 +10,7 @@
 [![OpenSSF Scorecard](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/scorecard.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/scorecard.yml)
 
 <!-- project signals -->
-[![Connectors: 18 Beta](https://img.shields.io/badge/connectors-18%20Beta-2ea44f.svg)](connectors/README.md)
+[![Connectors: 22 Beta](https://img.shields.io/badge/connectors-22%20Beta-2ea44f.svg)](connectors/README.md)
 [![Runtime deps: 0 (stdlib)](https://img.shields.io/badge/runtime%20deps-0%20(stdlib%E2%80%91only)-2ea44f.svg)](#design-principles)
 [![Typed: mypy](https://img.shields.io/badge/typed-mypy-blue.svg)](https://mypy-lang.org/)
 [![Lint: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -24,7 +24,7 @@
 
 | | |
 |---|---|
-| **Maturity** | Beta — 18 connectors harness-proven end-to-end; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/ingest`) and operator-actionable |
+| **Maturity** | Beta — 22 connectors harness-proven end-to-end; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/ingest`) and operator-actionable |
 | **Footprint** | Zero third-party **runtime** dependencies (Python stdlib only) |
 | **Safety model** | Read-only evidence adapters ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)); fail-closed webhook signature verification; a producer-side secret/PII hard-screen on every emission |
 | **Assurance** | Hash-chained governance ledger + machine-verified CI gate; SHA-pinned Actions; CodeQL, Bandit, OpenSSF Scorecard, SBOM |
@@ -78,7 +78,7 @@ local daemon governance + review + storage adapter
 
 Each connector is a provider-facing **parse surface** — `parse_*(payload) -> Observation` plus a `<Provider>Connector` class — feeding the [universal adapter](adapter/README.md) (`pipeline.normalize()`). All connectors are read-only evidence adapters; they never write canonical state ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)). Readiness follows the [connector readiness ladder](docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md) (`Candidate → Prototype → Beta → Live`); **Beta** = proven end-to-end through the [`runtime/`](runtime/README.md) harness against a reference sink (signed webhook → verify → normalize → emit), with no cross-repo dependency. **Live** (gateway emission) is now operator-actionable — the `GatewaySink` seam maps each emission to the v1 `IngestRequest` and POSTs it to `/api/v1/ingest` (bot ingest guards landed); a connector goes Live when an operator wires `GatewaySink(endpoint, token)` against a real gateway. See [`connectors/README.md`](connectors/README.md) for the full index.
 
-### Beta — verify-wired, harness-proven
+### Beta — webhook verify-wired, harness-proven
 
 | Connector | Source evidence | Modes · verify |
 |---|---|---|
@@ -89,12 +89,14 @@ Each connector is a provider-facing **parse surface** — `parse_*(payload) -> O
 | [pagerduty](connectors/pagerduty/) | Incident / on-call events | webhook (multi-signature `v1=`) |
 | [slack](connectors/slack/) | Channel messages (Events API) | webhook (`v0` + 5 m replay) |
 | [notion](connectors/notion/) | Page objects | webhook (`X-Notion-Signature`) + active |
+| [jira](connectors/jira/) | Jira Cloud issue events | webhook (`X-Hub-Signature` `sha256=`) + active |
+| [zendesk](connectors/zendesk/) | Support tickets (subject only) | webhook (Base64 HMAC) + active |
+| [gitlab](connectors/gitlab/) | Merge-request / issue events | webhook (plaintext `X-Gitlab-Token`) + active |
 
-### Prototype — parse surface (live ingest / verify deferred per `auth.md`)
+### Beta — poll / parse surface, harness-proven (live ingest deferred per `auth.md`)
 
 | Connector | Source evidence | Mode · tier |
 |---|---|---|
-| [jira](connectors/jira/) | Jira Cloud issue webhooks (verify-wired, `sha256=`) | webhook + active · T1 |
 | [granola](connectors/granola/) | Granola meeting transcripts | passive · T1 |
 | [local_directory](connectors/local_directory/) | Local files (path/content/modified) | passive · T1 |
 | [google_drive](connectors/google_drive/) | Google Docs documents | active · T1 |
@@ -104,6 +106,9 @@ Each connector is a provider-facing **parse surface** — `parse_*(payload) -> O
 | [aider](connectors/aider/) | Aider-attributed git commits | passive · T0 |
 | [claude_code](connectors/claude_code/) | Claude Code session transcripts | passive · T0 |
 | [osv](connectors/osv/) | OSV.dev vulnerability records (no-auth aggregator) | active · T1 |
+| [confluence](connectors/confluence/) | Confluence Cloud page content | active/passive · T1 |
+| [copilot](connectors/copilot/) | Copilot aggregate usage metrics (PII-free) | active · T1 |
+| [cursor](connectors/cursor/) | Cursor team usage metrics (PII dropped) | active · T1 |
 
 Selection criteria and trust tiers: [Integration Candidate Catalog](docs/INTEGRATION_CANDIDATE_CATALOG.md) · [Trust Tier Model](docs/TRUST_TIER_MODEL.md). Provider-evidence vs. agent-action surface choice: the [interactivity-test triage](docs/INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING.md) (read-only evidence → this repo; interactive action → `bicameral-mcp`).
 

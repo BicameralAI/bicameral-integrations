@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **41**
-- **Verified**: 41
+- Total entries: **43**
+- **Verified**: 43
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -50,6 +50,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-ZENDESK-001 | Zendesk support-ticket webhook → Observation parser + verify | docs/plan-zendesk-connector-2026-06-04.md | connectors/zendesk/connector.py | connectors/zendesk/tests/test_zendesk_connector.py | Verified | Catalog P1 (support/CS, T1); `parse_ticket` (subject→excerpt, **never the ticket body** — PII-dense; `zendesk-ticket` floor, id via `detail.id` or `zen:ticket:<id>` subject parse; SG-I defensive); `ZendeskConnector.verify`/`normalize_event` (`X-Zendesk-Webhook-Signature` Base64 HMAC over `timestamp+body`, fail-closed; best-effort dedup); WEBHOOK+ACTIVE; live REST/OAuth + **PII redaction-and-pass model** deferred |
 | FX-GITLAB-001 | GitLab merge-request / issue webhook → Observation parser + plaintext-token verify | docs/plan-source-connectors-gitlab-confluence-2026-06-05.md | connectors/gitlab/connector.py | connectors/gitlab/tests/test_gitlab_connector.py | Verified | Catalog P1 (source-control, T1/T3); `parse_merge_request`/`parse_issue` (`object_attributes.description`→excerpt, `!iid`/`#iid` ref, `gitlab-merge-request`/`gitlab-issue` floor); `observations` dispatch on `object_kind`; `GitLabConnector.verify`/`normalize_event` (**plaintext `X-Gitlab-Token` shared-secret, constant-time, fail-closed — NOT HMAC**; new `verify_shared_token` helper; best-effort dedup on `X-Gitlab-Event-UUID`); WEBHOOK+ACTIVE; harness-proven webhook + fail-closed negatives; Standard-Webhooks signing-token path + live REST deferred |
 | FX-CONFLUENCE-001 | Confluence Cloud page content → Observation parser (verify deferred) | docs/plan-source-connectors-gitlab-confluence-2026-06-05.md | connectors/confluence/connector.py | connectors/confluence/tests/test_confluence_connector.py | Verified | Catalog P1 (documentation, T1/T3); `parse_content` (`body.storage.value` XHTML flattened via lossy `_strip_storage_html` — tags/entities/whitespace, **not a sanitizer**; `confluence-page` floor; `_links.base+webui` url); ACTIVE+PASSIVE+WEBHOOK; **verify deferred** (Cloud signature scheme unverifiable from docs — Data-Center-only `X-Hub-Signature`); poll-harness-proven |
+| FX-COPILOT-001 | GitHub Copilot aggregate usage-metrics day → Observation parser | docs/plan-source-connectors-copilot-cursor-2026-06-05.md | connectors/copilot/connector.py | connectors/copilot/tests/test_copilot_connector.py | Verified | Catalog P1 (developer-AI, T1); `parse_metrics_day` summarizes `GET /orgs/{org}/copilot/metrics` aggregate counts (active/engaged + IDE-completions/IDE-chat/dotcom-chat/PR-summaries engaged) into a PII-free excerpt; `copilot:metrics:<date>` ref, `copilot-metrics` floor; ACTIVE poll (no webhooks); **aggregate object is PII-free by design** (per-user NDJSON report deferred); live REST poll + `manage_billing:copilot`/`read:org` token deferred |
+| FX-CURSOR-001 | Cursor team daily-usage row → PII-free aggregate Observation parser | docs/plan-source-connectors-copilot-cursor-2026-06-05.md | connectors/cursor/connector.py | connectors/cursor/tests/test_cursor_connector.py | Verified | Catalog P1 (developer-AI, T1); `parse_usage_day` summarizes `POST /teams/daily-usage-data` aggregate metrics (accepted lines, accepts/applies, agent/chat/composer requests, mostUsedModel) via a strict allowlist; **drops `email`/`name`/`userId`/`clientVersion` at parse time** — the SOLE PII control (FX-SEC-001 screens secret/PHI/PAN only, NOT generic email — SG-2026-06-05-A); non-vacuous PII-drop test + end-to-end no-`@example.com` harness proof; ACTIVE poll (no webhooks); live REST poll + basic-auth API key + per-developer redact-and-pass deferred |
 
 ---
 

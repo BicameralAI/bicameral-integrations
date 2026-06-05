@@ -1,0 +1,36 @@
+{
+  "date": "2026-06-04",
+  "total_active_users": 120,
+  "total_engaged_users": 95,
+  "copilot_ide_code_completions": {
+    "total_engaged_users": 88,
+    "languages": [{"name": "python", "total_engaged_users": 60}],
+    "editors": [
+      {
+        "name": "vscode",
+        "total_engaged_users": 80,
+        "models": [{"name": "default", "total_engaged_users": 80}]
+      }
+    ]
+  },
+  "copilot_ide_chat": {
+    "total_engaged_users": 60,
+    "editors": [
+      {
+        "name": "vscode",
+        "total_engaged_users": 60,
+        "models": [
+          {"name": "default", "total_engaged_users": 60, "total_chats": 410, "total_chat_copy_events": 70}
+        ]
+      }
+    ]
+  },
+  "copilot_dotcom_chat": {
+    "total_engaged_users": 22,
+    "models": [{"name": "default", "total_engaged_users": 22, "total_chats": 95}]
+  },
+  "copilot_dotcom_pull_requests": {
+    "total_engaged_users": 12,
+    "repositories": [{"name": "acme/widgets", "total_engaged_users": 12, "total_pr_summaries_created": 18}]
+  }
+}

@@ -295,3 +295,23 @@ most likely to expose a leaky contract — design fixtures against them.
   serves ADR-0003 source-trust/gating.
 - ADR-0005's `RoutingHint` and `AdvisoryResult` have **no existing type** —
   they are net-new; `producer_version` (ADR-0005:46) is also absent everywhere.
+
+## SG-2026-06-05-A — FX-SEC-001 screens secret/PHI/PAN, NOT generic PII/email
+
+The emission-time sensitive screen (`adapter/core/sensitive.py`, surfaced via
+`pipeline._screen_sensitive`) detects three classes only: **secret** (AWS/GitHub-PAT/
+Azure/PEM/JWT regexes), **phi** (MRN / `patient_*:` / `dob:` / `ssn:` — all
+*label-adjacent*), and **pan** (Luhn-validated card numbers). The lone `email`
+token is `patient_email:` (PHI, requires the literal label). **A bare email such as
+`jane.doe@example.com` is NOT matched by any pattern**, and `_screen_sensitive` scans
+only `title + body + evidence.excerpt` — it never scans `Observation.metadata`, and
+`_emission_from` does not copy metadata onto the emission.
+
+**Consequence:** FX-SEC-001 is NOT a generic-PII backstop. Any connector ingesting a
+PII-dense source (Cursor `daily-usage-data` rows carry `email` in every record; live
+Zendesk ticket bodies; the Copilot per-user NDJSON report) MUST drop or redact PII at
+**parse time** — that exclusion is the sole control. Prove it with a non-vacuous test:
+the fixture must CONTAIN the PII, and the assertion must show it absent from the whole
+Observation and the post-`normalize` emission. Surfaced by the independent audit of the
+copilot/cursor cycle (META_LEDGER Entry #74/#75). The live redact-and-pass model (which
+WOULD let PII-bearing bodies through after redaction) remains deferred.
