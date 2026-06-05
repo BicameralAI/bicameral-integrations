@@ -315,3 +315,53 @@ the fixture must CONTAIN the PII, and the assertion must show it absent from the
 Observation and the post-`normalize` emission. Surfaced by the independent audit of the
 copilot/cursor cycle (META_LEDGER Entry #74/#75). The live redact-and-pass model (which
 WOULD let PII-bearing bodies through after redaction) remains deferred.
+
+## SG-2026-06-05-B — Redact-and-pass: the complement to FX-SEC-001's reject
+
+`adapter/core/redaction.py::redact(text)` is the **redact-and-pass** model (the long-deferred
+gate for live Zendesk bodies, Cursor per-developer, Devin/ServiceNow free-text). It **composes
+with — never replaces** — FX-SEC-001 (`_screen_sensitive`), which stays the un-bypassable HARD
+reject. `redact` scrubs the catalog classes (secret/PHI/PAN) via `sensitive.py::redact_catalog`
+**plus** the generic PII the catalog misses (email, phone — see SG-2026-06-05-A), to irreversible
+placeholders.
+
+**Two non-obvious correctness facts (both surfaced by the independent audit, iter-1 VETO):**
+1. **Ordering is the invariant guarantee.** `redact` runs email → phone → `redact_catalog`
+   (**catalog LAST**). Because the catalog pass — which reuses the EXACT `_PAN_CANDIDATE_RE` +
+   `_luhn_valid` + `_is_id_preceded` predicate `detect_sensitive` uses — operates on the FINAL
+   string, `detect_sensitive(redact(x)) == []` holds by construction. An earlier ordering
+   (catalog before phone) let phone redaction mutate a digit run and surface a PAN AFTER the
+   catalog had passed → the emission then got REJECTED by the backstop (a redact-and-PASS failure,
+   not a leak). Lesson: a "redact-and-pass" primitive must guarantee its OWN output passes
+   detection; don't delegate that to the external gate.
+2. **Redaction must be a strict SUPERSET of detection, per class.** `detect_sensitive` PHI patterns
+   key on the LABEL only (`ssn:`); reusing them verbatim for redaction leaves the VALUE in cleartext,
+   so `redact_catalog` uses value-consuming PHI patterns. **But the value quantifier must be `*`, not
+   `+`** — the independent observer caught that `[\w@.\-]+` (requires a value char) leaves a bare or
+   punctuation-led label (`dob:`, `ssn= (pending)`, `dob: <withheld>`, `ssn:\n`) DETECTED-but-not-
+   REDACTED → `detect_sensitive(redact(x)) != []` → the emission is REJECTED (redact-and-FAIL).
+   Generalized rule: for EVERY detection pattern, redaction must match wherever detection matches.
+   Secret/MRN/PAN reuse the exact detection predicate (superset by equality); PHI field-label uses
+   `…\s*[:=]\s*[\w@.\-]*`. The "catalog-runs-last by construction" argument only covered PAN/digit-
+   mutation; it did NOT cover this detection⊋redaction asymmetry. Regression:
+   `test_redact_bare_phi_labels_pass_detect`.
+
+Proven by `test_redact_output_passes_detect` (adversarial corpus: phone-abutting-PAN, id-shielded
+PAN with an intervening PHI label, concatenated phone+PAN) + the end-to-end ServiceNow harness proof
+(a valid-shape `AKIA` secret in an incident description WOULD be rejected raw — companion assertion —
+but is redacted so the emission passes). META_LEDGER Entry #77/#78/#79.
+
+## SG-2026-06-05-C — AI-vendor admin APIs split by evidence type (audit vs usage)
+
+Researching OpenAI + Anthropic admin APIs (Entry #80) surfaced a reusable distinction for vendor
+admin connectors: the org-admin surface splits into two evidence types with opposite PII shapes.
+- **Audit-log APIs = governance/security evidence** (who did what: key lifecycle, project/role
+  changes, logins). The EVENT (type + project + timestamp) is the evidence; the **`actor` is
+  structured identity (user email, IP, user id) → drop at parse** (the ServiceNow `caller_id`
+  precedent — structured identity is dropped, not redacted). OpenAI `GET /v1/organization/audit_logs`.
+- **Usage/cost APIs = leverage evidence** (tokens/cost by workspace/model/tier). Grouping dimensions
+  are **opaque ids (`wrkspc_…`, `apikey_…`) → aggregate, PII-free** (the Copilot precedent — parse
+  directly). Anthropic `/v1/organizations/usage_report/messages` + `/cost_report`.
+- **Per-user** cost/analytics is always a SEPARATE, PII-bearing API (Anthropic's Claude Code Analytics;
+  OpenAI's per-actor filters) → deferred behind the redact-and-pass model. Both are poll-only REST with
+  org-admin keys (Bearer / `x-api-key`), no webhooks, no evidence MCP (SG-K).

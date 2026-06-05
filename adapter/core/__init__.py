@@ -17,7 +17,8 @@ from .emissions import (
 )
 from .observations import Observation
 from .pipeline import EmissionContractError, normalize, validate_emissions
-from .sensitive import SensitiveHit, detect_sensitive
+from .redaction import redact
+from .sensitive import SensitiveHit, detect_sensitive, redact_catalog
 from .webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -45,6 +46,8 @@ __all__ = [
     "WebhookVerificationError",
     "detect_sensitive",
     "normalize",
+    "redact",
+    "redact_catalog",
     "validate_emissions",
     "verify_hmac_hex",
     "verify_standard_webhook",

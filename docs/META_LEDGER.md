@@ -1920,6 +1920,147 @@ governance gate verifies the ledger chain #1–#76. FEATURE_INDEX **FX-COPILOT-0
 Verified (**43** total). Connectors **22 Beta / 0 Prototype**; Live remains operator-actionable.
 
 ---
+
+### Entry #77: RESEARCH BRIEF — PII redaction-and-pass + Devin + ServiceNow
+
+**Entry ID**: `redactDevinSnow77res`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-research)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-pii-redaction-devin-servicenow-2026-06-05.md)
+= e40623b2bdf3849bf2f11b3034f7e6da7dfdbf9b95efda77faf4cf096a346fb2
+```
+
+**Previous Hash**: 1a61c81ae1fa305efd73c640e469731a0e21dc27c4873236579e1d50e3e8a87d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1534629d3d5ed47d4613b91a267d854638389c3d0b0a41a308302bfc8ab70449
+```
+
+**Decision**: Designed the long-deferred **PII redaction-and-pass** model + grounded its first two
+consumers. `redact()` scrubs the FX-SEC-001 catalog classes (so redacted free-text PASSES the hard
+screen — redact-and-pass, not reject) PLUS the generic PII the catalog misses (email/phone); keystone
+invariant `detect_sensitive(redact(x)) == []`; composes WITH — never replaces — `_screen_sensitive`.
+**Devin** (P1): `GET /v3/organizations/{org}/sessions`, Bearer `cog_` key, poll-only, metadata safe +
+message free-text redacted. **ServiceNow** (P2): `GET /api/now/table/incident`, basic/OAuth, poll-only,
+metadata safe + description redacted + `caller_id` dropped. No first-party evidence MCP (SG-K). Cleared
+to `/qor-plan` → `/qor-audit`.
+
+---
+
+### Entry #78: GATE AUDIT — redaction + Devin + ServiceNow (PASS, iter 2)
+
+**Entry ID**: `redactDevinSnow78aud`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: AUDIT (gate tribunal)
+**Author**: Independent auditor (fresh-context, Option B — author-momentum SG-007)
+**Risk Grade**: L2 (security-critical redaction primitive)
+
+**Content Hash**:
+```
+SHA256(plan-pii-redaction-devin-servicenow-2026-06-05.md)
+= 9738cddc5fe3a0b3b32d231808ae249e3b58cfe86b47733d70d7d5a61fd92aaa
+```
+
+**Previous Hash**: 1534629d3d5ed47d4613b91a267d854638389c3d0b0a41a308302bfc8ab70449
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 053e6568c7db59466ee37e8a4b636982bf42833de2f26353f0f7d3c2e6d33225
+```
+
+**Verdict**: **PASS (iteration 2).** Iter-1 **VETOED** the plan: (CRITICAL) the keystone invariant
+`detect_sensitive(redact(x)) == []` was not guaranteed under catalog→email→phone ordering — phone
+redaction could surface a PAN after the catalog pass; (HIGH) PHI redaction was label-only (left the
+value); (HIGH/MED) vacuous keystone + ServiceNow tests. Iter-2 fixes: **reordered to email→phone→
+`redact_catalog` (catalog LAST)** so the invariant holds by construction; value-consuming PHI; adversarial
+corpus; valid-shape `AKIA` + a companion "raw would raise" assertion. Iter-2 re-audit confirmed all
+RESOLVED, 0 VETO. Cleared to `/qor-implement`.
+
+---
+
+### Entry #79: SESSION SEAL — PII redaction-and-pass model + Devin + ServiceNow → Beta
+
+**Entry ID**: `redactDevinSnow79seal`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 2036f05206e7ca3b43ab229c2ecf0bd7962a7bf822ecec22d75db251652c5b08
+```
+
+**Previous Hash**: 053e6568c7db59466ee37e8a4b636982bf42833de2f26353f0f7d3c2e6d33225
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 97a76c85e27e5f5032787897c80781246f013016814afaf7145ba9fe037252b0
+```
+
+**Decision**: PASS-audit (Entry #78) implemented + substantiated. **Built the long-deferred PII
+redaction-and-pass model + its first two consumers.** `adapter/core/redaction.py::redact` scrubs
+secret/PHI/PAN (value-consuming `redact_catalog` added to `sensitive.py`) + email/phone to placeholders
+so PII-dense free-text PASSES FX-SEC-001 — composing WITH, never replacing, the hard screen (`detect_sensitive`
+and the detection patterns are UNCHANGED). **Devin** (`parse_session`, v3 sessions, free-text redacted,
+PR url kept as artifact location) + **ServiceNow** (`parse_incident`, Table API, description redacted,
+`caller_id` dropped) earned Beta. **Independent review (observer + devil's advocate) caught a BLOCKING
+bug the audit missed**: PHI *detection* is label-only but PHI *redaction* required a value char (`+`), so
+a bare label (`dob:`, `ssn= (pending)`) was detected-but-not-redacted → `detect_sensitive(redact(x)) != []`
+→ redact-and-FAIL. **Fixed**: redaction value quantifier `+`→`*` (redaction now a strict SUPERSET of
+detection for every class); regression `test_redact_bare_phi_labels_pass_detect`; SG-2026-06-05-B updated.
+**`mods/` untouched.** **Verification**: pytest **325 passed** (was 310; +15 — redaction 6 + devin 3 +
+servicenow 4 + 2 harness), ruff + mypy clean, governance gate verifies the ledger chain #1–#79.
+FEATURE_INDEX **FX-REDACT-001** + **FX-DEVIN-001** + **FX-SERVICENOW-001** Verified (**46** total).
+README badge 22→**24**, SYSTEM_STATE 22→24. Connectors **24 Beta / 0 Prototype**; the redact-and-pass
+model now unblocks live Zendesk ticket bodies + Cursor per-developer attribution (follow-up retrofit).
+
+---
+
+### Entry #80: RESEARCH BRIEF — OpenAI Admin + Anthropic Admin connectors
+
+**Entry ID**: `openaiAnthropicAdmin80res`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-research, prior to qor-auto-dev-1 build)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-openai-anthropic-admin-2026-06-05.md)
+= 4e6593dd81df88e319d0cef2512f8c8e1ba44588d79db07b5f10233be719cfa7
+```
+
+**Previous Hash**: 97a76c85e27e5f5032787897c80781246f013016814afaf7145ba9fe037252b0
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fe3b13bb08537c19b4a9326c02c63227ef3206a8acf8efec07e9298f3bbe59e8
+```
+
+**Decision**: Grounded the next cohort (verify-before-cite) — the AI-vendor admin connectors that complete
+the AI-leverage evidence set. Both poll-only REST, org-admin keys, no webhooks, no evidence MCP (SG-K).
+**OpenAI Admin** `GET /v1/organization/audit_logs` (Bearer admin key) = **governance/security evidence**
+(57 event types: key lifecycle, project/role changes, logins); **actor-PII-heavy** (`actor.*.user.email`,
+`session.ip_address`, user ids) → **drop actor identity at parse** (ServiceNow `caller_id` precedent);
+free-text event details → `redact()`. **Anthropic Admin** `GET /v1/organizations/usage_report/messages`
++ `/cost_report` (`x-api-key: sk-ant-admin…` + `anthropic-version`) = **leverage evidence**, tokens/cost
+by `workspace_id`/`api_key_id`/`model`/`service_tier` — **aggregate, PII-free** (opaque ids; Copilot
+precedent); per-user Claude Code Analytics API deferred (PII). No blocking blueprint drift. Cleared to
+`/qor-plan` → `/qor-audit` → `/qor-implement`.
+
+---
 *Chain integrity: VALID*
-*Status: `main` + Copilot & Cursor connectors SEALED at Entry #76 (`1a61c81a`; L2). **22 Beta connectors / 0 Prototype** — Copilot (aggregate, PII-free) + Cursor (PII dropped at parse, SG-2026-06-05-A) earned Beta via the runtime poll harness; both poll-only REST (no webhooks/MCP). Top-level README accurate at 22 Beta. Live emission seam real + operator-actionable; bot #109 CLOSED.*
-*Next required action: operator decision — next unbuilt connectors (ServiceNow P2 / Devin B9 / GitLab signing-token path) / promote a connector to Live (operator deployment) / the PII redaction-and-pass model (unblocks live Zendesk + Cursor per-developer attribution). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` SEALED at Entry #79 (`97a76c85`; L2, 24 Beta connectors). **Research #80 (`fe3b13bb`) recorded** for the OpenAI Admin (audit-log governance evidence, actor dropped) + Anthropic Admin (usage/cost leverage, PII-free) build. NOTE: Entries #77-#80 are LOCAL on branch `feat/pii-redaction-devin-servicenow` — not yet committed/merged (Review Boundary).*
+*Next required action: operator decision — (a) commit/merge the local redaction+Devin+ServiceNow cycle + doc pass + this research so the next build branches clean; (b) `/qor-auto-dev-1` to build OpenAI+Anthropic Admin from research #80; or (c) retrofit Zendesk/Cursor onto `redact()`. Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: `mods/` re-apply on commit.*

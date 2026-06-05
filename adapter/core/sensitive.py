@@ -130,3 +130,55 @@ def detect_sensitive(content: str) -> list[SensitiveHit]:
 
 _sensitive_detect: Callable[[str], list[SensitiveHit]] = detect_sensitive
 """v2 extension surface: swap this pointer for a classifier-backed detector."""
+
+
+# --- redaction (redact-and-pass) -----------------------------------------------
+# `redact_catalog` substitutes the catalog classes with placeholders so the result
+# PASSES `detect_sensitive` (and therefore `pipeline._screen_sensitive`). It reuses
+# the detection catalog but — unlike detection, which for PHI keys on the LABEL only
+# — redaction consumes the VALUE. `detect_sensitive` and the detection patterns above
+# are unchanged; this is purely additive.
+
+# Value-consuming PHI redaction: the MRN detection pattern already includes its
+# `\d{5,12}` value; the field-label pattern swallows the adjacent value. The value
+# quantifier is `*` (NOT `+`) so redaction is a strict SUPERSET of detection — a
+# bare/empty/punctuation-led label (`dob:`, `ssn= (pending)`) that `detect_sensitive`
+# would still flag is also scrubbed, keeping `detect_sensitive(redact(x)) == []`.
+_REDACT_PHI_PATTERNS: tuple[re.Pattern[str], ...] = (
+    _PHI_PATTERNS[0][1],
+    re.compile(
+        r"(?i)\b(?:patient_(?:id|name|email)|date_of_birth|dob|ssn|"
+        r"social_security(?:_number)?)\s*[:=]\s*[\w@.\-]*"
+    ),
+)
+
+
+def _redact_pan(text: str) -> str:
+    """Replace Luhn-valid, non-ID-preceded 13-19 digit runs with ``[redacted:pan]``.
+
+    Reuses ``_luhn_valid`` + ``_is_id_preceded`` so it redacts exactly what
+    ``detect_sensitive`` would flag (an ``order_id:`` run stays; a real PAN goes).
+    """
+
+    def _repl(match: re.Match[str]) -> str:
+        digits = match.group(0)
+        if _is_id_preceded(text, match.start()) or not _luhn_valid(digits):
+            return digits
+        return "[redacted:pan]"
+
+    return _PAN_CANDIDATE_RE.sub(_repl, text)
+
+
+def redact_catalog(text: str) -> str:
+    """Scrub secret / PHI / PAN spans to placeholders (value-consuming for PHI).
+
+    The result contains none of the catalog classes, so ``detect_sensitive`` of it
+    is empty. This is the last transform ``redaction.redact`` applies, which is what
+    makes the redact-and-pass invariant hold by construction.
+    """
+    out = text
+    for _label, pattern in _SECRET_PATTERNS:
+        out = pattern.sub("[redacted:secret]", out)
+    for pattern in _REDACT_PHI_PATTERNS:
+        out = pattern.sub("[redacted:phi]", out)
+    return _redact_pan(out)

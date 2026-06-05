@@ -46,12 +46,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reach **Live** when an operator wires a configured `GatewaySink` against a real
   gateway.
 - ADR-0012 introducing the connector readiness ladder
-  (Candidate → Prototype → Beta → Live). **All 18 connectors** are now **Beta** —
+  (Candidate → Prototype → Beta → Live). **All 24 connectors** are now **Beta** —
   each promotion earned by a real end-to-end runtime-harness proof against a
   reference sink (signed webhook → `deliver_webhook` → emission for the
   verify-wired connectors; `deliver_poll` → emission for the passive/active
-  connectors), with no cross-repo dependency. Live (gateway emission) remains
-  gated on the upstream ingest guards.
+  connectors), with no cross-repo dependency. Live (gateway emission) is now
+  operator-actionable (the upstream ingest guards landed).
+- Additional source connectors (all Beta, harness-proven): **GitLab**
+  (merge-request / issue webhooks; first plaintext `X-Gitlab-Token` shared-secret
+  verify, not HMAC), **Confluence** (Cloud page content; verify deferred),
+  **GitHub Copilot** (aggregate usage metrics, PII-free), **Cursor** (team usage
+  metrics; identity dropped at parse), **Devin** (v3 agentic-session evidence;
+  free-text redacted), and **ServiceNow** (ITSM incidents; description redacted,
+  caller dropped).
+- **PII redaction-and-pass model** (`adapter/core/redaction.py::redact`): scrubs
+  secret/PHI/PAN (value-consuming `redact_catalog`) plus email/phone to
+  placeholders so PII-dense free-text can be emitted as evidence rather than
+  rejected — invariant `detect_sensitive(redact(x)) == []`. Composes with, never
+  replaces, the fail-closed FX-SEC-001 screen. Consumed by the ServiceNow and
+  Devin connectors; unblocks live Zendesk ticket bodies and Cursor per-developer
+  attribution.
 - Repository governance and the Qor lifecycle documentation set.
 
 ### Changed

@@ -56,6 +56,26 @@ Adapters should detect and redact:
 - Stack traces containing secrets
 - CI logs containing environment variables
 
+## Implementation status (2026-06-05)
+
+This policy is implemented by two composing layers in `adapter/core/`:
+
+- **Reject (fail-closed backstop)** — `pipeline._screen_sensitive` → `sensitive.detect_sensitive`
+  (FX-SEC-001) HARD-rejects any emission carrying a **secret / PHI / PAN** (AWS/GitHub-PAT/Azure/PEM/JWT
+  keys; label-adjacent MRN/SSN/DOB/patient_*; Luhn-valid card numbers). Never bypassed.
+- **Redact-and-pass** — `adapter/core/redaction.py::redact(text)` scrubs the FX-SEC-001 catalog classes
+  (value-consuming `sensitive.redact_catalog`) **plus email and phone** to irreversible placeholders, so
+  PII-dense free-text can be emitted as evidence instead of rejected. Invariant: `detect_sensitive(redact(x)) == []`
+  (redaction is a strict superset of detection — see SHADOW_GENOME SG-2026-06-05-B). Connectors opt in for
+  free-text bodies (e.g. `servicenow.parse_incident`, `devin.parse_session`); FX-SEC-001 remains the backstop.
+
+**Covered automatically**: API keys / tokens / private keys / JWT (secret); SSN / DOB / MRN / patient_* (PHI,
+label-adjacent); payment PANs (Luhn); email; phone. **Not auto-detected (dropped at parse by the connector
+instead)**: physical addresses, free-form customer/government identifiers without a recognized label,
+employment/legal details — connectors emit a safe metadata surface and never read those fields (e.g. Cursor
+drops `email`/`name`/`userId`; ServiceNow drops `caller_id`; Zendesk emits subject-not-body). Extending the
+auto-detector to these classes is future work.
+
 ## Redaction Modes
 
 ### Remove

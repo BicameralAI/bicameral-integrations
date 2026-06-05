@@ -1,0 +1,9 @@
+{
+  "session_id": "devin-abc123def456",
+  "title": "Add OAuth login to the gateway",
+  "status": "finished",
+  "structured_output": "Implemented OAuth login and opened a PR. Notified the lead at jane.doe@example.com for review; call (415) 555-0132 with questions.",
+  "pull_request": {
+    "url": "https://github.com/acme/widgets/pull/42"
+  }
+}
