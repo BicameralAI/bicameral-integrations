@@ -8,6 +8,7 @@
   "detail": {
     "id": "4571",
     "subject": "Login fails after password reset",
+    "description": "Customer cannot log in. Reset link emailed to user@example.com. A key leaked in the attached log: AKIAABCDEFGHIJKLMNOP. Please advise.",
     "status": "open",
     "priority": "high",
     "requester_id": "9001",

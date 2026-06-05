@@ -18,7 +18,7 @@ def _load(name: str) -> dict:
 def test_parse_usage_day_summarizes_metrics():
     obs = parse_usage_day(_load("daily_usage_row.json"))
     assert obs.source_ref.kind == "usage_metrics"
-    assert obs.source_ref.ref == "cursor:usage:2026-06-04"
+    assert obs.source_ref.ref == "cursor:usage:2026-06-04:user:4471"
     assert "+210 accepted lines" in obs.excerpt
     assert "34/40 accepts" in obs.excerpt
     assert "18 agent + 22 chat + 12 composer requests" in obs.excerpt
@@ -27,6 +27,7 @@ def test_parse_usage_day_summarizes_metrics():
 
 def test_pii_is_dropped():
     # The fixture CONTAINS email + name (non-vacuous): they must appear NOWHERE.
+    # (Per SG-2026-06-05-D the OPAQUE userId IS now surfaced for attribution; email/name are not.)
     row = _load("daily_usage_row.json")
     assert row["email"] == "jane.doe@example.com" and row["name"] == "Jane Doe"  # input has PII
     obs = parse_usage_day(row)
@@ -42,8 +43,14 @@ def test_pii_is_dropped():
     )
     assert "jane.doe@example.com" not in haystack
     assert "Jane Doe" not in haystack
-    assert "4471" not in haystack  # userId dropped too
-    assert "@" not in haystack  # no email artifact at all
+    assert "@" not in haystack  # no email artifact at all (identity never read)
+
+
+def test_user_attribution_surfaces_opaque_userid():
+    # SG-2026-06-05-D: the opaque vendor userId is surfaced for per-developer attribution.
+    obs = parse_usage_day(_load("daily_usage_row.json"))
+    assert obs.source_ref.ref.endswith(":user:4471")
+    assert "user 4471" in obs.excerpt
 
 
 def test_blank_day_floors():

@@ -3,17 +3,18 @@
 
 A Zendesk event-subscription webhook (`{type, account_id, subject, time,
 detail, event}`) for a ticket maps to one provider-neutral Observation (trust
-tier T1, support/customer evidence). The excerpt is the ticket **subject** (a
-plain string) — never a description/comment body, which is customer-PII-dense
-(SG-2026-06-04-M discipline: summary, not body). Deliveries are signed
+tier T1, support/customer evidence). The excerpt is the ticket **subject** plus
+the ticket body (``detail.description``) passed through ``adapter.core.redaction.redact``
+(**redact-and-pass**: secret/PHI/PAN/email/phone scrubbed so the body can be emitted as
+evidence; this is the live-ticket-body ingest that was previously deferred). Deliveries are signed
 ``X-Zendesk-Webhook-Signature: base64(HMAC-SHA256(secret, timestamp + body))``
 with ``X-Zendesk-Webhook-Signature-Timestamp``; ``verify()`` reuses
 ``verify_zendesk_signature``, fail-closed + constant-time. Zendesk documents no
 replay window, so best-effort dedup is the only replay guard. The live REST poll
-/ Events ingest, OAuth, secret resolution, and a **redaction-and-pass model for
-live ticket-body ingest** are deferred (see ``auth.md``); this is the parse +
-verify surface on synthetic fixtures. Read-only evidence, no canonical writes
-(ADR-0008); the producer sensitive screen (``FX-SEC-001``) is the PII guard.
+/ Events ingest, OAuth, and secret resolution are deferred (see ``auth.md``); this
+is the parse + verify surface on synthetic fixtures. Read-only evidence, no canonical
+writes (ADR-0008); ``redact()`` scrubs the body and the producer sensitive screen
+(``FX-SEC-001``) is the fail-closed backstop.
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ from collections.abc import Callable
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -60,7 +62,13 @@ def parse_ticket(event: dict) -> Observation:
     detail = event.get("detail")
     detail = detail if isinstance(detail, dict) else {}
     tid = _ticket_id(detail, event)
-    subject = _text(detail.get("subject"))  # ticket subject (str); never the body
+    # Subject + body via redact-and-pass: the body (description) was the PII-dense
+    # surface deferred behind the redaction model; now scrubbed (secret/PHI/PAN/
+    # email/phone) so it can be emitted as evidence. FX-SEC-001 remains the backstop.
+    subject = redact(_text(detail.get("subject")))
+    body = _text(detail.get("description"))
+    parts = [p for p in [subject, redact(body) if body else ""] if p]
+    excerpt = " — ".join(parts) or tid
     return Observation(
         source_ref=SourceRef(
             source_id="zendesk",
@@ -68,7 +76,7 @@ def parse_ticket(event: dict) -> Observation:
             url=_text(detail.get("url")),
             kind="ticket",
         ),
-        excerpt=subject or tid,
+        excerpt=excerpt,
         mode=SourceMode.WEBHOOK,
         title=subject or tid,
         author=_text(detail.get("requester_id")),
