@@ -1,0 +1,14 @@
+{
+  "id": "audit_log-abc123",
+  "type": "project.created",
+  "effective_at": 1780531200,
+  "project": {"id": "proj_01", "name": "Acme Reviewer"},
+  "actor": {
+    "type": "session",
+    "session": {
+      "ip_address": "203.0.113.7",
+      "user": {"id": "user_01", "email": "owner@example.com"}
+    }
+  },
+  "project.created": {"id": "proj_01", "name": "Acme Reviewer"}
+}

@@ -2061,6 +2061,78 @@ precedent); per-user Claude Code Analytics API deferred (PII). No blocking bluep
 `/qor-plan` → `/qor-audit` → `/qor-implement`.
 
 ---
+
+### Entry #81: GATE AUDIT — OpenAI Admin + Anthropic Admin connectors (PASS)
+
+**Entry ID**: `openaiAnthropicAdmin81aud`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: AUDIT (gate tribunal)
+**Author**: Independent auditor (fresh-context, Option B — author-momentum SG-007)
+**Risk Grade**: L2 (read-only evidence adapters; one actor-PII-heavy source)
+
+**Content Hash**:
+```
+SHA256(plan-source-connectors-openai-anthropic-admin-2026-06-05.md)
+= a9f3db39a396c6466264e40a82b929c1c5f659b1743da6d6e1f12cea2514f29a
+```
+
+**Previous Hash**: fe3b13bb08537c19b4a9326c02c63227ef3206a8acf8efec07e9298f3bbe59e8
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 47d5d8339cfae11e668d0d8405aa60e84cd7e3057fc322b75526ff834486c2c7
+```
+
+**Verdict**: **PASS** (0 blocking). Plan to add two poll-only AI-vendor admin connectors, grounded in
+research #80. Independent fresh-context audit ground-truthed every symbol + the chain from `fe3b13bb`
++ counts (24→26, FEATURE_INDEX 46→48). The critical control — OpenAI **actor identity drop** — verified
+sound: `detect_sensitive` screens secret/PHI/PAN not generic email/IP, and `redact()` has no IPv4 scrub,
+so the actor email/IP must be (and is) DROPPED at parse, never relied-upon-redact (Cursor precedent).
+4 non-binding advisories honored (literal RFC-5737 IP in the test; `actor.type` allowlist; `_sum_tokens`
+int-coercion; #80 merged so chain tip is `fe3b13bb`). Cleared to `/qor-implement`.
+
+---
+
+### Entry #82: SESSION SEAL — OpenAI Admin + Anthropic Admin connectors → Beta
+
+**Entry ID**: `openaiAnthropicAdmin82seal`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= fa75d6657b8aabfdb907cdc4796073b0bb6c82d81d7da6a136750cf665d5f8c1
+```
+
+**Previous Hash**: 47d5d8339cfae11e668d0d8405aa60e84cd7e3057fc322b75526ff834486c2c7
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 4b641ebafe883a89ebaa3e34b98af32c1460f5776d1c2636cca25fced9075088
+```
+
+**Decision**: PASS-audit (Entry #81) implemented + substantiated. **Two AI-vendor admin connectors earned
+Beta via real runtime-harness proofs**, grounded in research #80 (both poll-only REST, no webhooks/MCP;
+SG-2026-06-05-C audit-vs-usage split). **OpenAI Admin** (`connectors/openai_admin/`): `parse_audit_log`
+over `GET /v1/organization/audit_logs` = **governance/security evidence** (event type + project + UTC time
++ non-PII `actor.type`, allowlisted); **actor identity DROPPED** (`actor.*.user.email`/`.id`,
+`session.ip_address` NEVER read) — the sole control, since FX-SEC-001 + `redact()` cover neither generic
+email nor IPv4; excerpt redacted defensively. **Anthropic Admin** (`connectors/anthropic_admin/`):
+`parse_usage` over `/usage_report/messages` = **leverage evidence**, summed tokens + models across a
+bucket; **aggregate, PII-free** (opaque `workspace_id`/`api_key_id` not surfaced). **Independent review
+(observer + devil's advocate): CLEARED-TO-SEAL** — actor identity structurally unreachable (every path
+traced), Anthropic crash-robust + PII-free, `_event_time` deterministic, floors hold, non-vacuous
+actor-drop test (fixture carries email+IP). **`mods/` untouched.** **Verification**: pytest **333 passed**
+(was 325; +8 — openai 3 + anthropic 3 + 2 harness), ruff + mypy clean, governance gate verifies chain
+#1–#82. FEATURE_INDEX **FX-OPENAI-ADMIN-001** + **FX-ANTHROPIC-ADMIN-001** Verified (**48** total). README
+badge 24→**26**, SYSTEM_STATE 24→26. Connectors **26 Beta / 0 Prototype**.
+
+---
 *Chain integrity: VALID*
-*Status: `main` SEALED at Entry #79 (`97a76c85`; L2, 24 Beta connectors). **Research #80 (`fe3b13bb`) recorded** for the OpenAI Admin (audit-log governance evidence, actor dropped) + Anthropic Admin (usage/cost leverage, PII-free) build. NOTE: Entries #77-#80 are LOCAL on branch `feat/pii-redaction-devin-servicenow` — not yet committed/merged (Review Boundary).*
-*Next required action: operator decision — (a) commit/merge the local redaction+Devin+ServiceNow cycle + doc pass + this research so the next build branches clean; (b) `/qor-auto-dev-1` to build OpenAI+Anthropic Admin from research #80; or (c) retrofit Zendesk/Cursor onto `redact()`. Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: `mods/` re-apply on commit.*
+*Status: `main` + OpenAI Admin & Anthropic Admin connectors SEALED at Entry #82 (`4b641eba`; L2). **26 Beta connectors / 0 Prototype.** OpenAI Admin (audit-log governance evidence, actor identity dropped) + Anthropic Admin (usage/cost leverage, aggregate PII-free) earned Beta via the runtime poll harness; both poll-only REST (no webhooks/MCP). PII redaction-and-pass model + Live emission seam real + operator-actionable; bot #109 CLOSED.*
+*Next required action: operator decision — retrofit Zendesk (ticket body) + Cursor (per-developer) onto `redact()` / next unbuilt connectors (GitLab signing-token, Bitbucket/Azure DevOps, Teams-Graph/Zoom/SharePoint, Hugging Face/LangSmith P2) / promote a connector to Live (operator deployment). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

@@ -51,6 +51,8 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [cursor](cursor/) | **Beta** | active | `parse_usage_day` | — (poll, PII dropped) |
 | [devin](devin/) | **Beta** | active | `parse_session` | — (poll, body redacted) |
 | [servicenow](servicenow/) | **Beta** | active | `parse_incident` | — (poll, redact-and-pass) |
+| [openai_admin](openai_admin/) | **Beta** | active | `parse_audit_log` | — (poll, actor dropped) |
+| [anthropic_admin](anthropic_admin/) | **Beta** | active | `parse_usage` | — (poll, aggregate/PII-free) |
 
 Candidate selection and trust tiers are tracked in the
 [Integration Candidate Catalog](../docs/INTEGRATION_CANDIDATE_CATALOG.md) and the
