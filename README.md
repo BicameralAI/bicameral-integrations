@@ -10,7 +10,7 @@
 [![OpenSSF Scorecard](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/scorecard.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/scorecard.yml)
 
 <!-- project signals -->
-[![Connectors: 22 Beta](https://img.shields.io/badge/connectors-22%20Beta-2ea44f.svg)](connectors/README.md)
+[![Connectors: 24 Beta](https://img.shields.io/badge/connectors-24%20Beta-2ea44f.svg)](connectors/README.md)
 [![Runtime deps: 0 (stdlib)](https://img.shields.io/badge/runtime%20deps-0%20(stdlib%E2%80%91only)-2ea44f.svg)](#design-principles)
 [![Typed: mypy](https://img.shields.io/badge/typed-mypy-blue.svg)](https://mypy-lang.org/)
 [![Lint: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -24,7 +24,7 @@
 
 | | |
 |---|---|
-| **Maturity** | Beta — 22 connectors harness-proven end-to-end; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/ingest`) and operator-actionable |
+| **Maturity** | Beta — 24 connectors harness-proven end-to-end; a PII redaction-and-pass model lets PII-dense free-text be emitted safely; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/ingest`) and operator-actionable |
 | **Footprint** | Zero third-party **runtime** dependencies (Python stdlib only) |
 | **Safety model** | Read-only evidence adapters ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)); fail-closed webhook signature verification; a producer-side secret/PII hard-screen on every emission |
 | **Assurance** | Hash-chained governance ledger + machine-verified CI gate; SHA-pinned Actions; CodeQL, Bandit, OpenSSF Scorecard, SBOM |
@@ -109,6 +109,8 @@ Each connector is a provider-facing **parse surface** — `parse_*(payload) -> O
 | [confluence](connectors/confluence/) | Confluence Cloud page content | active/passive · T1 |
 | [copilot](connectors/copilot/) | Copilot aggregate usage metrics (PII-free) | active · T1 |
 | [cursor](connectors/cursor/) | Cursor team usage metrics (PII dropped) | active · T1 |
+| [devin](connectors/devin/) | Devin agentic sessions (body redacted) | active · T1 |
+| [servicenow](connectors/servicenow/) | ServiceNow incidents (redact-and-pass) | active · T1 |
 
 Selection criteria and trust tiers: [Integration Candidate Catalog](docs/INTEGRATION_CANDIDATE_CATALOG.md) · [Trust Tier Model](docs/TRUST_TIER_MODEL.md). Provider-evidence vs. agent-action surface choice: the [interactivity-test triage](docs/INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING.md) (read-only evidence → this repo; interactive action → `bicameral-mcp`).
 

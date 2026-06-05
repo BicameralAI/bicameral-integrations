@@ -17,6 +17,7 @@ from connectors.confluence.connector import ConfluenceConnector
 from connectors.continue_dev.connector import ContinueConnector
 from connectors.copilot.connector import CopilotConnector
 from connectors.cursor.connector import CursorConnector
+from connectors.devin.connector import DevinConnector
 from connectors.fathom.connector import FathomConnector
 from connectors.github.connector import GitHubConnector
 from connectors.gitlab.connector import GitLabConnector
@@ -31,8 +32,12 @@ from connectors.osv.connector import OsvConnector
 from connectors.pagerduty.connector import PagerDutyConnector
 from connectors.sarif.connector import SarifConnector
 from connectors.sentry.connector import SentryConnector
+from connectors.servicenow.connector import ServiceNowConnector
 from connectors.slack.connector import SlackConnector
 from connectors.zendesk.connector import ZendeskConnector
+from adapter.core.emissions import SourceRef
+from adapter.core.observations import Observation
+from adapter.core.pipeline import EmissionContractError, normalize
 from runtime import (
     CollectingSink,
     GatewayEmissionGated,
@@ -444,6 +449,23 @@ def test_deliver_poll_cursor_beta():
     emission = sink.emissions[0]
     assert "@example.com" not in emission.title
     assert all("@example.com" not in ev.excerpt for ev in emission.evidence)
+
+
+def test_deliver_poll_devin_beta():
+    sink = _poll_one(DevinConnector(), "devin", "session.json", "devin", 1)
+    assert "@example.com" not in sink.emissions[0].evidence[0].excerpt  # body redacted
+
+
+def test_deliver_poll_servicenow_beta():
+    # End-to-end redact-and-pass: a secret in the description would be REJECTED raw,
+    # but the connector redacts it so the emission passes the FX-SEC-001 hard screen.
+    record = _fixture_payload("servicenow", "incident.json")
+    raw = Observation(source_ref=SourceRef(source_id="servicenow", ref="x"), excerpt=record["description"])
+    with pytest.raises(EmissionContractError):  # companion non-vacuity: raw really trips FX-SEC-001
+        normalize([raw], adapter_version="runtime/0.1.0")
+    sink = _poll_one(ServiceNowConnector(), "servicenow", "incident.json", "servicenow", 1)
+    excerpt = sink.emissions[0].evidence[0].excerpt
+    assert "AKIAABCDEFGHIJKLMNOP" not in excerpt and "@example.com" not in excerpt
 
 
 def test_deliver_webhook_missing_signature_header_fails_closed():

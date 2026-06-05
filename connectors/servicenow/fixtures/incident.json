@@ -1,0 +1,9 @@
+{
+  "number": "INC0012345",
+  "short_description": "SSO login fails for federated users",
+  "description": "User cannot log in via SSO. A key leaked into the app log: AKIAABCDEFGHIJKLMNOP. Escalated; reach the reporter at admin@example.com.",
+  "state": "2",
+  "priority": "3",
+  "category": "software",
+  "caller_id": "Jane Doe (jane.doe@example.com)"
+}
