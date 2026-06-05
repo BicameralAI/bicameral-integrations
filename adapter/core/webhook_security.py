@@ -9,6 +9,8 @@ Two verification schemes and a replay-dedup cache, ported in discipline from
   tolerance.
 - ``verify_hmac_hex`` — plain hex HMAC-SHA256 over the raw body (Linear's
   ``Linear-Signature``).
+- ``verify_shared_token`` — constant-time plaintext shared-secret token equality
+  (GitLab's ``X-Gitlab-Token``: the secret is sent verbatim, not used to sign).
 - ``DeliveryDedupCache`` — bounded partitioned LRU + TTL replay cache.
 
 Fail-closed discipline: every failure mode — missing/empty secret, missing or
@@ -121,6 +123,23 @@ def verify_hmac_hex_multi(*, header_sig: str | None, body: bytes, secret: str) -
     expected = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
     if not any(hmac.compare_digest(candidate, expected) for candidate in candidates):
         raise WebhookVerificationError("no matching signature")
+
+
+def verify_shared_token(*, header_token: str | None, secret: str) -> None:
+    """Verify a plaintext shared-secret token, or raise ``WebhookVerificationError``.
+
+    GitLab sends the configured secret verbatim in the ``X-Gitlab-Token`` header
+    rather than signing the body — it is NOT an HMAC over the payload. Verification
+    is therefore a constant-time equality of the received token against the
+    configured secret. Fail-closed: a missing secret, a missing/blank header, or a
+    mismatch raises. The error message NEVER contains the token or secret value.
+    """
+    if not secret:
+        raise WebhookVerificationError("no webhook secret configured")
+    if not isinstance(header_token, str) or not header_token:
+        raise WebhookVerificationError("missing token header")
+    if not hmac.compare_digest(header_token, secret):
+        raise WebhookVerificationError("token mismatch")
 
 
 def verify_slack_signature(

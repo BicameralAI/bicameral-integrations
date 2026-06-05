@@ -1,0 +1,16 @@
+{
+  "id": "327681",
+  "type": "page",
+  "status": "current",
+  "title": "Event Store Substrate Decision",
+  "body": {
+    "storage": {
+      "value": "<h1>Event Store Substrate Decision</h1><p>We will adopt Postgres as the durable event store substrate &amp; defer Kafka.</p><ul><li>Lower operational cost</li></ul>",
+      "representation": "storage"
+    }
+  },
+  "_links": {
+    "base": "https://example.atlassian.net/wiki",
+    "webui": "/spaces/ENG/pages/327681/Event+Store+Substrate+Decision"
+  }
+}

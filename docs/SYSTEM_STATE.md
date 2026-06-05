@@ -4,11 +4,11 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Last Updated** | 2026-06-04 |
+| **Last Updated** | 2026-06-05 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | `main` + **Live emission seam** — bot #109 landed (PR #131), so `GatewaySink` is real: AdapterEmission → v1 IngestRequest → `POST /api/v1/ingest` (default-safe + fail-closed + secret-safe). 18 Beta connectors; Live now operator-actionable |
-| **Iteration** | 22 governed cycles (… Scorecard Token-Permissions hardening; CS/support evaluation; Zendesk connector → Beta; Beta graduation — all 18 connectors earned Beta; README/mods doc upcycle; **Live emission seam — GatewaySink real**) |
-| **Session Seal** | `91605f9f` (META_LEDGER Entry #71 chain hash) |
+| **Phase** | `main` + **new source connectors** — GitLab (webhook, plaintext `X-Gitlab-Token` verify) + Confluence (active/passive, verify deferred) earned Beta via the runtime harness. 20 Beta connectors; Live emission seam real + operator-actionable |
+| **Iteration** | 23 governed cycles (… CS/support evaluation; Zendesk connector → Beta; Beta graduation — all connectors earned Beta; README/mods doc upcycle; Live emission seam — GatewaySink real; **GitLab + Confluence connectors → Beta**) |
+| **Session Seal** | `<pending Entry #73>` (prior tip `91605f9f` — Entry #71) |
 
 ---
 
@@ -57,8 +57,8 @@ bicameral-integrations/
 
 | Metric | Value |
 |--------|-------|
-| Source connector packages (with `connector.py`) | 18 (+ zendesk; github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
-| Readiness ladder (ADR-0012) | **Beta: 18 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof · **Prototype: 0** · **Live: 0 connectors** (the **Live seam is implemented + operator-actionable** now bot #109 landed — Live is earned by an operator wiring `GatewaySink` against a real gateway, not by the repo) |
+| Source connector packages (with `connector.py`) | 20 (+ gitlab, confluence; zendesk, github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
+| Readiness ladder (ADR-0012) | **Beta: 20 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof · **Prototype: 0** · **Live: 0 connectors** (the **Live seam is implemented + operator-actionable** now bot #109 landed — Live is earned by an operator wiring `GatewaySink` against a real gateway, not by the repo) |
 | Runtime boundary | `runtime/` library layer (sinks + secrets + delivery + **gateway_mapping**); **GatewaySink = real Live emission** (v1 IngestRequest → `POST /api/v1/ingest`, default-safe + fail-closed + secret-safe) |
 | Total Test Files | 28 (adapter/core + connectors + runtime + scripts) |
 | Pytest | 286 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
@@ -126,7 +126,9 @@ bicameral-integrations/
 | PagerDuty connector | connectors/pagerduty/tests/test_pagerduty_connector.py | OK |
 | Claude Code connector | connectors/claude_code/tests/test_claude_code_connector.py | OK |
 | Jira connector | connectors/jira/tests/test_jira_connector.py | OK |
-| Runtime boundary (all 18 connectors end-to-end: deliver_webhook + deliver_poll; full-path → GatewaySink) | runtime/tests/test_runtime.py | OK (33) |
+| GitLab connector | connectors/gitlab/tests/test_gitlab_connector.py | OK |
+| Confluence connector | connectors/confluence/tests/test_confluence_connector.py | OK |
+| Runtime boundary (all 20 connectors end-to-end: deliver_webhook + deliver_poll; full-path → GatewaySink) | runtime/tests/test_runtime.py | OK (37) |
 | Live emission seam (emission→v1 mapping; GatewaySink POST: 201-only, gated, token-safe, real round-trip) | runtime/tests/test_gateway_mapping.py | OK (12) |
 | Zendesk connector + webhook verify/dedup (Base64 HMAC) | connectors/zendesk/tests/ | OK (11) |
 | GitHub webhook verify/dedup (envelope unwrap) | connectors/github/tests/test_github_webhook.py | OK (6) |

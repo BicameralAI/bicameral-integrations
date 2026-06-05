@@ -13,9 +13,11 @@ import pytest
 
 from connectors.aider.connector import AiderConnector
 from connectors.claude_code.connector import ClaudeCodeConnector
+from connectors.confluence.connector import ConfluenceConnector
 from connectors.continue_dev.connector import ContinueConnector
 from connectors.fathom.connector import FathomConnector
 from connectors.github.connector import GitHubConnector
+from connectors.gitlab.connector import GitLabConnector
 from connectors.google_drive.connector import GoogleDriveConnector
 from connectors.granola.connector import GranolaConnector
 from connectors.jira.connector import JiraConnector
@@ -393,6 +395,40 @@ def test_deliver_webhook_jira_bad_sig_emits_nothing():
     sink = CollectingSink()
     assert deliver_webhook(conn, headers={"X-Hub-Signature": "sha256=bad"}, body=body, sink=sink) == 0
     assert sink.emissions == []
+
+
+def _signed_gitlab(fixture: str = "merge_request_event.json") -> tuple[GitLabConnector, dict, bytes]:
+    """GitLab over plaintext X-Gitlab-Token (NOT an HMAC — the token is the secret)."""
+    token = "gitlab-webhook-token"
+    body = _fixture_body("gitlab", fixture)
+    headers = {"X-Gitlab-Token": token, "X-Gitlab-Event-UUID": "evt-1"}
+    return GitLabConnector(secret=token), headers, body
+
+
+def test_deliver_webhook_gitlab_beta():
+    conn, headers, body = _signed_gitlab()
+    sink = CollectingSink()
+    assert deliver_webhook(conn, headers=headers, body=body, sink=sink) == 1
+    assert sink.emissions[0].source_id == "gitlab"
+
+
+def test_deliver_webhook_gitlab_bad_token_emits_nothing():
+    conn, _headers, body = _signed_gitlab()
+    sink = CollectingSink()
+    bad = {"X-Gitlab-Token": "wrong-token", "X-Gitlab-Event-UUID": "evt-2"}
+    assert deliver_webhook(conn, headers=bad, body=body, sink=sink) == 0
+    assert sink.emissions == []
+
+
+def test_deliver_webhook_gitlab_missing_token_fails_closed():
+    conn, _headers, body = _signed_gitlab()
+    sink = CollectingSink()
+    assert deliver_webhook(conn, headers={}, body=body, sink=sink) == 0
+    assert sink.emissions == []
+
+
+def test_deliver_poll_confluence_beta():
+    _poll_one(ConfluenceConnector(), "confluence", "page_content.json", "confluence", 1)
 
 
 def test_deliver_webhook_missing_signature_header_fails_closed():

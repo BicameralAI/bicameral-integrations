@@ -1,0 +1,17 @@
+{
+  "object_kind": "issue",
+  "event_type": "issue",
+  "user": {"username": "devuser", "name": "Dev User"},
+  "project": {
+    "path_with_namespace": "acme/widgets",
+    "web_url": "https://gitlab.example.com/acme/widgets"
+  },
+  "object_attributes": {
+    "iid": 7,
+    "title": "Login rejects valid passwords containing '+'",
+    "description": "The login form URL-decodes the password twice, so a '+' becomes a space.",
+    "url": "https://gitlab.example.com/acme/widgets/-/issues/7",
+    "action": "open",
+    "state": "opened"
+  }
+}
