@@ -1,16 +1,41 @@
 # Bicameral Integrations
 
+> **Read-only evidence adapters that turn the tools your team already uses — Jira, Linear, GitHub, Slack, Notion, Zendesk, Sentry, PagerDuty, and more — into provider-neutral, governed evidence. Built to be the safe, expressive edge of Bicameral: they observe, never act.**
+
+<!-- CI / security posture -->
 [![CI](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/ci.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/ci.yml)
 [![Governance Gate](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/governance-gate.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/governance-gate.yml)
 [![CodeQL](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/codeql.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/codeql.yml)
 [![Security Scan](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/security-scan.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/security-scan.yml)
 [![OpenSSF Scorecard](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/scorecard.yml/badge.svg)](https://github.com/BicameralAI/bicameral-integrations/actions/workflows/scorecard.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+<!-- project signals -->
+[![Connectors: 18 Beta](https://img.shields.io/badge/connectors-18%20Beta-2ea44f.svg)](connectors/README.md)
+[![Runtime deps: 0 (stdlib)](https://img.shields.io/badge/runtime%20deps-0%20(stdlib%E2%80%91only)-2ea44f.svg)](#design-principles)
+[![Typed: mypy](https://img.shields.io/badge/typed-mypy-blue.svg)](https://mypy-lang.org/)
+[![Lint: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-fe5196.svg)](https://www.conventionalcommits.org)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Security policy](https://img.shields.io/badge/security-policy-blue.svg)](SECURITY.md)
 
-**Bicameral Integrations** contains open-source source adapters and EM-safe mods for Bicameral.
+**Bicameral Integrations** is the open-source library of **source adapters** and **EM-safe advisory mods** for [Bicameral](https://github.com/BicameralAI). Integrations are the expressive edge of the system: they understand Jira, Linear, Slack, Notion, GitHub, Zendesk, support email, meetings, and customer-specific workflows — and they translate that signal into typed, hash-chainable evidence. **They never own canonical state.**
 
-Integrations are the expressive edge of the system. They understand Jira, Linear, Slack, Notion, GitHub, support email, meetings, and customer-specific workflows. They do not own canonical state.
+| | |
+|---|---|
+| **Maturity** | Beta — 18 connectors harness-proven end-to-end; live gateway emission staged behind upstream ingest guards |
+| **Footprint** | Zero third-party **runtime** dependencies (Python stdlib only) |
+| **Safety model** | Read-only evidence adapters ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)); fail-closed webhook signature verification; a producer-side secret/PII hard-screen on every emission |
+| **Assurance** | Hash-chained governance ledger + machine-verified CI gate; SHA-pinned Actions; CodeQL, Bandit, OpenSSF Scorecard, SBOM |
+
+## Design Principles
+
+- **Evidence, not authority.** Every connector is read-only; it emits observations and never writes canonical decisions or takes action (that boundary belongs to [`bicameral-mcp`](https://github.com/BicameralAI/bicameral-mcp)). See [ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md).
+- **Library, not a server.** Connectors are a pure parse surface; the operator's host owns the live HTTP/poll boundary via the thin [`runtime/`](runtime/README.md) layer ([ADR-0012](docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md)). Result: **zero runtime dependencies**.
+- **Fail closed.** Webhook signatures are verified with constant-time HMAC before a payload is parsed; any secret/PII/PAN in an emission is hard-screened (`FX-SEC-001`) before it can leave the boundary.
+- **Earned readiness.** Connectors advance `Candidate → Prototype → Beta → Live` only on a real end-to-end harness proof, not a status flip ([ADR-0012](docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md)).
+- **Provable, not asserted.** Every change is sealed into a SHA-256 hash-chained ledger that CI re-verifies on every push.
 
 ## Key Features
 

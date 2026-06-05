@@ -1,6 +1,7 @@
 # Google Drive Connector
 
-Provider-facing Google Drive and Google Docs client and auth documentation.
+Read-only Google Drive / Google Docs evidence adapter: parses a Docs response
+into a neutral `Observation`. **Status: Beta** (ADR-0012).
 
 ## Modes
 
@@ -8,7 +9,8 @@ Provider-facing Google Drive and Google Docs client and auth documentation.
   `Observation` (`parse_document`). URL routing via `parse_gdrive_url` /
   `can_handle_ref`.
 - **Passive / Webhook** — folder polling and push-notification channels are
-  declared in capabilities but their live paths are deferred this cycle.
+  declared in capabilities; their live paths remain **deferred** to the operator
+  runtime.
 
 ## Surface
 
@@ -18,8 +20,14 @@ Provider-facing Google Drive and Google Docs client and auth documentation.
 - `parse_document(document)` — build the provider-neutral `Observation`.
 - `GoogleDriveConnector` — connector identity and capabilities.
 
-The live Docs API call and OAuth credential resolution stay in the operator
-runtime (see [`auth.md`](auth.md)); this connector is the parse surface only.
+The live Docs API call and OAuth credential resolution remain **deferred** to
+the operator runtime (see [`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its `runtime.deliver_poll` → reference sink path is proven
+end-to-end by `runtime/tests/test_runtime.py`, with **zero cross-repo
+dependency**. Live (gateway emission) remains gated on bicameral-bot #109.
 
 ## References
 

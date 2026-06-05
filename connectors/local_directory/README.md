@@ -1,6 +1,7 @@
 # Local-Directory Connector
 
-Captures decisions dropped as files in a watched local directory.
+Read-only evidence adapter: captures decisions dropped as files in a watched
+local directory. **Status: Beta** (ADR-0012).
 
 ## Modes
 
@@ -10,8 +11,13 @@ Captures decisions dropped as files in a watched local directory.
   neutral `Observation`.
 
 The live directory scan, watermark two-phase commit, size caps, and extension
-filtering stay in the operator runtime (see `auth.md`); this connector is the
-parse surface only.
+filtering remain **deferred** to the operator runtime (see [`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its `runtime.deliver_poll` → reference sink path is proven
+end-to-end by `runtime/tests/test_runtime.py`, with **zero cross-repo
+dependency**. Live (gateway emission) remains gated on bicameral-bot #109.
 
 ## Surface
 

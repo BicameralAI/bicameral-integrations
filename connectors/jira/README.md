@@ -1,6 +1,7 @@
 # Jira Connector
 
-Provider-facing Jira Cloud adapter. **Status: Beta** (ADR-0012; harness-proven via the `runtime/` deliver path) (catalog
+Read-only evidence connector: it verifies and parses Jira Cloud issue webhooks
+into neutral `Observation`s. **Status: Beta** (ADR-0012; catalog
 project-management, priority P0, default trust tier T1/T3). A Phase-1 foundation
 connector from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
@@ -12,11 +13,20 @@ connector from the
   verification wired (`verify()`/`normalize_event()`). Read-only evidence; no
   canonical writes (ADR-0008).
 - **Active** — REST `GET /rest/api/3/issue/{key}` returns the same `fields`
-  shape (fallback; deferred this cycle).
+  shape (live REST poll fallback).
 
-The live HTTP webhook receipt, REST fetch, secret/keyring resolution, and the
-Connect-JWT / Forge / Automation auth paths are deferred (see
-[`auth.md`](auth.md)); this connector is the parse + verify surface.
+`X-Hub-Signature` (`sha256=` hex HMAC-SHA256 over the raw body, fail-closed)
+verification and best-effort dedup are implemented in `verify()` /
+`normalize_event()`. The live boundary — HTTP webhook receipt, the REST poll
+fetch, secret/keyring resolution, and the Connect-JWT / Forge / Automation auth
+paths — stays in the operator runtime (see [`auth.md`](auth.md)).
+
+## Readiness: Beta (ADR-0012)
+
+Promoted to **Beta**: its signed-webhook → `runtime.deliver_webhook` → reference
+sink path is proven end-to-end by `runtime/tests/test_runtime.py`, with **zero
+cross-repo dependency**. Live (gateway emission) remains gated on bicameral-bot
+#109.
 
 ## Surface
 
