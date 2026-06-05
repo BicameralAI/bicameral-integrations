@@ -7,8 +7,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ## Coverage Summary
 
-- Total entries: **36**
-- **Verified**: 36
+- Total entries: **38**
+- **Verified**: 38
 - **Unverified**: 0
 - **N/A (operator-justified)**: 0
 
@@ -46,6 +46,8 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 | FX-PAGERDUTY-002 | PagerDuty webhook verify + dedup wiring | docs/plan-webhook-hardening-2026-06-04.md | connectors/pagerduty/connector.py | connectors/pagerduty/tests/test_pagerduty_connector.py | Verified | `PagerDutyConnector.verify`/`normalize_event` (multi-signature `v1=` membership via `verify_hmac_hex_multi`; injected secret/dedup; self-guarded); live HTTP receipt deferred; first-party scheme spot-check pending (BACKLOG) |
 | FX-CLAUDECODE-001 | Claude Code transcript line → Observation parser | docs/plan-claude-code-2026-06-04.md | connectors/claude_code/connector.py | connectors/claude_code/tests/test_claude_code_connector.py | Verified | Catalog P0 (developer-AI tooling, T0); `~/.claude/**/*.jsonl` heterogeneous event log → `parse_session_line` filters to user/assistant/summary (meta/unknown→None); `[claude-code:{kind}] {uuid}` terminal floor; depth-capped + type-defensive (SG-I); PASSIVE; live file-watch/history/git-attribution deferred |
 | FX-JIRA-001 | Jira Cloud issue webhook → Observation parser + verify | docs/plan-jira-2026-06-04.md | connectors/jira/connector.py | connectors/jira/tests/test_jira_connector.py | Verified | Catalog P0 (project-management, T1); `parse_issue` (summary→excerpt, never ADF description, `jira-issue` floor); `JiraConnector.verify`/`normalize_event` (`X-Hub-Signature` `sha256=` hex HMAC over raw body, fail-closed; best-effort dedup on `X-Atlassian-Webhook-Identifier`); WEBHOOK+ACTIVE; live HTTP/REST + Connect-JWT deferred |
+| FX-WHSEC-003 | Zendesk Base64 request-signature primitive | docs/plan-zendesk-connector-2026-06-04.md | adapter/core/webhook_security.py | adapter/core/tests/test_webhook_security.py | Verified | `verify_zendesk_signature` — **Base64** HMAC-SHA256 over `timestamp + body` (no separator; raw timestamp string; empty body accepted for GET/DELETE); fail-closed on missing secret/sig/timestamp, mismatch; constant-time; no window (dedup-as-replay-guard); L3 |
+| FX-ZENDESK-001 | Zendesk support-ticket webhook → Observation parser + verify | docs/plan-zendesk-connector-2026-06-04.md | connectors/zendesk/connector.py | connectors/zendesk/tests/test_zendesk_connector.py | Verified | Catalog P1 (support/CS, T1); `parse_ticket` (subject→excerpt, **never the ticket body** — PII-dense; `zendesk-ticket` floor, id via `detail.id` or `zen:ticket:<id>` subject parse; SG-I defensive); `ZendeskConnector.verify`/`normalize_event` (`X-Zendesk-Webhook-Signature` Base64 HMAC over `timestamp+body`, fail-closed; best-effort dedup); WEBHOOK+ACTIVE; live REST/OAuth + **PII redaction-and-pass model** deferred |
 
 ---
 
@@ -53,7 +55,7 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 | ID | Feature | Doc | Code | Test | Status | Notes |
 |---|---|---|---|---|---|---|
-| FX-RUNTIME-001 | Operator-runtime boundary layer (sinks + delivery + secret resolver) | docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md, docs/plan-go-live-runtime-2026-06-04.md | runtime/sinks.py, runtime/delivery.py, runtime/secrets.py | runtime/tests/test_runtime.py | Verified | `EmissionSink`/`SecretResolver` Protocols + `CollectingSink` + `GatewaySink` (#109-gated stub raising `GatewayEmissionGated`) + `deliver_webhook`/`deliver_poll`; drives connector ingest→verify→normalize→emit without the repo being a server (ADR-0012). **Beta cohort proven through the harness**: signed-webhook→1 + bad-sig→0 for **linear** (HMAC+replay), **fathom** (Svix), **sentry** (hex HMAC), **pagerduty** (multi-sig membership — valid sig placed 2nd), **github** (sha256= + envelope unwrap), **slack** (v0 basestring), **notion** (sha256= prefix-pinned); deliver_poll(OSV)→2; GatewaySink raises |
+| FX-RUNTIME-001 | Operator-runtime boundary layer (sinks + delivery + secret resolver) | docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md, docs/plan-go-live-runtime-2026-06-04.md | runtime/sinks.py, runtime/delivery.py, runtime/secrets.py | runtime/tests/test_runtime.py | Verified | `EmissionSink`/`SecretResolver` Protocols + `CollectingSink` + `GatewaySink` (#109-gated stub raising `GatewayEmissionGated`) + `deliver_webhook`/`deliver_poll`; drives connector ingest→verify→normalize→emit without the repo being a server (ADR-0012). **Beta cohort proven through the harness**: signed-webhook→1 + bad-sig→0 for **linear** (HMAC+replay), **fathom** (Svix), **sentry** (hex HMAC), **pagerduty** (multi-sig membership — valid sig placed 2nd), **github** (sha256= + envelope unwrap), **slack** (v0 basestring), **notion** (sha256= prefix-pinned), **zendesk** (Base64 over timestamp+body); deliver_poll(OSV)→2; GatewaySink raises |
 
 ---
 

@@ -161,6 +161,38 @@ def verify_slack_signature(
         raise WebhookVerificationError("signature mismatch")
 
 
+def verify_zendesk_signature(
+    *,
+    signature: str | None,
+    timestamp: str | None,
+    body: bytes,
+    secret: str,
+) -> None:
+    """Verify a Zendesk webhook signature, or raise ``WebhookVerificationError``.
+
+    Zendesk signs ``X-Zendesk-Webhook-Signature =
+    base64(HMAC-SHA256(signing_secret, TIMESTAMP + BODY))`` with a companion
+    ``X-Zendesk-Webhook-Signature-Timestamp``. The signed content is the RAW
+    received timestamp string concatenated with the raw body bytes, **no
+    separator** (unlike Svix ``id.ts.body`` or Slack ``v0:ts:body``); the body
+    may be empty (GET/DELETE). The signature is **Base64**, not hex. Zendesk
+    documents no replay-timestamp window, so dedup is the replay guard (the
+    timestamp is inside the signed content and cannot be tampered). Fail-closed
+    on every path; constant-time over the full Base64 string.
+    """
+    if not secret:
+        raise WebhookVerificationError("no webhook secret configured")
+    if not isinstance(signature, str) or not signature:
+        raise WebhookVerificationError("missing signature header")
+    if not isinstance(timestamp, str) or not timestamp:
+        raise WebhookVerificationError("missing timestamp header")
+    signed = timestamp.encode("utf-8") + body
+    digest = hmac.new(secret.encode("utf-8"), signed, hashlib.sha256).digest()
+    expected = base64.b64encode(digest).decode("ascii")
+    if not hmac.compare_digest(signature, expected):
+        raise WebhookVerificationError("signature mismatch")
+
+
 class DeliveryDedupCache:
     """Bounded, partitioned LRU + TTL cache for webhook delivery dedup.
 

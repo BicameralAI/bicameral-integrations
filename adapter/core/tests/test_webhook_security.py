@@ -19,7 +19,56 @@ from adapter.core.webhook_security import (
     verify_hmac_hex_multi,
     verify_slack_signature,
     verify_standard_webhook,
+    verify_zendesk_signature,
 )
+
+_ZD_SECRET = "zendesk-signing-secret"
+_ZD_TS = "2026-06-03T10:00:00Z"
+
+
+def _zd_sig(secret: str, ts: str, body: bytes) -> str:
+    return base64.b64encode(
+        hmac.new(secret.encode(), ts.encode() + body, hashlib.sha256).digest()
+    ).decode("ascii")
+
+
+def test_zendesk_signature_accepts_valid():
+    body = b'{"detail":{"id":"1"}}'
+    verify_zendesk_signature(
+        signature=_zd_sig(_ZD_SECRET, _ZD_TS, body), timestamp=_ZD_TS, body=body, secret=_ZD_SECRET
+    )
+
+
+def test_zendesk_signature_accepts_empty_body():
+    # GET/DELETE deliveries have no body — a valid signature over `ts + b""` must pass.
+    sig = _zd_sig(_ZD_SECRET, _ZD_TS, b"")
+    verify_zendesk_signature(signature=sig, timestamp=_ZD_TS, body=b"", secret=_ZD_SECRET)
+
+
+def test_zendesk_signature_rejects_tampered_body():
+    body = b'{"detail":{"id":"1"}}'
+    sig = _zd_sig(_ZD_SECRET, _ZD_TS, body)
+    with pytest.raises(WebhookVerificationError):
+        verify_zendesk_signature(signature=sig, timestamp=_ZD_TS, body=body + b" ", secret=_ZD_SECRET)
+
+
+def test_zendesk_signature_rejects_wrong_timestamp():
+    # The timestamp is in the signed content -> changing it breaks the signature.
+    body = b'{"detail":{"id":"1"}}'
+    sig = _zd_sig(_ZD_SECRET, _ZD_TS, body)
+    with pytest.raises(WebhookVerificationError):
+        verify_zendesk_signature(signature=sig, timestamp="2099-01-01T00:00:00Z", body=body, secret=_ZD_SECRET)
+
+
+def test_zendesk_signature_rejects_missing_secret_sig_or_timestamp():
+    body = b"{}"
+    for kwargs in (
+        {"signature": "x", "timestamp": _ZD_TS, "secret": ""},
+        {"signature": None, "timestamp": _ZD_TS, "secret": _ZD_SECRET},
+        {"signature": "x", "timestamp": None, "secret": _ZD_SECRET},
+    ):
+        with pytest.raises(WebhookVerificationError):
+            verify_zendesk_signature(body=body, **kwargs)
 
 _SLACK_SECRET = "slack-signing-secret"
 _SLACK_TS = "1700000000"

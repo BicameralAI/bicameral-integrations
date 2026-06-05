@@ -1551,7 +1551,56 @@ SHA256(content_hash + previous_hash)
 
 **Decision**: Operator asked to evaluate **Zendesk, ServiceNow, ChurnZero, Gainsight** to extend evidence beyond dev tooling into support/sales/CS stakeholder insight. Grounded evaluation (sources verified 2026-06-04) against the SG-2026-06-04-K interactivity test: **all four are read-only evidence adapters (none route to MCP).** **Zendesk → P1** (upgraded from P2) — the only one with a first-class **signed webhook** (HMAC-SHA256 over `timestamp+body`, `x-zendesk-webhook-signature` + anti-replay timestamp) reusable against `webhook_security`; highest decision-relevance (SLA breach + CSAT + ticket state); webhook-first. **ServiceNow → P2** (newly catalogued) — versioned Table API but **poll-only** (no portable signed-webhook; bespoke per-tenant outbound), per-tenant customized; defer behind Zendesk. **ChurnZero / Gainsight → P3** "CS health" pair — both **poll-only** (alerts to app/email/Slack/Teams; Rules-Engine call-out — no managed signing), PII + commercially sensitive; defer as a pair on a demand signal. **Cross-cutting gate:** a customer-PII **redaction model** (confirm `FX-SEC-001` covers ticket/CS free-text) precedes any support/CS build. Catalog §6.8 updated (Zendesk P1, ServiceNow added, Gainsight/ChurnZero notes refreshed). Brief: `docs/research-brief-cs-support-connectors-2026-06-04.md`. No build this pass. Chain verifies #1–#63.
 
+### Entry #65: GATE TRIBUNAL (Zendesk connector)
+
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: AUDIT
+**Author**: Judge (independent security-engineer — Option B, fresh context)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(plan-zendesk-connector-2026-06-04.md)
+= 8c4b740590e685d17405655af7074215fc70f90345dfef74797e948a04236916
+```
+
+**Previous Hash**: 7bfee942f54b4ef433d8decb8f7ae7a02a577cc925bc398224f8f9e31230364f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1f59f8899e93e94c38eaa96c0675082e7cc543ba021e30c5141fe2663aa53854
+```
+
+**Verdict**: **PASS** (iteration 1) with 9 binding implementation constraints. L3 (signature verification). Plan builds the **Zendesk** support connector (P1, Entry #64): `verify_zendesk_signature` (Base64 HMAC-SHA256 over `timestamp + body`, **no separator**, raw timestamp string, empty-body accepted, no window — dedup-as-replay-guard per the Sentry/PagerDuty precedent) + `parse_ticket` (excerpt = ticket **subject** only, never the PII-dense body — the Jira summary-not-ADF discipline) + `ZendeskConnector.verify/normalize_event`. Independent fresh-context audit ground-truthed the scheme (developer.zendesk.com/documentation/webhooks/verifying) and confirmed: Base64 not hex (the #1 implementation tripwire), full-string `compare_digest`, `isinstance` guards on sig/timestamp, `verify()` catches `(WebhookVerificationError, AttributeError, TypeError)→False` (the `TypeError` arm load-bearing for non-ASCII headers), empty-body NOT rejected, non-empty excerpt floor (`zendesk-ticket`). Building parse+verify now on synthetic fixtures with live ingest + a redaction-and-pass model deferred to `auth.md` judged consistent + the SAFER posture (no live customer PII touched; FX-SEC-001 hard-screens every emission). `mods/` excluded. Cleared to `/qor-implement`.
+
+---
+
+### Entry #66: SESSION SEAL (Zendesk connector → Beta)
+
+**Entry ID**: `zendeskBeta8`
+**Timestamp**: 2026-06-04T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 5657a601e425e6e7c8ebcf524e7d96bf75284dc9299491ca0653b203c5c83b20
+```
+
+**Previous Hash**: 1f59f8899e93e94c38eaa96c0675082e7cc543ba021e30c5141fe2663aa53854
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1ee8a187e375047d9ca79dc2d6634c9e1613eab9f25cafe55787ad6e78b9b2f5
+```
+
+**Decision**: PASS-audit (Entry #65) implemented + substantiated. Built the **Zendesk** connector (P1 — first support/customer-success evidence source; **8 Beta connectors / 18 packages**). New primitive **`verify_zendesk_signature`** (FX-WHSEC-003 — Base64 HMAC over `timestamp+body`, no separator, empty-body accepted, fail-closed) + `parse_ticket` (FX-ZENDESK-001 — subject-only excerpt, never the PII-dense body; `zendesk-ticket` floor; SG-I defensive) + `ZendeskConnector.verify/normalize_event` (dedup-as-replay-guard, no window). Synthetic fixture (example.com); behavioral tests (sig valid/tamper/wrong-ts/empty-body/missing; parser id+subject+floors+wrong-type; webhook signed→1/bad-sig→0/dedup) + runtime-harness Beta proof. All **9 audit constraints honored**; live REST/OAuth + the **PII redaction-and-pass model** deferred to `auth.md` (the catalog out-of-scope line). **Independent review** (observer + devil's advocate, fresh-context): observer **PASS** (D1–D6, Base64-not-hex confirmed, subject-only, `mods/` untouched, FEATURE_INDEX 38); devil's advocate **0 blocking / no fail-open** — dynamically verified hex-scheme + separator-injection rejection, full malformed-input matrix fails closed. **Verification**: pytest **264 passed**, ruff + mypy clean (100 files), governance gate verifies #1–#65. SHADOW_GENOME SG-2026-06-04-A/K/M reinforced (per-provider signature divergence; evidence-adapter-not-MCP; summary-not-body). Catalog §6.8 Zendesk → BUILT/Beta. Docs refreshed; `mods/` left to Codex.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` SEALED at Entry #64 (`7bfee942`; L1). **7 Beta connectors**; all six CI gates green; Security tab down to the two admin-gated findings (#13/#1 → B5). CS/support candidates evaluated — **Zendesk P1** next build candidate (gated on PII redaction).*
-*Next required action: operator decision — build Zendesk (P1, after confirming the redaction model) vs. other priorities. Admin (you): branch protection (B5) closes Scorecard #13/#1. Open: B8, B9, B10/B11, B12, B14, bot #109 (Live).*
+*Status: `main` + Zendesk connector SEALED at Entry #66 (`1ee8a187`; L3). **8 Beta connectors** (incl. zendesk — first support/CS evidence source); 18 packages; all six CI gates green. Zendesk live ingest gated on the PII redaction-and-pass model; Live emission on bot #109.*
+*Next required action: operator decision — ServiceNow (P2, poll) / the PII redaction-and-pass model (unblocks live Zendesk + CS set) / Copilot-Cursor-Admin (P1). Admin (you): branch protection (B5) closes Scorecard #13/#1; bot #109 (Live). Open: B8-B14.*

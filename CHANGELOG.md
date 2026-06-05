@@ -18,6 +18,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (runtime issue), and PagerDuty (incident) — Claude Code (developer-AI
   session transcripts), and Jira Cloud (issue webhooks, signature-verified) —
   completing the Phase-1 foundation set.
+- **Zendesk** connector (support-ticket evidence — the first support/customer-
+  success source): `parse_ticket` (subject-only excerpt, never the PII-dense
+  ticket body) + Base64-HMAC webhook signature verification
+  (`verify_zendesk_signature` over `timestamp + body`). Live REST/OAuth and a
+  PII redaction-and-pass model for live ticket-body ingest are deferred.
 - CI governance/security gate ecosystem: governance-integrity gate
   (ledger hash-chain + feature-index), CodeQL, Bandit, OpenSSF Scorecard, SBOM +
   attestation, dependency-review, secret scan, and quality/PR-hygiene gates —

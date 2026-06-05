@@ -44,6 +44,7 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [sentry](sentry/) | **Beta** | webhook | `parse_issue` | ✓ (HMAC) |
 | [pagerduty](pagerduty/) | **Beta** | webhook | `parse_event` | ✓ (multi-sig) |
 | [jira](jira/) | Prototype | webhook, active | `parse_issue` | ✓ (HMAC, `sha256=`) |
+| [zendesk](zendesk/) | **Beta** | webhook, active | `parse_ticket` | ✓ (Base64 HMAC) |
 
 Candidate selection and trust tiers are tracked in the
 [Integration Candidate Catalog](../docs/INTEGRATION_CANDIDATE_CATALOG.md) and the
