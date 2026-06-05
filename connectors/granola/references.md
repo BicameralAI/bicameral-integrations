@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | API-key (env-injected); validate auth model |
 | Changelog/notes | Candidate |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Transcript payload (parsed)**: `parse_transcript` reads `{id, transcript_text, title, participants, ended_at}`; excerpt is `transcript_text` falling back to `title`; author is the first participant's `name` (string or `{name: ...}` dict).
+- **Verification**: no verify — poll/passive; no webhook delivery, no signature.
+- **Auth (deferred)**: API key injected via env var (`GRANOLA_API_KEY`), `Authorization: Bearer <key>`; `GET https://api.granola.ai/v1/transcripts?since=<ISO>` with watermark. No live network this cycle.
+- **Modes**: passive (REST poll with `since` watermark); no webhooks.
+- **PII handling**: full transcript text (meeting content, participant names) emitted; producer sensitive screen (`FX-SEC-001`) is the guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

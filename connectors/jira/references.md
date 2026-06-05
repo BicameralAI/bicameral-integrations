@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/ |
 | Changelog/notes | https://developer.atlassian.com/cloud/jira/platform/changelog/ |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Issue webhook event (parsed)**: `parse_issue` reads `{webhookEvent, issue_event_type_name, issue.{key, id, self, fields.{summary, updated, created, status.name, issuetype.name, project.key}}, user.displayName, timestamp}`; excerpt is `fields.summary` (never `fields.description` — that field is an ADF object, not a string).
+- **Verification (built)**: `X-Hub-Signature: sha256=<hex HMAC-SHA256(secret, raw_body)>` (WebSub); `verify()` strips `"sha256="` prefix and calls `verify_hmac_hex` (fail-closed, constant-time). Dedup on `X-Atlassian-Webhook-Identifier` then `issue.id`; no anti-replay timestamp window (Jira documents none).
+- **Auth (deferred)**: `webhook_secret` (verify) + `api_email`/`api_token` (REST fetch, HTTP Basic) or OAuth 2.0 3LO; Connect-JWT/Forge/Automation paths not implemented. No live network this cycle.
+- **Modes**: webhook (primary) + active (REST fallback); both share `parse_issue`.
+- **PII handling**: `fields.summary` emitted (issue title only); ADF `description` body deliberately excluded. Producer sensitive screen (`FX-SEC-001`) is the guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

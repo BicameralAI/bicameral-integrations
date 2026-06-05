@@ -24,6 +24,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | Not applicable (git/file import) |
 | Changelog/notes | https://aider.chat/HISTORY.html · https://github.com/Aider-AI/aider |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Commit record (parsed)**: `parse_commit` reads `{hash, message, author_name, committer_name, authored_at, trailers}`; attribution channel detected by `_attributed_by` — `"author"` when `"(aider)"` in `author_name`, `"committer"` when in `committer_name`, `"co-author"` when a `Co-authored-by:` trailer contains `"aider"`.
+- **Verification**: no verify — poll/passive (git import; no network delivery, no signature).
+- **Auth (deferred)**: none applicable (T0 git/file import); live git-log walk, `--analytics-log` JSONL, and `.aider.chat.history.md` transcript paths all deferred.
+- **Modes**: passive only; no webhooks exist for this source.
+- **PII handling**: commit messages and author names emitted as-is; producer sensitive screen (`FX-SEC-001`) is the in-pipeline guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

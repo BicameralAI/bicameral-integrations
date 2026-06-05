@@ -24,6 +24,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | None for local file ingest; Bearer `apiKey` for HTTP sink |
 | Changelog/notes | https://github.com/continuedev/continue |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Dev-data event (parsed)**: `parse_event` reads `{name, timestamp/ts, eventId/id, prompt, completion, content, message, userId, schema, modelTitle/model}`; excerpt is the first non-empty text field among `prompt`, `completion`, `content`, `message`, falling back to `"continue {name}"`. The schema (`0.1.0`/`0.2.0`) is documented to churn; all field access is str-coerced.
+- **Verification**: no verify — passive file import; no network delivery, no signature.
+- **Auth (deferred)**: none for local file ingest (T0); HTTP-sink path uses Bearer `apiKey` in `config.yaml` — deferred. No live network this cycle.
+- **Modes**: passive only; no webhooks (provider id `"continue"`; package `continue_dev`).
+- **PII handling**: prompts and completions may contain code and personal context; `level: noCode` strips text fields at source (operator-set). Producer sensitive screen (`FX-SEC-001`) is the in-pipeline guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

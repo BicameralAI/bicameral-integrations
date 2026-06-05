@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Webhook verify | https://developer.zendesk.com/documentation/webhooks/verifying/ |
 | Auth | https://developer.zendesk.com/api-reference/introduction/security-and-auth/ |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Ticket webhook event (parsed)**: `parse_ticket` reads `{type, id, time, detail.{id, subject, description, url, requester_id, updated_at, status, priority, via.channel}, event.type}`; ticket id from `detail.id` or parsed from `"zen:ticket:<id>"` subject; excerpt is `redact(subject) — redact(description)`.
+- **Verification (built)**: `X-Zendesk-Webhook-Signature` = `base64(HMAC-SHA256(signing_secret, timestamp + body))` with companion `X-Zendesk-Webhook-Signature-Timestamp`; `verify()` calls `verify_zendesk_signature` (fail-closed, constant-time). Concatenation is `timestamp + body` with no separator; signature is Base64 (not hex). No anti-replay window; best-effort dedup on envelope `id` then `detail.id`.
+- **Auth (deferred)**: per-webhook signing secret injected by operator runtime; REST API poll (`/api/v2`) with API token or OAuth deferred. No live network this cycle.
+- **Modes**: webhook (primary) + active (REST fallback).
+- **PII handling**: ticket subject + body (`detail.description`) emitted via **redact-and-pass** — `adapter.core.redaction.redact` scrubs secrets/PHI/PAN/email/phone to placeholders before emission. Comment threads and attachments excluded (first description only). Producer sensitive screen (`FX-SEC-001`) remains the fail-closed backstop.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

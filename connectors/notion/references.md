@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | https://developers.notion.com/docs/authorization |
 | Changelog/notes | https://developers.notion.com/page/changelog |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Page payload (parsed)**: `parse_page` reads `{id, url, properties, created_by.id, last_edited_time, created_time}`; title extracted via `_page_title` — walks `properties` values for the one whose `type == "title"`, joining `plain_text` of its rich-text array. Excerpt is title (page body/blocks are a separate fetch, deferred).
+- **Verification (built)**: `X-Notion-Signature: sha256=<hex HMAC-SHA256(verification_token, raw_body)>`; `verify()` REQUIRES the `sha256=` prefix (bare hex rejected), strips it, calls `verify_hmac_hex` (fail-closed, constant-time). Dedup on `payload.id` then `payload.entity.id`.
+- **Auth (deferred)**: Notion integration token or OAuth; `verification_token` for webhook subscription injected by operator runtime. No live network this cycle.
+- **Modes**: active (Notion API page fetch) + webhook; both share `parse_page`.
+- **PII handling**: page title emitted; `created_by.id` (user UUID, not display name) as author. Block content deferred. Producer sensitive screen (`FX-SEC-001`) is the guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

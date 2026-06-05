@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | https://docs.slack.dev/authentication/ |
 | Changelog/notes | https://docs.slack.dev/changelog/ |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Message / event_callback (parsed)**: `parse_message` reads `{event.{type, channel, ts, text, user, message.{ts, channel, text, user}}}`; unwraps `message_changed`-style edit subtypes via inner `message` dict; excerpt is `text` falling back to `"(no text) {channel}:{ts}"`.
+- **Verification (built)**: `X-Slack-Signature: v0=<hex HMAC-SHA256(signing_secret, "v0:{ts}:{raw_body}")>` with `X-Slack-Request-Timestamp` (5-minute replay window); `verify()` calls `verify_slack_signature` (fail-closed, constant-time). `url_verification` handshake dropped (signed but produces no Observations). Dedup on `event_id`.
+- **Auth (deferred)**: signing secret + OAuth bot token resolved by operator runtime; live Events API receipt deferred. No live network this cycle.
+- **Modes**: webhook only (Events API); no active/passive modes declared.
+- **PII handling**: message text, channel id, and user id emitted; display names not read. Producer sensitive screen (`FX-SEC-001`) is the guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

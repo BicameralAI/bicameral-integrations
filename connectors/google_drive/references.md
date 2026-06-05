@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | https://developers.google.com/identity/protocols/oauth2 |
 | Changelog/notes | https://developers.google.com/workspace/drive/api/release-notes |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Document payload (parsed)**: `parse_document` reads a `documents.get` response — `{documentId, title, body.content}`; `extract_document_text` walks `body.content` flattening paragraphs (with Markdown heading decoration from `namedStyleType`) and table cells; excerpt is full document text falling back to title.
+- **URL parsing**: `parse_gdrive_url` extracts the document id from `docs.google.com/document/d/<id>` or `drive.google.com/file/d/<id>` URLs (regex, 25–128 char alphanum id).
+- **Verification**: no verify — webhook channel notifications deferred; no live delivery this cycle.
+- **Auth (deferred)**: OAuth token JSON + refresh token; scopes `documents.readonly` + `drive.metadata.readonly`; live `documents.get` call deferred. No live network this cycle.
+- **Modes**: active (URL fetch) + passive (folder poll) + webhook (Drive channel push) — only active parse surface ships this cycle; folder poll and channel webhooks deferred.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | No network credentials (host filesystem permissions) |
 | Changelog/notes | n/a |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **File payload (parsed)**: `parse_file` reads `{path, content, modified, source_type_label}`; ref is `"local-{sha256(path)[:16]}"` (stable, opaque — operator filesystem layout never stored in the ledger); excerpt is full file content falling back to the filename stem.
+- **Verification**: no verify — local filesystem import; no network delivery, no signature.
+- **Auth (deferred)**: none (no network credentials); host filesystem permissions are the access control. Live directory scan, extension allow-list, 1 MiB size cap, and watermark two-phase commit are deferred to the operator runtime.
+- **Modes**: passive only; no webhooks.
+- **PII handling**: full file content emitted as excerpt; operator is responsible for extension/size filtering and directory scoping. Producer sensitive screen (`FX-SEC-001`) is the guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

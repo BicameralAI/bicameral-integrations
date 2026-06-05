@@ -22,6 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | `X-PagerDuty-Signature` HMAC-SHA256 (multiple comma-separated rotating signatures) |
 | Changelog/notes | https://developer.pagerduty.com/changelog/ |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **V3 incident webhook envelope (parsed)**: `parse_event` unwraps `{event.{event_type, occurred_at, id, data.{id, title, summary, html_url, created_at, status, urgency}}}`; both the outer `event` dict and the nested `data` dict are isinstance-guarded; excerpt is `data.title`/`data.summary` falling back to `data.id`.
+- **Verification (built)**: `X-PagerDuty-Signature` is a **comma-separated `v1=<hex>,v1=<hex>` set** (zero-downtime key rotation); `verify()` calls `verify_hmac_hex_multi` — accept if ANY `v1=` candidate HMAC-SHA256 matches the raw body (fail-closed, constant-time). Dedup on `event.id`; no anti-replay timestamp window.
+- **Auth (deferred)**: webhook signing secret injected by operator runtime; REST API incident fetch (active fallback) deferred. No live network this cycle.
+- **Modes**: webhook only; no active/passive modes declared.
+- **PII handling**: incident `title`/`summary` and `html_url` emitted; `status` and `urgency` in metadata. Producer sensitive screen (`FX-SEC-001`) is the guard.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):

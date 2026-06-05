@@ -23,6 +23,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | None (free, unauthenticated) |
 | Changelog/notes | https://github.com/google/osv.dev |
 
+## Verified API/webhook contract (as built, 2026-06-05)
+
+- **Vulnerability record (parsed)**: `parse_vuln` reads the OSV schema — `{id, summary, details, modified, severity[{type, score}], references[{url}], affected[{package.{name}}], aliases[]}`; excerpt is `summary` falling back to `details` then `id`; metadata carries joined `severity`, `packages`, and `aliases` strings.
+- **Verification**: no verify — read-only query API; no webhook delivery, no signature.
+- **Auth (deferred)**: none (OSV.dev is free and unauthenticated); live query client (`POST /v1/query`, `/v1/querybatch`, `GET /v1/vulns/{id}`) deferred. No live network this cycle.
+- **Modes**: active only (query API); no webhooks.
+- **PII handling**: vulnerability metadata only (CVE ids, package names, severity scores); no user PII in the OSV schema.
+
 ## Canonical governance references
 
 These apply to every Bicameral connector (see also the connector's own README/auth.md):
