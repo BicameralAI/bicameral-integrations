@@ -2206,6 +2206,79 @@ chain #1–#84. FX-ZENDESK-001 + FX-CURSOR-001 updated (MODIFIED; 48 total, coun
 Beta / 0 Prototype** (count unchanged — retrofit of existing connectors).
 
 ---
+
+### Entry #85: GATE AUDIT — security red-team Cycle A (#52/#53/#54) (PASS)
+
+**Entry ID**: `redteamCycleA85aud`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: AUDIT (gate tribunal)
+**Author**: Independent auditor (fresh-context, Option B — author-momentum SG-007)
+**Risk Grade**: L3 (security guarantee fixes on the emission screen + gateway)
+
+**Content Hash**:
+```
+SHA256(plan-security-guarantee-fixes-cycle-a-2026-06-05.md)
+= 4107938e95169a0e37ade2032e08ce9fd5954edb4c8be8181b23f7791ce8582c
+```
+
+**Previous Hash**: 070bf87daf0e70f1dad2f885387597400f5f5c56d3ee07d7e1d613619ace93d1
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 63de2cd133de5eae5ec43aa12b08e6b5ce09e97794cafa43538e654dc06330e3
+```
+
+**Verdict**: **PASS**. Three surgical fixes to documented security guarantees surfaced by the adversarial
+red-team (GH #52/#53/#54). Independent audit did the critical #52 false-positive trace (every connector-emitted
+ref/url checked vs the 3 detection classes — timestamps/UUIDs never reach ref/url, secrets only in
+already-redacted bodies → no currently-green emission regresses), confirmed #53 `match_excerpt` feeds only the
+error message (no other consumer), and confirmed the #54 `__init__` guard message is value-free + the `_post`
+catch-all is correctly scoped (doesn't swallow `GatewayEmissionGated` or the 201 path). 0 blocking; 3 advisories
+honored. Cleared to `/qor-implement`.
+
+---
+
+### Entry #86: SESSION SEAL — security red-team Cycle A: #52, #53, #54 fixed
+
+**Entry ID**: `redteamCycleA86seal`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L3
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 63009a17fe1fed38656002ffb23bca91608e619fbfb64475c6f5d15d988618b6
+```
+
+**Previous Hash**: 63de2cd133de5eae5ec43aa12b08e6b5ce09e97794cafa43538e654dc06330e3
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 90bc56750412c6edbe888b8703b1dbfbb0914b64737578592313e2bed2596d79
+```
+
+**Decision**: PASS-audit (Entry #85) implemented + substantiated. **Remediated the three security-guarantee
+violations** from the adversarial red-team (GH #50–#61). **#52**: `pipeline._screen_sensitive` now scans EVERY
+wire-bound field — `emission.source_id` (→ `source_type`) + each evidence `source_ref.url`/`ref`/`source_id` —
+so a secret embedded in a provider URL/ref/id is HARD-rejected instead of POSTed to the gateway in cleartext
+(the independent verifier's bypass-hunt surfaced the `source_id` residual → closed in the same cycle).
+**#53**: `sensitive._redact_excerpt` masks pan/phi (`[cls:redacted]`) + short secrets, so a rejected emission's
+`EmissionContractError` never carries a raw PAN/MRN into logs. **#54**: `GatewaySink.__init__` rejects CR/LF in
+the operator token/headers with a value-free error + `_post` token-free catch-all, closing the
+uncaught-`ValueError` token disclosure. **Independent verification (penetration-tester re-ran all 3 exploits
+against the patched code): all BLOCKED, no regression, no false-positive (43/43 runtime harness, full suite green).
+Cores confirmed sound — no signature forgery, redact-and-pass invariant held, GatewaySink 201-only + F-1 re-screen
+intact.** SG-2026-06-05-E records the lesson (screen must be a superset of every wire field; error channels must
+not echo raw values). **`mods/` untouched.** **Verification**: pytest **347 passed** (+10), ruff + mypy clean,
+governance gate verifies chain #1–#86. FX-SEC-001 + FX-RUNTIME-002 MODIFIED (48 total). **Deferred (Cycle B/C):**
+ReDoS #50/#51, DoS #55/#56/#57/#59, cursor-PII #58, replay #60, nits #61 — tracked in BACKLOG + GH issues; all
+latent-until-Live.
+
+---
 *Chain integrity: VALID*
-*Status: `main` + redaction retrofit SEALED at Entry #84 (`070bf87d`; L2). **26 Beta connectors / 0 Prototype.** Zendesk now ingests the ticket **body** via redact-and-pass (`subject — redact(description)`); Cursor adds **per-developer attribution via the opaque `userId`** (SG-2026-06-05-D; email/name still never read). The PII redaction-and-pass model is now consumed by devin/servicenow/zendesk; Live emission seam real; bot #109 CLOSED.*
-*Next required action: operator decision — next unbuilt connectors (GitLab Standard-Webhooks signing-token, Bitbucket / Azure DevOps / Boards, MS Teams-Graph / Zoom / SharePoint, Hugging Face / LangSmith P2) / promote a connector to Live (operator deployment wiring `GatewaySink`). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` + security red-team Cycle A SEALED at Entry #86 (`90bc5675`; L3). **26 Beta connectors / 0 Prototype.** Guarantee fixes: FX-SEC-001 screen covers all wire-bound fields (secret-in-URL/ref/id → reject, #52); errors redact pan/phi (#53); GatewaySink rejects CR/LF token + token-free errors (#54). Red-team cores sound (no forgery; redact invariant held). PII redaction-and-pass + Live emission seam real; bot #109 CLOSED.*
+*Next required action: red-team **Cycle B** (DoS/ReDoS hardening before Live — GH #50/#51/#55/#56/#57/#58/#59) then **Cycle C** (replay #60, nits #61); OR operator decision — promote a connector to Live (operator deployment wiring `GatewaySink`) / next unbuilt connectors. Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

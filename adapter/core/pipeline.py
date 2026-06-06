@@ -52,13 +52,16 @@ def validate_emissions(emissions: Iterable[AdapterEmission]) -> list[AdapterEmis
 
 def _screen_sensitive(emission: AdapterEmission) -> None:
     """Reject an emission carrying a secret / PHI / PAN. mcp parity: sensitive
-    data is a HARD gate — never forwarded to the gateway. The raised detail uses
-    the already-redacted excerpt, so a raw credential cannot leak into the error.
+    data is a HARD gate — never forwarded to the gateway. The scanned content covers
+    EVERY wire-bound field: ``title``/``body``/``excerpt`` plus ``source_id`` (→ wire
+    ``source_type``) and each evidence ``source_ref.url``/``ref``/``source_id`` (a secret
+    in a provider URL/ref/id is otherwise forwarded as the gateway ``source`` — #52).
+    The raised detail uses the redacted excerpt, so a raw value cannot leak (#53).
     """
-    content = " ".join(
-        [emission.title, emission.body, *(ev.excerpt for ev in emission.evidence)]
-    )
-    hits = detect_sensitive(content)
+    parts = [emission.title, emission.body, emission.source_id]
+    for ev in emission.evidence:
+        parts.extend([ev.excerpt, ev.source_ref.url, ev.source_ref.ref, ev.source_ref.source_id])
+    hits = detect_sensitive(" ".join(p for p in parts if p))
     if hits:
         hit = hits[0]
         raise EmissionContractError(

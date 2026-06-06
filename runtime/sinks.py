@@ -91,6 +91,12 @@ class GatewaySink:
         self._headers = dict(headers or {})
         self._opener = opener or urllib.request.urlopen
         self._timeout = timeout
+        # Reject a CR/LF-bearing token/header up front: http.client validates headers
+        # during the request and raises a ValueError that embeds the full header value
+        # (the token) — a token disclosure (#54). The message names only the field.
+        for label, value in (("token", self._token), *self._headers.items()):
+            if "\r" in str(value) or "\n" in str(value):
+                raise ValueError(f"GatewaySink {label!r} contains a CR/LF control character")
 
     def emit(self, emissions: list[AdapterEmission]) -> None:
         # Re-screen at the emission boundary (producer contract + secret/PII/PAN
@@ -119,6 +125,8 @@ class GatewaySink:
             raise GatewayEmissionError(exc.code, _reason_from_body(exc)) from None
         except urllib.error.URLError as exc:  # transport fault — token-free detail
             raise GatewayEmissionError(0, f"transport_error:{type(exc.reason).__name__}") from None
+        except Exception:  # belt-and-suspenders: never let an unexpected error carry the token
+            raise GatewayEmissionError(0, "unexpected_error") from None
         if status != _SUCCESS_STATUS:
             raise GatewayEmissionError(status, "unexpected_status_expected_201")
 

@@ -114,3 +114,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - SHA-pinned the remaining tagged GitHub Actions in `ci.yml` and `secret-scan.yml`
   (supply-chain hardening; resolves the OpenSSF Scorecard pinned-dependencies
   findings).
+
+### Security
+
+- Adversarial red-team of the connector/adapter/runtime code (GH #50-#61). Cycle A
+  fixed three documented-guarantee violations: the FX-SEC-001 sensitive screen now
+  covers every gateway-wire-bound field (`source_id`/`source_ref.url`/`ref`), so a
+  secret embedded in a provider URL/ref/id can no longer be forwarded in cleartext
+  (#52); rejected-emission errors no longer carry a raw PAN/PHI value (#53); and
+  `GatewaySink` rejects CR/LF in the operator token/headers and never lets an
+  unexpected error echo the token (#54). DoS/ReDoS and replay findings
+  (#50/#51/#55/#56/#57/#59/#60) are tracked for hardening before any Live deployment.

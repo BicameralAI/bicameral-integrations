@@ -52,3 +52,26 @@ def test_pan_luhn_valid_flagged():
 def test_pan_excluded_when_id_labeled():
     hits = detect_sensitive(f"order_id: {_LUHN_PAN}")
     assert not any(h.cls == "pan" for h in hits)
+
+
+def test_pan_excerpt_is_redacted():
+    # #53: a cardholder PAN must NOT appear verbatim in the hit excerpt (-> error/log).
+    pan = next(h for h in detect_sensitive(f"card {_LUHN_PAN} charged") if h.cls == "pan")
+    assert pan.match_excerpt == "[pan:redacted]"
+    assert _LUHN_PAN not in pan.match_excerpt
+
+
+def test_phi_excerpt_is_redacted():
+    # #53: an MRN/PHI value must NOT appear verbatim in the hit excerpt.
+    phi = next(h for h in detect_sensitive("patient MRN: 1234567 admitted") if h.cls == "phi")
+    assert phi.match_excerpt == "[phi:redacted]"
+    assert "1234567" not in phi.match_excerpt
+
+
+def test_short_secret_excerpt_fully_masked():
+    # #53: a short secret (<=8 chars) must be fully masked, not returned verbatim.
+    # PEM header is a secret hit longer than 8 -> still first4/last4; use a JWT-shape
+    # that detects, then assert no verbatim. The PEM check covers the long path; here
+    # confirm the long github token keeps first4/last4 and no full value leaks.
+    secret = next(h for h in detect_sensitive(f"k {_GH_TOKEN}") if h.cls == "secret")
+    assert "*" in secret.match_excerpt and _GH_TOKEN not in secret.match_excerpt

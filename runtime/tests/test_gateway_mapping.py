@@ -224,3 +224,31 @@ def test_gatewaysink_real_http_roundtrip():
         server.server_close()
     _assert_conforms(received["body"])
     assert received["content_type"] == "application/json"
+
+
+# --- #54: GatewaySink never leaks the operator token via CR/LF or unexpected errors ---
+
+
+def test_token_with_crlf_rejected_at_construction():
+    with pytest.raises(ValueError) as exc:
+        GatewaySink(endpoint="https://gw/api/v1/ingest", token="SECRET-abc\r\nX-Evil: 1")
+    assert "SECRET-abc" not in str(exc.value)  # message names the field, not the value
+
+
+def test_header_with_crlf_rejected_at_construction():
+    with pytest.raises(ValueError) as exc:
+        GatewaySink(endpoint="https://gw/api/v1/ingest", headers={"X-Trace": "a\nb"})
+    assert "a\nb" not in str(exc.value)
+
+
+def test_post_unexpected_error_is_token_free():
+    # an opener raising a bare ValueError that embeds the token -> token-free GatewayEmissionError.
+    token = "SUPERSECRET-xyz"
+
+    def opener(request, timeout=None):
+        raise ValueError(f"Invalid header value b'Bearer {token}'")
+
+    sink = GatewaySink(endpoint="https://gw/api/v1/ingest", token=token, opener=opener)
+    with pytest.raises(GatewayEmissionError) as exc:
+        sink.emit([_emission()])
+    assert token not in str(exc.value)

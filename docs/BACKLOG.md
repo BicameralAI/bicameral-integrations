@@ -43,3 +43,21 @@
 
 ---
 _Updated by /qor-* commands automatically_
+
+## Security red-team findings (2026-06-05, GH #50-#61)
+
+Adversarial review of the connector/adapter/runtime code. Cores sound (no signature
+forgery; redact-and-pass invariant held; GatewaySink 201-only + F-1 re-screen). Findings:
+
+- [x] [#52] FX-SEC-001 screen now covers `source_id`/`source_ref.url`/`ref` (secret-in-URL→gateway leak) — Cycle A, Entry #86.
+- [x] [#53] PAN/PHI no longer leak verbatim into `EmissionContractError` (`_redact_excerpt` masks all classes) — Cycle A, Entry #86.
+- [x] [#54] `GatewaySink` rejects CR/LF token/headers + token-free catch-all — Cycle A, Entry #86.
+- [ ] [#50] ReDoS — confluence `_TAG_RE` `<[^>]+>` quadratic (Cycle B).
+- [ ] [#51] ReDoS — redaction `_EMAIL_RE` quadratic, via `redact()` (Cycle B).
+- [ ] [#55] Huge-int JSON literal (>4300 digits) crashes `normalize_event` (ValueError uncaught) (Cycle B).
+- [ ] [#56] Type-confusion AttributeError escapes `normalize_event`/`observations` (github base/user; servicenow strip) (Cycle B).
+- [ ] [#57] fathom `verify()` narrow `except` → malformed input crashes vs fail-closed (Cycle B).
+- [ ] [#58] cursor leaks generic email/phone (`day`/`mostUsedModel` unfiltered) (Cycle B — needs an email/phone screen pattern decision).
+- [ ] [#59] `observations()` crashes on non-dict payload (all 26, no `isinstance` guard) (Cycle B).
+- [ ] [#60] Replay defeatable for windowless providers (id-less/eviction/TTL) (Cycle C).
+- [ ] [#61] Nits: zero-width passes excerpt check; `source_id` no length bound (Cycle C).

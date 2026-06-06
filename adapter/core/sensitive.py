@@ -100,11 +100,19 @@ def _is_id_preceded(content: str, start: int) -> bool:
 
 
 def _redact_excerpt(cls: str, raw: str) -> str:
-    """Truncate to ``_EXCERPT_MAX``; for ``secret`` also asterisk the body so an
-    error/log carries only first-4 + last-4 chars, never the full credential."""
+    """Render an error/log-safe excerpt that never carries a raw sensitive value.
+
+    ``secret`` keeps first-4 + last-4 (full asterisk when <= 8 chars). ``pan`` and
+    ``phi`` carry NO plaintext at all — a cardholder PAN or medical value must never
+    reach an error or log (the rejection error still carries ``cls`` + ``pattern_id``).
+    """
     truncated = raw[:_EXCERPT_MAX]
-    if cls == "secret" and len(truncated) > 8:
-        return truncated[:4] + "*" * (len(truncated) - 8) + truncated[-4:]
+    if cls == "secret":
+        if len(truncated) > 8:
+            return truncated[:4] + "*" * (len(truncated) - 8) + truncated[-4:]
+        return "*" * len(truncated)
+    if cls in ("pan", "phi"):
+        return f"[{cls}:redacted]"
     return truncated
 
 
