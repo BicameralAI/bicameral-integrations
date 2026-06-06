@@ -132,3 +132,47 @@ def test_normalize_rejects_secret_bearing_observation():
     with pytest.raises(EmissionContractError) as exc:
         normalize([obs], adapter_version="github/0.1.0")
     assert str(exc.value).startswith("sensitive_data:")
+
+
+_GHP = "ghp_0123456789abcdefghijklmnopqrstuvwxyz"  # fake github-PAT shape
+
+
+def _emission_with_ref(ref: str = "o/r#1", url: str = "https://github.com/o/r/pull/1") -> AdapterEmission:
+    ev = SourceEvidence(
+        source_ref=SourceRef(source_id="github", ref=ref, url=url, kind="x"),
+        excerpt="we will use postgres",
+        author="a",
+    )
+    return _emission(evidence=(ev,))
+
+
+def test_secret_in_source_url_is_rejected():
+    # #52: a secret embedded in source_ref.url is HARD-rejected (otherwise forwarded as gateway `source`).
+    em = _emission_with_ref(url=f"https://x-access-token:{_GHP}@github.com/o/r")
+    with pytest.raises(EmissionContractError):
+        validate_emissions([em])
+
+
+def test_secret_in_source_ref_is_rejected():
+    with pytest.raises(EmissionContractError):
+        validate_emissions([_emission_with_ref(ref=f"token-{_GHP}")])
+
+
+def test_clean_realistic_url_and_ref_still_pass():
+    # advisory: realistic high-risk-shaped url/ref that flow through the live harness must NOT false-positive.
+    for ref, url in [
+        ("o/r#92", "https://github.com/o/r/pull/92"),
+        ("ENG-1", "https://example.atlassian.net/browse/ENG-1"),
+        (
+            "1AbcDEFghIJKlmNOpqRStuVWxyz0123456789ABCDEF",
+            "https://docs.google.com/document/d/1AbcDEFghIJKlmNOpqRStuVWxyz0123456789ABCDEF",
+        ),
+    ]:
+        em = _emission_with_ref(ref=ref, url=url)
+        assert validate_emissions([em]) == [em]
+
+
+def test_secret_in_source_id_is_rejected():
+    # #52 (extended): source_id reaches the wire as source_type — must be screened.
+    with pytest.raises(EmissionContractError):
+        validate_emissions([_emission(source_id=_GHP)])

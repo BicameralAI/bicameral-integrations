@@ -384,3 +384,13 @@ opaque ids — that was FALSE (the anthropic_admin connector deliberately does N
 analogue is Zendesk's emitted `requester_id` (a support-requester id), and even that is partial. This is a
 deliberate narrow exception, not a general "surface all opaque ids" pattern. Reaffirms SG-2026-06-05-A for
 generic email/PII (FX-SEC-001 is not a backstop) and the redact-and-pass model for free-text bodies.
+
+## SG-2026-06-05-E — The sensitive screen must cover EVERY wire-bound field, and error channels must not echo raw values
+
+**Discovered**: 2026-06-05 (adversarial red-team of the existing code; GH issues #50-#61).
+
+A four-front red-team found the crypto + redaction CORES are sound (no HMAC forgery; `detect_sensitive(redact(x))==[]` held under 500k fuzz; GatewaySink 201-only + F-1 re-screen hold) — the real defects were at the EDGES:
+- **FX-SEC-001 only scanned `title + body + excerpt`** but the gateway wire also carries `source` (from `source_ref.url`/`ref`) and `source_type` (from `source_id`). A secret in a `pull_request.url` / `detail.url` / `source_id` bypassed the HARD gate and was POSTed in cleartext. **Rule: the screen's scanned content must be a SUPERSET of every field `emission_to_ingest_request` forwards to the wire** — re-derive it whenever the mapping changes. (Fixed Cycle A: screen now covers source_id + source_ref.url/ref/source_id.)
+- **The reject path itself leaked**: `_redact_excerpt` masked only the `secret` class, so a rejected emission's `EmissionContractError` carried the raw PAN/MRN into logs. **Rule: an error/log excerpt must never carry a raw value for ANY class** (pan/phi → `[cls:redacted]`; short secret → full mask). The reject channel is a leak channel.
+- **The operator token leaked via an uncaught `ValueError`**: a CR/LF in the token makes `http.client` raise a value-embedding error before network I/O, outside `_post`'s HTTPError/URLError catch. **Rule: validate operator-injected header material up front (value-free error), and give error paths a token-free catch-all.**
+- DoS/ReDoS surfaces (`_TAG_RE`/`_EMAIL_RE` quadratic; huge-int `json.loads` ValueError; type-confusion + non-dict crashes escaping `normalize_event`/`observations`) are latent-until-Live and tracked as #50/#51/#55/#56/#57/#59 (Cycle B). **Meta-rule: parse surfaces are an untrusted boundary — guard `isinstance(dict)` at `observations()`, catch `ValueError` around `json.loads`, and use possessive/length-capped regexes — before any connector goes Live.**
