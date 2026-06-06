@@ -526,3 +526,22 @@ def test_fathom_verify_nonstr_header_fails_closed():
     headers = dict(headers)
     headers["webhook-id"] = 12345  # int, not str
     assert conn.verify(headers=headers, body=body) is False
+
+
+def _signed_zendesk_body(body: bytes) -> dict:
+    ts = "2026-06-03T10:00:00Z"
+    sig = base64.b64encode(hmac.new(b"zendesk-secret", ts.encode() + body, hashlib.sha256).digest()).decode("ascii")
+    return {"X-Zendesk-Webhook-Signature": sig, "X-Zendesk-Webhook-Signature-Timestamp": ts}
+
+
+def test_idless_replay_deduped_by_body():
+    # #60: an id-less but identically-signed delivery is deduped by body hash (no unbounded replay),
+    # while a DISTINCT id-less body still emits (the hash discriminates, not a constant).
+    from adapter.core.webhook_security import DeliveryDedupCache
+    conn = ZendeskConnector(secret="zendesk-secret", dedup=DeliveryDedupCache())
+    body = json.dumps({"type": "x", "subject": "plain", "detail": {"subject": "Hello there"}}).encode("utf-8")
+    h = _signed_zendesk_body(body)
+    assert deliver_webhook(conn, headers=h, body=body, sink=CollectingSink()) == 1  # first
+    assert deliver_webhook(conn, headers=h, body=body, sink=CollectingSink()) == 0  # id-less replay deduped
+    body2 = json.dumps({"type": "x", "subject": "plain", "detail": {"subject": "A different ticket"}}).encode("utf-8")
+    assert deliver_webhook(conn, headers=_signed_zendesk_body(body2), body=body2, sink=CollectingSink()) == 1

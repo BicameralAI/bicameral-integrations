@@ -220,6 +220,14 @@ class DeliveryDedupCache:
     least-recently-written bucket is dropped past ``max_partitions``. The
     ``clock`` is injectable for deterministic TTL tests. Ported from
     ``bicameral-mcp/webhooks/dedup.py``.
+
+    **Residual replay window (#60, by design):** because the cache is bounded (LRU +
+    TTL), an eviction flood (> ``max_entries`` distinct ids) or waiting past
+    ``ttl_seconds`` can still let a *genuinely-signed* historical delivery replay. For
+    the windowless providers (Zendesk/Jira/Sentry/PagerDuty) the operator should size
+    ``max_entries``/``ttl_seconds`` to the expected delivery rate, or supply a persistent
+    dedup store, for high-assurance replay protection. (Id-less replays are closed by the
+    connector's body-hash dedup fallback.)
     """
 
     def __init__(

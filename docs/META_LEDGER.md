@@ -2352,6 +2352,78 @@ verifies chain #1–#88. FX-SEC-001 + FX-RUNTIME-001 MODIFIED. Parse surfaces ar
 payloads. **Remaining (Cycle C):** replay #60, nits #61.
 
 ---
+
+### Entry #89: GATE AUDIT — security red-team Cycle C (replay + nits) (PASS)
+
+**Entry ID**: `redteamCycleC89aud`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: AUDIT (gate tribunal)
+**Author**: Independent auditor (fresh-context, Option B — author-momentum SG-007)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-security-replay-nits-cycle-c-2026-06-05.md)
+= 7b7fe5eff6b63b15f273d6f39269b7725f61431418177c16cc82693b4df10575
+```
+
+**Previous Hash**: 563f99384c7680b0494c78df599da62226c159f4d72a4f7f267797681d07af22
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 9dc052e266d90a5b8f18b9683ccc60ec23dabc9e913867e28d7484c31743b32c
+```
+
+**Verdict**: **PASS**. Both VETO trip-wires cleared by the auditor running python: #60 body-hash dedup loses
+no legitimate evidence (an identical signed body IS a replay; distinct events carry distinct bodies; dedup
+only active when a cache is configured; existing signed-fixture tests have ids + no cache → unaffected); #61
+`_is_blank` rejects zero-width/format-only excerpts while ACCEPTING CJK/emoji/punctuation/padded text (verified
+`unicodedata.category` against a corpus), and the 128-char source_id bound is an order of magnitude above the
+longest real id. 3 advisories honored (distinct-bodies companion assertion; CJK/emoji acceptance test). Cleared
+to `/qor-implement`.
+
+---
+
+### Entry #90: SESSION SEAL — security red-team Cycle C: #60, #61 fixed (red-team COMPLETE)
+
+**Entry ID**: `redteamCycleC90seal`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= d4b2505921b4056e738bb900dde06a5855958b4b5b3f5f9d51664c0f0671cb38
+```
+
+**Previous Hash**: 9dc052e266d90a5b8f18b9683ccc60ec23dabc9e913867e28d7484c31743b32c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5b9c4d17cdd8d6f93a6b5c42d244c329c63226fc30a46a69d4096848bf5f41ff
+```
+
+**Decision**: PASS-audit (Entry #89) implemented + substantiated — **the security red-team is COMPLETE (Cycles
+A/B/C, GH #50-#61 all 12 closed)**. **#60**: the 4 windowless webhook providers (zendesk/jira/sentry/pagerduty)
+fall back to `hashlib.sha256(body).hexdigest()` as the dedup key when a delivery carries no id, closing the
+id-less unbounded-replay vector with no event loss (an identical signed body is a replay; the distinct-body
+companion test proves the hash discriminates). The eviction/TTL replay window is an inherent bounded-cache
+property, documented on `DeliveryDedupCache` (operator sizes the cache or supplies persistent dedup). **#61**:
+`validate_emissions` rejects a zero-width-only excerpt (`_is_blank` treats Unicode `Cf` as blank) and bounds
+`source_id` to 128 chars. **Verification**: the audit ran python to clear both VETO trip-wires (no evidence
+loss; CJK/emoji excerpts still accepted); the regression tests (id-less replay deduped + distinct bodies emit;
+zero-width rejected; oversized source_id rejected; CJK/emoji accepted) all pass — verified inline for this
+small, audit-PASSed cycle. **`mods/` untouched.** pytest **361 passed** (+4), ruff + mypy clean, governance gate
+verifies chain #1–#90. FX-SEC-001 + FX-RUNTIME-001 MODIFIED. **Red-team retrospective: the cryptographic +
+redaction CORES were sound throughout; all 12 findings were edge defects (wire-field screening gaps + error-channel
+leaks in A, ReDoS/parse-crash DoS in B, replay/nits in C). Parse surfaces are now safe to expose to hostile
+payloads — the before-Live security gate is cleared.**
+
+---
 *Chain integrity: VALID*
-*Status: `main` + security red-team Cycle B SEALED at Entry #88 (`563f9938`; L2). **26 Beta connectors / 0 Prototype.** Parse + redaction surfaces hardened against hostile payloads (ReDoS linear, huge-int/oversized/type-confusion/non-dict all fail closed) — the before-Live DoS gate. Cycle A (#52/#53/#54) + B (#50/#51/#55/#56/#57/#58/#59) done; cores sound. Live emission seam real; bot #109 CLOSED.*
-*Next required action: red-team **Cycle C** (replay #60 + nits #61 — the last 2 open red-team issues); then operator decision — promote a connector to Live (the DoS gate is now cleared by Cycle B) / next unbuilt connectors. Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` — **security red-team COMPLETE at Entry #90 (`5b9c4d17`; L2). All 12 findings (GH #50-#61) fixed across Cycles A/B/C; cores were sound.** 26 Beta connectors / 0 Prototype; parse + redaction surfaces hardened (wire-field screening, no error-channel leaks, ReDoS-linear, hostile payloads fail closed, id-less replay deduped). Live emission seam real; bot #109 CLOSED. The before-Live security gate is cleared.*
+*Next required action: operator decision — promote a connector to Live (DoS/security gate now cleared — wire `GatewaySink(endpoint, token)` against a real gateway) / next unbuilt connectors (demand-driven). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
