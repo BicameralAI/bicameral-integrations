@@ -12,6 +12,7 @@ from __future__ import annotations
 import base64
 import json
 import urllib.parse
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
@@ -308,7 +309,9 @@ def test_non_object_body_still_fails_closed() -> None:
 
 def test_blank_secret_fails_closed_each_spec() -> None:
     empty = MappingSecretResolver({})  # keyed by source_id; all miss → ''
-    builders = [build_openai_admin_spec, build_copilot_spec, build_granola_spec]
+    builders: list[Callable[..., object]] = [
+        build_openai_admin_spec, build_copilot_spec, build_granola_spec
+    ]
     for build in builders:
         with pytest.raises(PollError) as exc:
             build(empty)
@@ -369,7 +372,7 @@ def test_servicenow_offset_exact_multiple_edge() -> None:
     # Total is an exact multiple of limit: the final full page advances once more to a
     # 0-row page, which then stops cleanly (no crash, no infinite loop).
     full = {"result": [{"number": "INC1"}, {"number": "INC2"}]}  # 2 == limit
-    empty = {"result": []}
+    empty: dict = {"result": []}
     transport = RecordedTransport([_json_resp(full), _json_resp(full), _json_resp(empty)])
     resolver = MappingSecretResolver({"servicenow": "snow-password"})
     count = poll(ServiceNowConnector(),
