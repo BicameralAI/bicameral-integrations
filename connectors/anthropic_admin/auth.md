@@ -43,6 +43,10 @@ queued):
   parameter named `page`. The param **name and transport (query vs body vs header) are unverified.**
   `build_anthropic_admin_spec(..., next_param=...)` parameterizes it.
 
+**Secret resolver key**: the operator's `SecretResolver` resolves the key by the connector
+**`source_id`** (`anthropic_admin`); the `admin_api_key` name below is the credential's *meaning*,
+not the lookup key.
+
 ## Deferred live paths
 
 - The real-network REST poll of `/v1/organizations/usage_report/messages` (+ `/cost_report`) +

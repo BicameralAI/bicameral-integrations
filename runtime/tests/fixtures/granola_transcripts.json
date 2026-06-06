@@ -1,0 +1,12 @@
+{
+  "transcripts": [
+    {
+      "id": "granola-tx-0001",
+      "title": "Weekly architecture sync",
+      "transcript_text": "Discussed the poll-client fan-out and the runtime boundary.",
+      "participants": [{ "name": "Reviewer A" }, { "name": "Reviewer B" }],
+      "ended_at": "2026-06-05T15:30:00Z"
+    }
+  ],
+  "has_more": false
+}

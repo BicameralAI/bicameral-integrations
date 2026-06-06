@@ -27,9 +27,25 @@ surface** only (live REST poll deferred).
 - `api_token` — the Service-User `cog_…` key (Bearer) for the deferred REST poll.
 - `org_id` — the Devin organization id for the list endpoint.
 
+## Live path — reference poll client (recorded-fixture-proven)
+
+The request-construction is **built** in `runtime/poll_specs.py` (`build_devin_spec`) and proven
+against a recorded fixture (`Authorization: Bearer`; `sessions` envelope). The real network call +
+token resolution remain operator-run.
+
+- **Secret resolver key**: the `SecretResolver` resolves by the connector **`source_id`** (`devin`);
+  `api_token` above is the credential's *meaning*. `org_id` is **not** resolved as a secret — the
+  operator templates it into the required `base_url` (`build_devin_spec(resolver, base_url=…)` has no
+  default, e.g. `https://api.devin.ai/v3/organizations/<org_id>/sessions`).
+- **Assumptions to confirm before live-network wiring** (verify-before-cite): the **envelope key**
+  (`sessions`? `data`?) is unverified → `items` is a config callable; the **session-list cursor
+  contract is unverified** → **pagination is DEFERRED** (single page) this cycle rather than invented.
+
 ## Deferred live paths
 
-- Live REST poll of `/v3/organizations/{org}/sessions` (+ `/messages`) + Bearer key resolution + cursor pagination.
+- Live REST poll pagination of `/v3/organizations/{org}/sessions` (cursor) + the `/messages` richer
+  surface + token resolution (the `runtime/` poll client fetches the first page; the operator
+  supplies the live transport + secret + cursor confirmation).
 
 Credentials are resolved by the operator runtime, never stored in this package.
 See [TRUST_TIER_MODEL](../../docs/TRUST_TIER_MODEL.md).

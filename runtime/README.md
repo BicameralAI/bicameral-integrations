@@ -17,9 +17,10 @@ live HTTP listener. This layer is the seam an operator wires their host into.
 | `MappingSecretResolver` | Reference resolver over an injected mapping (`""` for unknown ids). |
 | `deliver_webhook(connector, *, headers, body, sink, …)` | Verify + normalize a webhook delivery, emit, return the emission count (0 on reject/dedup). |
 | `deliver_poll(connector, payloads, *, sink, …)` | Parse + normalize a batch of **already-fetched** polled payloads, emit, return the count. |
-| `poll(connector, spec, *, transport, sink, …)` | **Live-poll fetch half** — the symmetric counterpart of `deliver_webhook`'s receive side. Constructs the authenticated request, walks pagination through an injected `HttpTransport`, then delegates to `deliver_poll`. Fail-closed + token-safe. Reference-wired for `anthropic_admin`. |
+| `poll(connector, spec, *, transport, sink, …)` | **Live-poll fetch half** — the symmetric counterpart of `deliver_webhook`'s receive side. Constructs the authenticated request, walks pagination through an injected `HttpTransport`, then delegates to `deliver_poll`. Fail-closed + token-safe. |
 | `HttpTransport` (Protocol) / `UrllibTransport` | The network seam. Operator-run `urllib` default; tests inject a recorded transport (a mock does not promote a connector to Live). |
-| `ApiKeyHeaderAuth`, `PageToken`, `PollSpec`, `build_anthropic_admin_spec` | Poll-client building blocks: api-key-in-header auth (CR/LF-rejecting, token-free errors), token pagination (provider token treated as untrusted), the per-connector spec, and the anthropic_admin reference spec. |
+| `ApiKeyHeaderAuth` / `BearerAuth`, `PageToken`, `PollSpec` | Poll-client building blocks (`poll_client.py`): api-key-in-header + Bearer auth (CR/LF-rejecting, token-free errors), token/cursor pagination (provider token treated as untrusted), the per-connector spec. |
+| `build_*_spec` (`poll_specs.py`) | Per-connector wiring: `anthropic_admin`, `openai_admin`, `copilot`, `devin`, `granola` — resolve the secret by `source_id`, wire endpoint + auth + pagination. |
 
 ## Readiness ladder (ADR-0012)
 
@@ -64,8 +65,7 @@ For ACTIVE/poll connectors the operator supplies a transport (the default
 authenticated request, paginates, and emits:
 
 ```python
-from runtime import poll, CollectingSink
-from runtime.poll_client import UrllibTransport, build_anthropic_admin_spec
+from runtime import poll, CollectingSink, UrllibTransport, build_anthropic_admin_spec
 from connectors.anthropic_admin.connector import AnthropicAdminConnector
 
 spec = build_anthropic_admin_spec(resolver)          # x-api-key + anthropic-version
@@ -73,11 +73,20 @@ count = poll(AnthropicAdminConnector(), spec,
              transport=UrllibTransport(), sink=CollectingSink())
 ```
 
-`poll` is **fail-closed** (non-200 / unparseable / non-dict body / non-list items /
+`poll` is **fail-closed** (non-200 / unparseable / non-object body / non-list items /
 poisoned page token / blank secret / `_MAX_PAGES` / `_MAX_RESPONSE` all raise
 `PollError`) and **token-safe** (the operator secret never enters an error or log).
 The provider response — including the pagination token — is treated as untrusted.
-The reference wiring (`anthropic_admin`) is proven against recorded fixtures; the
-**param name / envelope key are unverified assumptions (A1/A2)** the operator
-confirms against live provider docs before real-network wiring (see the connector's
-`auth.md`). Other poll connectors are wired in follow-on cycles.
+
+**Auth strategies** (`poll_client.py`): `ApiKeyHeaderAuth` (api-key-in-header, e.g.
+anthropic `x-api-key`) and `BearerAuth` (`Authorization: Bearer` + optional extra
+headers). **Per-connector specs** live in `runtime/poll_specs.py` — `build_*_spec`
+helpers that resolve the secret by **`source_id`** and wire the endpoint + auth +
+pagination. Wired this far: `anthropic_admin` (api-key + token pagination),
+`openai_admin` (Bearer + `last_id`/`after` cursor), `copilot` (Bearer; top-level
+JSON array), `devin` (Bearer; operator-templated `org_id` in `base_url`; pagination
+deferred), `granola` (Bearer; `since` watermark operator-side). Each carries
+**unverified wire assumptions** (envelope key / cursor / header version) recorded in
+its `auth.md` as the gate before real-network wiring. **Deferred** (don't fit a
+Bearer list-poll): `google_drive` (`documents.get` + OAuth — a per-resource fetch)
+and `mcp_registry` (Candidate — no verified contract).

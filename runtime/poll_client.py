@@ -26,7 +26,6 @@ from dataclasses import dataclass
 from typing import Any, Callable, Protocol, runtime_checkable
 
 from .delivery import PollConnector, deliver_poll
-from .secrets import SecretResolver
 from .sinks import EmissionSink
 
 _MAX_RESPONSE = 8 * 1024 * 1024  # cap a hostile/huge provider body before parse
@@ -77,14 +76,23 @@ def _reject_control_chars(label: str, value: str) -> None:
 
 
 class ApiKeyHeaderAuth:
-    """API-key-in-header auth (e.g. Anthropic ``x-api-key`` + ``anthropic-version``).
-
-    The only auth strategy shipped this cycle — Bearer/Basic land *with* their
-    connectors (openai_admin/cursor/devin) rather than as untested orphans now.
-    """
+    """API-key-in-header auth (e.g. Anthropic ``x-api-key`` + ``anthropic-version``)."""
 
     def __init__(self, header: str, value: str, *, extra: dict[str, str] | None = None) -> None:
         self._headers = {header: value, **(extra or {})}
+        for key, val in self._headers.items():
+            _reject_control_chars(f"auth_header:{key}", val)
+
+    def headers(self) -> dict[str, str]:
+        return dict(self._headers)
+
+
+class BearerAuth:
+    """Bearer-token auth (``Authorization: Bearer <token>``) + optional ``extra`` headers
+    (e.g. GitHub's ``Accept`` / ``X-GitHub-Api-Version``). CR/LF-rejecting, value-free error."""
+
+    def __init__(self, token: str, *, extra: dict[str, str] | None = None) -> None:
+        self._headers = {"Authorization": f"Bearer {token}", **(extra or {})}
         for key, val in self._headers.items():
             _reject_control_chars(f"auth_header:{key}", val)
 
@@ -104,7 +112,9 @@ class PageToken:
     token_field: str = "next_page"
     has_more_field: str = "has_more"
 
-    def next_url(self, base_url: str, response_json: dict) -> str | None:
+    def next_url(self, base_url: str, response_json: object) -> str | None:
+        if not isinstance(response_json, dict):  # a list/array page can't carry has_more
+            return None
         if not response_json.get(self.has_more_field):
             return None
         token = response_json.get(self.token_field)
@@ -121,7 +131,7 @@ class PollSpec:
 
     base_url: str
     auth: PollAuth
-    items: Callable[[dict], Any]
+    items: Callable[[Any], Any]
     method: str = "GET"
     pagination: PageToken | None = None
 
@@ -167,8 +177,12 @@ class UrllibTransport:
             raise PollError(0, "unexpected_error") from None
 
 
-def _fetch_page(transport: HttpTransport, spec: PollSpec, url: str) -> dict:
-    """Fetch + parse one page; fail-closed on non-200 / unparseable / non-dict body."""
+def _fetch_page(transport: HttpTransport, spec: PollSpec, url: str) -> object:
+    """Fetch + parse one page; fail-closed on non-200 / unparseable / non-object body.
+
+    A page is a JSON **object or array** (some providers, e.g. Copilot metrics, return
+    a top-level array); a scalar/``null`` fails closed. ``spec.items`` unwraps it.
+    """
     response = transport.request(spec.method, url, headers=spec.auth.headers())
     if response.status != _OK_STATUS:
         raise PollError(response.status, "unexpected_status_expected_200")
@@ -176,12 +190,12 @@ def _fetch_page(transport: HttpTransport, spec: PollSpec, url: str) -> dict:
         parsed = json.loads(response.body)
     except (ValueError, UnicodeDecodeError):
         raise PollError(0, "unparseable_body") from None
-    if not isinstance(parsed, dict):
-        raise PollError(0, "non_dict_body")
+    if not isinstance(parsed, (dict, list)):
+        raise PollError(0, "non_object_body")
     return parsed
 
 
-def _items_of(spec: PollSpec, page: dict) -> list:
+def _items_of(spec: PollSpec, page: object) -> list:
     """Extract the per-page payload list, fail-closed if the extractor yields non-list."""
     items = spec.items(page)
     if not isinstance(items, list):
@@ -199,7 +213,7 @@ def poll(
 ) -> int:
     """Fetch (with pagination) then ``deliver_poll`` (parse → normalize → emit).
 
-    Returns the emission count. Fail-closed: a non-200, an unparseable/non-dict
+    Returns the emission count. Fail-closed: a non-200, an unparseable/non-object
     body, a non-list ``items`` result, a poisoned page token, or exceeding
     ``_MAX_PAGES`` all raise ``PollError``. The secret never appears in an error.
     """
@@ -214,36 +228,3 @@ def poll(
         payloads.extend(_items_of(spec, page))
         url = spec.pagination.next_url(spec.base_url, page) if spec.pagination else None
     return deliver_poll(connector, payloads, sink=sink, adapter_version=adapter_version)
-
-
-# Reference wiring: anthropic_admin (aggregate, PII-free). A1/A2 (UNVERIFIED):
-# neither the top-level ``data`` envelope key nor the page-token param name/transport
-# is in our verified contract (auth.md documents only "has_more + next_page"); both
-# must be confirmed against live Anthropic docs before real-network wiring. Kept as
-# config (a callable + an argument), not asserted as fact.
-_ANTHROPIC_BASE = "https://api.anthropic.com/v1/organizations/usage_report/messages"
-_ANTHROPIC_NEXT_PARAM = "page"  # A2 candidate — unverified
-
-
-def build_anthropic_admin_spec(
-    secret_resolver: SecretResolver,
-    *,
-    base_url: str = _ANTHROPIC_BASE,
-    version: str = "2023-06-01",
-    next_param: str = _ANTHROPIC_NEXT_PARAM,
-) -> PollSpec:
-    """Build the anthropic_admin poll spec (``x-api-key`` + ``anthropic-version``).
-
-    Resolves the admin key via the injected resolver and raises a token-free
-    ``PollError`` when blank — fail-closed, no request attempted.
-    """
-    secret = secret_resolver.resolve("anthropic_admin")
-    if not secret:
-        raise PollError(0, "secret_unresolved:anthropic_admin")
-    auth = ApiKeyHeaderAuth("x-api-key", secret, extra={"anthropic-version": version})
-    return PollSpec(
-        base_url=base_url,
-        auth=auth,
-        items=lambda page: page.get("data", []),  # A1 envelope assumption (config, not fact)
-        pagination=PageToken(next_param=next_param),
-    )

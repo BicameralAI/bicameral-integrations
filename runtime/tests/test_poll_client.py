@@ -17,13 +17,24 @@ import pytest
 
 from adapter.core.sensitive import detect_sensitive
 from connectors.anthropic_admin.connector import AnthropicAdminConnector
+from connectors.copilot.connector import CopilotConnector
+from connectors.devin.connector import DevinConnector
+from connectors.granola.connector import GranolaConnector
+from connectors.openai_admin.connector import OpenAIAdminConnector
 from runtime.poll_client import (
     ApiKeyHeaderAuth,
+    BearerAuth,
     HttpResponse,
     PollError,
     _read_capped,
-    build_anthropic_admin_spec,
     poll,
+)
+from runtime.poll_specs import (
+    build_anthropic_admin_spec,
+    build_copilot_spec,
+    build_devin_spec,
+    build_granola_spec,
+    build_openai_admin_spec,
 )
 from runtime.secrets import MappingSecretResolver
 from runtime.sinks import CollectingSink
@@ -200,3 +211,104 @@ def test_recorded_response_is_pii_free() -> None:
     for emission in sink.emissions:
         assert detect_sensitive(emission.body) == []
         assert detect_sensitive(emission.title) == []
+
+
+# --- Bearer fan-out: openai_admin / devin / copilot / granola --------------------
+
+_BEARER = "bearer-token-not-real"
+
+
+def _json_resp(payload) -> HttpResponse:
+    return HttpResponse(200, json.dumps(payload).encode("utf-8"))
+
+
+def test_bearer_auth_header_and_extra() -> None:
+    auth = BearerAuth("tok", extra={"X-GitHub-Api-Version": "2022-11-28"})
+    headers = auth.headers()
+    assert headers["Authorization"] == "Bearer tok"
+    assert headers["X-GitHub-Api-Version"] == "2022-11-28"
+    with pytest.raises(PollError) as exc:
+        BearerAuth("ab\r\ncd")
+    assert "control_char" in exc.value.reason
+    assert "ab" not in exc.value.reason  # value-free
+
+
+def test_openai_admin_poll_two_pages_cursor() -> None:
+    transport = RecordedTransport([_resp("openai_admin_audit_page1.json"),
+                                   _resp("openai_admin_audit_page2.json")])
+    resolver = MappingSecretResolver({"openai_admin": _BEARER})
+    count = poll(OpenAIAdminConnector(), build_openai_admin_spec(resolver),
+                 transport=transport, sink=CollectingSink())
+    assert count == 2
+    # request 1 is Bearer-authed and carries no cursor
+    assert transport.requests[0][2]["Authorization"] == f"Bearer {_BEARER}"
+    assert "after" not in urllib.parse.urlsplit(transport.requests[0][1]).query
+    # request 2 carries the returned last_id ("evt_9") as `after` — token-DRIVEN advance
+    q2 = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(transport.requests[1][1]).query))
+    assert q2.get("after") == "evt_9"
+
+
+def test_copilot_top_level_array_emits_per_day() -> None:
+    # Proves the NEW top-level-array page path (a dict-only harness would reject it).
+    transport = RecordedTransport([_resp("copilot_metrics.json")])
+    resolver = MappingSecretResolver({"copilot": _BEARER})
+    sink = CollectingSink()
+    count = poll(CopilotConnector(), build_copilot_spec(resolver), transport=transport, sink=sink)
+    assert count == 2  # two day objects in the top-level array
+    assert len(transport.requests) == 1  # no pagination
+    assert transport.requests[0][2]["X-GitHub-Api-Version"] == "2022-11-28"
+
+
+def test_devin_single_page_sessions() -> None:
+    transport = RecordedTransport([_resp("devin_sessions.json")])
+    resolver = MappingSecretResolver({"devin": _BEARER})
+    base = "https://api.devin.ai/v3/organizations/org_demo/sessions"  # operator-templated org
+    count = poll(DevinConnector(), build_devin_spec(resolver, base_url=base),
+                 transport=transport, sink=CollectingSink())
+    assert count == 2
+    assert len(transport.requests) == 1  # pagination deferred
+
+
+def test_granola_transcripts_envelope() -> None:
+    transport = RecordedTransport([_resp("granola_transcripts.json")])
+    resolver = MappingSecretResolver({"granola": _BEARER})
+    sink = CollectingSink()
+    count = poll(GranolaConnector(), build_granola_spec(resolver), transport=transport, sink=sink)
+    assert count == 1
+    assert "architecture sync" in sink.emissions[0].title
+
+
+def test_wrong_envelope_key_emits_zero() -> None:
+    # The envelope-key assumption's blast radius: a {data:[...]} body for devin/granola
+    # (whose items keys are sessions/transcripts) yields 0 emissions, no error.
+    devin_resolver = MappingSecretResolver({"devin": _BEARER})
+    t1 = RecordedTransport([_json_resp({"data": [{"session_id": "x"}]})])
+    assert poll(DevinConnector(), build_devin_spec(devin_resolver, base_url="https://x/y"),
+                transport=t1, sink=CollectingSink()) == 0
+    granola_resolver = MappingSecretResolver({"granola": _BEARER})
+    t2 = RecordedTransport([_json_resp({"data": [{"id": "x"}]})])
+    assert poll(GranolaConnector(), build_granola_spec(granola_resolver),
+                transport=t2, sink=CollectingSink()) == 0
+
+
+def test_non_object_body_still_fails_closed() -> None:
+    resolver = MappingSecretResolver({"granola": _BEARER})
+    scalar = RecordedTransport([HttpResponse(200, b"42")])
+    with pytest.raises(PollError) as exc:
+        poll(GranolaConnector(), build_granola_spec(resolver), transport=scalar, sink=CollectingSink())
+    assert exc.value.reason == "non_object_body"
+    # a top-level array does NOT raise non_object_body (the positive path the rename exists for)
+    arr = RecordedTransport([HttpResponse(200, b"[]")])
+    assert poll(CopilotConnector(), build_copilot_spec(MappingSecretResolver({"copilot": _BEARER})),
+                transport=arr, sink=CollectingSink()) == 0
+
+
+def test_blank_secret_fails_closed_each_spec() -> None:
+    empty = MappingSecretResolver({})  # keyed by source_id; all miss → ''
+    builders = [build_openai_admin_spec, build_copilot_spec, build_granola_spec]
+    for build in builders:
+        with pytest.raises(PollError) as exc:
+            build(empty)
+        assert exc.value.reason.startswith("secret_unresolved:")
+    with pytest.raises(PollError):  # devin requires base_url
+        build_devin_spec(empty, base_url="https://x/y")

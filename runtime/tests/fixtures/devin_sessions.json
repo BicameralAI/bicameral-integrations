@@ -1,0 +1,19 @@
+{
+  "sessions": [
+    {
+      "session_id": "devin-sess-0001",
+      "status": "finished",
+      "title": "Fix flaky integration test in checkout flow",
+      "structured_output": "Patched a race in the retry wrapper; added a regression test.",
+      "pull_request": { "url": "https://github.com/example-org/shop/pull/412" }
+    },
+    {
+      "session_id": "devin-sess-0002",
+      "status": "running",
+      "title": "Investigate slow dashboard query",
+      "structured_output": "",
+      "pull_request": {}
+    }
+  ],
+  "has_more": false
+}

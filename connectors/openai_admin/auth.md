@@ -26,9 +26,25 @@ Auth model recorded for the live cycle; this connector ships the **parse surface
 
 - `admin_api_key` — the org Admin API key (Bearer) for the deferred REST poll.
 
+## Live path — reference poll client (recorded-fixture-proven)
+
+The request-construction + cursor pagination are **built** in `runtime/poll_specs.py`
+(`build_openai_admin_spec`) and proven against recorded fixtures (`Authorization: Bearer`;
+`data` envelope; `has_more`+`last_id` re-sent as `after`). The real network call + admin-key
+resolution remain operator-run.
+
+- **Secret resolver key**: the operator's `SecretResolver` resolves the key by the connector
+  **`source_id`** (`openai_admin`); the `admin_api_key` name above is the credential's *meaning*,
+  not the lookup key.
+- **Assumptions to confirm before live-network wiring** (verify-before-cite): the **`data`** envelope
+  key and the response-side cursor (`has_more` + `last_id` re-sent as `after`) are per the OpenAI list
+  *convention* — `auth.md` above documents only `limit/after/before`; confirm for this endpoint.
+  `items` is a config callable and `next_param` is an argument (not baked as fact).
+
 ## Deferred live paths
 
-- Live REST poll of `/v1/organization/audit_logs` + admin-key resolution + cursor pagination.
+- Live REST poll of `/v1/organization/audit_logs` + admin-key resolution (the `runtime/` poll client
+  is built; the operator supplies the live transport + secret + assumption confirmation).
 
 Credentials are resolved by the operator runtime, never stored in this package.
 See [TRUST_TIER_MODEL](../../docs/TRUST_TIER_MODEL.md).
