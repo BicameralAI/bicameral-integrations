@@ -2424,6 +2424,88 @@ leaks in A, ReDoS/parse-crash DoS in B, replay/nits in C). Parse surfaces are no
 payloads — the before-Live security gate is cleared.**
 
 ---
+
+### Entry #91: GATE AUDIT — runtime live-poll client (the ingest fetch half) (PASS)
+
+**Entry ID**: `pollClient91audit`
+**Timestamp**: 2026-06-06T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent / Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-runtime-live-poll-client-2026-06-06.md)
+= 5c40c52b54edd36ce574421fdb4a4f1a98d394d679353be11eeaa078e024653a
+```
+
+**Previous Hash**: 5b9c4d17cdd8d6f93a6b5c42d244c329c63226fc30a46a69d4096848bf5f41ff
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ddcf921b7843099237e28c3b41614f2ce5a87fb051a4eaa41f1246abc361ca6c
+```
+
+**Decision**: An independent fresh-context architect-reviewer audited plan iteration 1 and returned
+**VETO** (correctly): the plan asserted the anthropic page-token wire-mechanism (`next_page` sent as
+a query param named `next_param`) and the top-level `data` envelope key as *verified* when
+`auth.md` documents only "`has_more` + `next_page`" — a verify-before-cite violation (the same
+ground on which confluence's `verify()` was deliberately never built). Also: the headline pagination
+test proved only that two responses drained, not token-DRIVEN advancement; and the provider-supplied
+page token was spliced into a URL unscreened. **Iteration 2 addressed every finding**: A1 (`data`
+envelope) + A2 (page-token param name/transport) downgraded to named **ASSUMPTIONS** recorded in
+`auth.md` as the gate before live-network wiring; `next_param` parameterized (no default-as-fact);
+the provider token treated as untrusted (control-char reject + URL-encode); the page-2 test hardened
+to assert the returned token VALUE; orphan `BearerAuth`/`BasicAuth` dropped (Razor) to land with
+their connectors; added fail-closed tests (unparseable body, poisoned token, bounded read). **PASS**
+on iteration 2.
+
+---
+
+### Entry #92: SESSION SEAL — runtime live-poll client (fetch half); reference anthropic_admin
+
+**Entry ID**: `pollClient92seal`
+**Timestamp**: 2026-06-06T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= c63ca2091512d022f9a6e763e52a2af7bf5c2f4cb956730ba0eb28b45afbb932
+```
+
+**Previous Hash**: ddcf921b7843099237e28c3b41614f2ce5a87fb051a4eaa41f1246abc361ca6c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 977f4ced5efcf170a06f117d60d200907a8936d4b684a756a9e1081b506950de
+```
+
+**Decision**: Built `runtime/poll_client.py` — the missing ingest **fetch half** for ACTIVE
+connectors (the symmetric counterpart of `deliver_webhook`'s receive side). Closes a real hole in
+the Beta readiness claim: `deliver_poll` took already-fetched `payloads`, so the poll connectors'
+"verified" status covered only parse→emit, never request construction / auth / pagination.
+`poll(connector, spec, transport, sink)` walks pagination through an injected `HttpTransport`
+(stdlib `UrllibTransport` default; a `RecordedTransport` proves the path over captured fixtures — a
+mock does NOT promote to Live, ADR-0012) then delegates to the existing `deliver_poll`. `PollAuth`
+ships one impl this cycle (`ApiKeyHeaderAuth`, CR/LF-rejecting, **token-free errors** mirroring
+`GatewaySink` #54); `PageToken` treats the provider token as **untrusted** (control-char reject +
+URL-encode). Fail-closed on non-200 / unparseable / non-dict body / non-list items / poisoned token
+/ blank secret (no request attempted) / `_MAX_PAGES`=100 / `_MAX_RESPONSE`=8 MiB; FX-SEC-001 remains
+the un-bypassable emission backstop. Reference connector **anthropic_admin** (aggregate, PII-free)
+proven end-to-end against recorded 2-page fixtures. **Assumptions A1 (`data` envelope key) + A2
+(page-token param name/transport) are UNVERIFIED, recorded in `anthropic_admin/auth.md` as the gate
+before live-network wiring (verify-before-cite).** **Process**: independent pre-impl audit VETO→
+addressed (Entry #91); pre-seal devil's-advocate code review PASS (one Razor breach — file 253→249
+lines — fixed). **`mods/` untouched.** pytest **374 passed** (+13), ruff + mypy clean, governance
+gate verifies chain #1–#92. FX-RUNTIME-003 NEW (Verified). The other 8 poll connectors fan out in
+follow-on cycles on this audit-blessed harness.
+
+---
 *Chain integrity: VALID*
-*Status: `main` — **security red-team COMPLETE at Entry #90 (`5b9c4d17`; L2). All 12 findings (GH #50-#61) fixed across Cycles A/B/C; cores were sound.** 26 Beta connectors / 0 Prototype; parse + redaction surfaces hardened (wire-field screening, no error-channel leaks, ReDoS-linear, hostile payloads fail closed, id-less replay deduped). Live emission seam real; bot #109 CLOSED. The before-Live security gate is cleared.*
-*Next required action: operator decision — promote a connector to Live (DoS/security gate now cleared — wire `GatewaySink(endpoint, token)` against a real gateway) / next unbuilt connectors (demand-driven). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` (cycle on `feat/runtime-live-poll-client`) — **runtime live-poll client shipped at Entry #92 (`977f4ced`; L2). The ingest fetch half now exists** — poll connectors gain request construction + auth + pagination, proven against recorded fixtures (anthropic_admin reference). 26 Beta connectors / 0 Prototype; security red-team complete (Entry #90); live emission seam + live poll seam both real.*
+*Next required action: operator decision — fan out the live-poll client to the other 8 poll connectors (openai_admin/copilot/cursor/devin/servicenow/granola/google_drive/mcp_registry; Bearer/Basic/OAuth auth strategies land with them) / promote a connector to Live (wire `GatewaySink` + `poll`/`deliver_webhook` against a real gateway). Before live-network poll wiring: confirm A1/A2 against live provider docs. Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

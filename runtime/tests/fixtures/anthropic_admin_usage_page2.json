@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "starting_at": "2026-06-06T00:00:00Z",
+      "ending_at": "2026-06-07T00:00:00Z",
+      "results": [
+        {
+          "model": "claude-sonnet-4-6",
+          "workspace_id": "wrkspc_c3d4",
+          "api_key_id": "apikey_x7w6",
+          "service_tier": "batch",
+          "uncached_input_tokens": 500,
+          "cache_read_input_tokens": 0,
+          "cache_creation_input_tokens": 0,
+          "output_tokens": 250
+        }
+      ]
+    }
+  ],
+  "has_more": false,
+  "next_page": null
+}

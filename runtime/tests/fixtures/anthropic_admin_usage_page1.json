@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "starting_at": "2026-06-05T00:00:00Z",
+      "ending_at": "2026-06-06T00:00:00Z",
+      "results": [
+        {
+          "model": "claude-opus-4-8",
+          "workspace_id": "wrkspc_a1b2",
+          "api_key_id": "apikey_z9y8",
+          "service_tier": "standard",
+          "uncached_input_tokens": 1200,
+          "cache_read_input_tokens": 300,
+          "cache_creation_input_tokens": 100,
+          "output_tokens": 800
+        }
+      ]
+    }
+  ],
+  "has_more": true,
+  "next_page": "pg2"
+}
