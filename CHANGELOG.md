@@ -136,3 +136,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   fathom `verify()` fails closed on malformed header types; Cursor redacts its free-text
   `day`/`mostUsedModel`; and all 26 connectors' `observations()` reject a non-dict payload.
   Parse surfaces are now safe to expose to hostile payloads (the gate before any Live deployment).
+
+### Security (red-team Cycle C — replay + nits, GH #60/#61)
+
+- The 4 windowless webhook providers (Zendesk/Jira/Sentry/PagerDuty) fall back to a
+  body-hash dedup key when a delivery carries no id, closing the id-less unbounded-replay
+  vector without dropping events (the eviction/TTL replay window is an inherent bounded-cache
+  property, documented on `DeliveryDedupCache`). The emission contract now rejects a
+  zero-width-only excerpt (treats Unicode format chars as blank) and bounds `source_id` to
+  128 chars. Completes the security red-team (Cycles A/B/C, GH #50-#61).

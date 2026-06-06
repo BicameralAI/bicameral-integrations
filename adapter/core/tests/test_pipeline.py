@@ -176,3 +176,25 @@ def test_secret_in_source_id_is_rejected():
     # #52 (extended): source_id reaches the wire as source_type — must be screened.
     with pytest.raises(EmissionContractError):
         validate_emissions([_emission(source_id=_GHP)])
+
+
+def test_zero_width_excerpt_rejected():
+    # #61: a zero-width-only excerpt is visually blank and must be rejected.
+    for blank in ("​", "﻿ ", "‎‏"):
+        ev = SourceEvidence(source_ref=_ref(), excerpt=blank)
+        with pytest.raises(EmissionContractError):
+            validate_emissions([_emission(evidence=(ev,))])
+
+
+def test_visible_excerpt_still_accepted():
+    # #61: real text (incl. CJK, emoji, punctuation, padded) must still pass.
+    for good in ("hello", " x ", "café", "日本語", "🚀 ship it", "!!!"):
+        ev = SourceEvidence(source_ref=_ref(), excerpt=good)
+        assert validate_emissions([_emission(evidence=(ev,))])
+
+
+def test_oversized_source_id_rejected():
+    # #61: a degenerate long source_id (regex-valid) must not reach the wire as source_type.
+    with pytest.raises(EmissionContractError):
+        validate_emissions([_emission(source_id="a" * 200)])
+    assert validate_emissions([_emission(source_id="github")])  # normal still passes

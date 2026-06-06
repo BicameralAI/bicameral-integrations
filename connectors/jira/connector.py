@@ -19,6 +19,7 @@ sensitive screen (``FX-SEC-001``) is the guard.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 from collections.abc import Callable
@@ -136,8 +137,8 @@ class JiraConnector:
         if not isinstance(payload, dict):
             return []
         if self._dedup is not None:
-            delivery_id = self._delivery_id(headers, payload)
-            if delivery_id and self._dedup.is_duplicate("jira", delivery_id):
+            delivery_id = self._delivery_id(headers, payload) or hashlib.sha256(body).hexdigest()  # body-hash fallback dedups id-less replays (#60)
+            if self._dedup.is_duplicate("jira", delivery_id):
                 return []
             self._dedup.mark_seen("jira", delivery_id)
         return [parse_issue(payload)]

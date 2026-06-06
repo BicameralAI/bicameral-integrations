@@ -59,5 +59,5 @@ forgery; redact-and-pass invariant held; GatewaySink 201-only + F-1 re-screen). 
 - [x] [#57] (Cycle B, Entry #88) fathom `verify()` narrow `except` → malformed input crashes vs fail-closed (Cycle B).
 - [x] [#58] (Cycle B, Entry #88) cursor leaks generic email/phone (`day`/`mostUsedModel` unfiltered) (Cycle B — needs an email/phone screen pattern decision).
 - [x] [#59] (Cycle B, Entry #88) `observations()` crashes on non-dict payload (all 26, no `isinstance` guard) (Cycle B).
-- [ ] [#60] Replay defeatable for windowless providers (id-less/eviction/TTL) (Cycle C).
-- [ ] [#61] Nits: zero-width passes excerpt check; `source_id` no length bound (Cycle C).
+- [x] [#60] (Cycle C, Entry #90) Replay defeatable for windowless providers (id-less/eviction/TTL) (Cycle C).
+- [x] [#61] (Cycle C, Entry #90) Nits: zero-width passes excerpt check; `source_id` no length bound (Cycle C).

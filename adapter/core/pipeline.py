@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 from collections.abc import Iterable
 
 from .emissions import AdapterEmission, SourceEvidence
@@ -10,11 +11,19 @@ from .observations import Observation
 from .sensitive import detect_sensitive
 
 _SOURCE_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
+_MAX_SOURCE_ID = 128  # a degenerate long source_id must not become the wire `source_type` (#61)
 _EMISSION_TYPES = frozenset({"candidate", "evidence", "hint", "advisory"})
 
 
 class EmissionContractError(ValueError):
     """Raised when an emission violates the ADR-0005 neutral-contract rules."""
+
+
+def _is_blank(text: str) -> bool:
+    """True when ``text`` has no visible character — only whitespace or Unicode format
+    chars (``Cf``: zero-width space U+200B, BOM U+FEFF, RTL/LTR marks). ``str.strip()``
+    alone leaves a zero-width excerpt looking non-blank (#61)."""
+    return not any(not c.isspace() and unicodedata.category(c) != "Cf" for c in text)
 
 
 def validate_emissions(emissions: Iterable[AdapterEmission]) -> list[AdapterEmission]:
@@ -34,9 +43,11 @@ def validate_emissions(emissions: Iterable[AdapterEmission]) -> list[AdapterEmis
     for emission in validated:
         if not _SOURCE_ID_RE.match(emission.source_id):
             raise EmissionContractError(f"source_id_invalid: {emission.source_id!r}")
+        if len(emission.source_id) > _MAX_SOURCE_ID:
+            raise EmissionContractError("source_id_too_long")
         if not emission.evidence:
             raise EmissionContractError("evidence_required: emission has no evidence")
-        if any(not ev.excerpt.strip() for ev in emission.evidence):
+        if any(_is_blank(ev.excerpt) for ev in emission.evidence):
             raise EmissionContractError("evidence_excerpt_blank")
         if not emission.adapter_version.strip():
             raise EmissionContractError("adapter_version_required")
