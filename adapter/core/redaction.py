@@ -18,7 +18,10 @@ import re
 
 from .sensitive import redact_catalog
 
-_EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
+# RFC-bounded quantifiers (local <=64, label <=63, TLD <=63) cap the per-anchor scan to a
+# constant, so a long local/domain run with no terminating `.TLD` fails in O(1) per position
+# instead of O(n) — O(n) total, no ReDoS (#51). Match set for well-formed emails is unchanged.
+_EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]{1,64}@(?:[A-Za-z0-9-]{1,63}\.)+[A-Za-z]{2,63}\b")
 _PHONE_RE = re.compile(
     r"(?<!\d)(?:\+?\d{1,3}[ .\-]?)?(?:\(\d{3}\)|\d{3})[ .\-]?\d{3}[ .\-]?\d{4}(?!\d)"
 )

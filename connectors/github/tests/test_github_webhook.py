@@ -62,3 +62,12 @@ def test_normalize_event_dedup_second_delivery_returns_empty():
     conn = GitHubConnector(secret=_SECRET, dedup=DeliveryDedupCache())
     assert len(conn.normalize_event(headers=_headers(body), body=body)) == 1
     assert conn.normalize_event(headers=_headers(body), body=body) == []
+
+
+def test_parse_pull_request_defends_nondict_nested():
+    # #56: a present-but-non-dict base/repo/user must not crash a chained .get.
+    from connectors.github.connector import parse_pull_request
+    for bad in [{"base": None, "number": 1}, {"base": "x", "number": 1},
+                {"base": {"repo": "y"}, "number": 1}, {"user": None, "number": 1}]:
+        obs = parse_pull_request(bad)
+        assert obs.source_ref.source_id == "github"  # no AttributeError

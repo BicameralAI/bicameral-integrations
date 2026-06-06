@@ -494,3 +494,35 @@ def test_deliver_webhook_missing_signature_header_fails_closed():
         sink = CollectingSink()
         assert deliver_webhook(conn, headers={}, body=body, sink=sink) == 0
         assert sink.emissions == []
+
+
+# --- red-team Cycle B regression: hostile payloads fail closed ---
+
+
+def test_huge_int_body_fails_closed():
+    # #55: a >4300-digit int makes json.loads raise ValueError -> caught -> 0, no crash.
+    conn, _h, _b = _signed_github()
+    body = b'{"pull_request":{"number":' + b"9" * 5000 + b'}}'
+    sig = "sha256=" + _hex_hmac("gh-secret", body)
+    assert deliver_webhook(conn, headers={"X-Hub-Signature-256": sig}, body=body, sink=CollectingSink()) == 0
+
+
+def test_oversized_body_rejected():
+    # #55: a body over 1 MiB is rejected before parse/verify.
+    conn, headers, _b = _signed_github()
+    assert deliver_webhook(conn, headers=headers, body=b"x" * (1_048_576 + 1), sink=CollectingSink()) == 0
+
+
+def test_all_observations_reject_non_dict():
+    # #59: representative connectors fail closed on a non-dict payload (all 26 verified in-cycle).
+    for conn in (OsvConnector(), CopilotConnector(), GranolaConnector(), ServiceNowConnector()):
+        for arg in (None, "x", 5, []):
+            assert conn.observations(arg) == []
+
+
+def test_fathom_verify_nonstr_header_fails_closed():
+    # #57: a non-str webhook-id (past a valid secret) must fail closed, not crash.
+    conn, headers, body = _signed_fathom()
+    headers = dict(headers)
+    headers["webhook-id"] = 12345  # int, not str
+    assert conn.verify(headers=headers, body=body) is False

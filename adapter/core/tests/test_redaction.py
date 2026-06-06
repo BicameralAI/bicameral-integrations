@@ -3,8 +3,11 @@
 
 from __future__ import annotations
 
+import time as _t
+
 from adapter.core.redaction import redact
 from adapter.core.sensitive import detect_sensitive
+from connectors.confluence.connector import _strip_storage_html
 
 _VALID_PAN = "4111111111111111"  # Luhn-valid test Visa
 _AKIA = "AKIA" + "ABCDEFGHIJKLMNOP"  # AKIA + 16 uppercase alnum (matches the secret pattern)
@@ -61,3 +64,25 @@ def test_redact_keeps_id_preceded_digits():
     out = redact(f"order_id: {_VALID_PAN}")
     assert _VALID_PAN in out
     assert detect_sensitive(out) == []
+
+
+# --- #50/#51: ReDoS regression (linear, not O(n^2)) ---
+
+
+def test_strip_storage_html_linear_on_pathological():
+    start = _t.perf_counter()
+    _strip_storage_html("<" * 200_000)  # would hang at O(n^2)
+    assert _t.perf_counter() - start < 1.0
+    assert _strip_storage_html("<p>hello</p>") == "hello"  # still strips
+
+
+def test_redact_email_linear_on_pathological():
+    start = _t.perf_counter()
+    redact("a@" + "a-" * 200_000)  # would hang at O(n^2)
+    assert _t.perf_counter() - start < 1.0
+
+
+def test_redact_email_match_set_preserved():
+    for e in ["jane@example.com", "jane.doe@example.com", "user@example.com", "a@b.com",
+              "x+tag@sub.example.co.uk", "noreply@aider.chat", "security@bicameral.ai", "ops@a.io"]:
+        assert "[redacted:email]" in redact(f"contact {e} now"), e

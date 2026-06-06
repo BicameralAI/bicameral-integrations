@@ -2279,6 +2279,79 @@ ReDoS #50/#51, DoS #55/#56/#57/#59, cursor-PII #58, replay #60, nits #61 — tra
 latent-until-Live.
 
 ---
+
+### Entry #87: GATE AUDIT — security red-team Cycle B (DoS/robustness) (PASS)
+
+**Entry ID**: `redteamCycleB87aud`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: AUDIT (gate tribunal)
+**Author**: Independent auditor (fresh-context, Option B — author-momentum SG-007)
+**Risk Grade**: L2 (DoS/robustness hardening of the parse + redaction surfaces)
+
+**Content Hash**:
+```
+SHA256(plan-security-dos-hardening-cycle-b-2026-06-05.md)
+= e10c88b356789cdd224055fad73f9e630ee8215df46a7ece662e32be910555b0
+```
+
+**Previous Hash**: 90bc56750412c6edbe888b8703b1dbfbb0914b64737578592313e2bed2596d79
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= d35c9b72b0dc3dbafd025b46c99015c6f3d1432dd11a35c423edeb2c6276145b
+```
+
+**Verdict**: **PASS**. Seven DoS/robustness fixes (#50/#51/#55/#56/#57/#58/#59). Independent audit ran
+python against a broad email corpus confirming no `_EMAIL_RE` match-set regression (no email leak),
+confirmed `except (ValueError, UnicodeDecodeError)` cannot over-catch (only `json.loads` is in the try),
+the 1 MiB cap is reasonable, the cursor `redact()` preserves the opaque `userId`, and the `observations()`
+non-dict guard is universally safe (all 26 immediately `.get()` the payload). 0 blocking; 4 advisories
+honored. **NOTE:** the audit reasoned the ReDoS fix should be possessive quantifiers — implementation +
+empirical verification proved that WRONG (the quadratic is the outer re-scan, not intra-match backtracking);
+the shipped fix bounds/excludes instead (SG-2026-06-05-F). Cleared to `/qor-implement`.
+
+---
+
+### Entry #88: SESSION SEAL — security red-team Cycle B: #50/#51/#55/#56/#57/#58/#59 fixed
+
+**Entry ID**: `redteamCycleB88seal`
+**Timestamp**: 2026-06-05T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= d03ea0e1a52bc5bf038791dbaf26770ae2a07e65c12de71380a259ad35999483
+```
+
+**Previous Hash**: d35c9b72b0dc3dbafd025b46c99015c6f3d1432dd11a35c423edeb2c6276145b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 563f99384c7680b0494c78df599da62226c159f4d72a4f7f267797681d07af22
+```
+
+**Decision**: PASS-audit (Entry #87) implemented + substantiated. **The before-Live DoS/robustness gate.**
+**#50/#51 ReDoS**: confluence `_TAG_RE` → `<[^<>]*>` (exclude the anchor) + email `_EMAIL_RE` → RFC-bounded
+quantifiers (`{1,64}`/`{1,63}`/`{2,63}`) — both linear (200 KB hostile payload: ~15 s → ~20 ms; no email
+match-set regression). **#55**: `deliver_webhook` 1 MiB body cap + 9 connectors broaden `except` to
+`ValueError` (a >4300-digit JSON int `ValueError` from `json.loads` now fails closed). **#56**: github
+`_d()` nested-dict coercion + servicenow `_text()` isinstance guard (type-confusion no longer crashes past
+a valid signature). **#57**: fathom `verify()` catches `(AttributeError, TypeError)` (malformed header types
+fail closed). **#58**: cursor redacts free-text `day`/`mostUsedModel` (the opaque `userId` preserved).
+**#59**: all 26 `observations()` reject a non-dict payload (`[]`). **CRITICAL LESSON (SG-2026-06-05-F):** the
+audit's possessive-quantifier fix was empirically WRONG — the ReDoS was a re-scan quadratic, not intra-match;
+MEASURE, don't reason. **Independent verification (penetration-tester re-ran all 7 exploits against patched
+code): all empirically CLOSED (measured linear/blocked), no regression, no email leak, full suite green.**
+**`mods/` untouched.** **Verification**: pytest **357 passed** (+10), ruff + mypy clean, governance gate
+verifies chain #1–#88. FX-SEC-001 + FX-RUNTIME-001 MODIFIED. Parse surfaces are now safe to expose to hostile
+payloads. **Remaining (Cycle C):** replay #60, nits #61.
+
+---
 *Chain integrity: VALID*
-*Status: `main` + security red-team Cycle A SEALED at Entry #86 (`90bc5675`; L3). **26 Beta connectors / 0 Prototype.** Guarantee fixes: FX-SEC-001 screen covers all wire-bound fields (secret-in-URL/ref/id → reject, #52); errors redact pan/phi (#53); GatewaySink rejects CR/LF token + token-free errors (#54). Red-team cores sound (no forgery; redact invariant held). PII redaction-and-pass + Live emission seam real; bot #109 CLOSED.*
-*Next required action: red-team **Cycle B** (DoS/ReDoS hardening before Live — GH #50/#51/#55/#56/#57/#58/#59) then **Cycle C** (replay #60, nits #61); OR operator decision — promote a connector to Live (operator deployment wiring `GatewaySink`) / next unbuilt connectors. Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` + security red-team Cycle B SEALED at Entry #88 (`563f9938`; L2). **26 Beta connectors / 0 Prototype.** Parse + redaction surfaces hardened against hostile payloads (ReDoS linear, huge-int/oversized/type-confusion/non-dict all fail closed) — the before-Live DoS gate. Cycle A (#52/#53/#54) + B (#50/#51/#55/#56/#57/#58/#59) done; cores sound. Live emission seam real; bot #109 CLOSED.*
+*Next required action: red-team **Cycle C** (replay #60 + nits #61 — the last 2 open red-team issues); then operator decision — promote a connector to Live (the DoS gate is now cleared by Cycle B) / next unbuilt connectors. Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

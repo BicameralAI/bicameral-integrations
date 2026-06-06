@@ -30,6 +30,12 @@ from adapter.core.webhook_security import (
 )
 
 
+def _d(value: object) -> dict:
+    """Coerce a present-but-non-dict nested field to ``{}`` (SG-I; #56) — a `null`/str
+    `base`/`repo`/`user` would otherwise crash a chained ``.get`` with AttributeError."""
+    return value if isinstance(value, dict) else {}
+
+
 def parse_pull_request(payload: dict) -> Observation:
     """Map a GitHub pull-request object into a provider-neutral Observation.
 
@@ -37,7 +43,7 @@ def parse_pull_request(payload: dict) -> Observation:
     empty. Provider-specific field knowledge stays here; normalization into an
     AdapterEmission is the universal adapter's job (ADR-0004).
     """
-    repo = payload.get("base", {}).get("repo", {}).get("full_name", "")
+    repo = _d(_d(payload.get("base")).get("repo")).get("full_name", "")
     number = payload.get("number", "")
     title = payload.get("title", "")
     body = payload.get("body", "") or ""
@@ -51,7 +57,7 @@ def parse_pull_request(payload: dict) -> Observation:
         excerpt=body or title,
         mode=SourceMode.ACTIVE,
         title=title,
-        author=payload.get("user", {}).get("login", ""),
+        author=_d(payload.get("user")).get("login", ""),
         timestamp=payload.get("merged_at", ""),
     )
 
@@ -91,6 +97,8 @@ class GitHubConnector:
         return host == "github.com" or host.endswith(".github.com")
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         return [parse_pull_request(payload)]
 
     def verify(self, *, headers: dict[str, str], body: bytes) -> bool:
@@ -114,7 +122,7 @@ class GitHubConnector:
             return []
         try:
             payload = json.loads(body)
-        except (json.JSONDecodeError, UnicodeDecodeError):
+        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
         if not isinstance(payload, dict):
             return []

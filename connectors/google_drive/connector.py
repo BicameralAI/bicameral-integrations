@@ -148,4 +148,6 @@ class GoogleDriveConnector:
         return bool(_URL_RE.match((ref.url or "").strip()))
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         return [parse_document(payload)]

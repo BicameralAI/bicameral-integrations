@@ -85,6 +85,8 @@ class NotionConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         return [parse_page(payload)]
 
     def verify(self, *, headers: dict[str, str], body: bytes) -> bool:
@@ -114,7 +116,7 @@ class NotionConnector:
             return []
         try:
             payload = json.loads(body)
-        except (json.JSONDecodeError, UnicodeDecodeError):
+        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
         if not isinstance(payload, dict):
             return []

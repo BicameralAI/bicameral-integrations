@@ -88,4 +88,6 @@ class OsvConnector:
     capabilities = SourceCapabilities(modes=frozenset({SourceMode.ACTIVE}))
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         return [parse_vuln(payload)]

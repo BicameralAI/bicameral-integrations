@@ -58,3 +58,12 @@ def test_blank_day_floors():
     assert obs.source_ref.ref == "cursor-usage"
     assert obs.excerpt.startswith("Cursor usage usage:")  # day floored in summary
     assert obs.title == "Cursor usage"
+
+
+def test_freetext_day_and_model_redacted():
+    # #58: day/mostUsedModel are free-text -> redacted; opaque userId preserved.
+    obs = parse_usage_day({"userId": 42, "day": "x@evil.com", "mostUsedModel": "a@b.com",
+                           "acceptedLinesAdded": 3})
+    blob = obs.excerpt + obs.title + obs.source_ref.ref
+    assert "@" not in blob  # email scrubbed from day + model
+    assert "user 42" in obs.excerpt  # opaque userId attribution preserved
