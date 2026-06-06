@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 from connectors.confluence.connector import _strip_storage_html, parse_content
@@ -32,6 +33,16 @@ def test_parse_content_extracts_storage_text():
 def test_strip_storage_html_removes_tags_and_unescapes():
     assert _strip_storage_html("<p>A &amp; B</p>") == "A & B"
     assert _strip_storage_html("<h2>Heading</h2><p>Body  text</p>") == "Heading Body text"
+
+
+def test_strip_storage_html_handles_unclosed_tag_runs_quickly():
+    payload = "<" * 100_000
+    start = time.perf_counter()
+
+    assert _strip_storage_html(payload) == payload
+
+    elapsed = time.perf_counter() - start
+    assert elapsed < 0.5
 
 
 def test_blank_body_floors_to_title_then_literal():

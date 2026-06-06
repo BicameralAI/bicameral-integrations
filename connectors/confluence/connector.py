@@ -19,7 +19,6 @@ from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
 
-_TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
 
 
@@ -31,7 +30,22 @@ def _strip_storage_html(value: str) -> str:
     plain text; the emission-time secret/PII screen (``pipeline._screen_sensitive``)
     is the security gate, not this function.
     """
-    text = _TAG_RE.sub(" ", value or "")
+    raw = value or ""
+    parts: list[str] = []
+    pos = 0
+    while True:
+        start = raw.find("<", pos)
+        if start == -1:
+            parts.append(raw[pos:])
+            break
+        parts.append(raw[pos:start])
+        end = raw.find(">", start + 1)
+        if end == -1:
+            parts.append(raw[start:])
+            break
+        parts.append(" ")
+        pos = end + 1
+    text = "".join(parts)
     return _WS_RE.sub(" ", html.unescape(text)).strip()
 
 
