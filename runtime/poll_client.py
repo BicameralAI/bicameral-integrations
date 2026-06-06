@@ -26,21 +26,12 @@ from dataclasses import dataclass
 from typing import Any, Callable, Protocol, runtime_checkable
 
 from .delivery import PollConnector, deliver_poll
+from .poll_auth import PollAuth, PollError, _reject_control_chars
 from .sinks import EmissionSink
 
 _MAX_RESPONSE = 8 * 1024 * 1024  # cap a hostile/huge provider body before parse
 _MAX_PAGES = 100  # cap a runaway/cyclic pager (fail-safe)
 _OK_STATUS = 200
-
-
-class PollError(RuntimeError):
-    """A live poll failed. Carries ``status`` + ``reason``; the message never
-    includes the operator secret/token (token-free, like ``GatewayEmissionError``)."""
-
-    def __init__(self, status: int, reason: str = "") -> None:
-        self.status = status
-        self.reason = reason
-        super().__init__(f"poll failed (status={status}, reason={reason or 'unknown'})")
 
 
 @dataclass(frozen=True)
@@ -61,45 +52,6 @@ class HttpTransport(Protocol):
     ) -> HttpResponse: ...
 
 
-@runtime_checkable
-class PollAuth(Protocol):
-    """Per-request auth headers. The operator runtime supplies the resolved secret."""
-
-    def headers(self) -> dict[str, str]: ...
-
-
-def _reject_control_chars(label: str, value: str) -> None:
-    """Reject CR/LF + other control/space chars in a header or token value (a
-    poisoned secret or provider token must not smuggle a header break / URL split)."""
-    if any(ord(ch) < 0x20 or ord(ch) == 0x7F for ch in value):
-        raise PollError(0, f"{label}_contains_control_char")
-
-
-class ApiKeyHeaderAuth:
-    """API-key-in-header auth (e.g. Anthropic ``x-api-key`` + ``anthropic-version``)."""
-
-    def __init__(self, header: str, value: str, *, extra: dict[str, str] | None = None) -> None:
-        self._headers = {header: value, **(extra or {})}
-        for key, val in self._headers.items():
-            _reject_control_chars(f"auth_header:{key}", val)
-
-    def headers(self) -> dict[str, str]:
-        return dict(self._headers)
-
-
-class BearerAuth:
-    """Bearer-token auth (``Authorization: Bearer <token>``) + optional ``extra`` headers
-    (e.g. GitHub's ``Accept`` / ``X-GitHub-Api-Version``). CR/LF-rejecting, value-free error."""
-
-    def __init__(self, token: str, *, extra: dict[str, str] | None = None) -> None:
-        self._headers = {"Authorization": f"Bearer {token}", **(extra or {})}
-        for key, val in self._headers.items():
-            _reject_control_chars(f"auth_header:{key}", val)
-
-    def headers(self) -> dict[str, str]:
-        return dict(self._headers)
-
-
 @dataclass(frozen=True)
 class PageToken:
     """Token pagination: response carries ``has_more_field`` (bool) + ``token_field``
@@ -112,16 +64,39 @@ class PageToken:
     token_field: str = "next_page"
     has_more_field: str = "has_more"
 
-    def next_url(self, base_url: str, response_json: object) -> str | None:
-        if not isinstance(response_json, dict):  # a list/array page can't carry has_more
+    def next_url(self, current_url: str, page: object, item_count: int) -> str | None:
+        if not isinstance(page, dict):  # a list/array page can't carry has_more
             return None
-        if not response_json.get(self.has_more_field):
+        if not page.get(self.has_more_field):
             return None
-        token = response_json.get(self.token_field)
+        token = page.get(self.token_field)
         if not isinstance(token, str) or not token:
             return None  # has_more true but no usable token → stop closed, never loop
         _reject_control_chars("page_token", token)
-        return _with_query_param(base_url, self.next_param, token)
+        return _with_query_param(current_url, self.next_param, token)
+
+
+@dataclass(frozen=True)
+class OffsetPager:
+    """Offset pagination: re-request with ``offset_param`` advanced by ``limit`` until a
+    page returns fewer than ``limit`` items (no ``has_more``/token — e.g. ServiceNow's
+    ``sysparm_offset``/``sysparm_limit``). Emits ONLY ``offset_param``; the page-size
+    param (e.g. ``sysparm_limit``) lives in ``base_url`` and rides along in ``current_url``.
+    """
+
+    offset_param: str
+    limit: int
+    start: int = 0
+
+    def next_url(self, current_url: str, page: object, item_count: int) -> str | None:
+        if item_count < self.limit:
+            return None  # short/empty page → last page; stop closed
+        query = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(current_url).query))
+        try:
+            offset = int(query.get(self.offset_param, self.start))
+        except ValueError:
+            offset = self.start  # defensive: a non-int offset never raises (fail-closed)
+        return _with_query_param(current_url, self.offset_param, str(offset + self.limit))
 
 
 @dataclass(frozen=True)
@@ -133,7 +108,8 @@ class PollSpec:
     auth: PollAuth
     items: Callable[[Any], Any]
     method: str = "GET"
-    pagination: PageToken | None = None
+    pagination: PageToken | OffsetPager | None = None
+    body: bytes | None = None
 
 
 def _with_query_param(base_url: str, param: str, value: str) -> str:
@@ -183,7 +159,7 @@ def _fetch_page(transport: HttpTransport, spec: PollSpec, url: str) -> object:
     A page is a JSON **object or array** (some providers, e.g. Copilot metrics, return
     a top-level array); a scalar/``null`` fails closed. ``spec.items`` unwraps it.
     """
-    response = transport.request(spec.method, url, headers=spec.auth.headers())
+    response = transport.request(spec.method, url, headers=spec.auth.headers(), body=spec.body)
     if response.status != _OK_STATUS:
         raise PollError(response.status, "unexpected_status_expected_200")
     try:
@@ -225,6 +201,7 @@ def poll(
         if pages > _MAX_PAGES:
             raise PollError(0, "max_pages_exceeded")
         page = _fetch_page(transport, spec, url)
-        payloads.extend(_items_of(spec, page))
-        url = spec.pagination.next_url(spec.base_url, page) if spec.pagination else None
+        items = _items_of(spec, page)
+        payloads.extend(items)
+        url = spec.pagination.next_url(url, page, len(items)) if spec.pagination else None
     return deliver_poll(connector, payloads, sink=sink, adapter_version=adapter_version)

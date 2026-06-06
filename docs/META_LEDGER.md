@@ -2583,6 +2583,83 @@ governance gate verifies chain #1–#94. FX-RUNTIME-003 MODIFIED (Verified; +pol
 connectors).
 
 ---
+
+### Entry #95: GATE AUDIT — live-poll fan-out to the Basic-auth connectors (cursor + servicenow) (PASS)
+
+**Entry ID**: `pollBasic95audit`
+**Timestamp**: 2026-06-06T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent / Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-poll-client-basic-connectors-2026-06-06.md)
+= 8423729657eb32500c2664bfccb38c47549dff472b472f79940c2e5a5fb0eb19
+```
+
+**Previous Hash**: 43ffa3e34ca4a4766f42834929ddfdbcc0f6581ed95bbbe24602d282635a0c9b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c205e94f520d3cc0e936a3f401a301e44d026610fdbabb10065a4e6c664311f6
+```
+
+**Decision**: An independent architect-reviewer audited the plan → **PASS-with-corrections** (no
+VETO; the design is sound). Two BLOCKING plan-precision items: **A-2** — the generalized pager
+signature was prose-ambiguous (`page` could read as a page index); fixed to the exact
+`next_url(current_url, page, item_count)` with `page` = the parsed body, and `poll` captures `items`
+locally. **B-3** — `OffsetPager`'s offset parse was under-specified; pinned to missing→`start`,
+non-int→`try/except ValueError→start` (never a bare `ValueError`), emitting only `offset_param`
+(`sysparm_limit` lives in `base_url`). Plus advisories folded: **C-2** BasicAuth screens the RAW
+username/password pre-base64; **D-3** `PollSpec.body` plumbing; **F-1** — the measured line count
+(~259) would breach the 250 Razor, so the auth layer is split into `runtime/poll_auth.py` THIS cycle;
+**E-3** short fixture ids (no accidental Luhn-PAN). **PASS** on iteration 2.
+
+---
+
+### Entry #96: SESSION SEAL — live-poll fan-out: cursor (Basic+POST) + servicenow (Basic+offset)
+
+**Entry ID**: `pollBasic96seal`
+**Timestamp**: 2026-06-06T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 82d8817096aa52712f9c70c437e87a694a7b5cba2901c8ca7220686e8d91f0ce
+```
+
+**Previous Hash**: c205e94f520d3cc0e936a3f401a301e44d026610fdbabb10065a4e6c664311f6
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 7bb73e1ed2c1778627bce1dc97073f1aa459b2c93fe2cd76f1ecdf78db74f917
+```
+
+**Decision**: Completed the poll fan-out — wired the **last 2 buildable poll connectors**: **cursor**
+(HTTP **Basic** key-as-username + empty password; **POST** `/teams/daily-usage-data` with a
+caller-supplied date-range body; PII-free allowlist + opaque `userId`) and **servicenow** (Basic
+integration user+password; **offset pagination** — `sysparm_offset` advances by `sysparm_limit`,
+stops on a short page; redact-and-pass). Harness gained `BasicAuth` (screens the RAW credentials
+pre-base64), **POST-body** support (`PollSpec.body` → `_fetch_page`), and **`OffsetPager`** (fail-closed
+offset parse). The pager interface generalized to `next_url(current_url, page, item_count)` —
+behavior-preserving for every token pager (overwrite semantics). Per the Razor (measured ~259 > 250),
+the auth layer split into **`runtime/poll_auth.py`** (`poll_client.py` → 208). Each new primitive has
+a real consumer (no orphans). cursor's `data` envelope + POST body shape, and the inferred
+`api.cursor.com` host, are marked UNVERIFIED in code + `auth.md`. **All 7 buildable poll connectors
+now have the proven fetch half**; **google_drive** (`documents.get`+OAuth) + **mcp_registry**
+(Candidate) remain disclosed-deferred. **Process**: independent pre-impl audit PASS-with-corrections
+→ all folded (Entry #95); pre-seal devil's-advocate **PASS** (all 6 dimensions) — landed its 3
+advisories (exact-multiple offset-edge test; cursor host flagged; `_int` bool-as-int hardened).
+**`mods/` untouched.** pytest **398 passed** (+16), ruff + mypy clean, governance gate verifies chain
+#1–#96. FX-RUNTIME-003 MODIFIED (Verified; +poll_auth.py + cursor/servicenow).
+
+---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/poll-client-bearer-connectors`) — **live-poll fan-out (Bearer) shipped at Entry #94 (`43ffa3e3`; L2). 5 poll connectors now have the proven fetch half** (anthropic_admin + openai_admin/copilot/devin/granola); `BearerAuth` + top-level-array page support added; `poll_specs.py` split out. 26 Beta connectors / 0 Prototype; security red-team complete (Entry #90); live emission + live poll seams real.*
-*Next required action: operator decision — **Cycle B**: wire the Basic-auth + POST-body connectors `cursor` + `servicenow` (adds `BasicAuth` + request-body support + offset pagination); then revisit deferred `google_drive` (resource-fetch + OAuth) + `mcp_registry` (Candidate). Before any live-network poll wiring: confirm each connector's envelope/cursor assumptions against live provider docs. / promote a connector to Live (wire `GatewaySink` + `poll`/`deliver_webhook`). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` (cycle on `feat/poll-client-basic-connectors`) — **live-poll fan-out COMPLETE at Entry #96 (`7bb73e1e`; L2). All 7 buildable poll connectors have the proven fetch half** (anthropic_admin + openai_admin/copilot/devin/granola via Bearer + cursor/servicenow via Basic); harness: ApiKeyHeader/Bearer/Basic auth, PageToken+OffsetPager pagination, GET+POST, object|array pages, split across poll_client/poll_auth/poll_specs. 26 Beta connectors / 0 Prototype; security red-team complete (Entry #90); live emission + live poll seams real.*
+*Next required action: operator decision — revisit the 2 deferred poll connectors with dedicated approaches: `google_drive` (per-resource `documents.get` + OAuth refresh — needs a resource-fetch seam, not list-poll) + `mcp_registry` (still Candidate — needs a defined auth contract first). Before any live-network poll wiring: confirm each connector's envelope/cursor/body/host assumptions against live provider docs (recorded in each `auth.md`). / promote a connector to Live (wire `GatewaySink` + `poll`/`deliver_webhook` against a real gateway). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

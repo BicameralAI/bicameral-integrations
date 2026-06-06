@@ -9,6 +9,7 @@ connector to Live; ADR-0012). Reference connector: anthropic_admin (PII-free).
 
 from __future__ import annotations
 
+import base64
 import json
 import urllib.parse
 from pathlib import Path
@@ -20,21 +21,23 @@ from connectors.anthropic_admin.connector import AnthropicAdminConnector
 from connectors.copilot.connector import CopilotConnector
 from connectors.devin.connector import DevinConnector
 from connectors.granola.connector import GranolaConnector
+from connectors.cursor.connector import CursorConnector
 from connectors.openai_admin.connector import OpenAIAdminConnector
+from connectors.servicenow.connector import ServiceNowConnector
+from runtime.poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, PollError
 from runtime.poll_client import (
-    ApiKeyHeaderAuth,
-    BearerAuth,
     HttpResponse,
-    PollError,
     _read_capped,
     poll,
 )
 from runtime.poll_specs import (
     build_anthropic_admin_spec,
     build_copilot_spec,
+    build_cursor_spec,
     build_devin_spec,
     build_granola_spec,
     build_openai_admin_spec,
+    build_servicenow_spec,
 )
 from runtime.secrets import MappingSecretResolver
 from runtime.sinks import CollectingSink
@@ -312,3 +315,86 @@ def test_blank_secret_fails_closed_each_spec() -> None:
         assert exc.value.reason.startswith("secret_unresolved:")
     with pytest.raises(PollError):  # devin requires base_url
         build_devin_spec(empty, base_url="https://x/y")
+
+
+# --- Basic-auth fan-out: cursor (POST body) / servicenow (offset pagination) ------
+
+
+def test_basic_auth_header_and_extra() -> None:
+    auth = BasicAuth("KEY", "", extra={"Content-Type": "application/json"})
+    headers = auth.headers()
+    assert headers["Authorization"] == "Basic " + base64.b64encode(b"KEY:").decode()
+    assert headers["Content-Type"] == "application/json"
+    with pytest.raises(PollError) as exc:  # raw username screened pre-base64
+        BasicAuth("ab\r\ncd", "pw")
+    assert "basic_username" in exc.value.reason
+    assert "ab" not in exc.value.reason  # value-free
+    with pytest.raises(PollError):  # password screened too
+        BasicAuth("user", "pw\r\nx")
+
+
+def test_cursor_post_body_and_basic_auth() -> None:
+    transport = RecordedTransport([_resp("cursor_usage.json")])
+    resolver = MappingSecretResolver({"cursor": "cursor-api-key"})
+    body = {"startDate": "2026-06-01", "endDate": "2026-06-06"}  # unverified shape (caller-supplied)
+    sink = CollectingSink()
+    count = poll(CursorConnector(), build_cursor_spec(resolver, body=body), transport=transport, sink=sink)
+    assert count == 2  # two daily-usage rows
+    method, _url, headers, sent_body = transport.requests[0]
+    assert method == "POST"
+    assert headers["Authorization"] == "Basic " + base64.b64encode(b"cursor-api-key:").decode()
+    assert headers["Content-Type"] == "application/json"
+    assert sent_body == json.dumps(body).encode("utf-8")  # body plumbed through
+    for emission in sink.emissions:  # PII-free (allowlist + opaque userId)
+        assert detect_sensitive(emission.body) == []
+
+
+def test_servicenow_offset_pagination() -> None:
+    # limit=2: page 1 (2 records, full) advances sysparm_offset to 2; page 2 (1 record, short) stops.
+    transport = RecordedTransport([_resp("servicenow_incidents_page1.json"),
+                                   _resp("servicenow_incidents_page2.json")])
+    resolver = MappingSecretResolver({"servicenow": "snow-password"})
+    count = poll(ServiceNowConnector(),
+                 build_servicenow_spec(resolver, instance="dev.example.service-now.com",
+                                       username="svc_integration", limit=2),
+                 transport=transport, sink=CollectingSink())
+    assert count == 3
+    assert len(transport.requests) == 2  # stopped on the short page; no third request
+    q2 = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(transport.requests[1][1]).query))
+    assert q2.get("sysparm_offset") == "2"  # advanced by exactly limit
+    assert q2.get("sysparm_limit") == "2"   # carried from base_url, not re-set by the pager
+
+
+def test_servicenow_offset_exact_multiple_edge() -> None:
+    # Total is an exact multiple of limit: the final full page advances once more to a
+    # 0-row page, which then stops cleanly (no crash, no infinite loop).
+    full = {"result": [{"number": "INC1"}, {"number": "INC2"}]}  # 2 == limit
+    empty = {"result": []}
+    transport = RecordedTransport([_json_resp(full), _json_resp(full), _json_resp(empty)])
+    resolver = MappingSecretResolver({"servicenow": "snow-password"})
+    count = poll(ServiceNowConnector(),
+                 build_servicenow_spec(resolver, instance="x", username="u", limit=2),
+                 transport=transport, sink=CollectingSink())
+    assert count == 4  # 2 + 2 + 0
+    assert len(transport.requests) == 3  # full, full, empty → stop
+
+
+def test_servicenow_single_short_page_no_second_request() -> None:
+    transport = RecordedTransport([_resp("servicenow_incidents_page2.json")])  # 1 record < limit 2
+    resolver = MappingSecretResolver({"servicenow": "snow-password"})
+    count = poll(ServiceNowConnector(),
+                 build_servicenow_spec(resolver, instance="dev.example.service-now.com",
+                                       username="svc_integration", limit=2),
+                 transport=transport, sink=CollectingSink())
+    assert count == 1
+    assert len(transport.requests) == 1  # stop-on-short-page
+
+
+def test_blank_secret_fails_closed_basic() -> None:
+    empty = MappingSecretResolver({})  # keyed by source_id
+    with pytest.raises(PollError) as e1:
+        build_cursor_spec(empty, body={})
+    assert e1.value.reason == "secret_unresolved:cursor"
+    with pytest.raises(PollError) as e2:
+        build_servicenow_spec(empty, instance="x", username="u")
+    assert e2.value.reason == "secret_unresolved:servicenow"

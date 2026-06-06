@@ -48,9 +48,9 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [gitlab](gitlab/) | **Beta** | webhook, active | `parse_merge_request` / `parse_issue` | ✓ (shared token) |
 | [confluence](confluence/) | **Beta** | active, passive | `parse_content` | — |
 | [copilot](copilot/) | **Beta** | active | `parse_metrics_day` | — (poll; **live-poll client built**; aggregate/PII-free) |
-| [cursor](cursor/) | **Beta** | active | `parse_usage_day` | — (poll, PII dropped) |
+| [cursor](cursor/) | **Beta** | active | `parse_usage_day` | — (poll; **live-poll client built** (Basic+POST); PII dropped) |
 | [devin](devin/) | **Beta** | active | `parse_session` | — (poll; **live-poll client built** (1st page); body redacted) |
-| [servicenow](servicenow/) | **Beta** | active | `parse_incident` | — (poll, redact-and-pass) |
+| [servicenow](servicenow/) | **Beta** | active | `parse_incident` | — (poll; **live-poll client built** (Basic+offset); redact-and-pass) |
 | [openai_admin](openai_admin/) | **Beta** | active | `parse_audit_log` | — (poll; **live-poll client built**; actor dropped) |
 | [anthropic_admin](anthropic_admin/) | **Beta** | active | `parse_usage` | — (poll; **live-poll client built** — `runtime/poll_client.py`, recorded-fixture-proven; aggregate/PII-free) |
 

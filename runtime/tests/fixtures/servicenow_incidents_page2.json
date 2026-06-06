@@ -1,0 +1,12 @@
+{
+  "result": [
+    {
+      "number": "INC0012347",
+      "short_description": "Email notifications delayed",
+      "description": "Outbound incident notifications delayed by ~20 minutes.",
+      "state": "2",
+      "priority": "2",
+      "caller_id": "0f1e2d3c4b5a"
+    }
+  ]
+}

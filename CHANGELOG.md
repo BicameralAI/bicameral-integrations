@@ -67,6 +67,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (`documents.get` + OAuth — a per-resource fetch) and `mcp_registry` (Candidate)
   are disclosed-deferred. Per-connector wire assumptions (envelope key / cursor /
   header version) are recorded in each `auth.md` as the gate before live-network use.
+- **Live-poll fan-out (Basic-auth connectors)**: `BasicAuth` (`base64(user:pass)`,
+  CR/LF-screened on the raw inputs), **POST-body** request support, and an
+  **`OffsetPager`** (offset pagination, stop-on-short-page) wiring `cursor`
+  (`POST /teams/daily-usage-data`; key-as-username Basic; PII-free allowlist) and
+  `servicenow` (`GET /api/now/table/incident`; `sysparm_offset`/`sysparm_limit`
+  pagination; redact-and-pass), each proven against recorded fixtures. The auth
+  strategies moved to `runtime/poll_auth.py` (module split). **All 7 buildable poll
+  connectors now have the fetch half**; `google_drive` + `mcp_registry` remain
+  disclosed-deferred.
 - ADR-0012 introducing the connector readiness ladder
   (Candidate → Prototype → Beta → Live). **All 24 connectors** are now **Beta** —
   each promotion earned by a real end-to-end runtime-harness proof against a
