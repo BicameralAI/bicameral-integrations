@@ -27,9 +27,25 @@ surface** only (live REST poll deferred).
 - `instance` — the ServiceNow instance host.
 - `username` + `password` (Basic) or `oauth_*` (OAuth 2.0) for the integration user.
 
+## Live path — reference poll client (recorded-fixture-proven)
+
+The request-construction + **offset pagination** are **built** in `runtime/poll_specs.py`
+(`build_servicenow_spec`) and proven against recorded 2-page fixtures (HTTP **Basic**; `{result:[…]}`
+envelope; `sysparm_offset` advances by `sysparm_limit`, stops on a short page). The real network call
++ auth resolution remain operator-run.
+
+- **Secret resolver key**: the `SecretResolver` resolves by the connector **`source_id`**
+  (`servicenow`) → the **password**. `instance` (host) and `username` are **non-secret operator
+  config** passed to `build_servicenow_spec(instance=…, username=…)`, not resolved as secrets.
+- **Assumptions / scope**: the `{result:[…]}` envelope + `sysparm_offset`/`sysparm_limit` are the
+  documented Table-API shape (kept a config callable). **OAuth 2.0 is a deferred alternative** —
+  Basic auth this cycle.
+
 ## Deferred live paths
 
-- Live Table API poll (`/api/now/table/incident`) + auth resolution + `sysparm` pagination.
+- Live Table API poll (`/api/now/table/incident`) + auth resolution (the `runtime/` poll client is
+  built — Basic + offset pagination; the operator supplies the live transport + password; OAuth is a
+  deferred alternative).
 
 Credentials are resolved by the operator runtime, never stored in this package.
 See [TRUST_TIER_MODEL](../../docs/TRUST_TIER_MODEL.md).

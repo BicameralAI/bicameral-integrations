@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "day": "2026-06-04",
+      "userId": 4821,
+      "acceptedLinesAdded": 120,
+      "totalAccepts": 34,
+      "totalApplies": 41,
+      "agentRequests": 8,
+      "chatRequests": 12,
+      "composerRequests": 3,
+      "mostUsedModel": "claude-opus-4-8"
+    },
+    {
+      "day": "2026-06-05",
+      "userId": 5093,
+      "acceptedLinesAdded": 95,
+      "totalAccepts": 28,
+      "totalApplies": 33,
+      "agentRequests": 6,
+      "chatRequests": 9,
+      "composerRequests": 2,
+      "mostUsedModel": "claude-sonnet-4-6"
+    }
+  ]
+}

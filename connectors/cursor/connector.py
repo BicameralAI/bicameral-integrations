@@ -22,8 +22,12 @@ from adapter.core.redaction import redact
 
 
 def _int(value: object) -> int:
-    """Coerce a usage metric to int (0 when absent / non-numeric)."""
-    return value if isinstance(value, int) else 0
+    """Coerce a usage metric to int (0 when absent / non-numeric).
+
+    ``bool`` is excluded — ``isinstance(True, int)`` is True in Python, so an untrusted
+    ``true``/``false`` metric must not coerce to 1/0 (provider-boundary robustness).
+    """
+    return value if isinstance(value, int) and not isinstance(value, bool) else 0
 
 
 def _uid(row: dict) -> str:

@@ -39,11 +39,12 @@ bicameral-integrations/
 |   |-- jira/           (issue webhook -> Observation + verify; WEBHOOK+ACTIVE; T1)
 |   `-- zendesk/        (ticket webhook -> Observation + verify; WEBHOOK+ACTIVE; T1)
 |-- runtime/  (operator-runtime boundary, ADR-0012: sinks, secrets, delivery,
-|              poll_client + poll_specs + tests — EmissionSink/SecretResolver Protocols,
-|              deliver_webhook/deliver_poll, GatewaySink real Live emission seam
+|              poll_client + poll_auth + poll_specs + tests — EmissionSink/SecretResolver
+|              Protocols, deliver_webhook/deliver_poll, GatewaySink real Live emission seam
 |              (POST /api/v1/ingest), poll_client live-poll fetch half
-|              (HttpTransport-injected; ApiKeyHeader/Bearer auth; object|array pages),
-|              poll_specs per-connector wiring (anthropic/openai/copilot/devin/granola);
+|              (HttpTransport-injected; object|array pages; PageToken + OffsetPager pagination;
+|              GET + POST body), poll_auth (ApiKeyHeader/Bearer/Basic), poll_specs per-connector
+|              wiring (anthropic/openai/copilot/devin/granola/cursor/servicenow);
 |              library-only, stdlib urllib)
 |-- mods/  (structure under active build by Codex — not edited by this track)
 |-- scripts/  (governance_gate.py + check_license_headers.py + tests/)
@@ -142,7 +143,7 @@ bicameral-integrations/
 | Anthropic Admin connector (aggregate, PII-free) | connectors/anthropic_admin/tests/test_anthropic_admin_connector.py | OK |
 | Runtime boundary (all 26 connectors end-to-end: deliver_webhook + deliver_poll; full-path → GatewaySink) | runtime/tests/test_runtime.py | OK (43) |
 | Live emission seam (emission→v1 mapping; GatewaySink POST: 201-only, gated, token-safe, real round-trip) | runtime/tests/test_gateway_mapping.py | OK (12) |
-| Live-poll client (fetch half: request+auth+pagination over recorded transport; fail-closed; token-safe; anthropic + Bearer fan-out: openai_admin/copilot/devin/granola) | runtime/tests/test_poll_client.py | OK (21) |
+| Live-poll client (fetch half: request+auth+pagination over recorded transport; fail-closed; token-safe; 7 connectors: anthropic + Bearer openai/copilot/devin/granola + Basic cursor(POST)/servicenow(offset)) | runtime/tests/test_poll_client.py | OK (26) |
 | Zendesk connector + webhook verify/dedup (Base64 HMAC) | connectors/zendesk/tests/ | OK (11) |
 | GitHub webhook verify/dedup (envelope unwrap) | connectors/github/tests/test_github_webhook.py | OK (6) |
 | Slack webhook verify/dedup (v0 + replay) | connectors/slack/tests/test_slack_webhook.py | OK (7) |

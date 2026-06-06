@@ -16,13 +16,10 @@ before live-network wiring (verify-before-cite).
 
 from __future__ import annotations
 
-from .poll_client import (
-    ApiKeyHeaderAuth,
-    BearerAuth,
-    PageToken,
-    PollError,
-    PollSpec,
-)
+import json
+
+from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, PollError
+from .poll_client import OffsetPager, PageToken, PollSpec
 from .secrets import SecretResolver
 
 
@@ -132,3 +129,60 @@ def build_granola_spec(resolver: SecretResolver, *, base_url: str = _GRANOLA_BAS
         items=lambda page: page.get("transcripts", []),  # unverified envelope (transcripts? data?)
         pagination=None,
     )
+
+
+# --- cursor (team daily-usage; PII-free allowlist; POST date-range body) ----------
+# host `api.cursor.com` inferred — the path POST /teams/daily-usage-data is documented;
+# confirm the host against live Cursor docs before real-network use (verify-before-cite).
+_CURSOR_BASE = "https://api.cursor.com/teams/daily-usage-data"
+
+
+def build_cursor_spec(
+    resolver: SecretResolver, *, base_url: str = _CURSOR_BASE, body: dict | None = None
+) -> PollSpec:
+    """cursor: HTTP Basic (API key as username, empty password); POST a date-range body.
+
+    The body field names/units are UNVERIFIED — the caller supplies the dict (e.g.
+    ``{"startDate": …, "endDate": …}``); it is json-encoded, not baked. Envelope key
+    ``data`` is also a config callable. No pagination (date-range bounded).
+    """
+    secret = _require_secret(resolver, "cursor")
+    auth = BasicAuth(secret, "", extra={"Content-Type": "application/json"})
+    return PollSpec(
+        base_url=base_url,
+        auth=auth,
+        method="POST",
+        body=json.dumps(body or {}).encode("utf-8"),  # caller-supplied date range (unverified shape)
+        items=lambda page: page.get("data", []),  # unverified envelope (data? array?)
+        pagination=None,
+    )
+
+
+# --- servicenow (ITSM incidents; redact-and-pass; offset pagination) --------------
+def build_servicenow_spec(
+    resolver: SecretResolver,
+    *,
+    instance: str,
+    username: str,
+    limit: int = 100,
+    fields: str | None = None,
+) -> PollSpec:
+    """servicenow: HTTP Basic (integration ``username`` + resolved password); Table API
+    incident poll with ``sysparm_offset`` pagination. ``instance``/``username`` are
+    non-secret operator config; the password is resolved by ``source_id``. ``sysparm_limit``
+    rides in ``base_url``; OffsetPager advances only ``sysparm_offset``."""
+    password = _require_secret(resolver, "servicenow")
+    base = f"https://{instance}/api/now/table/incident?sysparm_limit={limit}"
+    if fields:
+        base = _with_fields(base, fields)
+    return PollSpec(
+        base_url=base,
+        auth=BasicAuth(username, password),
+        items=lambda page: page.get("result", []),  # documented Table-API envelope
+        pagination=OffsetPager(offset_param="sysparm_offset", limit=limit),
+    )
+
+
+def _with_fields(base: str, fields: str) -> str:
+    """Append ``sysparm_fields`` to the base URL (string-built so no import churn)."""
+    return f"{base}&sysparm_fields={fields}"

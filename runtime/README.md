@@ -19,8 +19,9 @@ live HTTP listener. This layer is the seam an operator wires their host into.
 | `deliver_poll(connector, payloads, *, sink, …)` | Parse + normalize a batch of **already-fetched** polled payloads, emit, return the count. |
 | `poll(connector, spec, *, transport, sink, …)` | **Live-poll fetch half** — the symmetric counterpart of `deliver_webhook`'s receive side. Constructs the authenticated request, walks pagination through an injected `HttpTransport`, then delegates to `deliver_poll`. Fail-closed + token-safe. |
 | `HttpTransport` (Protocol) / `UrllibTransport` | The network seam. Operator-run `urllib` default; tests inject a recorded transport (a mock does not promote a connector to Live). |
-| `ApiKeyHeaderAuth` / `BearerAuth`, `PageToken`, `PollSpec` | Poll-client building blocks (`poll_client.py`): api-key-in-header + Bearer auth (CR/LF-rejecting, token-free errors), token/cursor pagination (provider token treated as untrusted), the per-connector spec. |
-| `build_*_spec` (`poll_specs.py`) | Per-connector wiring: `anthropic_admin`, `openai_admin`, `copilot`, `devin`, `granola` — resolve the secret by `source_id`, wire endpoint + auth + pagination. |
+| `ApiKeyHeaderAuth` / `BearerAuth` / `BasicAuth` (`poll_auth.py`) | Auth strategies (CR/LF-rejecting raw inputs, token-free errors): api-key-in-header, Bearer, and HTTP Basic (cursor = key-as-username; servicenow = user+password). |
+| `PageToken` / `OffsetPager`, `PollSpec` (`poll_client.py`) | Token/cursor pagination + offset pagination (`sysparm_offset`-style); the per-connector spec (`base_url`/`auth`/`items`/`method`/`pagination`/`body`). The provider token is treated as untrusted. |
+| `build_*_spec` (`poll_specs.py`) | Per-connector wiring: `anthropic_admin`, `openai_admin`, `copilot`, `devin`, `granola`, `cursor`, `servicenow` — resolve the secret by `source_id`, wire endpoint + auth + pagination (+ POST body where needed). |
 
 ## Readiness ladder (ADR-0012)
 
@@ -78,15 +79,18 @@ poisoned page token / blank secret / `_MAX_PAGES` / `_MAX_RESPONSE` all raise
 `PollError`) and **token-safe** (the operator secret never enters an error or log).
 The provider response — including the pagination token — is treated as untrusted.
 
-**Auth strategies** (`poll_client.py`): `ApiKeyHeaderAuth` (api-key-in-header, e.g.
-anthropic `x-api-key`) and `BearerAuth` (`Authorization: Bearer` + optional extra
-headers). **Per-connector specs** live in `runtime/poll_specs.py` — `build_*_spec`
-helpers that resolve the secret by **`source_id`** and wire the endpoint + auth +
-pagination. Wired this far: `anthropic_admin` (api-key + token pagination),
-`openai_admin` (Bearer + `last_id`/`after` cursor), `copilot` (Bearer; top-level
-JSON array), `devin` (Bearer; operator-templated `org_id` in `base_url`; pagination
-deferred), `granola` (Bearer; `since` watermark operator-side). Each carries
-**unverified wire assumptions** (envelope key / cursor / header version) recorded in
-its `auth.md` as the gate before real-network wiring. **Deferred** (don't fit a
-Bearer list-poll): `google_drive` (`documents.get` + OAuth — a per-resource fetch)
-and `mcp_registry` (Candidate — no verified contract).
+**Auth strategies** (`poll_auth.py`): `ApiKeyHeaderAuth` (api-key-in-header),
+`BearerAuth` (`Authorization: Bearer`), and `BasicAuth` (`base64(user:pass)`;
+CR/LF-screened on the raw inputs). **Per-connector specs** live in
+`runtime/poll_specs.py` — `build_*_spec` helpers that resolve the secret by
+**`source_id`** and wire the endpoint + auth + pagination (+ POST body where needed).
+Wired this far: `anthropic_admin` (api-key + token pagination), `openai_admin`
+(Bearer + `last_id`/`after` cursor), `copilot` (Bearer; top-level JSON array),
+`devin` (Bearer; operator-templated `org_id`; pagination deferred), `granola`
+(Bearer; `since` watermark operator-side), `cursor` (Basic key-as-username; **POST**
+date-range body), `servicenow` (Basic user+password; **offset** pagination). Each
+carries **unverified wire assumptions** (envelope key / cursor / body shape) recorded
+in its `auth.md` as the gate before real-network wiring. **Deferred** (don't fit the
+page-list poll shape): `google_drive` (`documents.get` + OAuth — a per-resource fetch)
+and `mcp_registry` (Candidate — no verified contract). **All 7 buildable poll
+connectors now have the fetch half.**

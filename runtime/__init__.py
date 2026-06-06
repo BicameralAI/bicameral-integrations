@@ -6,12 +6,11 @@ library) calls to drive a connector's ingest → verify → normalize → emit p
 
 from .delivery import PollConnector, WebhookConnector, deliver_poll, deliver_webhook
 from .gateway_mapping import emission_to_ingest_request
+from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, PollError
 from .poll_client import (
-    ApiKeyHeaderAuth,
-    BearerAuth,
     HttpTransport,
+    OffsetPager,
     PageToken,
-    PollError,
     PollSpec,
     UrllibTransport,
     poll,
@@ -19,9 +18,11 @@ from .poll_client import (
 from .poll_specs import (
     build_anthropic_admin_spec,
     build_copilot_spec,
+    build_cursor_spec,
     build_devin_spec,
     build_granola_spec,
     build_openai_admin_spec,
+    build_servicenow_spec,
 )
 from .secrets import MappingSecretResolver, SecretResolver
 from .sinks import (
@@ -49,8 +50,10 @@ __all__ = [
     "PollError",
     "PollSpec",
     "PageToken",
+    "OffsetPager",
     "ApiKeyHeaderAuth",
     "BearerAuth",
+    "BasicAuth",
     "HttpTransport",
     "UrllibTransport",
     "build_anthropic_admin_spec",
@@ -58,4 +61,6 @@ __all__ = [
     "build_devin_spec",
     "build_copilot_spec",
     "build_granola_spec",
+    "build_cursor_spec",
+    "build_servicenow_spec",
 ]
