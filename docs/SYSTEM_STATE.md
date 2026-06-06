@@ -6,9 +6,9 @@
 |-----------|-------|
 | **Last Updated** | 2026-06-05 |
 | **Updated By** | Orchestrator (qor-auto-dev-1) |
-| **Phase** | `main` + **security red-team Cycle A** — adversarial review (GH #50-#61) fixed 3 documented-guarantee violations: FX-SEC-001 screen now covers every wire-bound field (`source_id`/`source_ref.url`/`ref`) closing secret-in-URL→gateway (#52); rejected-emission errors no longer carry raw PAN/PHI (#53); `GatewaySink` rejects CR/LF token/headers + token-free catch-all (#54). 26 Beta connectors; cores sound (no signature forgery, redact invariant held) |
-| **Iteration** | 28 governed cycles (… Copilot + Cursor → Beta; PII redaction-and-pass + Devin + ServiceNow → Beta; OpenAI Admin + Anthropic Admin → Beta; redaction retrofit; references.md parity; **security red-team Cycle A — #52/#53/#54 fixed; #50/#51/#55-#61 tracked**) |
-| **Session Seal** | `<pending Entry #86>` (prior tip `070bf87d` — Entry #84) |
+| **Phase** | `main` + **security red-team Cycle B** — DoS/robustness hardening (the before-Live gate): two ReDoS fixed (confluence `<[^<>]*>`, email RFC-bounded — linear; #50/#51, SG-2026-06-05-F); body cap + `ValueError` catch (huge-int fails closed, #55); github/servicenow nested-field guards (#56); fathom fail-closed (#57); cursor free-text redacted (#58); all 26 `observations()` reject non-dict (#59). Cycle A (#52/#53/#54) shipped Entry #86. 26 Beta connectors |
+| **Iteration** | 29 governed cycles (… OpenAI Admin + Anthropic Admin → Beta; redaction retrofit; references.md parity; security red-team **Cycle A** (#52/#53/#54); **Cycle B** (#50/#51/#55/#56/#57/#58/#59 — DoS/robustness)) |
+| **Session Seal** | `<pending Entry #88>` (prior tip `90bc5675` — Entry #86) |
 
 ---
 
@@ -62,7 +62,7 @@ bicameral-integrations/
 | PII handling | FX-SEC-001 hard screen (secret/PHI/PAN reject) + **`adapter/core/redaction.py::redact` redact-and-pass** (scrubs secret/PHI/PAN value-consuming + email/phone; invariant `detect_sensitive(redact(x))==[]`; composes with, never replaces, the screen). Used by devin/servicenow/**zendesk** (ticket body now redact-and-pass); openai_admin/copilot drop-at-parse (openai_admin drops actor email/IP). **Cursor**: email/name dropped, opaque `userId` surfaced for per-developer attribution (SG-2026-06-05-D; residual re-id risk = operator holds id→identity mapping, accepted) |
 | Runtime boundary | `runtime/` library layer (sinks + secrets + delivery + **gateway_mapping**); **GatewaySink = real Live emission** (v1 IngestRequest → `POST /api/v1/ingest`, default-safe + fail-closed + secret-safe) |
 | Total Test Files | 40 (adapter/core + connectors + runtime + scripts) |
-| Pytest | 347 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
+| Pytest | 357 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
 | Webhook verify wired | fathom, linear, sentry, pagerduty, jira, github, slack, notion, zendesk, gitlab (Svix/HMAC/multi-sig/sha256=/v0/Base64/plaintext-token + dedup, fail-closed) |
 | CI workflows | 10 gates + 6 reusable `workflow_call` templates (all SHA-pinned) |
 | Max File Size | 160 lines (adapter/core/webhook_security.py) |
@@ -151,10 +151,10 @@ bicameral-integrations/
 
 | Indicator | Status | Details |
 |-----------|--------|---------|
-| Ledger Chain | VALID | through Entry #86 (`90bc5675`); machine-verified by `scripts/governance_gate.py` |
+| Ledger Chain | VALID | through Entry #88 (`563f9938`); machine-verified by `scripts/governance_gate.py` |
 | Blueprint Sync | SYNCED | ADRs (incl. 0012) + research briefs + docs/compliance/ + docs/ecosystem/ + all README docs (main README connector+mod index refreshed) + badges current |
 | Section 4 Compliance | PASS | 0 violations |
-| Test Status | PASS | 347 passing; ruff + mypy clean |
+| Test Status | PASS | 357 passing; ruff + mypy clean |
 | CI Gates | **6/6 green** (verified) | CI + CodeQL + Governance Gate + Quality + Security Scan + **OpenSSF Scorecard** all `success` on `main` (Scorecard green confirmed by run `26980983204` after the B6 v2 permission fix — SG-2026-06-04-O). Security-tab posture hardened (B13): Token-Permissions #21-24 fixed (write scopes moved to the calling-job level, top-level read-only); stale CodeQL #17 + accepted Pinned-Dependencies #18-20 dismissed via API with rationale. Only #13/#1 (Code-Review, Branch-Protection) remain — they need branch protection (B5, repo-admin). SBOM gate carries a latent OIDC twin (B12), release-only. SHA-pinned; reusable `workflow_call` templates. |
 
 ---

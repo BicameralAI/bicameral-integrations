@@ -87,6 +87,8 @@ class LinearConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         return [parse_event(payload)]
 
     def _timestamp_ok(self, data: dict, now_ms: float) -> bool:

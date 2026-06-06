@@ -18,6 +18,7 @@ from __future__ import annotations
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 
 
 def _int(value: object) -> int:
@@ -39,7 +40,9 @@ def _usage_summary(row: dict) -> str:
     """PII-free evidence excerpt from a daily-usage row's aggregate metrics ONLY.
 
     Reads a strict allowlist of numeric metrics + ``mostUsedModel`` + the opaque
-    ``userId``; ``email`` / ``name`` / ``clientVersion`` are never touched.
+    ``userId``; ``email`` / ``name`` / ``clientVersion`` are never touched. The free-text
+    ``day``/``mostUsedModel`` are passed through ``redact()`` (#58) — they could carry an
+    email/phone, which FX-SEC-001 does not screen; the opaque ``userId`` is unaffected.
     """
     day = (row.get("day") or "").strip() or "usage"
     uid = _uid(row)
@@ -53,7 +56,7 @@ def _usage_summary(row: dict) -> str:
     model = row.get("mostUsedModel")
     if isinstance(model, str) and model:
         summary += f", model {model}"
-    return summary
+    return redact(summary)
 
 
 def parse_usage_day(row: dict) -> Observation:
@@ -62,7 +65,7 @@ def parse_usage_day(row: dict) -> Observation:
     ``email`` / ``name`` are NEVER read (FX-SEC-001 does not screen generic email).
     Per-developer attribution uses the OPAQUE ``userId`` (pseudonymous; SG-2026-06-05-D).
     """
-    day = (row.get("day") or "").strip()
+    day = redact((row.get("day") or "").strip())  # #58: day is free-text (could carry PII)
     base = f"cursor:usage:{day}" if day else "cursor-usage"
     uid = _uid(row)
     return Observation(
@@ -92,4 +95,6 @@ class CursorConnector:
         return ref.source_id == "cursor"
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         return [parse_usage_day(payload)]

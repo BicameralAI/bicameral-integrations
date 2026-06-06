@@ -18,6 +18,8 @@ from adapter.core.pipeline import normalize
 
 from .sinks import EmissionSink
 
+_MAX_BODY = 1_048_576  # 1 MiB — reject an oversized webhook body before parse/regex (#55)
+
 
 class WebhookConnector(Protocol):
     """A connector with webhook verification wired."""
@@ -48,8 +50,10 @@ def deliver_webhook(
     """Verify+normalize a webhook delivery and emit; return the emission count.
 
     Returns 0 (and never calls ``sink.emit``) when the connector rejects or
-    dedups the delivery.
+    dedups the delivery, or when the body exceeds ``_MAX_BODY`` (#55).
     """
+    if len(body) > _MAX_BODY:  # bound parse/regex work on a hostile oversized payload
+        return 0
     observations = connector.normalize_event(headers=headers, body=body)
     if not observations:
         return 0

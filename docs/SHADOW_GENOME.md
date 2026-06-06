@@ -394,3 +394,19 @@ A four-front red-team found the crypto + redaction CORES are sound (no HMAC forg
 - **The reject path itself leaked**: `_redact_excerpt` masked only the `secret` class, so a rejected emission's `EmissionContractError` carried the raw PAN/MRN into logs. **Rule: an error/log excerpt must never carry a raw value for ANY class** (pan/phi → `[cls:redacted]`; short secret → full mask). The reject channel is a leak channel.
 - **The operator token leaked via an uncaught `ValueError`**: a CR/LF in the token makes `http.client` raise a value-embedding error before network I/O, outside `_post`'s HTTPError/URLError catch. **Rule: validate operator-injected header material up front (value-free error), and give error paths a token-free catch-all.**
 - DoS/ReDoS surfaces (`_TAG_RE`/`_EMAIL_RE` quadratic; huge-int `json.loads` ValueError; type-confusion + non-dict crashes escaping `normalize_event`/`observations`) are latent-until-Live and tracked as #50/#51/#55/#56/#57/#59 (Cycle B). **Meta-rule: parse surfaces are an untrusted boundary — guard `isinstance(dict)` at `observations()`, catch `ValueError` around `json.loads`, and use possessive/length-capped regexes — before any connector goes Live.**
+
+## SG-2026-06-05-F — Possessive quantifiers do NOT fix a "re-scan" quadratic; bound or exclude the anchor
+
+**Discovered**: 2026-06-05 (red-team Cycle B; the audit's proposed fix was empirically wrong).
+
+The confluence `<[^>]+>` and email `[A-Za-z0-9.-]+` ReDoS were O(n²) — but the quadratic came from
+the OUTER re-scan (`re.sub`/search retries from each anchor position, and at each the greedy class
+consumes a long run before failing), NOT from intra-match backtracking. So the intuitive fix —
+**possessive quantifiers (`++`/`*+`) — DID NOT HELP** (measured: still 15-20 s). The correct fixes:
+- exclude the anchor char from the inner class so each position fails in O(1): `<[^>]+>` → `<[^<>]*>`
+  (a `<` can no longer be consumed mid-tag, so an unclosed-`<` run can't re-scan to EOF).
+- **bound the quantifiers** so each anchor's work is a constant: email local `{1,64}`, label `{1,63}`,
+  TLD `{2,63}` (RFC 5321 limits) → O(64·n) = linear, and no real email is missed (over-bound = leak).
+**Meta-rule (reinforces SG-2026-06-05-O's "prove by running"): MEASURE a ReDoS fix on the adversarial
+input; never trust the regex-shape reasoning.** Independent verification empirically confirmed the
+bounded fix (200 KB: ~20 ms) — the audit's possessive reasoning would have shipped a still-broken fix.

@@ -96,6 +96,8 @@ class FathomConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         return [parse_meeting(payload)]
 
     def verify(self, *, headers: dict[str, str], body: bytes) -> bool:
@@ -105,7 +107,7 @@ class FathomConnector:
                 headers=headers, body=body, secret=self._secret, now=self._clock()
             )
             return True
-        except WebhookVerificationError:
+        except (WebhookVerificationError, AttributeError, TypeError):  # malformed header types fail closed (#57)
             return False
 
     def normalize_event(
@@ -121,6 +123,6 @@ class FathomConnector:
             self._dedup.mark_seen("fathom", delivery_id)
         try:
             payload = json.loads(body)
-        except (json.JSONDecodeError, UnicodeDecodeError):
+        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
         return [parse_meeting(payload)]

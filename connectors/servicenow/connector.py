@@ -16,20 +16,26 @@ from adapter.core.observations import Observation
 from adapter.core.redaction import redact
 
 
+def _text(value: object) -> str:
+    """A stripped string for str inputs, else '' — a non-str field (int/list/dict) must
+    not crash ``.strip()`` (SG-I; #56). Table-API records carry any JSON type."""
+    return value.strip() if isinstance(value, str) else ""
+
+
 def _meta(record: dict) -> str:
     """Render the non-PII state/priority tag (``''`` when both absent)."""
-    state = (record.get("state") or "").strip()
-    priority = (record.get("priority") or "").strip()
+    state = _text(record.get("state"))
+    priority = _text(record.get("priority"))
     bits = [b for b in (f"state={state}" if state else "", f"priority={priority}" if priority else "") if b]
     return ", ".join(bits)
 
 
 def parse_incident(record: dict) -> Observation:
     """Map a ServiceNow incident record into a redacted, provider-neutral Observation."""
-    number = (record.get("number") or "").strip()
-    short = (record.get("short_description") or "").strip()
-    description = record.get("description") or ""
-    text = " — ".join(p for p in (short, str(description) if description else "") if p)
+    number = _text(record.get("number"))
+    short = _text(record.get("short_description"))
+    description = _text(record.get("description"))
+    text = " — ".join(p for p in (short, description) if p)
     body = redact(text)
     meta = _meta(record)
     excerpt = (f"{body} ({meta})" if meta and body else body or meta) or "servicenow-incident"
@@ -55,4 +61,6 @@ class ServiceNowConnector:
         return ref.source_id == "servicenow"
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         return [parse_incident(payload)]

@@ -46,3 +46,10 @@ def test_blank_incident_floors():
     obs = parse_incident({})
     assert obs.source_ref.ref == "servicenow-incident"
     assert obs.excerpt == "servicenow-incident"  # floored, non-blank
+
+
+def test_parse_incident_defends_nonstr_fields():
+    # #56: non-str fields must not crash .strip().
+    obs = parse_incident({"short_description": 123, "state": ["x"], "priority": {"p": 1}, "number": 5})
+    assert obs.source_ref.source_id == "servicenow"
+    assert obs.source_ref.ref == "servicenow-incident"  # non-str number floored

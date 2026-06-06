@@ -117,6 +117,8 @@ class ClaudeCodeConnector:
     capabilities = SourceCapabilities(modes=frozenset({SourceMode.PASSIVE}))
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         raw_lines = payload.get("lines")
         lines: Iterable = raw_lines if isinstance(raw_lines, list) else [payload]
         return [obs for obs in (parse_session_line(line) for line in lines) if obs is not None]

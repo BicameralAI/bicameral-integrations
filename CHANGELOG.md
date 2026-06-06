@@ -125,3 +125,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `GatewaySink` rejects CR/LF in the operator token/headers and never lets an
   unexpected error echo the token (#54). DoS/ReDoS and replay findings
   (#50/#51/#55/#56/#57/#59/#60) are tracked for hardening before any Live deployment.
+
+### Security (red-team Cycle B — DoS/robustness hardening, GH #50/#51/#55/#56/#57/#58/#59)
+
+- Fixed two ReDoS surfaces: the Confluence tag stripper (`<[^<>]*>`) and the email
+  redactor (RFC-bounded quantifiers) are now linear (a 200 KB hostile payload went from
+  ~15 s to ~20 ms; no email match-set regression). `deliver_webhook` caps the body at 1 MiB
+  and the 9 webhook connectors catch `ValueError` so a >4300-digit JSON int fails closed
+  instead of crashing. GitHub/ServiceNow parse surfaces guard non-dict/non-str fields;
+  fathom `verify()` fails closed on malformed header types; Cursor redacts its free-text
+  `day`/`mostUsedModel`; and all 26 connectors' `observations()` reject a non-dict payload.
+  Parse surfaces are now safe to expose to hostile payloads (the gate before any Live deployment).

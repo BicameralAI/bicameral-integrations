@@ -19,7 +19,9 @@ from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
 
-_TAG_RE = re.compile(r"<[^>]+>")
+# `[^<>]` (excludes `<` too) makes this linear: an unclosed `<` run can't be consumed by
+# the inner class, so each anchor fails in O(1) instead of re-scanning to EOF — O(n) total (#50).
+_TAG_RE = re.compile(r"<[^<>]*>")
 _WS_RE = re.compile(r"\s+")
 
 
@@ -88,4 +90,6 @@ class ConfluenceConnector:
         return host.endswith(".atlassian.net")
 
     def observations(self, payload: dict) -> list[Observation]:
+        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+            return []
         return [parse_content(payload)]
