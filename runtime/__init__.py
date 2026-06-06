@@ -8,13 +8,20 @@ from .delivery import PollConnector, WebhookConnector, deliver_poll, deliver_web
 from .gateway_mapping import emission_to_ingest_request
 from .poll_client import (
     ApiKeyHeaderAuth,
+    BearerAuth,
     HttpTransport,
     PageToken,
     PollError,
     PollSpec,
     UrllibTransport,
-    build_anthropic_admin_spec,
     poll,
+)
+from .poll_specs import (
+    build_anthropic_admin_spec,
+    build_copilot_spec,
+    build_devin_spec,
+    build_granola_spec,
+    build_openai_admin_spec,
 )
 from .secrets import MappingSecretResolver, SecretResolver
 from .sinks import (
@@ -43,7 +50,12 @@ __all__ = [
     "PollSpec",
     "PageToken",
     "ApiKeyHeaderAuth",
+    "BearerAuth",
     "HttpTransport",
     "UrllibTransport",
     "build_anthropic_admin_spec",
+    "build_openai_admin_spec",
+    "build_devin_spec",
+    "build_copilot_spec",
+    "build_granola_spec",
 ]

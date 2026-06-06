@@ -2506,6 +2506,83 @@ gate verifies chain #1–#92. FX-RUNTIME-003 NEW (Verified). The other 8 poll co
 follow-on cycles on this audit-blessed harness.
 
 ---
+
+### Entry #93: GATE AUDIT — live-poll fan-out to the Bearer list-poll connectors (PASS)
+
+**Entry ID**: `pollBearer93audit`
+**Timestamp**: 2026-06-06T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent / Option B)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-poll-client-bearer-connectors-2026-06-06.md)
+= e8809b376a0040aeb3b5ae88a013850826f8c8362820582555fbdeb8806d5e57
+```
+
+**Previous Hash**: 977f4ced5efcf170a06f117d60d200907a8936d4b684a756a9e1081b506950de
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1be811acf801341c22b1f13453584f9f1966cbaeac976e91e3c0e829efedda7b
+```
+
+**Decision**: An independent architect-reviewer audited plan iteration 1 → **VETO** (correctly), two
+BLOCKING: **B1** — every `build_*_spec` resolves the secret by `source_id`, but each `auth.md`
+documented the credential under a *different* key (`admin_api_key`/`api_token`/…), so test (keyed by
+source_id) ≠ production — a latent mismatch present in the shipped anthropic helper too; **B2** —
+devin needs an operator-templated `org_id` the plan didn't record. Plus advisories (openai cursor
+double-listed as verified+assumption; README.md:68 a second consumer of the moved symbol; missing
+rival-envelope-key test). **Iteration 2 addressed all**: secret-by-`source_id` pinned + clarified
+family-wide in every `auth.md` (incl. anthropic, retroactively); devin `base_url` required (no
+default, operator templates `org_id`); cursor moved to assumptions only; README re-point; the
+wrong-envelope-key→0-emissions blast-radius test added. **PASS** on iteration 2.
+
+---
+
+### Entry #94: SESSION SEAL — live-poll fan-out: openai_admin / copilot / devin / granola (Bearer)
+
+**Entry ID**: `pollBearer94seal`
+**Timestamp**: 2026-06-06T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 9db012d8bffc96531fa4570e5297f6e17f01a349437bb70dbfb6f09955faa718
+```
+
+**Previous Hash**: 1be811acf801341c22b1f13453584f9f1966cbaeac976e91e3c0e829efedda7b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 43ffa3e34ca4a4766f42834929ddfdbcc0f6581ed95bbbe24602d282635a0c9b
+```
+
+**Decision**: Fanned the live-poll client out to the **4 Bearer list-poll connectors** —
+**openai_admin** (Bearer + `has_more`/`last_id`→`after` cursor, token-driven advance proven),
+**copilot** (Bearer + GH version header; **top-level JSON array** → per-day emissions), **devin**
+(Bearer; operator-templated `org_id` `base_url`; pagination deferred), **granola** (Bearer; `since`
+watermark operator-side). Harness gained `BearerAuth` + **top-level-array page support**
+(`_fetch_page` accepts object OR array; reason `non_dict_body`→`non_object_body`); both have real
+consumers (no orphans). The 5 `build_*_spec` helpers split into **`runtime/poll_specs.py`** so
+`poll_client.py` stays ≤250 (230); each resolves the secret by **`source_id`** (B1). Each connector's
+UNVERIFIED wire details (envelope key / cursor / header version) are marked in code AND `auth.md` as
+the gate before live-network wiring; the wrong-envelope-key→0-emissions blast radius is regression-
+locked. **google_drive** (`documents.get`+OAuth — a per-resource fetch) and **mcp_registry**
+(Candidate — no contract) are **disclosed-deferred**, not force-built. **Process**: independent
+pre-impl audit VETO→addressed (Entry #93; incl. a latent B1 doc/code mismatch in the shipped
+anthropic helper, now fixed); pre-seal devil's-advocate code review **PASS** (all 6 dimensions; one
+stale plan-D2 line fixed). **`mods/` untouched.** pytest **382 passed** (+8), ruff + mypy clean,
+governance gate verifies chain #1–#94. FX-RUNTIME-003 MODIFIED (Verified; +poll_specs.py + 4
+connectors).
+
+---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/runtime-live-poll-client`) — **runtime live-poll client shipped at Entry #92 (`977f4ced`; L2). The ingest fetch half now exists** — poll connectors gain request construction + auth + pagination, proven against recorded fixtures (anthropic_admin reference). 26 Beta connectors / 0 Prototype; security red-team complete (Entry #90); live emission seam + live poll seam both real.*
-*Next required action: operator decision — fan out the live-poll client to the other 8 poll connectors (openai_admin/copilot/cursor/devin/servicenow/granola/google_drive/mcp_registry; Bearer/Basic/OAuth auth strategies land with them) / promote a connector to Live (wire `GatewaySink` + `poll`/`deliver_webhook` against a real gateway). Before live-network poll wiring: confirm A1/A2 against live provider docs. Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` (cycle on `feat/poll-client-bearer-connectors`) — **live-poll fan-out (Bearer) shipped at Entry #94 (`43ffa3e3`; L2). 5 poll connectors now have the proven fetch half** (anthropic_admin + openai_admin/copilot/devin/granola); `BearerAuth` + top-level-array page support added; `poll_specs.py` split out. 26 Beta connectors / 0 Prototype; security red-team complete (Entry #90); live emission + live poll seams real.*
+*Next required action: operator decision — **Cycle B**: wire the Basic-auth + POST-body connectors `cursor` + `servicenow` (adds `BasicAuth` + request-body support + offset pagination); then revisit deferred `google_drive` (resource-fetch + OAuth) + `mcp_registry` (Candidate). Before any live-network poll wiring: confirm each connector's envelope/cursor assumptions against live provider docs. / promote a connector to Live (wire `GatewaySink` + `poll`/`deliver_webhook`). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

@@ -17,9 +17,23 @@ Auth model recorded for the live cycle; this connector ships the **parse surface
 
 - `api_token` — OAuth/PAT with `manage_billing:copilot` or `read:org` for the deferred REST poll.
 
+## Live path — reference poll client (recorded-fixture-proven)
+
+The request-construction is **built** in `runtime/poll_specs.py` (`build_copilot_spec`) and proven
+against a recorded fixture (`Authorization: Bearer` + `Accept` + `X-GitHub-Api-Version`; the response
+is a **top-level JSON array** of day objects → one emission per day). The real network call + token
+resolution remain operator-run.
+
+- **Secret resolver key**: the `SecretResolver` resolves by the connector **`source_id`** (`copilot`);
+  `api_token` above is the credential's *meaning*.
+- **Assumptions to confirm before live-network wiring** (verify-before-cite): the
+  `X-GitHub-Api-Version` value (`2022-11-28` candidate) is an argument, not baked as fact. No
+  pagination — the metrics array is date-range bounded (one page).
+
 ## Deferred live paths
 
-- Live REST poll of `GET /orgs/{org}/copilot/metrics` (+ enterprise/team scopes) + token resolution.
+- Live REST poll of `GET /orgs/{org}/copilot/metrics` (+ enterprise/team scopes) + token resolution
+  (the `runtime/` poll client is built; the operator supplies the live transport + secret).
 - The per-user NDJSON usage-metrics report path (gated on the PII redaction-and-pass model).
 
 Credentials are resolved by the operator runtime, never stored in this package.

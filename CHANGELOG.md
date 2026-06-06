@@ -57,6 +57,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `anthropic_admin` (aggregate, PII-free) and proven end-to-end against recorded
   response fixtures — the real network call stays operator-run (a mock does not
   promote a connector to Live).
+- **Live-poll fan-out (Bearer connectors)**: `BearerAuth` + per-connector specs
+  (`runtime/poll_specs.py`) wiring `openai_admin` (Bearer + `last_id`/`after`
+  cursor), `copilot` (Bearer; top-level JSON array → per-day), `devin` (Bearer;
+  operator-templated org), and `granola` (Bearer; operator-side `since` watermark)
+  through the same fail-closed/token-safe poll harness, each proven against recorded
+  fixtures. The poll client now accepts a top-level JSON array page (not only an
+  object). The secret is resolved by connector `source_id`. `google_drive`
+  (`documents.get` + OAuth — a per-resource fetch) and `mcp_registry` (Candidate)
+  are disclosed-deferred. Per-connector wire assumptions (envelope key / cursor /
+  header version) are recorded in each `auth.md` as the gate before live-network use.
 - ADR-0012 introducing the connector readiness ladder
   (Candidate → Prototype → Beta → Live). **All 24 connectors** are now **Beta** —
   each promotion earned by a real end-to-end runtime-harness proof against a

@@ -1,0 +1,14 @@
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "audit_log_evt_002",
+      "type": "project.updated",
+      "effective_at": 1780099200,
+      "project": { "id": "proj_b2", "name": "ingest-gateway" },
+      "actor": { "type": "api_key" }
+    }
+  ],
+  "has_more": false,
+  "last_id": null
+}
