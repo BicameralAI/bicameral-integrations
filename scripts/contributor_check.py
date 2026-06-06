@@ -90,6 +90,17 @@ def _get_token() -> str:
     return os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
 
 
+def _ensure_https(req: Request) -> None:
+    """Reject any non-HTTPS request URL before opening it.
+
+    All URLs are built from ``_API_ROOT`` (https), but this is an explicit defense so
+    ``urlopen`` can never be coerced into a ``file:``/custom scheme (Bandit B310). The
+    raised ``URLError`` is already handled by both call sites (→ ``None``/``False``).
+    """
+    if not req.full_url.lower().startswith("https://"):
+        raise URLError("non-https url rejected")
+
+
 def _api(path: str, params: dict[str, str] | None = None) -> Any:
     """Call the GitHub REST API and return parsed JSON, or ``None`` on failure."""
 
@@ -103,7 +114,8 @@ def _api(path: str, params: dict[str, str] | None = None) -> Any:
     req.add_header("Accept", "application/vnd.github+json")
     req.add_header("X-GitHub-Api-Version", "2022-11-28")
     try:
-        with urlopen(req, timeout=15) as resp:
+        _ensure_https(req)
+        with urlopen(req, timeout=15) as resp:  # nosec B310 - https enforced by _ensure_https
             body = resp.read()
     except (HTTPError, URLError, TimeoutError, OSError):
         return None
@@ -212,7 +224,8 @@ def _is_public_org_member(org: str, login: str) -> bool:
     req.add_header("Accept", "application/vnd.github+json")
     req.add_header("X-GitHub-Api-Version", "2022-11-28")
     try:
-        with urlopen(req, timeout=15) as resp:
+        _ensure_https(req)
+        with urlopen(req, timeout=15) as resp:  # nosec B310 - https enforced by _ensure_https
             return getattr(resp, "status", resp.getcode()) == 204
     except (HTTPError, URLError, TimeoutError, OSError):
         return False
