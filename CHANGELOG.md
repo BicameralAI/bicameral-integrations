@@ -45,6 +45,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (the operator-injected auth token never appears in an error or log). Connectors
   reach **Live** when an operator wires a configured `GatewaySink` against a real
   gateway.
+- **Live-poll client** (`runtime/poll_client.py`): the *fetch* half of a poll
+  connector's ingest path — the symmetric counterpart of `deliver_webhook`'s
+  receive side. `poll(connector, spec, transport, sink)` constructs the
+  authenticated request, walks pagination through an injected `HttpTransport`
+  (stdlib `UrllibTransport` default), and delegates to `deliver_poll`. Fail-closed
+  (non-200 / unparseable / non-dict body / non-list items / poisoned page token /
+  blank secret / page + response-size caps all raise `PollError`) and token-safe
+  (the operator secret never enters an error or log); the provider response,
+  including the pagination token, is treated as untrusted. Reference-wired for
+  `anthropic_admin` (aggregate, PII-free) and proven end-to-end against recorded
+  response fixtures — the real network call stays operator-run (a mock does not
+  promote a connector to Live).
 - ADR-0012 introducing the connector readiness ladder
   (Candidate → Prototype → Beta → Live). **All 24 connectors** are now **Beta** —
   each promotion earned by a real end-to-end runtime-harness proof against a

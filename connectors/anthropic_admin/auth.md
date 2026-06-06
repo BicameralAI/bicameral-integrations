@@ -24,10 +24,30 @@ Auth model recorded for the live cycle; this connector ships the **parse surface
 
 - `admin_api_key` — the org Admin API key (`x-api-key`) for the deferred REST poll.
 
+## Live path — reference poll client (recorded-fixture-proven)
+
+The request-construction + pagination half of the live poll is now **built** in
+`runtime/poll_client.py` (`build_anthropic_admin_spec` + `poll`) and proven end-to-end against
+recorded response fixtures (`x-api-key` + `anthropic-version` headers; `has_more`+`next_page`
+pagination; bucket parse → emission; PII-free). The **real network call + admin-key resolution
+remain operator-run** (a recorded-fixture test does not promote this connector to Live; ADR-0012).
+
+**Assumptions to confirm against live Anthropic docs BEFORE wiring to the real network**
+(verify-before-cite — a recorded-fixture test cannot discharge these; a mock returns whatever is
+queued):
+
+- **A1 — response envelope key.** The poll client assumes the time buckets arrive under a top-level
+  `data` list (`response_json["data"]`). Our verified sources document the *bucket* shape, not the
+  envelope key. `PollSpec.items` is a config callable, so confirming/adjusting this is a one-liner.
+- **A2 — page-token transport + param name.** The client assumes `next_page` is sent back as a query
+  parameter named `page`. The param **name and transport (query vs body vs header) are unverified.**
+  `build_anthropic_admin_spec(..., next_param=...)` parameterizes it.
+
 ## Deferred live paths
 
-- Live REST poll of `/v1/organizations/usage_report/messages` (+ `/cost_report`) + admin-key
-  resolution + `has_more`/`next_page` pagination.
+- The real-network REST poll of `/v1/organizations/usage_report/messages` (+ `/cost_report`) +
+  admin-key resolution (the `runtime/` poll client is built; the operator supplies the live
+  transport + secret + A1/A2 confirmation).
 
 Credentials are resolved by the operator runtime, never stored in this package.
 See [TRUST_TIER_MODEL](../../docs/TRUST_TIER_MODEL.md).

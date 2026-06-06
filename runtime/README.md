@@ -16,7 +16,10 @@ live HTTP listener. This layer is the seam an operator wires their host into.
 | `SecretResolver` (Protocol) | `resolve(connector_id) -> str` — operator supplies the real keyring-backed one. |
 | `MappingSecretResolver` | Reference resolver over an injected mapping (`""` for unknown ids). |
 | `deliver_webhook(connector, *, headers, body, sink, …)` | Verify + normalize a webhook delivery, emit, return the emission count (0 on reject/dedup). |
-| `deliver_poll(connector, payloads, *, sink, …)` | Parse + normalize a batch of polled payloads, emit, return the count. |
+| `deliver_poll(connector, payloads, *, sink, …)` | Parse + normalize a batch of **already-fetched** polled payloads, emit, return the count. |
+| `poll(connector, spec, *, transport, sink, …)` | **Live-poll fetch half** — the symmetric counterpart of `deliver_webhook`'s receive side. Constructs the authenticated request, walks pagination through an injected `HttpTransport`, then delegates to `deliver_poll`. Fail-closed + token-safe. Reference-wired for `anthropic_admin`. |
+| `HttpTransport` (Protocol) / `UrllibTransport` | The network seam. Operator-run `urllib` default; tests inject a recorded transport (a mock does not promote a connector to Live). |
+| `ApiKeyHeaderAuth`, `PageToken`, `PollSpec`, `build_anthropic_admin_spec` | Poll-client building blocks: api-key-in-header auth (CR/LF-rejecting, token-free errors), token pagination (provider token treated as untrusted), the per-connector spec, and the anthropic_admin reference spec. |
 
 ## Readiness ladder (ADR-0012)
 
@@ -53,3 +56,28 @@ emission-contract breach (sensitive-data hit, blank excerpt) propagates out of
 success; a gateway rejection (e.g. `429`) raises `GatewayEmissionError(status,
 reason)` for the operator to handle; an unconfigured sink raises
 `GatewayEmissionGated`.
+
+### Poll connectors — the fetch half (`poll`)
+
+For ACTIVE/poll connectors the operator supplies a transport (the default
+`UrllibTransport`, or their own) plus a `SecretResolver`; `poll` constructs the
+authenticated request, paginates, and emits:
+
+```python
+from runtime import poll, CollectingSink
+from runtime.poll_client import UrllibTransport, build_anthropic_admin_spec
+from connectors.anthropic_admin.connector import AnthropicAdminConnector
+
+spec = build_anthropic_admin_spec(resolver)          # x-api-key + anthropic-version
+count = poll(AnthropicAdminConnector(), spec,
+             transport=UrllibTransport(), sink=CollectingSink())
+```
+
+`poll` is **fail-closed** (non-200 / unparseable / non-dict body / non-list items /
+poisoned page token / blank secret / `_MAX_PAGES` / `_MAX_RESPONSE` all raise
+`PollError`) and **token-safe** (the operator secret never enters an error or log).
+The provider response — including the pagination token — is treated as untrusted.
+The reference wiring (`anthropic_admin`) is proven against recorded fixtures; the
+**param name / envelope key are unverified assumptions (A1/A2)** the operator
+confirms against live provider docs before real-network wiring (see the connector's
+`auth.md`). Other poll connectors are wired in follow-on cycles.

@@ -6,6 +6,16 @@ library) calls to drive a connector's ingest → verify → normalize → emit p
 
 from .delivery import PollConnector, WebhookConnector, deliver_poll, deliver_webhook
 from .gateway_mapping import emission_to_ingest_request
+from .poll_client import (
+    ApiKeyHeaderAuth,
+    HttpTransport,
+    PageToken,
+    PollError,
+    PollSpec,
+    UrllibTransport,
+    build_anthropic_admin_spec,
+    poll,
+)
 from .secrets import MappingSecretResolver, SecretResolver
 from .sinks import (
     CollectingSink,
@@ -28,4 +38,12 @@ __all__ = [
     "emission_to_ingest_request",
     "SecretResolver",
     "MappingSecretResolver",
+    "poll",
+    "PollError",
+    "PollSpec",
+    "PageToken",
+    "ApiKeyHeaderAuth",
+    "HttpTransport",
+    "UrllibTransport",
+    "build_anthropic_admin_spec",
 ]
