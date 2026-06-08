@@ -1,0 +1,220 @@
+{
+  "connectors": {
+    "google_drive": {
+      "available": true,
+      "category": "docs",
+      "credentials": [
+        {
+          "header": "Authorization: Bearer <access_token>",
+          "key": "google_drive",
+          "label": "Google OAuth access token",
+          "obtain": {
+            "steps": [
+              "Register an OAuth client and grant consent for the documents.readonly / drive.readonly scopes.",
+              "The mcp UI owns the consent UX; the operator runtime stores the access token and OWNS refresh (the SecretResolver returns a valid token)."
+            ],
+            "url": "https://developers.google.com/identity/protocols/oauth2"
+          },
+          "refresh_owner": "operator",
+          "required": true,
+          "scopes": [
+            "https://www.googleapis.com/auth/documents.readonly",
+            "https://www.googleapis.com/auth/drive.readonly"
+          ],
+          "type": "oauth2",
+          "wiring_oversight": true
+        }
+      ],
+      "data": {
+        "emits": [
+          "document"
+        ],
+        "pii_posture": "Document title + flattened body text (untrusted, possibly PII-dense). FX-SEC-001 producer screen rejects secret/PHI/PAN before emit.",
+        "redaction": "none (FX-SEC-001 screen is the backstop)"
+      },
+      "description": "Google Docs documents fetched by id (documents.get) as governed evidence.",
+      "id": "google_drive",
+      "instructions": [
+        {
+          "action": "oauth_consent",
+          "link": "https://developers.google.com/identity/protocols/oauth2",
+          "text": "Connect Google and grant read-only Docs/Drive access (documents.readonly / drive.readonly). Token refresh is handled by the operator runtime."
+        },
+        {
+          "action": "configure",
+          "ref": "connectors/google_drive/auth.md (Live fetch)",
+          "text": "Provide the Google Doc id to fetch."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: documents.get should return the document; its text is screened before emission."
+        }
+      ],
+      "live_readiness": "Code-ready (FX-GDRIVE-002, documents.get). Operator provides a valid OAuth access token (refresh operator-owned) + a document id; then wires GatewaySink.",
+      "modes": [
+        "active"
+      ],
+      "name": "Google Drive (Docs)",
+      "references": [
+        {
+          "kind": "api",
+          "url": "https://developers.google.com/docs/api/reference/rest/v1/documents/get"
+        },
+        {
+          "kind": "auth",
+          "url": "https://developers.google.com/identity/protocols/oauth2"
+        },
+        {
+          "kind": "drive-api",
+          "url": "https://developers.google.com/drive/api/guides/about-sdk"
+        }
+      ],
+      "runtime_config": [
+        {
+          "description": "The Google Doc id to fetch (validated [A-Za-z0-9_-]{1,200}; spliced into GET /v1/documents/{id}).",
+          "key": "document_id",
+          "label": "Document ID",
+          "required": true
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T1/T3",
+      "wire_gates": [
+        "Bearer-header assumption + multi-tab docs confirmed against a live response before the Live flip. Multi-tab docs (content under tabs[].documentTab.body) emit title-only — extract_document_text walks the legacy body; includeTabsContent/tabs[] deferred.",
+        "OAuth token refresh + folder polling (Drive files.list) + push-notification webhooks are operator-runtime / deferred."
+      ]
+    },
+    "linear": {
+      "available": true,
+      "category": "project-management",
+      "credentials": [
+        {
+          "header": "Authorization (raw key, NO Bearer prefix)",
+          "key": "linear",
+          "label": "Personal API key",
+          "obtain": {
+            "steps": [
+              "In your Linear workspace settings, create a personal API key.",
+              "Copy the key — it is sent as a raw Authorization header (no Bearer prefix)."
+            ],
+            "url": "https://linear.app/developers/graphql"
+          },
+          "required": true,
+          "type": "api_key",
+          "validation": "^lin_api_[A-Za-z0-9]+$"
+        },
+        {
+          "header": "Linear-Signature (hex HMAC-SHA256 over the raw body)",
+          "key": "linear_webhook",
+          "label": "Webhook signing secret",
+          "obtain": {
+            "steps": [
+              "When you create the Linear webhook, Linear shows a signing secret.",
+              "Copy it — Bicameral verifies Linear-Signature (hex HMAC-SHA256) + a 60s anti-replay window."
+            ],
+            "url": "https://linear.app/developers/webhooks"
+          },
+          "required": true,
+          "type": "webhook_secret"
+        }
+      ],
+      "data": {
+        "emits": [
+          "issue"
+        ],
+        "pii_posture": "Webhook: issue identifier/title/description/url + actor.name. GraphQL active fetch: PII-safe (no assignee/creator identity surfaced). FX-SEC-001 producer screen is the backstop.",
+        "redaction": "none (FX-SEC-001 screen rejects secret/PHI/PAN)"
+      },
+      "description": "Linear issues — webhook events + active GraphQL fetch — as governed evidence.",
+      "id": "linear",
+      "instructions": [
+        {
+          "action": "open_url",
+          "link": "https://linear.app/developers/graphql",
+          "ref": "connectors/linear/references.md (Auth / GraphQL active fetch)",
+          "text": "Create a personal API key in your Linear workspace settings."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the personal API key (sent as a raw Authorization header — no Bearer prefix)."
+        },
+        {
+          "action": "register_webhook",
+          "link": "https://linear.app/developers/webhooks",
+          "ref": "connectors/linear/auth.md (Verification)",
+          "text": "Create a Linear webhook on Issue events, pointing at your Bicameral receiver URL."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the webhook signing secret Linear shows when the webhook is created."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: a signed test webhook should produce one emission; an active GraphQL fetch should return recent issues."
+        }
+      ],
+      "live_readiness": "Code-ready on both paths (FX-LINEAR-002 webhook, FX-LINEAR-003 GraphQL). Operator provides: the API key, the webhook signing secret, and a webhook receiver URL; then wires GatewaySink.",
+      "modes": [
+        "webhook",
+        "active"
+      ],
+      "name": "Linear",
+      "references": [
+        {
+          "kind": "api",
+          "url": "https://linear.app/docs/api-and-webhooks"
+        },
+        {
+          "kind": "graphql",
+          "url": "https://linear.app/developers/graphql"
+        },
+        {
+          "kind": "webhook",
+          "url": "https://linear.app/developers/webhooks"
+        },
+        {
+          "kind": "pagination",
+          "url": "https://linear.app/developers/pagination"
+        },
+        {
+          "kind": "rate-limiting",
+          "url": "https://linear.app/developers/rate-limiting"
+        }
+      ],
+      "runtime_config": [
+        {
+          "default": 50,
+          "description": "Issues fetched per GraphQL page (Linear Relay cursor; default 50).",
+          "key": "page_size",
+          "label": "GraphQL page size",
+          "required": false
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T1",
+      "webhook": {
+        "events": [
+          "Issue"
+        ],
+        "header": "Linear-Signature",
+        "receiver": {
+          "label": "Bicameral webhook receiver URL (operator-provisioned)",
+          "provisioned_by": "operator",
+          "required": true
+        },
+        "setup": {
+          "steps": [
+            "In Linear, create a webhook subscribed to Issue events.",
+            "Set its URL to your Bicameral webhook receiver (see receiver below)."
+          ],
+          "url": "https://linear.app/developers/webhooks"
+        },
+        "signature_scheme": "hex HMAC-SHA256 over the raw request body"
+      },
+      "wire_gates": [
+        "Two-secret gap: SecretResolver.resolve(connector_id) returns ONE secret per source_id, but Linear needs two (the GraphQL API key resolved as 'linear' + the webhook signing secret injected via LinearConnector(secret=...)). The 'linear_webhook' key is declarative; resolver key-namespacing is a separate runtime cycle.",
+        "GraphQL issue field set (id/identifier/title/description/url/updatedAt/state.name) confirmed against a live response before the Live flip (verify-before-cite)."
+      ]
+    }
+  }
+}

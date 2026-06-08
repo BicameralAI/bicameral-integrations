@@ -19,7 +19,9 @@ bicameral-integrations/
 |-- adapter/
 |   `-- core/  (emissions, observations, contracts, capabilities, pipeline,
 |              sensitive, webhook_security, filters, fixtures, __init__ + tests/)
-|-- connectors/  (each: connector.py, __init__, README, auth.md, fixtures/, tests/)
+|-- connectors/  (each: connector.py, __init__, README, auth.md, references.md, fixtures/, tests/;
+|                 + config.json = the FX-CFG-001 mcp-UI descriptor [linear + google_drive exemplars,
+|                 24 to fan out]; _schema/connector-config.schema.json + index.json [generated])
 |   |-- github/         (PR -> Observation; ACTIVE+WEBHOOK)
 |   |-- fathom/         (meeting -> Observation; PASSIVE+WEBHOOK)
 |   |-- linear/         (webhook event -> Observation; WEBHOOK+ACTIVE)
@@ -54,7 +56,8 @@ bicameral-integrations/
 |           the ADR-0013 execution contract: Mod protocol + ModEmission + manifest-enforced run_mod
 |           (EM-safe + FX-SEC-001-screened, input+output). dependency_risk/connector.py = the FIRST mod
 |           logic (FX-MOD-002, reference mod: OSV-vuln + manifest-mention paths); 12 mods still Scoped)
-|-- scripts/  (governance_gate.py + check_license_headers.py + tests/)
+|-- scripts/  (governance_gate.py + check_license_headers.py + contributor_check.py +
+|              validate_connector_config.py + build_connector_index.py [FX-CFG-001] + tests/)
 |-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME, SYSTEM_STATE,
 |          GOVERNANCE_INDEX, BACKLOG, FEATURE_INDEX, adr/, compliance/, ecosystem/, research-brief-*)
 |-- .github/workflows/  (10 gate workflows: ci, governance-gate, codeql, dependency-review,
