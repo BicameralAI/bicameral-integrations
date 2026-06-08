@@ -25,10 +25,14 @@ maintained provider-docs table and refresh cadence.
 
 ## Verified API/webhook contract (as built, 2026-06-05)
 
-- **Endpoint (parsed)**: `POST /teams/daily-usage-data` (date range; poll ≤ hourly). Returns per-user-day
-  rows: `userId`, `day`, `email`, `name`, `isActive`, `acceptedLinesAdded`, `totalAccepts`/`totalApplies`/
-  `totalRejects`, `totalTabsShown`/`Accepted`, `composerRequests`/`chatRequests`/`agentRequests`,
-  `mostUsedModel`, `clientVersion`, …
+- **Endpoint (parsed, verified 2026-06-08 cursor.com/docs)**: `POST https://api.cursor.com/teams/daily-usage-data`,
+  body `{startDate, endDate}` in **epoch milliseconds** (≤30-day range). Returns per-user-day
+  rows under a top-level `data` envelope: `userId`, `day`, `email`, `isActive`, `acceptedLinesAdded`,
+  `totalAccepts`/`totalApplies`/`totalRejects`, `totalTabsShown`/`Accepted`,
+  `composerRequests`/`chatRequests`/`agentRequests`, `mostUsedModel`, `clientVersion`, … (there is
+  **no `name`** field on this endpoint — `name` lives on the members/spend endpoints). Pagination
+  (`page`/`pageSize`, response `pagination.hasNextPage`) exists but its transport (query vs body) is
+  unverified → deferred (single request truncates teams larger than one page).
 - **PII control (built)**: **every row carries `email` (PII)**; FX-SEC-001 screens secret/PHI/PAN only
   (NOT generic email — SG-2026-06-05-A). `parse_usage_day` reads a strict numeric+model allowlist and
   **never reads `email` / `name` / `clientVersion`**. **Per-developer attribution uses the OPAQUE integer

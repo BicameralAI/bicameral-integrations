@@ -9,7 +9,7 @@
       "service_tier": "standard",
       "uncached_input_tokens": 120000,
       "cache_read_input_tokens": 30000,
-      "cache_creation_input_tokens": 5000,
+      "cache_creation": { "ephemeral_1h_input_tokens": 3000, "ephemeral_5m_input_tokens": 2000 },
       "output_tokens": 42000
     },
     {

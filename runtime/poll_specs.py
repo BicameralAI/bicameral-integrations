@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 
 from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, PollError
-from .poll_client import OffsetPager, PageToken, PollSpec
+from .poll_client import OffsetPager, PageNumberPager, PageToken, PollSpec
 from .secrets import SecretResolver
 
 
@@ -100,9 +100,16 @@ def build_copilot_spec(
     resolver: SecretResolver,
     *,
     base_url: str = _COPILOT_BASE,
-    api_version: str = "2022-11-28",  # unverified candidate — GitHub API version header
+    api_version: str = "2022-11-28",  # valid (EOL 2028-03-10); latest is 2026-03-10
+    per_page: int = 100,
 ) -> PollSpec:
-    """copilot: Bearer (read:org); response is a top-level JSON array of day objects."""
+    """copilot: Bearer (read:org); response is a top-level JSON array of day objects.
+
+    Verified docs.github.com 2026-06-08: this endpoint paginates by `page`/`per_page`
+    (max 100; the lookback is **100 days**, not 28). Page-number pagination stops on a
+    short page. `per_page` must match what the operator's `base_url` sends (default 100
+    = GitHub's default), so the short-page stop is accurate.
+    """
     secret = _require_secret(resolver, "copilot")
     auth = BearerAuth(
         secret,
@@ -112,7 +119,7 @@ def build_copilot_spec(
         base_url=base_url,
         auth=auth,
         items=lambda page: page if isinstance(page, list) else [],  # top-level array
-        pagination=None,  # date-range bounded — one page
+        pagination=PageNumberPager(page_param="page", per_page=per_page),
     )
 
 

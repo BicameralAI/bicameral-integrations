@@ -30,19 +30,24 @@ Auth model recorded for the live cycle; this connector ships the **parse surface
 
 - `api_key` — the team-admin Admin API key (basic-auth username) for the deferred REST poll.
 
-## Live path — reference poll client (recorded-fixture-proven)
+## Live path — reference poll client (contract verified 2026-06-08, cursor.com/docs)
 
 The request-construction is **built** in `runtime/poll_specs.py` (`build_cursor_spec`) and proven
-against a recorded fixture (HTTP **Basic** with the API key as username + empty password; **POST**
-with a Content-Type header + a date-range body; PII-free emissions). The real network call + key
-resolution remain operator-run.
+against a recorded fixture. The real network call + key resolution remain operator-run.
 
 - **Secret resolver key**: the `SecretResolver` resolves by the connector **`source_id`** (`cursor`);
   the `api_key` name below is the credential's *meaning* (it is sent as the basic-auth username).
-- **Assumptions to confirm before live-network wiring** (verify-before-cite): the **POST body shape**
-  (date-range field names/units, e.g. `startDate`/`endDate`) is unverified → `build_cursor_spec` takes
-  the body as a caller-supplied dict (json-encoded), not baked. The **response envelope key** (`data`?)
-  is unverified → `items` is a config callable. No pagination (date-range bounded).
+- **Verified**: host `api.cursor.com`; `POST /teams/daily-usage-data` with HTTP **Basic** (key as
+  username, empty password); body `{startDate, endDate}` in **epoch milliseconds**, range ≤ 30 days
+  (caller supplies the dict — still not baked); response **`data`** envelope. Each row carries
+  `email` + opaque `userId` (the connector reads neither identity beyond the opaque `userId`; there
+  is **no `name`** field on this endpoint — earlier docs overstated it).
+- **Pagination — DEFERRED (transport unverified, verify-before-cite)**: the endpoint paginates via
+  `page`/`pageSize` (response carries a `pagination` object with `hasNextPage`), so a team larger
+  than one page truncates with the current single-request fetch. Whether `page`/`pageSize` ride as
+  **query params or POST-body fields** is not documented clearly, so the pager is intentionally NOT
+  wired (we will not invent the transport). The operator widens `pageSize` or paginates manually
+  until the transport is confirmed.
 
 ## Deferred live paths
 

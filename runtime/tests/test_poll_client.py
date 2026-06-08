@@ -259,8 +259,22 @@ def test_copilot_top_level_array_emits_per_day() -> None:
     sink = CollectingSink()
     count = poll(CopilotConnector(), build_copilot_spec(resolver), transport=transport, sink=sink)
     assert count == 2  # two day objects in the top-level array
-    assert len(transport.requests) == 1  # no pagination
+    assert len(transport.requests) == 1  # 2 < per_page(100) → short page, stops after one
     assert transport.requests[0][2]["X-GitHub-Api-Version"] == "2022-11-28"
+
+
+def test_copilot_page_number_pagination() -> None:
+    # page-number pager (page/per_page): a full page (==per_page) advances `page`; a short page stops.
+    p1 = [{"date": "2026-06-01"}, {"date": "2026-06-02"}]  # == per_page(2) → advance
+    p2 = [{"date": "2026-06-03"}]                            # < per_page → stop
+    transport = RecordedTransport([_json_resp(p1), _json_resp(p2)])
+    resolver = MappingSecretResolver({"copilot": _BEARER})
+    count = poll(CopilotConnector(), build_copilot_spec(resolver, per_page=2),
+                 transport=transport, sink=CollectingSink())
+    assert count == 3
+    assert len(transport.requests) == 2  # advanced once, then stopped on the short page
+    q2 = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(transport.requests[1][1]).query))
+    assert q2.get("page") == "2"  # 1-based page advanced
 
 
 def test_devin_cursor_pagination() -> None:

@@ -26,9 +26,11 @@ resolution remain operator-run.
 
 - **Secret resolver key**: the `SecretResolver` resolves by the connector **`source_id`** (`copilot`);
   `api_token` above is the credential's *meaning*.
-- **Assumptions to confirm before live-network wiring** (verify-before-cite): the
-  `X-GitHub-Api-Version` value (`2022-11-28` candidate) is an argument, not baked as fact. No
-  pagination — the metrics array is date-range bounded (one page).
+- **Verified (docs.github.com 2026-06-08)**: the endpoint paginates by `page`/`per_page` (max 100;
+  lookback is **100 days**, not 28) — wired via `PageNumberPager` (stop-on-short-page); the top-level
+  array shape is confirmed. The `X-GitHub-Api-Version` value (`2022-11-28`) is valid (EOL 2028-03-10;
+  latest is `2026-03-10`) and is an argument, not baked as fact. *(Earlier "no pagination, date-range
+  bounded" was DRIFT — the 28-day figure is the dashboard window, not the API cap.)*
 
 ## Deferred live paths
 

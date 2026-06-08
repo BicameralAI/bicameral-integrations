@@ -28,7 +28,7 @@ maintained provider-docs table and refresh cadence.
 - **Endpoint (parsed)**: `GET /v1/organizations/usage_report/messages` (token usage); companion
   `GET /v1/organizations/cost_report`. Returns time buckets (`bucket_width` `1m`/`1h`/`1d`;
   `starting_at`/`ending_at`) with `results: [{model, workspace_id, api_key_id, service_tier,
-  uncached_input_tokens, cache_read_input_tokens, cache_creation_input_tokens, output_tokens}]`.
+  uncached_input_tokens, cache_read_input_tokens, cache_creation: {ephemeral_1h_input_tokens, ephemeral_5m_input_tokens}, output_tokens}]` (verified docs.anthropic 2026-06-08; cache-creation is NESTED, not a flat `cache_creation_input_tokens`).
   `workspace_id`/`api_key_id` may be `null` (default workspace / Workbench).
 - **Parse + PII**: `parse_usage` sums input (`uncached`+`cache_read`+`cache_creation`) + output tokens
   and collects distinct models across a bucket. **Aggregate and PII-free** — the opaque
