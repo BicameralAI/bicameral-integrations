@@ -2877,6 +2877,74 @@ CHANGES-REQUIRED (stale class docstring + README) → fixed. **`mods/` untouched
 mcp_registry FX MODIFIED. **All 7 code-drift connectors are now fixed.**
 
 ---
+
+### Entry #103: GATE AUDIT — doc-only verification corrections (Fix Cycle 4) (PASS)
+
+**Entry ID**: `docFix103audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit / self-verification)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1 (doc-only; no connector code)
+
+**Content Hash**:
+```
+SHA256(connector-verification-2026-06-06.md)
+= 4fac2b787370ecd6c8f1dd62ece23dc79b54a896bb0de935676c9551b350481a
+```
+
+**Previous Hash**: 8b6e5e64cb3ae40d1b4f017048cc7d99fac4125cb0373bb0470d60121cc1d72f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 29a9d2be999c1095b54cfbe14f3d039d51c6420c86730f6835c2812bb730be9b
+```
+
+**Decision**: The verification campaign (PR #71) was itself the adversarial research/audit for these
+corrections — each doc fix transcribes a finding that already cited official docs. As a doc-only
+cycle (no connector code, no behavior change), the gate is a self-verification: a grep sweep confirms
+no stale claim survives except inside the corrective sentences that explain each fix; the full suite
+is unchanged (406 passed); governance gate verifies the chain. L1.
+
+---
+
+### Entry #104: SESSION SEAL — doc-only verification corrections (Fix Cycle 4); CAMPAIGN COMPLETE
+
+**Entry ID**: `docFix104seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 9a85261b4179c8a35806bc7b267b26f114bf000409940b268bb6895eb03d1de1
+```
+
+**Previous Hash**: 29a9d2be999c1095b54cfbe14f3d039d51c6420c86730f6835c2812bb730be9b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a81a4fd4b63148bbc6fcfdc9023c5996ce1e300cbabe9a1307db0d2b48d22e05
+```
+
+**Decision**: Closed the verification campaign with the doc-only corrections (no connector code):
+**confluence** — deferral *rationale* corrected (Cloud webhooks DO carry a verifiable **Connect-app
+JWT** scheme, HS256+qsh; the "no confirmable signature scheme" claim was too strong; `verify()` stays
+deferred for the correct reason — needs a Connect-app install + JWT/qsh verifier). **google_drive** —
+scope corrected (`drive.readonly`/`drive.file`; `drive.metadata.readonly` is NOT valid for
+`documents.get`). **fathom** — Svix/Standard-Webhooks attribution marked inferred (Fathom's docs don't
+name it) + 300 s window is the spec default. **sarif** — `level` added to the parsed-contract line.
+**notion** — auth.md de-staled (Candidate→Beta) with the verified `X-Notion-Signature` scheme +
+prefix-from-examples + raw-body notes. **Pre-Live notes** recorded: sentry (raw-body byte-equality →
+pre-Live integration test gate), pagerduty (official sig page JS-rendered/machine-unfetchable → browser
+spot-check; the one connector whose scheme is not doc-confirmed), claude_code (observed/undocumented
+line-schema). **`mods/` untouched.** pytest **406 passed** (unchanged — doc-only), governance gate
+verifies chain #1–#104. **VERIFICATION CAMPAIGN COMPLETE: all 26 connectors doc-verified-and-correct.**
+
+---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/mcp-registry-graduation`) — **Fix Cycle 3 sealed at Entry #102 (`8b6e5e64`; L2): mcp_registry graduated Candidate→Beta. ALL 7 code-drift connectors from the verification campaign are now fixed.** The connector code baseline matches the verified provider contracts. Remaining program items are **doc-only corrections** (confluence JWT-deferral reason / google_drive scope / fathom-Svix attribution / notion prefix-note / sarif level) + **pre-Live notes** (sentry raw-body integration test, pagerduty browser sig spot-check, claude_code observed-schema) — none change connector code. Phase-1 verification complete (PR #71).*
-*Next required action: the doc-only correction pass (confluence/google_drive/fathom/notion/sarif) + pre-Live notes; then the connector baseline is fully verified-and-correct. Phase 2 (mod groundwork) remains GATED on Codex committing `mods/`. Admin (you): branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `docs/connector-verification-corrections`) — **Connector verification campaign COMPLETE at Entry #104 (`a81a4fd4`; L1).** All 26 connectors are doc-verified-and-correct against authoritative provider docs: Phase-1 verified (PR #71), 7 code-drift connectors fixed (Cycles 1–3, PRs #72/#73/#74), doc-only corrections + pre-Live notes landed (Cycle 4). mcp_registry graduated Candidate→Beta. The connector **code** baseline matches the verified provider contracts; remaining go-live items are operator-runtime (live network + the per-connector pre-Live tests/spot-checks noted in each `auth.md`).*
+*Next required action: **Phase 2 (mod reference docs + architectural groundwork)** — GATED on Codex committing/landing its in-flight `mods/` work (reconcile-first; never clobber). Optional now: take a connector to Live (operator wires `GatewaySink` + `poll`/`deliver_webhook`); confirm the 3 pre-Live notes (sentry/pagerduty/claude_code). Admin (you): branch protection (B5). Open: bot #73 (release signing).*

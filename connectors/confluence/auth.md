@@ -4,16 +4,19 @@ Auth model recorded for the live cycle; this connector ships the **parse surface
 only (live HTTP receipt, REST fetch, and webhook verification deferred).
 
 - Default trust tier: T1 (read) / T3 (proposed writes, far future) / ACTIVE+WEBHOOK.
-- **Webhook verification (DEFERRED — intentionally not shipped this cycle)**:
-  Confluence **Cloud** webhooks are delivered through the Connect/app framework and
-  have **no payload-signature scheme confirmable from current Atlassian docs**. The
-  HMAC `X-Hub-Signature` (HMAC-SHA256, secret-keyed) scheme documented for
-  Confluence **Data Center / Server** does **not** transfer to Cloud. Per
-  verify-before-cite, no `verify()` is built on this uncertain ground; the
-  connector is proven through the poll/active parse path instead.
-  - When the Cloud signature contract is verified (or a Data-Center deployment is
-    targeted), an HMAC verifier would reuse
-    `adapter.core.webhook_security.verify_hmac_hex` over the raw body.
+- **Webhook verification (DEFERRED — corrected rationale, verified 2026-06-08)**:
+  Confluence **Cloud** webhooks DO carry a verifiable authentication scheme, but it is
+  **Connect-app JWT**, NOT an HMAC payload signature: each webhook POST includes
+  `Authorization: JWT <token>`, signed **HS256** over the per-tenant install **shared
+  secret**, with a `qsh` (query-string-hash) binding the token to the request
+  method+path (developer.atlassian.com). The Data-Center/Server HMAC `X-Hub-Signature`
+  scheme does **not** transfer to Cloud (confirmed). So the connector's earlier claim
+  that Cloud has "no confirmable signature scheme" was **too strong** — a scheme is
+  documented and buildable. `verify()` stays deferred for the **correct** reason: the
+  JWT path requires a **registered Connect app + the install-handshake shared-secret
+  store** (per-tenant `clientKey`→secret) and a **JWT/qsh verifier** (`verify_hmac_hex`
+  over the raw body is the WRONG primitive). When an operator runs a Connect app, build
+  an HS256 JWT verifier + qsh recompute; until then it is correctly unbuilt.
 - **Active fetch auth (deferred)**: Confluence Cloud REST uses OAuth 2.0 (3LO) or
   an API token with HTTP Basic; Connect apps use a JWT (`qsh`). None are wired here.
 

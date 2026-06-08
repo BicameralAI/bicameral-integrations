@@ -66,9 +66,26 @@ Status legend: ☐ pending · ✅ confirmed · ⚠ drift (fix needed) · ◑ doc
 6. **continue_dev** — **✅ FIXED (Fix Cycle 2)**: reads `eventName` (legacy `name` fallback) + `modelName`; ref floors to `eventName:timestamp` (no event-id).
 7. **mcp_registry** — **✅ FIXED / GRADUATED (Fix Cycle 3, 2026-06-08)**: re-verified the exact OpenAPI contract (top-level `servers`, per-entry `element.server`, request `cursor`, response `metadata.nextCursor`, public no-auth); wired `build_mcp_registry_spec` with new `NoAuth` + nested-path `PageToken` (`has_more_field=None`); Candidate→**Beta**. **All 7 code-drift connectors now fixed.**
 
-**Doc-only corrections (no code):** confluence (JWT deferral reason), google_drive (scope `drive.readonly`/`drive.file`), fathom (Svix-attribution + window note), sarif (add `level` to contract line), notion (prefix-from-examples note).
+**Doc-only corrections — ✅ DONE (Fix Cycle 4, 2026-06-08):** confluence (deferral reason corrected →
+Connect-app JWT, not "no scheme"), google_drive (scope → `drive.readonly`/`drive.file`; `drive.metadata.readonly`
+invalid for documents.get), fathom (Svix-attribution-inferred + 300s-default notes), sarif (`level` added to
+contract line), notion (auth.md de-staled Candidate→Beta + verified `X-Notion-Signature` + prefix/raw-body notes).
 
-**Deferred-with-evidence (pre-Live action, not a code fix):** sentry (raw-body integration test), pagerduty (browser spot-check of the JS-rendered sig page), claude_code (observed line-schema, already noted).
+**Deferred-with-evidence (pre-Live action, not a code fix) — ✅ NOTED (Fix Cycle 4):** sentry (raw-body
+byte-equality → pre-Live integration test gate), pagerduty (JS-rendered sig page machine-unfetchable →
+browser spot-check; the one connector whose scheme is not doc-confirmed), claude_code (observed line-schema
+DOC-SILENT, pin against a captured transcript before Live).
+
+---
+
+## CAMPAIGN COMPLETE (2026-06-08)
+
+All 26 connectors are **doc-verified-and-correct**. The 7 code-drift connectors were fixed across Fix Cycles
+1–3 (PRs #72/#73/#74; ledger #97–#102); the doc-only corrections + pre-Live notes landed in Fix Cycle 4 (this
+pass). mcp_registry graduated Candidate→Beta. The connector code baseline now matches the verified provider
+contracts; the remaining go-live items are **operator-runtime** actions (live network calls, the per-connector
+pre-Live tests/spot-checks noted above), not connector-code work. **Phase 2 (mod groundwork) is unblocked the
+moment Codex commits its `mods/` work** (reconcile-first).
 
 ## Method
 

@@ -22,6 +22,12 @@ the items below are recorded so the live integration inherits them.
 - Secret: prefixed `whsec_`; verification is
   `HMAC-SHA256(base64decode(secret), "${id}.${timestamp}.${body}")`, base64,
   constant-time compare. Reuse a Svix-style verifier — do not hand-roll.
+- **Verified 2026-06-08 (developers.fathom.ai/webhooks)**: the header set + `whsec_`
+  base64-decoded secret + `{id}.{timestamp}.{body}` signed content + base64 `v1,<b64>`
+  signatures all match exactly. Attribution notes: Fathom's own docs describe these
+  mechanics but do **not** name "Svix"/"Standard Webhooks" (the brand is inferred from the
+  byte-identical scheme), and the 300 s replay tolerance is the Standard-Webhooks **default**
+  (not Fathom-documented — reconcile if Fathom publishes a specific window).
 
 ## Verification (this cycle)
 

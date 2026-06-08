@@ -16,6 +16,13 @@ surface** only.
   default-on but **suppressed in this repo** per stealth policy, so it would
   miss our own Claude commits — lower value than the transcript path).
 
+**Schema note (verified 2026-06-08, code.claude.com/docs):** the file **paths** and
+30-day retention ARE officially documented, but the per-line transcript **field schema**
+(`type`/`uuid`/`sessionId`/`message.content` blocks/`cwd`/`model`) and the `history.jsonl`
+epoch-ms vs transcript-ISO timestamp distinction are **observed/undocumented** (DOC-SILENT) —
+the parse rests on observed structure, not a published schema. Pin against a captured real
+transcript before relying on the line shape at Live.
+
 ## Sensitivity
 
 Transcripts are plaintext on disk and contain file contents, command

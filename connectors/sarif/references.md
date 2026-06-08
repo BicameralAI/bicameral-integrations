@@ -24,7 +24,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 
 ## Verified API/webhook contract (as built, 2026-06-05)
 
-- **SARIF 2.1.0 report (parsed)**: `parse_sarif` flattens `runs[].results[]` — one Observation per result; `parse_result` reads `{ruleId, message.text, locations[0].physicalLocation.{artifactLocation.uri, region.startLine}}`; ref is `"{ruleId}@{uri}:{startLine}"`; tool name from `run.tool.driver.name`.
+- **SARIF 2.1.0 report (parsed)**: `parse_sarif` flattens `runs[].results[]` — one Observation per result; `parse_result` reads `{ruleId, level (enum none|note|warning|error), message.text, locations[0].physicalLocation.{artifactLocation.uri, region.startLine}}`; ref is `"{ruleId}@{uri}:{startLine}"`; tool name from `run.tool.driver.name`. (Verified 2026-06-08 against the OASIS SARIF 2.1.0 schema — all paths + the `level` enum confirmed.)
 - **Verification**: no verify — file import (T0); no network delivery, no signature.
 - **Auth (deferred)**: none applicable (file ingest); live file-watch/CI-collection path deferred.
 - **Modes**: passive only (file import); no webhooks.

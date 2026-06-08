@@ -8,9 +8,11 @@ surface** only.
   the **raw request body** (hex) with the integration client secret.
   **Implemented**: `SentryConnector.verify()`/`normalize_event()` reuse
   `adapter.core.webhook_security.verify_hmac_hex` — fail-closed + constant-time.
-  - **Raw-body decision**: the official JS reference signs
-    `JSON.stringify(request.body)`; we HMAC the **raw received bytes** to avoid
-    serializer mismatch. Add an integration test against a real delivery.
+  - **Raw-body decision (verified 2026-06-08, docs.sentry.io)**: the official JS
+    reference signs `JSON.stringify(request.body)`; we HMAC the **raw received bytes** to
+    avoid a serializer mismatch (the correct fail-closed choice). **Pre-Live gate**: this
+    byte-equality assumption is unproven against a real delivery — add an integration test
+    against a live Sentry webhook before promoting this connector to Live.
   - **No replay-timestamp window** is documented by Sentry, so best-effort
     delivery dedup (on a `Request-ID`/issue id when present — never drops an
     id-less event) is the only replay guard.

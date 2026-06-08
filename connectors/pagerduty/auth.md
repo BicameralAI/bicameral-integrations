@@ -12,9 +12,13 @@ surface** only.
   - **No replay-timestamp window** is documented, so best-effort delivery dedup
     (on the envelope `event.id` when present — never drops an id-less event) is
     the only replay guard.
-  - **Spot-check pending**: the scheme was cross-verified (support docs + third
-    parties); confirm `developer.pagerduty.com/docs/verifying-signatures`
-    (JS-rendered) in a browser before production reliance (BACKLOG).
+  - **Spot-check pending (re-attempted 2026-06-08)**: the official
+    `developer.pagerduty.com/docs/webhooks/webhook-signatures` page is **JS-rendered and
+    machine-unfetchable** — automated verification could not capture an authoritative quote.
+    The scheme (`X-PagerDuty-Signature`, `v1=` multi-sig, HMAC-SHA256 hex over the raw body)
+    matches multiple non-authoritative corroborating sources but remains **UNVERIFIED against
+    provider docs**. Confirm in a real browser before production reliance (BACKLOG; the one
+    connector whose signature scheme is not doc-confirmed).
 
 ## Deferred live paths
 
