@@ -4,9 +4,11 @@ A Linear webhook event envelope (``{action, type, actor, data, ...}``) for an
 Issue maps to one provider-neutral Observation. The ``action`` / ``type`` /
 ``organizationId`` change-context fields are preserved in
 ``Observation.metadata`` for downstream diffing. Provider field knowledge stays
-here; normalization is the universal adapter's job (ADR-0004). The live GraphQL
-fetch, API-key resolution, and ``Linear-Signature`` verification (+ 60 s
-anti-replay) are deferred this cycle; see ``auth.md``.
+here; normalization is the universal adapter's job (ADR-0004). ``Linear-Signature``
+verification (+ 60 s anti-replay) is built (``verify``/``normalize_event``); the live
+GraphQL active-fetch parse surface (``parse_issue_node``) is built this cycle and driven
+by ``runtime.graphql_poll`` — the live HTTP boundary + API-key resolution stay
+operator-run (see ``auth.md``).
 """
 
 from __future__ import annotations
@@ -60,13 +62,38 @@ def parse_event(event: dict) -> Observation:
     )
 
 
+def parse_issue_node(node: dict) -> Observation:
+    """Map one Linear GraphQL ``Issue`` node (active fetch) into a neutral Observation.
+
+    The GraphQL node is the issue object directly (top-level ``identifier``/``title``/
+    ``description``/``url``/``updatedAt``/``state``) — distinct from the webhook envelope
+    ``parse_event`` reads. PII-safe: assignee/creator identity is NOT surfaced (FX-SEC-001
+    is the backstop). Excerpt falls back title→identifier so the non-empty rule holds.
+    """
+    identifier = node.get("identifier") or node.get("id") or ""
+    name = node.get("title") or ""
+    title = f"{identifier}: {name}".strip(": ").strip() or identifier
+    excerpt = node.get("description") or name or identifier
+    state = node.get("state") or {}
+    return Observation(
+        source_ref=SourceRef(
+            source_id="linear", ref=identifier, url=node.get("url") or "", kind="issue"
+        ),
+        excerpt=excerpt,
+        mode=SourceMode.ACTIVE,
+        title=title,
+        timestamp=node.get("updatedAt") or "",
+        metadata={"state": state.get("name", "") if isinstance(state, dict) else ""},
+    )
+
+
 class LinearConnector:
     """Linear connector identity plus the webhook-event parse surface.
 
     Declares the modes Linear supports: webhook delivery (primary — the
-    envelope carries change context a poll cannot) and active GraphQL fetch.
-    The live GraphQL path and `Linear-Signature` verification are deferred;
-    this is the parse surface those modes share.
+    envelope carries change context a poll cannot) and active GraphQL fetch
+    (`parse_issue_node`, driven by `runtime.graphql_poll`). `Linear-Signature`
+    verification is built; the live HTTP boundary stays operator-run.
     """
 
     source_id = "linear"

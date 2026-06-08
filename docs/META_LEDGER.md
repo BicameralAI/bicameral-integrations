@@ -3178,7 +3178,87 @@ OSV fixture → `parse_vuln` → `normalize` → `run_mod` → `metadata["packag
 devil's-advocate PASS (1 polish applied, 2 accepted residuals). Full sweep: **414 passed** (+5 mod tests),
 ruff clean, mypy 149 files clean, bandit clean, governance gate verifies chain #1–#110. L1.
 
+### Entry #111: GATE AUDIT — Linear GraphQL active-fetch live path (FX-LINEAR-003)
+
+**Entry ID**: `linearGql111audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L2 (operator-runtime fetch; outward network + secret-handling)
+
+**Content Hash**:
+```
+SHA256(plan-linear-graphql-live-2026-06-08.md)
+= 1da5a090ff2fb6f6d446a28feb5866277449dc7a62ec3604d42013c2d941a9a7
+```
+
+**Previous Hash**: fc06af9bcaad6ed62f03dc54f9902f4a6015b0706f96facd8fdd165c22027962
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 727a0e2acde57836614f2974c1545901e03d89b28df8ad563f866782bb72346d
+```
+
+**Decision**: First of the operator-queued go-live cycles (Linear → Google Drive). Research verified the
+Linear GraphQL contract against authoritative docs (linear.app/developers): POST endpoint, **API key in
+raw `Authorization` header (NO Bearer)**, Relay cursor, and two divergences from the REST poll pattern —
+**200-with-`errors`** and **400-`RATELIMITED`** (not 429) — plus the cursor riding in the request **body**,
+which the sealed REST `poll_client` cannot express. Decision: a NEW `runtime/graphql_poll.py` (don't
+contort the sealed client). Independent fresh-context audit **VETOed** iteration 2 with **3 BLOCKING**:
+(1) the `_MAX_RESPONSE` body cap must be IN `poll_graphql` (the RecordedTransport doesn't cap — no
+coverage otherwise); (2) FX-SEC-001 under-specified/untested for GraphQL data → route through the real
+`pipeline.normalize` + a secret-in-description rejection test; (3) the 400-body parse must be defensive
+(non-JSON/non-list-`errors`/oversized → fail-closed, no crash). All folded + advisories (screen-on-read
+cursor, runaway-cursor stop mirroring `PageToken`, no-leak DoD line). **PASS** on iteration 3. Pre-seal
+devil's-advocate **PASS** (no residual BLOCKING; one cosmetic D4 test-count sync applied). L2.
+
+---
+
+### Entry #112: SESSION SEAL — Linear GraphQL active-fetch live path (FX-LINEAR-003)
+
+**Entry ID**: `linearGql112seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= f4f85ae1c3c92af0d287b705a0245c21ca4ad078190722aa823060fa572eaac3
+```
+
+**Previous Hash**: 727a0e2acde57836614f2974c1545901e03d89b28df8ad563f866782bb72346d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 929859fada99b463109342fe6a0ad1308266898165e0f42d1239932473fdd94d
+```
+
+**Decision**: Built Linear's ACTIVE GraphQL live-fetch path — the genuinely-deferred half of Linear's
+go-live (the webhook path was already Live-ready). `runtime/graphql_poll.py` (150 L): `GraphQLPollSpec` +
+`poll_graphql(spec, transport, sink)` — the GraphQL counterpart of the REST `poll_client.poll`, a NEW
+module (the sealed REST client untouched). Cursor rides in the request **body** (`variables.after`,
+re-serialized per page — page 2 carries page 1's `endCursor`, proven). Fail-closed on every untrusted
+edge: **200-with-`errors` → no emit**; **400-`RATELIMITED` → backpressure** (defensive parse: non-JSON/
+non-list-`errors`/oversized → `http_error`, no crash); explicit `_MAX_RESPONSE` body cap IN `poll_graphql`;
+non-list nodes; runaway cursor (truthy `hasNextPage` + empty `endCursor` → STOP); `_MAX_PAGES` cap; cursor
+screened on read. **FX-SEC-001** enforced via the real `pipeline.normalize` (a secret in an issue
+`description` is HARD-rejected, never emitted — regression-locked) + `GatewaySink` re-screen at Live.
+Secret resolved by `source_id="linear"` (`ApiKeyHeaderAuth("Authorization", key)` — raw key, no Bearer),
+never in a `PollError`. `poll_specs.build_linear_graphql_spec` + `connector.parse_issue_node` (GraphQL
+Issue node, PII-safe — no assignee/creator) wire it. **Corrected the stale "verify deferred" docstring**
+(verify was built in FX-LINEAR-002). **FX-LINEAR-003** added; auth.md/references updated with the
+doc-verified contract + the wire-gate; SYSTEM_STATE runtime tree updated. HTTP boundary stays operator-run
+(recorded transport proves the path; a mock does NOT promote to Live — ADR-0012; the live flip needs the
+operator's API key). Independent VETO→PASS (3 BLOCKING) + pre-seal devil's-advocate PASS. Full sweep:
+**424 passed** (+10 this cycle), ruff clean, mypy 151 files clean, bandit clean (graphql_poll.py = 0
+findings; the 5 pre-existing runtime Mediums are B106/B107 false-positives on pagination field NAMES),
+governance gate verifies chain #1–#112. L2.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/mod-dependency-risk`) — **dependency_risk reference mod SEALED at Entry #110 (`fc06af9b`; L1).** First mod logic on the ADR-0013 contract; reads structured metadata (ADR-0014) + free-text; emits advisory dependency signals only (EM-safe). 1 of 13 mods now has logic; the pattern is proven for the fan-out. Prior seals stand: metadata preservation (#108), mod execution contract (#106), connector verification COMPLETE (#104).*
-*Next required action (operator-queued 2026-06-08): **go-live testing/coding push for Linear, then Google Drive** — Linear (webhook verify/normalize built, FX-LINEAR-002 → wire Live runtime + ACTIVE GraphQL if pulling); Google Drive (DEFERRED from poll — code the OAuth + `documents.get` fetch path, scope `drive.readonly`/`drive.file`). Each its own governed cycle, Live one connector at a time (ADR-0012). THEN resume the mod fan-out (12 remaining). Admin (you): branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/linear-graphql-live`) — **Linear GraphQL active-fetch SEALED at Entry #112 (`929859fa`; L2).** Linear is now Live-ready on BOTH paths: webhook (FX-LINEAR-002, Beta-proven) + ACTIVE GraphQL fetch (FX-LINEAR-003, new `runtime/graphql_poll.py`). The live network flip is operator-gated (needs the Linear API key + GatewaySink wiring). Prior seals stand: dependency_risk mod (#110), metadata preservation (#108), mod contract (#106).*
+*Next required action (operator-queued): **Google Drive go-live** — the second queued connector; DEFERRED from poll (doesn't fit page-list), so code the **OAuth + `documents.get`** fetch path (scope `drive.readonly`/`drive.file`), research-first, harness-proven. Then resume the mod fan-out (12 remaining: noisy_source_gate/security_mentions/… on the ADR-0013 contract). Admin (you): branch protection (B5). Open: bot #73 (release signing). The Linear/GDrive live flips need operator secrets.*

@@ -34,4 +34,20 @@ Residual risks the operator owns:
 - **Multi-process dedup is not shared.** The in-memory `DeliveryDedupCache` is
   per-process; a shared cache is out of scope.
 
-The live GraphQL fetch + HTTP boundary remain deferred (operator runtime).
+## GraphQL active fetch (built this cycle — FX-LINEAR-003)
+
+Verified against linear.app/developers (2026-06-08): **POST** `https://api.linear.app/graphql`,
+`Content-Type: application/json`, body `{"query","variables"}`. **Auth: personal API key in
+`Authorization: <API_KEY>` — raw key, NO `Bearer` prefix** (OAuth tokens would use `Bearer`).
+Pagination is Relay cursor (`first`/`after`, default 50); envelope
+`data.issues.{nodes, pageInfo{hasNextPage, endCursor}}`. `runtime.graphql_poll.poll_graphql` +
+`poll_specs.build_linear_graphql_spec` + `connector.parse_issue_node` implement the fetch; the
+secret is resolved by `source_id="linear"` and the **HTTP boundary stays operator-run** (a recorded
+transport proves the path; a mock does not promote to Live — ADR-0012).
+
+**Wire-gate (UNVERIFIED until a live response, verify-before-cite):** the exact Issue field set
+queried (`id`/`identifier`/`title`/`description`/`url`/`updatedAt`/`state.name`) and that default
+`orderBy: updatedAt` suits incremental fetch. Fail-closed semantics ARE confirmed by tests: a 200
+carrying a GraphQL `errors` array does NOT emit; rate-limiting (**HTTP 400 + `errors[].code==
+"RATELIMITED"`**, not 429) raises backpressure; oversized body, non-list nodes, and a runaway cursor
+all fail closed. Rate limits (API key): 5,000 req/hr, 3M complexity pts/hr, 10k single-query max.

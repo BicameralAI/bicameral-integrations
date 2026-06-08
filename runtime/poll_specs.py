@@ -18,6 +18,9 @@ from __future__ import annotations
 
 import json
 
+from connectors.linear.connector import parse_issue_node
+
+from .graphql_poll import GraphQLPollSpec
 from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, NoAuth, PollError
 from .poll_client import OffsetPager, PageNumberPager, PageToken, PollSpec
 from .secrets import SecretResolver
@@ -218,4 +221,35 @@ def build_mcp_registry_spec(*, base_url: str = _MCP_BASE) -> PollSpec:
             if isinstance(e, dict) and isinstance(e.get("server"), dict)
         ],
         pagination=PageToken(next_param="cursor", token_field="metadata.nextCursor", has_more_field=None),
+    )
+
+
+# --- linear (ACTIVE GraphQL fetch) ------------------------------------------------
+# verified linear.app/developers 2026-06-08: POST https://api.linear.app/graphql;
+# personal API key in `Authorization: <key>` (NO Bearer prefix); Relay cursor
+# `first`/`after` (default 50), envelope `data.issues.{nodes,pageInfo{hasNextPage,endCursor}}`.
+# Wire gate (auth.md): the exact issue field set + 200-with-errors handling confirmed live before use.
+_LINEAR_GRAPHQL = "https://api.linear.app/graphql"
+_LINEAR_ISSUES_QUERY = (
+    "query Issues($first: Int!, $after: String) { "
+    "issues(first: $first, after: $after, orderBy: updatedAt) { "
+    "nodes { id identifier title description url updatedAt state { name } } "
+    "pageInfo { hasNextPage endCursor } } }"
+)
+
+
+def build_linear_graphql_spec(
+    resolver: SecretResolver, *, endpoint: str = _LINEAR_GRAPHQL, page_size: int = 50
+) -> GraphQLPollSpec:
+    """linear: ACTIVE GraphQL fetch of recently-updated issues. Personal API key in the raw
+    `Authorization` header (no Bearer prefix — verified). Cursor pagination via `pageInfo`."""
+    secret = _require_secret(resolver, "linear")
+    return GraphQLPollSpec(
+        endpoint=endpoint,
+        auth=ApiKeyHeaderAuth("Authorization", secret),
+        query=_LINEAR_ISSUES_QUERY,
+        nodes_path="data.issues.nodes",
+        page_info_path="data.issues.pageInfo",
+        parse=parse_issue_node,
+        page_size=page_size,
     )

@@ -5,9 +5,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from adapter.core.capabilities import SourceMode
 from adapter.core.emissions import AdapterEmission
 from adapter.core.pipeline import normalize
-from connectors.linear.connector import LinearConnector, parse_event
+from connectors.linear.connector import LinearConnector, parse_event, parse_issue_node
 
 _FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "issue_created.json"
 
@@ -68,3 +69,21 @@ def test_end_to_end_normalizes_to_emission():
     assert emission.source_id == "linear"
     assert emission.title.startswith("PLAT-204")
     assert emission.evidence[0].excerpt == event["data"]["description"]
+
+
+def test_parse_issue_node():
+    # GraphQL active-fetch path: an Issue node → Observation (distinct from the webhook envelope).
+    node = {
+        "identifier": "ENG-7", "title": "Refactor poller", "description": "make it cursor-aware",
+        "url": "https://linear.app/acme/issue/ENG-7", "updatedAt": "2026-06-02T10:00:00Z",
+        "state": {"name": "In Progress"},
+        "assignee": {"name": "Alice", "email": "alice@example.com"},  # MUST NOT be surfaced
+    }
+    obs = parse_issue_node(node)
+    assert obs.title.startswith("ENG-7")
+    assert obs.excerpt == "make it cursor-aware"
+    assert obs.source_ref.kind == "issue"
+    assert obs.mode == SourceMode.ACTIVE
+    # PII guard: no assignee identity in any surfaced field.
+    blob = f"{obs.title} {obs.excerpt} {obs.author} {obs.metadata}"
+    assert "alice" not in blob.lower() and "example.com" not in blob
