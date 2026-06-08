@@ -45,6 +45,8 @@ bicameral-integrations/
 |              (HttpTransport-injected; object|array pages; PageToken + OffsetPager pagination;
 |              GET + POST body), poll_auth (ApiKeyHeader/Bearer/Basic), poll_specs per-connector
 |              wiring (anthropic/openai/copilot/devin/granola/cursor/servicenow);
+|              graphql_poll.py = the GraphQL fetch counterpart (FX-LINEAR-003: cursor-in-body,
+|              200-with-errors + 400-RATELIMITED fail-closed, FX-SEC-001 via normalize) — Linear;
 |              library-only, stdlib urllib)
 |-- mods/  (EM-safe advisory mods, OWNED by this track since 2026-06-08; contract.py/_manifest.py =
 |           the ADR-0013 execution contract: Mod protocol + ModEmission + manifest-enforced run_mod

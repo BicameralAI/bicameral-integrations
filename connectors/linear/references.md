@@ -26,7 +26,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 
 - **Webhook event envelope (parsed)**: `parse_event` reads `{action, type, actor.name, createdAt, organizationId, webhookId, webhookTimestamp, data.{identifier, id, title, description, url}}`; title combines `identifier` + `data.title`; excerpt is `data.description` falling back to title then identifier.
 - **Verification (built)**: `Linear-Signature` header = hex HMAC-SHA256 of the raw body using the webhook signing secret; `verify()` calls `verify_hmac_hex` first, then enforces a **60-second anti-replay window** on `webhookTimestamp` (UNIX ms). Dedup on `webhookId`. Fail-closed.
-- **Auth (deferred)**: personal API key in `Authorization` header for GraphQL active fetch (`https://api.linear.app/graphql`); signing secret injected by operator runtime. No live network this cycle.
+- **Auth / GraphQL active fetch (built 2026-06-08, FX-LINEAR-003)**: POST `https://api.linear.app/graphql`; personal API key in **`Authorization: <key>` (raw, NO `Bearer` prefix)** — verified against [linear.app/developers/graphql](https://linear.app/developers/graphql); Relay cursor `first`/`after` ([/pagination](https://linear.app/developers/pagination)); envelope `data.issues.{nodes,pageInfo{hasNextPage,endCursor}}`; 200-with-`errors` + 400-`RATELIMITED` ([/rate-limiting](https://linear.app/developers/rate-limiting)). HTTP boundary operator-run; API key injected by operator runtime.
 - **Modes**: webhook (primary — envelope carries change context) + active (GraphQL fallback); both share `parse_event`.
 - **PII handling**: `data.description` and `actor.name` emitted; `organizationId` in metadata. Producer sensitive screen (`FX-SEC-001`) is the guard.
 
