@@ -23,14 +23,20 @@ maintained provider-docs table and refresh cadence.
 | Sessions (list) | https://docs.devinenterprise.com/api-reference/v3/sessions/organizations-sessions |
 | Session messages | https://docs.devin.ai/api-reference/v3/sessions/get-enterprise-session-messages |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+## Verified API contract (doc-confirmed 2026-06-08, docs.devin.ai)
 
-- **Endpoint (parsed)**: `GET /v3/organizations/{org}/sessions` (list); base `https://api.devin.ai/v3/`.
-  Session objects carry `session_id` (`devin-…`), `title`, `status`, `structured_output`, `pull_request.url`.
+- **Endpoint + envelope (parsed)**: `GET /v3/organizations/{org}/sessions` (list); base
+  `https://api.devin.ai/v3/`. The list response wraps sessions under **`items`**. Cursor pagination:
+  response `end_cursor` + `has_next_page`, re-sent as query param `after`. Session objects carry
+  `session_id` (`devin-…`), `title`, `status` (enum), `structured_output` (object/null), and
+  **`pull_requests`** (array of `{pr_url, pr_state}`).
 - **Parse + PII**: `parse_session` excerpt = `redact("[status] title: structured_output")` — the session
   free-text (title / structured_output / message trail) may carry secrets/PII, so it is passed through
-  `adapter.core.redaction.redact` (redact-and-pass; FX-SEC-001 backstop). `pull_request.url` is kept as the
-  **artifact location** (github/gitlab/jira precedent); author/user identity is not read. `kind="session"`.
+  `adapter.core.redaction.redact` (redact-and-pass; FX-SEC-001 backstop). The first
+  `pull_requests[].pr_url` is kept as the **artifact location** (github/gitlab/jira precedent);
+  author/user identity is not read. `kind="session"`.
+- **Drift corrected (was 2026-06-05)**: prior docs asserted `sessions` envelope + singular
+  `pull_request.url` + deferred/unverified pagination — all DRIFT (would have ingested zero live).
 - **Auth (deferred)**: **Bearer** — Service-User API key (`cog_…`, shown once, RBAC-scoped) or PAT
   ("coming soon"). No live network this cycle.
 - **Webhooks**: none (poll-only).

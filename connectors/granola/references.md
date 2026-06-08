@@ -22,13 +22,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | API-key (env-injected); validate auth model |
 | Changelog/notes | Candidate |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+## Verified API contract (doc-confirmed 2026-06-08, docs.granola.ai)
 
-- **Transcript payload (parsed)**: `parse_transcript` reads `{id, transcript_text, title, participants, ended_at}`; excerpt is `transcript_text` falling back to `title`; author is the first participant's `name` (string or `{name: ...}` dict).
+- **Note payload (parsed)**: `parse_transcript` reads `{id (not_ prefix), title, transcript[] of {speaker, text}, attendees[] of {name, email}, created_at}`; excerpt is the **joined `transcript[].text`** falling back to `title`; author is the first `attendees[].name`; timestamp is `created_at`.
 - **Verification**: no verify — poll/passive; no webhook delivery, no signature.
-- **Auth (deferred)**: API key injected via env var (`GRANOLA_API_KEY`), `Authorization: Bearer <key>`; `GET https://api.granola.ai/v1/transcripts?since=<ISO>` with watermark. No live network this cycle.
-- **Modes**: passive (REST poll with `since` watermark); no webhooks.
-- **PII handling**: full transcript text (meeting content, participant names) emitted; producer sensitive screen (`FX-SEC-001`) is the guard.
+- **Auth + transport (deferred live network)**: API key via env var (`GRANOLA_API_KEY`), `Authorization: Bearer <key>`; `GET https://public-api.granola.ai/v1/notes?include=transcript` (there is **no** `/transcripts` collection); cursor pagination (`cursor` + `hasMore`); `created_after` watermark. No live network this cycle.
+- **Modes**: passive (REST poll with `created_after` watermark); no webhooks.
+- **PII handling**: full transcript text (meeting content, attendee names) emitted; producer sensitive screen (`FX-SEC-001`) is the guard.
+- **Drift corrected (was 2026-06-05)**: prior docs asserted host `api.granola.ai`, endpoint `/transcripts`, scalar `transcript_text`, `participants`, `ended_at`, `since` — all DRIFT vs the verified contract above.
 
 ## Canonical governance references
 

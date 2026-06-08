@@ -21,15 +21,16 @@ free-text redaction is proven end-to-end. Live (gateway emission) is now operato
 
 - `parse_session(session)` — a Devin v3 session → `Observation`. Excerpt = `redact("[status]
   title: structured_output")`; `session_id` → ref (`devin-…`, `devin-session` floor);
-  `pull_request.url` → ref url; `kind="session"`.
+  first `pull_requests[].pr_url` → ref url; `kind="session"`. (List wraps under `items`;
+  cursor pagination `after`/`end_cursor`/`has_next_page`.)
 - `DevinConnector` — identity + capabilities (`ACTIVE`); `observations()` parses one session.
 
 ## Privacy
 
 The session trail (title / `structured_output` / messages) is free-text that may carry
 secrets/PII, so **every free-text field is passed through `adapter.core.redaction.redact`**
-(scrubs secret/PHI/PAN + email/phone; composes with the FX-SEC-001 hard screen). The
-`pull_request.url` is kept un-redacted as the **artifact location** — consistent with the
+(scrubs secret/PHI/PAN + email/phone; composes with the FX-SEC-001 hard screen). The first
+`pull_requests[].pr_url` is kept un-redacted as the **artifact location** — consistent with the
 `github`/`gitlab`/`jira` connectors that emit the PR/issue URL; it is the artifact path, not
 free-text evidence. Author/user identity is not read.
 

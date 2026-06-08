@@ -80,14 +80,15 @@ def build_openai_admin_spec(
 # --- devin (agentic sessions; free-text redacted by the connector) ---------------
 def build_devin_spec(resolver: SecretResolver, *, base_url: str) -> PollSpec:
     """devin: Bearer ``cog_`` key. ``base_url`` is REQUIRED — the operator templates
-    ``org_id`` into ``/v3/organizations/{org}/sessions`` (auth.md). Pagination is
-    DEFERRED (the session-list cursor contract is unverified)."""
+    ``org_id`` into ``/v3/organizations/{org}/sessions`` (auth.md). Envelope key + cursor
+    pagination verified against docs.devin.ai (2026-06-08)."""
     secret = _require_secret(resolver, "devin")
     return PollSpec(
         base_url=base_url,
         auth=BearerAuth(secret),
-        items=lambda page: page.get("sessions", []),  # unverified envelope (sessions? data?)
-        pagination=None,  # cursor unverified — single page this cycle
+        items=lambda page: page.get("items", []),  # verified: list wraps under `items`
+        # verified cursor: response end_cursor + has_next_page, re-sent as ?after=
+        pagination=PageToken(next_param="after", token_field="end_cursor", has_more_field="has_next_page"),
     )
 
 
@@ -115,19 +116,22 @@ def build_copilot_spec(
     )
 
 
-# --- granola (meeting transcripts) -----------------------------------------------
-_GRANOLA_BASE = "https://api.granola.ai/v1/transcripts"
+# --- granola (meeting notes + transcript) ----------------------------------------
+# verified against docs.granola.ai (2026-06-08): host public-api.granola.ai/v1,
+# resource GET /notes with ?include=transcript; list envelope `notes`; cursor
+# pagination (`cursor`/`hasMore`); incremental watermark is `created_after` (operator-side).
+_GRANOLA_BASE = "https://public-api.granola.ai/v1/notes?include=transcript"
 
 
 def build_granola_spec(resolver: SecretResolver, *, base_url: str = _GRANOLA_BASE) -> PollSpec:
-    """granola: Bearer key. The ``since`` watermark + two-phase commit stay operator-run;
-    the harness supplies fetch only. Pagination DEFERRED (watermark is operator-side)."""
+    """granola: Bearer key. Notes (with embedded transcript) endpoint; the
+    ``created_after`` watermark + two-phase commit stay operator-run."""
     secret = _require_secret(resolver, "granola")
     return PollSpec(
         base_url=base_url,
         auth=BearerAuth(secret),
-        items=lambda page: page.get("transcripts", []),  # unverified envelope (transcripts? data?)
-        pagination=None,
+        items=lambda page: page.get("notes", []),  # verified: list wraps under `notes`
+        pagination=PageToken(next_param="cursor", token_field="cursor", has_more_field="hasMore"),
     )
 
 

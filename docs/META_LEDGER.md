@@ -2660,6 +2660,78 @@ advisories (exact-multiple offset-edge test; cursor host flagged; `_int` bool-as
 #1–#96. FX-RUNTIME-003 MODIFIED (Verified; +poll_auth.py + cursor/servicenow).
 
 ---
+
+### Entry #97: GATE AUDIT — fix the SEVERE connector drifts (devin + granola) (PASS)
+
+**Entry ID**: `fixDrift97audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit / pre-seal review)
+**Author**: Judge (devil's-advocate review)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-fix-connector-drift-devin-granola-2026-06-08.md)
+= 7185f87d73a69b67759043b37548438fd6dfa8b35c58ef4426278d6cfc568184
+```
+
+**Previous Hash**: 7bb73e1ed2c1778627bce1dc97073f1aa459b2c93fe2cd76f1ecdf78db74f917
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= d42c13f2509687944995df7ce83d0bc1b79737950f3ab46825c2f49296478e14
+```
+
+**Decision**: The Phase-1 doc-verification campaign (PR #71) served as the adversarial research/audit —
+each devin/granola finding cited official docs with quotes. Implementation realigned both to the
+verified contracts. The pre-seal devil's-advocate code review returned **CHANGES-REQUIRED**: the CODE
++ auth.md "Live path" + tests + fixtures were correct (Reality==Promise on all six dimensions A–F),
+but **five doc artifacts still published the OLD drifted contract** (granola auth.md lead Transport
+line, granola+devin README + references.md) — the exact drift the cycle exists to remove. All five
+corrected; plus advisory finding 7 (granola same-name `cursor` param + `?include=transcript`
+multi-page path) is now covered by `test_granola_cursor_pagination`. Re-review clean → PASS.
+
+---
+
+### Entry #98: SESSION SEAL — devin + granola realigned to verified contracts (Fix Cycle 1)
+
+**Entry ID**: `fixDrift98seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 12a7b03c0c477df28d48de3559b74e7e66908de5b3d1eb964cf999a8c7acba25
+```
+
+**Previous Hash**: d42c13f2509687944995df7ce83d0bc1b79737950f3ab46825c2f49296478e14
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a36f4789b1dfbbbee0339f6ac64eeb355762adc77f88e0afc0101c52efc7d517
+```
+
+**Decision**: First fix cycle of the verify→fix program — corrected the **two SEVERE wire-contract
+drifts** the doc-verification campaign found (both would have ingested zero/wrong data against the
+live API; their fixture tests passed only because the fixtures encoded the wrong assumptions).
+**devin**: list envelope `items` (was `sessions`); first `pull_requests[].pr_url` (was singular
+`pull_request.url`); cursor pagination wired (`PageToken(after/end_cursor/has_next_page)`); dropped the
+dead `devin_id` fallback. **granola**: host `public-api.granola.ai/v1`, endpoint
+`/notes?include=transcript` (no `/transcripts`), envelope `notes`, joined `transcript[].text` (was
+scalar `transcript_text`), `attendees` (was `participants`), `created_at` (was `ended_at`),
+`created_after` watermark (was `since`), cursor pagination (`PageToken(cursor/cursor/hasMore)`). Specs +
+parse fns + fixtures (connector-level + runtime) + tests + auth.md/references.md/README all realigned
+to the verified contracts and dated 2026-06-08. **Process**: verification = the audit (PR #71);
+pre-seal devil's-advocate CHANGES-REQUIRED (5 stale doc artifacts) → all fixed + a multi-page granola
+cursor test added. **`mods/` untouched.** pytest **398 passed**, ruff + **whole-tree mypy** clean (the
+#68 lesson), governance gate verifies chain #1–#98. FX-RUNTIME-003 + devin/granola FX MODIFIED.
+
+---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/poll-client-basic-connectors`) — **live-poll fan-out COMPLETE at Entry #96 (`7bb73e1e`; L2). All 7 buildable poll connectors have the proven fetch half** (anthropic_admin + openai_admin/copilot/devin/granola via Bearer + cursor/servicenow via Basic); harness: ApiKeyHeader/Bearer/Basic auth, PageToken+OffsetPager pagination, GET+POST, object|array pages, split across poll_client/poll_auth/poll_specs. 26 Beta connectors / 0 Prototype; security red-team complete (Entry #90); live emission + live poll seams real.*
-*Next required action: operator decision — revisit the 2 deferred poll connectors with dedicated approaches: `google_drive` (per-resource `documents.get` + OAuth refresh — needs a resource-fetch seam, not list-poll) + `mcp_registry` (still Candidate — needs a defined auth contract first). Before any live-network poll wiring: confirm each connector's envelope/cursor/body/host assumptions against live provider docs (recorded in each `auth.md`). / promote a connector to Live (wire `GatewaySink` + `poll`/`deliver_webhook` against a real gateway). Admin (you): branch protection (B5). Open: B8-B15, bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` (cycle on `fix/connector-drift-devin-granola`) — **Fix Cycle 1 sealed at Entry #98 (`a36f4789`; L2): the two SEVERE drifts (devin, granola) are realigned to their verified live contracts.** Phase-1 verification complete (all 26 doc-checked, PR #71); fix backlog remaining: anthropic_admin (cache_creation), copilot/cursor (pagination), continue_dev (eventName), mcp_registry (graduate + envelope), + doc-only corrections (confluence/google_drive/fathom/notion/sarif) + pre-Live notes (sentry/pagerduty/claude_code).*
+*Next required action: continue the batch-fix — Fix Cycle 2 (anthropic_admin + copilot + cursor + continue_dev milder drifts), then mcp_registry graduation, then the doc-only corrections. Before any live-network poll wiring: confirm remaining assumptions. Admin (you): branch protection (B5). Open: bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*

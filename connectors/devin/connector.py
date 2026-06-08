@@ -1,12 +1,13 @@
 """Devin connector: agentic-session evidence into neutral Observations.
 
-The Devin v3 API (``GET /v3/organizations/{org}/sessions``, Bearer ``cog_`` key) returns
-session objects (id, title, status, structured_output, linked PR). ``parse_session`` maps
-a session into an Observation; free-text (``title`` / ``structured_output``) passes through
-``adapter.core.redaction.redact`` because the session trail may carry secrets/PII. The
-``pull_request.url`` is kept as the artifact location (consistent with github/gitlab/jira).
-Poll-only — no webhooks; the live REST poll + token resolution stay in the operator runtime
-(see ``auth.md``).
+The Devin v3 API (``GET /v3/organizations/{org}/sessions``, Bearer ``cog_`` key) wraps
+session objects under ``items`` (verified docs.devin.ai). ``parse_session`` maps a session
+(``session_id`` / ``title`` / ``status`` / ``structured_output`` / ``pull_requests``) into an
+Observation; free-text (``title`` / ``structured_output``) passes through
+``adapter.core.redaction.redact`` because the session trail may carry secrets/PII. The first
+``pull_requests[].pr_url`` is kept as the artifact location (consistent with github/gitlab/jira).
+Poll-only — no webhooks; the live REST poll (cursor pagination ``after``/``end_cursor``/
+``has_next_page``) + token resolution stay in the operator runtime (see ``auth.md``).
 """
 
 from __future__ import annotations
@@ -32,10 +33,25 @@ def _session_body(session: dict) -> str:
     return " ".join(parts)
 
 
+def _first_pr_url(session: dict) -> str:
+    """First pull-request URL from the verified `pull_requests` array (`[{pr_url, pr_state}]`).
+
+    docs.devin.ai (2026-06-08): the session object carries `pull_requests` (array), not a
+    singular `pull_request.url`. Tolerates non-list / non-dict entries (untrusted boundary).
+    """
+    prs = session.get("pull_requests")
+    if not isinstance(prs, list):
+        return ""
+    for pr in prs:
+        if isinstance(pr, dict) and isinstance(pr.get("pr_url"), str) and pr["pr_url"]:
+            return pr["pr_url"]
+    return ""
+
+
 def parse_session(session: dict) -> Observation:
     """Map a Devin v3 session object into a redacted, provider-neutral Observation."""
-    sid = (session.get("session_id") or session.get("devin_id") or "").strip()
-    pr = (session.get("pull_request") or {}).get("url", "") or ""
+    sid = (session.get("session_id") or "").strip()  # `devin_id` is not a list-object field
+    pr = _first_pr_url(session)
     return Observation(
         source_ref=SourceRef(
             source_id="devin",

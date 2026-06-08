@@ -1,9 +1,11 @@
-"""Granola transcript connector: provider payloads into neutral Observations.
+"""Granola notes connector: provider payloads into neutral Observations.
 
-A Granola meeting-transcript item maps to one provider-neutral Observation.
-Port of the parse shape from `bicameral-mcp` `events/sources/granola.py`,
-reduced to the neutral surface; the live HTTP poll, watermark two-phase commit,
-and API-key resolution stay in the operator runtime (see ``auth.md``).
+Verified against docs.granola.ai (2026-06-08): the public API host is
+``public-api.granola.ai/v1`` and the resource is ``GET /notes`` with
+``?include=transcript`` (there is no ``/transcripts`` collection). A note (with its
+embedded transcript) maps to one provider-neutral Observation. The live HTTP poll
+(cursor pagination ``cursor``/``hasMore``), the ``created_after`` watermark two-phase
+commit, and API-key resolution stay in the operator runtime (see ``auth.md``).
 """
 
 from __future__ import annotations
@@ -13,9 +15,9 @@ from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
 
 
-def _first_participant_name(participants: list | None) -> str:
-    """Return the first participant's display name, tolerating str or dict."""
-    for first in participants or []:
+def _first_attendee_name(attendees: list | None) -> str:
+    """First attendee's display name, tolerating str or dict (verified field: `attendees`)."""
+    for first in attendees or []:
         if isinstance(first, dict):
             return str(first.get("name") or "")
         if isinstance(first, str):
@@ -24,22 +26,36 @@ def _first_participant_name(participants: list | None) -> str:
     return ""
 
 
-def parse_transcript(item: dict) -> Observation:
-    """Map a Granola transcript item into a provider-neutral Observation.
+def _join_transcript(item: dict) -> str:
+    """Join the embedded `transcript` array's per-utterance `text` (verified shape:
+    `transcript: [{speaker, text}, …]`), tolerating non-list / non-dict entries."""
+    transcript = item.get("transcript")
+    if not isinstance(transcript, list):
+        return ""
+    parts = [
+        str(utt["text"]).strip()
+        for utt in transcript
+        if isinstance(utt, dict) and isinstance(utt.get("text"), str) and utt["text"].strip()
+    ]
+    return " ".join(parts)
 
-    The excerpt is the transcript text, falling back to the title so the
+
+def parse_transcript(item: dict) -> Observation:
+    """Map a Granola note (with embedded transcript) into a provider-neutral Observation.
+
+    The excerpt is the joined transcript text, falling back to the title so the
     contract's non-empty-excerpt rule holds.
     """
-    transcript_id = str(item.get("id") or "")
-    text = str(item.get("transcript_text") or "")
-    title = str(item.get("title") or "") or transcript_id
+    note_id = str(item.get("id") or "")
+    text = _join_transcript(item)
+    title = str(item.get("title") or "") or note_id
     return Observation(
-        source_ref=SourceRef(source_id="granola", ref=transcript_id, kind="transcript"),
+        source_ref=SourceRef(source_id="granola", ref=note_id, kind="transcript"),
         excerpt=text or title,
         mode=SourceMode.PASSIVE,
         title=title,
-        author=_first_participant_name(item.get("participants")),
-        timestamp=str(item.get("ended_at") or ""),
+        author=_first_attendee_name(item.get("attendees")),
+        timestamp=str(item.get("created_at") or ""),
     )
 
 

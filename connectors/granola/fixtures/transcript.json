@@ -1,9 +1,12 @@
 {
-  "id": "gr_5521",
+  "id": "not_5521abcdEFGijk",
   "title": "Design review: source-trust gating",
-  "ended_at": "2026-06-01T21:14:00Z",
-  "transcript_text": "We decided source-trust gating stays advisory in v1: low-trust sources route to review, never auto-block.",
-  "participants": [
+  "created_at": "2026-06-01T21:14:00Z",
+  "transcript": [
+    {"speaker": {"diarization_label": "spk_1"}, "text": "We decided source-trust gating stays advisory in v1:"},
+    {"speaker": {"diarization_label": "spk_2"}, "text": "low-trust sources route to review, never auto-block."}
+  ],
+  "attendees": [
     {"name": "Priya Anand", "email": "priya.anand@example.com"},
     {"name": "Marco Diaz", "email": "marco.diaz@example.com"}
   ]
