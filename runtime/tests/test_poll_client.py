@@ -263,28 +263,56 @@ def test_copilot_top_level_array_emits_per_day() -> None:
     assert transport.requests[0][2]["X-GitHub-Api-Version"] == "2022-11-28"
 
 
-def test_devin_single_page_sessions() -> None:
-    transport = RecordedTransport([_resp("devin_sessions.json")])
+def test_devin_cursor_pagination() -> None:
+    # verified contract: `items` envelope; cursor end_cursor/has_next_page re-sent as ?after=
+    transport = RecordedTransport([_resp("devin_sessions.json"),
+                                   _resp("devin_sessions_page2.json")])
     resolver = MappingSecretResolver({"devin": _BEARER})
     base = "https://api.devin.ai/v3/organizations/org_demo/sessions"  # operator-templated org
+    sink = CollectingSink()
     count = poll(DevinConnector(), build_devin_spec(resolver, base_url=base),
-                 transport=transport, sink=CollectingSink())
-    assert count == 2
-    assert len(transport.requests) == 1  # pagination deferred
+                 transport=transport, sink=sink)
+    assert count == 3  # 2 (page 1) + 1 (page 2)
+    # page 2 carries the returned end_cursor as `after` (token-driven advance)
+    q2 = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(transport.requests[1][1]).query))
+    assert q2.get("after") == "cur2"
+    # first pull_requests[].pr_url surfaced as the artifact url
+    urls = [e.evidence[0].source_ref.url for e in sink.emissions]
+    assert "https://github.com/example-org/shop/pull/412" in urls
 
 
-def test_granola_transcripts_envelope() -> None:
-    transport = RecordedTransport([_resp("granola_transcripts.json")])
+def test_granola_notes_envelope() -> None:
+    transport = RecordedTransport([_resp("granola_notes.json")])
     resolver = MappingSecretResolver({"granola": _BEARER})
     sink = CollectingSink()
     count = poll(GranolaConnector(), build_granola_spec(resolver), transport=transport, sink=sink)
     assert count == 1
-    assert "architecture sync" in sink.emissions[0].title
+    e = sink.emissions[0]
+    assert "architecture sync" in e.title
+    assert "poll-client fan-out" in e.body  # joined transcript[].text, not transcript_text
+    assert e.evidence[0].author == "Reviewer A"  # first attendees[].name
+    assert detect_sensitive(e.body) == []
+
+
+def test_granola_cursor_pagination() -> None:
+    # same-name cursor (next_param == token_field == "cursor") against a base that already
+    # carries ?include=transcript: page 2 must carry the returned cursor AND keep `include`.
+    p1 = {"notes": [{"id": "not_a", "title": "A", "transcript": [{"text": "x"}]}],
+          "hasMore": True, "cursor": "cur_2"}
+    p2 = {"notes": [{"id": "not_b", "title": "B", "transcript": [{"text": "y"}]}],
+          "hasMore": False, "cursor": None}
+    transport = RecordedTransport([_json_resp(p1), _json_resp(p2)])
+    resolver = MappingSecretResolver({"granola": _BEARER})
+    count = poll(GranolaConnector(), build_granola_spec(resolver), transport=transport, sink=CollectingSink())
+    assert count == 2
+    q2 = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(transport.requests[1][1]).query))
+    assert q2.get("cursor") == "cur_2"  # token-driven advance, same-name param
+    assert q2.get("include") == "transcript"  # base query string preserved
 
 
 def test_wrong_envelope_key_emits_zero() -> None:
     # The envelope-key assumption's blast radius: a {data:[...]} body for devin/granola
-    # (whose items keys are sessions/transcripts) yields 0 emissions, no error.
+    # (whose verified keys are items/notes) yields 0 emissions, no error.
     devin_resolver = MappingSecretResolver({"devin": _BEARER})
     t1 = RecordedTransport([_json_resp({"data": [{"session_id": "x"}]})])
     assert poll(DevinConnector(), build_devin_spec(devin_resolver, base_url="https://x/y"),

@@ -1,0 +1,19 @@
+{
+  "notes": [
+    {
+      "id": "not_1d3tmYTlCICgjy",
+      "title": "Weekly architecture sync",
+      "transcript": [
+        { "speaker": { "diarization_label": "spk_1" }, "text": "Discussed the poll-client fan-out." },
+        { "speaker": { "diarization_label": "spk_2" }, "text": "And the runtime boundary." }
+      ],
+      "attendees": [
+        { "name": "Reviewer A", "email": "a@example.com" },
+        { "name": "Reviewer B", "email": "b@example.com" }
+      ],
+      "created_at": "2026-06-05T15:30:00Z"
+    }
+  ],
+  "hasMore": false,
+  "cursor": null
+}

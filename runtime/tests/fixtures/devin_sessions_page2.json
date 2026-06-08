@@ -1,0 +1,15 @@
+{
+  "items": [
+    {
+      "session_id": "devin-sess-0003",
+      "status": "blocked",
+      "title": "Add pagination to the admin sessions list",
+      "structured_output": "",
+      "pull_requests": [
+        { "pr_url": "https://github.com/example-org/shop/pull/418", "pr_state": "merged" }
+      ]
+    }
+  ],
+  "has_next_page": false,
+  "end_cursor": null
+}

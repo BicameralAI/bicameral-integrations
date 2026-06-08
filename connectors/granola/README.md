@@ -5,8 +5,9 @@ payload into a neutral `Observation`. **Status: Beta** (ADR-0012).
 
 ## Modes
 
-- **Passive** — poll recent meeting transcripts by `ended_at` watermark and
-  parse each item into a neutral `Observation` (`parse_transcript`).
+- **Passive** — poll recent meeting notes (`GET /notes?include=transcript`) by
+  `created_after` watermark and parse each into a neutral `Observation`
+  (`parse_transcript`).
 
 The live HTTP poll, watermark two-phase commit, and API-key resolution remain
 **deferred** to the operator runtime (see [`auth.md`](auth.md)).
@@ -19,9 +20,9 @@ dependency**. Live (gateway emission) is now operator-actionable — `GatewaySin
 
 ## Surface
 
-- `parse_transcript(item)` — Granola transcript → `Observation`
-  (`transcript_text` → excerpt with title fallback; first participant → author;
-  `ended_at` → timestamp; `id` → ref).
+- `parse_transcript(item)` — Granola note → `Observation`
+  (joined `transcript[].text` → excerpt with title fallback; first
+  `attendees[].name` → author; `created_at` → timestamp; `id` → ref).
 - `GranolaConnector` — connector identity and capabilities (`PASSIVE`).
 
 ## References

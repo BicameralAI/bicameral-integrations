@@ -58,9 +58,9 @@ Status legend: ☐ pending · ✅ confirmed · ⚠ drift (fix needed) · ◑ doc
 **Clean / verified (no change):** servicenow, openai_admin, github, gitlab, jira, linear, slack, zendesk, sarif, osv, aider, local_directory. *(+ notion, fathom — clean with a one-line doc-accuracy note.)*
 
 **Code drift → governed fix cycles (ingestion-correctness; SEVERE would ingest zero/wrong live):**
-1. **devin** *(SEVERE)* — envelope `items` not `sessions`; `pull_requests[].pr_url` not `pull_request.url`; wire documented cursor pagination (`after`/`first`→`end_cursor`/`has_next_page`).
-2. **granola** *(SEVERE, near-rebuild)* — host `public-api.granola.ai`; endpoint `/notes?include=transcript`; envelope `notes`; `transcript[]` array not `transcript_text`; `attendees` not `participants`; `created_after` not `since`; `created_at` not `ended_at`; cursor pagination.
-3. **anthropic_admin** — `cache_creation` nested (`ephemeral_1h/5m_input_tokens`), not flat `cache_creation_input_tokens` (token undercount).
+1. **devin** *(SEVERE)* — **✅ FIXED (Fix Cycle 1, 2026-06-08)**: envelope `items`; `pull_requests[].pr_url`; cursor pagination (`after`/`end_cursor`/`has_next_page`) wired via `PageToken`.
+2. **granola** *(SEVERE, near-rebuild)* — **✅ FIXED (Fix Cycle 1, 2026-06-08)**: host `public-api.granola.ai`; endpoint `/notes?include=transcript`; envelope `notes`; joined `transcript[].text`; `attendees`; `created_at`; `created_after` watermark; cursor pagination (`cursor`/`hasMore`).
+3. **anthropic_admin** — `cache_creation` nested (`ephemeral_1h/5m_input_tokens`), not flat `cache_creation_input_tokens` (token undercount). *(Fix Cycle 2)*
 4. **copilot** — wire `page`/`per_page` pagination (100-day lookback); optionally bump `X-GitHub-Api-Version`.
 5. **cursor** — wire `page`/`pageSize` pagination; drop `name` from row docs; confirm host/body now verified.
 6. **continue_dev** — read `eventName` (legacy `name` fallback) + add `modelName` to model fallback.

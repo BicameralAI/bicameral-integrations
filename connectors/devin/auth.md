@@ -27,19 +27,21 @@ surface** only (live REST poll deferred).
 - `api_token` — the Service-User `cog_…` key (Bearer) for the deferred REST poll.
 - `org_id` — the Devin organization id for the list endpoint.
 
-## Live path — reference poll client (recorded-fixture-proven)
+## Live path — reference poll client (contract verified 2026-06-08 against docs.devin.ai)
 
 The request-construction is **built** in `runtime/poll_specs.py` (`build_devin_spec`) and proven
-against a recorded fixture (`Authorization: Bearer`; `sessions` envelope). The real network call +
-token resolution remain operator-run.
+against recorded fixtures. The real network call + token resolution remain operator-run.
 
 - **Secret resolver key**: the `SecretResolver` resolves by the connector **`source_id`** (`devin`);
   `api_token` above is the credential's *meaning*. `org_id` is **not** resolved as a secret — the
   operator templates it into the required `base_url` (`build_devin_spec(resolver, base_url=…)` has no
   default, e.g. `https://api.devin.ai/v3/organizations/<org_id>/sessions`).
-- **Assumptions to confirm before live-network wiring** (verify-before-cite): the **envelope key**
-  (`sessions`? `data`?) is unverified → `items` is a config callable; the **session-list cursor
-  contract is unverified** → **pagination is DEFERRED** (single page) this cycle rather than invented.
+- **Verified contract** (docs.devin.ai / docs.devinenterprise.com): the session list wraps under
+  **`items`** (NOT `sessions`); each session carries **`pull_requests`** (array of `{pr_url,
+  pr_state}`), NOT a singular `pull_request.url`; cursor pagination is documented — response
+  `end_cursor` + `has_next_page`, re-sent as query param `after` (wired via `PageToken`). The
+  earlier `sessions`/`pull_request.url`/deferred-pagination assumptions were DRIFT (would have
+  ingested zero live) and are corrected.
 
 ## Deferred live paths
 
