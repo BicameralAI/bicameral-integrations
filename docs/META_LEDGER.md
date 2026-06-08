@@ -3024,7 +3024,86 @@ yet — **dependency_risk** is the first to get logic (next cycle), then fan out
 time. Full sweep: **398 passed**, ruff clean, mypy 145 files clean, bandit clean, governance gate
 verifies chain #1–#106. `mods/*/manifest.yaml` content preserved (not clobbered). L1.
 
+### Entry #107: GATE AUDIT — emission metadata preservation (ADR-0014)
+
+**Entry ID**: `metaPreserve107audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L2 (touches the FX-SEC-001 sensitive-data gate)
+
+**Content Hash**:
+```
+SHA256(plan-emission-metadata-preservation-2026-06-08.md)
+= 40f58145a67e69659bb1909d0dde8aad499ebdacb34671068b9e68872f887afb
+```
+
+**Previous Hash**: d13ad161273b7937c3b0dada8cead4df8f83b3adf8bddcced111c1f17d4f1ca2
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 03dbc22a1e1741aee36754320743201e6d3250c8d7441f4d1c59cf1dcff35b8c
+```
+
+**Decision**: Research for the `dependency_risk` reference-mod cycle found `pipeline.normalize`
+**drops `Observation.metadata`** — the OSV connector's `severity`/`packages`/`aliases` (and every
+connector's structured signals) never reach a mod; all mods were silently free-text-only. Operator
+chose **fix the normalizer first, then build the mod**. Independent fresh-context audit **VETOed**
+iteration 1 with **4 BLOCKING**: (1) join-semantics unspecified; (2) metadata **keys** unscreened;
+(3) `run_mod` consumes raw input and screens only output — preserving metadata **activates** a
+dormant exposure (a hand-built secret-bearing emission reaches `evaluate` raw); (4) tests vacuous-prone
+(positive fixtures lacked evidence → would pass for the wrong reason). All folded into iteration 3.
+Notably finding (1)'s *suggested* fix (single join) was itself **measured wrong** — a join fabricates
+`_is_id_preceded` PAN suppression across leaves (false negative, SG-2026-06-05-F) — so the correct fix
+is **per-leaf** scanning; the re-audit confirmed per-leaf is materially better than the auditor's own
+proposal. **PASS** on iteration 3. Pre-seal devil's-advocate then returned **PASS** with 2 ADVISORY,
+both closed: `_flatten_strings` (mod-output screen) aligned to also walk dict **keys** (closing a
+mod-output-metadata-key exfil gap), and the cyclic-container residual noted in the ADR. L2.
+
+---
+
+### Entry #108: SESSION SEAL — emission metadata preservation (ADR-0014)
+
+**Entry ID**: `metaPreserve108seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= ffd417fb6fe801419b483c58d4b0adec5f84c6c568e944d0341603e55271c1d7
+```
+
+**Previous Hash**: 03dbc22a1e1741aee36754320743201e6d3250c8d7441f4d1c59cf1dcff35b8c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 42ffb2662b758b5001618cbf2439490ed34dff28a114017c2927ecfb39d56f28
+```
+
+**Decision**: Preserved connector metadata through the normalizer so mods can read structured signals
+(the input-contract fix that unblocks `dependency_risk` and all 12 mods). `adapter/core/pipeline.py`:
+`_emission_from` carries `dict(obs.metadata)` (defensive shallow copy) into `AdapterEmission.metadata`;
+`_screen_sensitive` gains `_metadata_strings` (flattens every string leaf + dict **key**, recursing
+dict/list/tuple/set, stringifying non-str scalars) and scans metadata **per leaf** — NOT a single join,
+because a join fabricates `_is_id_preceded` PAN suppression across independent leaves (false negative).
+`mods/contract.py`: `run_mod` now calls `validate_emissions(emissions)` on its **input** before
+`evaluate` (defensive re-screen mirroring `GatewaySink.emit`); `_flatten_strings` aligned to screen
+keys too (mod-output parity). **Metadata is in-process for mods only** — NOT wire-forwarded
+(`gateway_mapping` omits it; `GatewaySink` re-screens at its boundary), so ADR-0005's minimal-wire
+contract holds. **ADR-0014** accepted (amends ADR-0004/0005). FX-ADP-001 + FX-SEC-001 + FX-MOD-001
+rows updated. No new files (no SYSTEM_STATE tree change). Independent VETO→PASS (4 BLOCKING) +
+pre-seal devil's-advocate PASS (2 ADVISORY closed). Full sweep: **409 passed** (+11 red/green:
+flat/nested/key/non-str-scalar/tuple-set/no-false-adjacency/within-leaf-pass/preservation+identity/
+run_mod-input/output-key), ruff clean, mypy 145 files clean, bandit clean, governance gate verifies
+chain #1–#108. Residuals (ADR-0014): exotic/cyclic metadata types stringified-not-walked (fail-closed,
+out of the JSON-sourced surface); two flatteners duplicated-but-parallel (no shared parity test). L2.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/mod-execution-contract`) — **Mod execution contract SEALED at Entry #106 (`d13ad161`; L1).** ADR-0013 runner (`mods/contract.py` + `_manifest.py`) is the manifest-enforced, EM-safe, FX-SEC-001-screened chokepoint all mods pass; 13 manifests normalized; FX-MOD-001 verified (18 tests). `mods/` is owned by this track. Connector verification campaign remains COMPLETE (all 26 doc-verified, Entry #104).*
-*Next required action: **build `dependency_risk` as the reference mod** (next governed cycle: research → plan → audit → implement its `evaluate` logic on this contract), then fan out the remaining 12 mods in the same fashion, then bring mods live one at a time. Optional now: take a connector to Live (operator wires `GatewaySink` + `poll`/`deliver_webhook`); confirm the 3 pre-Live notes (sentry/pagerduty/claude_code). Admin (you): branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/emission-metadata-preservation`) — **Metadata preservation SEALED at Entry #108 (`42ffb266`; L2).** Connectors' structured `metadata` now survives `normalize` into `AdapterEmission.metadata` (in-process for mods, screened per-leaf incl. keys, NOT wire-forwarded); `run_mod` re-screens inputs. The mod-input contract is now correct — mods can read `emission.metadata`. Prior seals stand: mod execution contract (#106), connector verification campaign COMPLETE (#104).*
+*Next required action: **build `dependency_risk` as the reference mod** (next governed cycle) — now on the corrected input contract: `evaluate` reads OSV `metadata["packages"]`/`["severity"]` + free-text fallback for PR/MR bodies → emits `dependency_signal`/`routing_hint`/`source_evidence_annotation`. Then fan out the remaining 12 mods, then go-live one at a time. Optional: take a connector Live (operator wires `GatewaySink` + `poll`/`deliver_webhook`); confirm the 3 pre-Live notes (sentry/pagerduty/claude_code). Admin (you): branch protection (B5). Open: bot #73 (release signing).*

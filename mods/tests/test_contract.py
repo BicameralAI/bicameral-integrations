@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint, SourceEvidence, SourceRef
+from adapter.core.pipeline import EmissionContractError
 from mods._manifest import ModManifestError
 from mods.contract import (
     _EM_SAFE_FORBIDDEN,
@@ -160,6 +161,16 @@ def test_mod_output_sensitive_data_rejected():
         run_mod(mod, [_emission()], _manifest({"advisory_governance_result"}))
 
 
+def test_sensitive_data_rejected_in_output_metadata_key():
+    # A mod must not exfiltrate a secret by smuggling it into an output-metadata KEY.
+    results = [ModEmission("dependency_signal",
+                           advisory=AdvisoryResult(kind="dependency_signal", message="ok",
+                                                   metadata={"AKIAIOSFODNN7EXAMPLE": "v"}))]
+    mod = _FakeMod(outputs={"dependency_signal"}, results=results)
+    with pytest.raises(ModContractError):
+        run_mod(mod, [_emission()], _manifest({"dependency_signal"}))
+
+
 def test_sensitive_data_rejected_in_evidence_ids_and_nested_metadata():
     # Hardening: the FX-SEC-001 screen covers ALL wire-bound fields, not just `message`.
     pan = "4111111111111111"
@@ -200,6 +211,26 @@ def test_load_manifest_rejects_malformed(tmp_path):
     ok = tmp_path / "ok.yaml"
     ok.write_bytes("﻿id: x\r\nversion: 0.1.0\r\nname: X\r\noutputs:\r\n  - routing_hint\r\nforbidden_actions:\r\n  - write_canonical_decision\r\n".encode("utf-8"))
     assert load_manifest(ok).id == "x"
+
+
+def test_run_mod_rejects_secret_in_input_metadata():
+    # ADR-0014: run_mod defensively re-screens INPUT emissions. A secret in input
+    # metadata (now preserved through normalize) must be rejected before evaluate runs.
+    ref = SourceRef(source_id="osv", ref="vuln/1", url="https://example/v/1", kind="vulnerability")
+    ev = SourceEvidence(source_ref=ref, excerpt="vuln summary", author="x")
+    poisoned = AdapterEmission(source_id="osv", title="v", body="vuln summary", evidence=(ev,),
+                               metadata={"leak": "AKIAIOSFODNN7EXAMPLE"})
+
+    class _NeverEvaluated:
+        id = "dependency-risk"
+        version = "0.1.0"
+        outputs = frozenset({"dependency_signal"})
+
+        def evaluate(self, emissions):
+            raise AssertionError("evaluate must not run on secret-bearing input")
+
+    with pytest.raises(EmissionContractError):
+        run_mod(_NeverEvaluated(), [poisoned], _manifest({"dependency_signal"}))
 
 
 def test_all_manifests_representable():
