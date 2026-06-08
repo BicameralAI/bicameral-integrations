@@ -29,10 +29,10 @@ dependency**. Live (gateway emission) is now operator-actionable — `GatewaySin
 
 - `parse_event(event)` — Continue dev-data event → `Observation`. Excerpt is the
   first non-empty of `prompt`/`completion`/`content`/`message`, with a
-  `continue {name}` terminal fallback (the event schema is versioned and churns,
-  and `noCode` strips text — the excerpt must never be blank); `name` → kind /
-  title; `eventId`/`id`/`name:timestamp` → ref; `userId` → author;
-  `name`/`schema`/`modelTitle` → metadata.
+  `continue {eventName}` terminal fallback (the event schema is versioned and churns,
+  and `noCode` strips text — the excerpt must never be blank); `eventName` (legacy
+  `name` fallback) → kind / title; `eventName:timestamp` → ref (no event-id field);
+  `userId` → author; `eventName`/`schema`/`modelTitle`(or `modelName`) → metadata.
 - `ContinueConnector` — connector identity and capabilities (`PASSIVE`).
 
 ## References

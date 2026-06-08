@@ -100,6 +100,27 @@ class OffsetPager:
 
 
 @dataclass(frozen=True)
+class PageNumberPager:
+    """1-based page-number pagination: increment ``page_param`` until a page returns fewer
+    than ``per_page`` items (no body cursor — e.g. GitHub Copilot metrics' ``page``/``per_page``).
+    Keys off the extracted item count, so it works on a top-level-array OR enveloped response."""
+
+    page_param: str
+    per_page: int
+    start: int = 1
+
+    def next_url(self, current_url: str, page: object, item_count: int) -> str | None:
+        if item_count < self.per_page:
+            return None  # short page → last page; stop closed
+        query = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(current_url).query))
+        try:
+            current = int(query.get(self.page_param, self.start))
+        except ValueError:
+            current = self.start  # defensive: a non-int page never raises (fail-closed)
+        return _with_query_param(current_url, self.page_param, str(current + 1))
+
+
+@dataclass(frozen=True)
 class PollSpec:
     """A connector's poll contract: where to fetch, how to authenticate, how to
     paginate, and how to extract the per-page payload list ``observations()`` eats."""
@@ -108,7 +129,7 @@ class PollSpec:
     auth: PollAuth
     items: Callable[[Any], Any]
     method: str = "GET"
-    pagination: PageToken | OffsetPager | None = None
+    pagination: PageToken | OffsetPager | PageNumberPager | None = None
     body: bytes | None = None
 
 

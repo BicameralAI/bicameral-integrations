@@ -2732,6 +2732,78 @@ cursor test added. **`mods/` untouched.** pytest **398 passed**, ruff + **whole-
 #68 lesson), governance gate verifies chain #1–#98. FX-RUNTIME-003 + devin/granola FX MODIFIED.
 
 ---
+
+### Entry #99: GATE AUDIT — fix the milder connector drifts (anthropic/copilot/cursor/continue_dev) (PASS)
+
+**Entry ID**: `fixDrift99audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit / pre-seal review)
+**Author**: Judge (devil's-advocate review)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connector-verification-2026-06-06.md)
+= 6e7fcafeecf2f19189cc333d4c079acb44517e75e09f96326ba14d029a3ef41f
+```
+
+**Previous Hash**: a36f4789b1dfbbbee0339f6ac64eeb355762adc77f88e0afc0101c52efc7d517
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 2b50bb45b0f7e73ffc9464cf941007b6e8d16c7959fe222a534068d6489100f0
+```
+
+**Decision**: Fix Cycle 2 of the verify→fix program (the four milder drifts; verification = the
+adversarial research, PR #71). Pre-seal devil's-advocate review returned **CHANGES-REQUIRED** (1
+BLOCKING): code + most docs were correct, but the **cursor connector module docstring still claimed
+the daily-usage row carries `name`** — the same doc-reality drift the Cycle-1 review flagged. Fixed
+(docstring now states `name` is absent on this endpoint / lives on members-spend); + the advisory
+(cursor fixture/test `name` annotated as a hostile-superset never-emitted probe). Re-review clean →
+PASS. All four core fixes verified Reality==Promise: anthropic nested cache_creation sum; copilot
+`PageNumberPager`; cursor pagination deferred-with-reason; continue_dev `eventName`/`modelName`.
+
+---
+
+### Entry #100: SESSION SEAL — anthropic/copilot/cursor/continue_dev realigned (Fix Cycle 2)
+
+**Entry ID**: `fixDrift100seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 8292ce0e0122dc37a878c70b45749de35b7cc8665375397caa4b2497a3e351c1
+```
+
+**Previous Hash**: 2b50bb45b0f7e73ffc9464cf941007b6e8d16c7959fe222a534068d6489100f0
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f3e8708f793d2936af10c974bbf3e8ddf28f73b5a94a517611d828d3fd62390f
+```
+
+**Decision**: Fix Cycle 2 — corrected the four milder verified drifts. **anthropic_admin**: token
+input sum now adds the **nested** `cache_creation.{ephemeral_1h,5m}_input_tokens` (the flat
+`cache_creation_input_tokens` does not exist → was a silent undercount); `_int` bool-guarded.
+**copilot**: wired `page`/`per_page` pagination via a new **`PageNumberPager`** (top-level-array
+response, 1-based, stop-on-short-page; 100-day lookback) — was `pagination=None` (silent truncation).
+**continue_dev**: reads `eventName` (legacy `name` fallback) + `modelName`; ref floors to
+`eventName:timestamp` (no event-id field). **cursor**: pagination **deferred-with-reason** —
+`page`/`pageSize` exists but the query-vs-POST-body transport is undocumented, so NOT wired
+(verify-before-cite); `name` dropped from docs (verified absent on this endpoint; host/body/`data`
+envelope confirmed). Specs/parse/fixtures (connector + runtime)/tests/auth.md/references.md/README all
+realigned + dated 2026-06-08. **Process**: pre-seal devil's-advocate CHANGES-REQUIRED (cursor
+docstring still claimed `name`) → fixed. **`mods/` untouched.** pytest **401 passed** (+2), ruff +
+**whole-tree mypy** clean, governance gate verifies chain #1–#100. FX-RUNTIME-003 +
+anthropic/copilot/cursor/continue_dev FX MODIFIED.
+
+---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `fix/connector-drift-devin-granola`) — **Fix Cycle 1 sealed at Entry #98 (`a36f4789`; L2): the two SEVERE drifts (devin, granola) are realigned to their verified live contracts.** Phase-1 verification complete (all 26 doc-checked, PR #71); fix backlog remaining: anthropic_admin (cache_creation), copilot/cursor (pagination), continue_dev (eventName), mcp_registry (graduate + envelope), + doc-only corrections (confluence/google_drive/fathom/notion/sarif) + pre-Live notes (sentry/pagerduty/claude_code).*
-*Next required action: continue the batch-fix — Fix Cycle 2 (anthropic_admin + copilot + cursor + continue_dev milder drifts), then mcp_registry graduation, then the doc-only corrections. Before any live-network poll wiring: confirm remaining assumptions. Admin (you): branch protection (B5). Open: bot #73 (release signing). Codex: re-apply/supersede the recovered `mods/` READMEs when committing its mod dirs.*
+*Status: `main` (cycle on `fix/connector-drift-cycle2`) — **Fix Cycle 2 sealed at Entry #100 (`f3e8708f`; L2): the 4 milder drifts (anthropic_admin/copilot/cursor/continue_dev) are corrected.** Of the 7 code-drift connectors, 6 are now fixed (Cycles 1+2); remaining: **mcp_registry graduation** (Candidate→Beta: unwrap `item["server"]` envelope + cursor pagination + public-read auth). Then the **doc-only corrections** (confluence JWT-deferral / google_drive scope / fathom-Svix / notion / sarif) + the pre-Live notes (sentry integration test, pagerduty browser spot-check, claude_code observed-schema). Phase-1 verification complete (PR #71).*
+*Next required action: Fix Cycle 3 — mcp_registry graduation; then the doc-only correction pass. Phase 2 (mod groundwork) remains GATED on Codex committing `mods/`. Admin (you): branch protection (B5). Open: bot #73 (release signing).*

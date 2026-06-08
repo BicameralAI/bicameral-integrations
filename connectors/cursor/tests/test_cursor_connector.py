@@ -28,6 +28,9 @@ def test_parse_usage_day_summarizes_metrics():
 def test_pii_is_dropped():
     # The fixture CONTAINS email + name (non-vacuous): they must appear NOWHERE.
     # (Per SG-2026-06-05-D the OPAQUE userId IS now surfaced for attribution; email/name are not.)
+    # NOTE: `name` is NOT a real daily-usage-data field (verified 2026-06-08 — it lives on the
+    # members/spend endpoints); it is kept here as a hostile-SUPERSET probe proving the never-read
+    # allowlist drops an unexpected identity field even if a future/wrong payload includes it.
     row = _load("daily_usage_row.json")
     assert row["email"] == "jane.doe@example.com" and row["name"] == "Jane Doe"  # input has PII
     obs = parse_usage_day(row)

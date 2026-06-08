@@ -1,12 +1,13 @@
 """Cursor connector: team daily-usage rows into neutral, PII-free Observations.
 
 The Cursor Admin API (``POST /teams/daily-usage-data``) returns per-user-day rows. EVERY
-row carries ``email`` and ``name`` (PII) alongside aggregate usage metrics. FX-SEC-001
+row carries ``email`` (PII) alongside aggregate usage metrics (verified 2026-06-08: there is
+**no ``name``** on this endpoint — ``name`` lives on the members/spend endpoints). FX-SEC-001
 (``adapter.core.sensitive``) screens secret / PHI / PAN only — it does **NOT** detect a
 generic email and never scans Observation metadata, so there is **no downstream backstop**
 (audit #74, HIGH). The PII control is therefore here: ``parse_usage_day`` reads a strict
 allowlist of non-PII fields (numeric metrics + ``mostUsedModel``) and **never reads ``email``
-/ ``name`` / ``clientVersion``**. **Per-developer attribution uses the OPAQUE integer ``userId``**
+/ ``name`` / ``clientVersion``** (``name`` is defended even though absent on this endpoint). **Per-developer attribution uses the OPAQUE integer ``userId``**
 (SG-2026-06-05-D supersedes -A for ``userId`` only): a bare vendor id is pseudonymous on its own
 (the operator holds the id→identity mapping; the connector never emits the identity). Poll-only —
 no webhooks; the live REST poll + API-key (basic-auth) resolution stay in the operator runtime

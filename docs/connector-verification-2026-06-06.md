@@ -60,11 +60,11 @@ Status legend: ☐ pending · ✅ confirmed · ⚠ drift (fix needed) · ◑ doc
 **Code drift → governed fix cycles (ingestion-correctness; SEVERE would ingest zero/wrong live):**
 1. **devin** *(SEVERE)* — **✅ FIXED (Fix Cycle 1, 2026-06-08)**: envelope `items`; `pull_requests[].pr_url`; cursor pagination (`after`/`end_cursor`/`has_next_page`) wired via `PageToken`.
 2. **granola** *(SEVERE, near-rebuild)* — **✅ FIXED (Fix Cycle 1, 2026-06-08)**: host `public-api.granola.ai`; endpoint `/notes?include=transcript`; envelope `notes`; joined `transcript[].text`; `attendees`; `created_at`; `created_after` watermark; cursor pagination (`cursor`/`hasMore`).
-3. **anthropic_admin** — `cache_creation` nested (`ephemeral_1h/5m_input_tokens`), not flat `cache_creation_input_tokens` (token undercount). *(Fix Cycle 2)*
-4. **copilot** — wire `page`/`per_page` pagination (100-day lookback); optionally bump `X-GitHub-Api-Version`.
-5. **cursor** — wire `page`/`pageSize` pagination; drop `name` from row docs; confirm host/body now verified.
-6. **continue_dev** — read `eventName` (legacy `name` fallback) + add `modelName` to model fallback.
-7. **mcp_registry** — unwrap `item["server"]` envelope + cursor pagination; flip auth string to public-read; reconcile Candidate→Beta.
+3. **anthropic_admin** — **✅ FIXED (Fix Cycle 2, 2026-06-08)**: nested `cache_creation.{ephemeral_1h,5m}_input_tokens` summed; flat key removed; `_int` bool-guarded.
+4. **copilot** — **✅ FIXED (Fix Cycle 2)**: `page`/`per_page` pagination wired via new `PageNumberPager` (100-day lookback, stop-on-short-page); api-version noted valid-but-not-latest.
+5. **cursor** — **✅ FIXED (Fix Cycle 2, doc)**: dropped `name` from row docs (verified absent on this endpoint); host/body/`data` envelope confirmed; pagination **deferred-with-reason** (page/pageSize transport query-vs-body unverified — not invented).
+6. **continue_dev** — **✅ FIXED (Fix Cycle 2)**: reads `eventName` (legacy `name` fallback) + `modelName`; ref floors to `eventName:timestamp` (no event-id).
+7. **mcp_registry** — unwrap `item["server"]` envelope + cursor pagination; flip auth string to public-read; reconcile Candidate→Beta. *(Fix Cycle 3)*
 
 **Doc-only corrections (no code):** confluence (JWT deferral reason), google_drive (scope `drive.readonly`/`drive.file`), fathom (Svix-attribution + window note), sarif (add `level` to contract line), notion (prefix-from-examples note).
 

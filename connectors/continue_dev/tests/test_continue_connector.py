@@ -18,24 +18,33 @@ def _event() -> dict:
 
 
 def test_fixture_loads():
-    assert _event()["name"] == "chatInteraction"
+    assert _event()["eventName"] == "chatInteraction"  # verified field (not `name`)
 
 
 def test_parse_maps_prompt_and_event_name():
     obs = parse_event(_event())
     assert obs.excerpt.startswith("Refactor the retry helper")
-    assert obs.title == "chatInteraction"
+    assert obs.title == "chatInteraction"  # from eventName
     assert obs.source_ref.kind == "chatInteraction"
     assert obs.metadata["model"] == "Claude (Opus)"
     assert obs.metadata["schema"] == "0.2.0"
-    assert obs.source_ref.ref == "evt-7f3a9c21"
+    # no event-id field in the verified schema → ref floors to eventName:timestamp
+    assert obs.source_ref.ref == "chatInteraction:2026-06-03T15:04:22.000Z"
     assert obs.timestamp == "2026-06-03T15:04:22.000Z"
 
 
+def test_event_name_verified_field_and_legacy_fallback():
+    # verified primary `eventName`; legacy `name` still tolerated as a fallback
+    assert parse_event({"eventName": "toolUsage"}).title == "toolUsage"
+    assert parse_event({"name": "editOutcome"}).title == "editOutcome"
+    # modelName (verified) read when modelTitle absent
+    assert parse_event({"eventName": "x", "modelName": "claude-opus-4-8"}).metadata["model"] == "claude-opus-4-8"
+
+
 def test_excerpt_falls_back_to_completion_then_event_name():
-    no_prompt = {"name": "editOutcome", "completion": "applied 3-line edit"}
+    no_prompt = {"eventName": "editOutcome", "completion": "applied 3-line edit"}
     assert parse_event(no_prompt).excerpt == "applied 3-line edit"
-    no_text = {"name": "editOutcome"}
+    no_text = {"eventName": "editOutcome"}
     assert parse_event(no_text).excerpt == "continue editOutcome"
 
 

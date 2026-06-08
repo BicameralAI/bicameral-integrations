@@ -1,7 +1,6 @@
 {
-  "name": "chatInteraction",
+  "eventName": "chatInteraction",
   "schema": "0.2.0",
-  "eventId": "evt-7f3a9c21",
   "timestamp": "2026-06-03T15:04:22.000Z",
   "userId": "u-local",
   "modelTitle": "Claude (Opus)",

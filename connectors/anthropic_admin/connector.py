@@ -1,10 +1,12 @@
 """Anthropic Admin connector: organization usage buckets into neutral Observations.
 
 The Usage & Cost Admin API (``GET /v1/organizations/usage_report/messages``, ``x-api-key``
-admin key + ``anthropic-version``) returns time buckets ``{starting_at, ending_at, results:
-[{model, workspace_id, api_key_id, service_tier, *_input_tokens, output_tokens}]}``. The
-grouping dimensions are **opaque ids** — no user PII (aggregate leverage evidence, the Copilot
-precedent). ``parse_usage`` summarizes a bucket's token totals + distinct models; the opaque
+admin key + ``anthropic-version``; verified docs.anthropic 2026-06-08) wraps time buckets under
+top-level ``data``: ``{starting_at, ending_at, results: [{model, workspace_id, api_key_id,
+service_tier, uncached_input_tokens, cache_read_input_tokens, cache_creation:
+{ephemeral_1h_input_tokens, ephemeral_5m_input_tokens}, output_tokens}]}``. The grouping
+dimensions are **opaque ids** — no user PII. ``parse_usage`` summarizes a bucket's token totals
+(input = uncached + cache-read + the nested cache-creation tokens) + distinct models; the opaque
 ``workspace_id``/``api_key_id`` are not surfaced. Poll-only — no webhooks; the live REST poll +
 admin-key resolution stay in the operator runtime (see ``auth.md``).
 """
@@ -15,12 +17,23 @@ from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
 
-_INPUT_KEYS = ("uncached_input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
+_INPUT_KEYS = ("uncached_input_tokens", "cache_read_input_tokens")
+# verified docs.anthropic 2026-06-08: cache-creation tokens are NESTED under
+# `cache_creation`, not a flat `cache_creation_input_tokens` (which does not exist).
+_CACHE_CREATION_KEYS = ("ephemeral_1h_input_tokens", "ephemeral_5m_input_tokens")
 
 
 def _int(value: object) -> int:
-    """Coerce a token metric to int (0 when absent / non-numeric)."""
-    return value if isinstance(value, int) else 0
+    """Coerce a token metric to int (0 when absent / non-numeric; ``bool`` is not a metric)."""
+    return value if isinstance(value, int) and not isinstance(value, bool) else 0
+
+
+def _cache_creation_tokens(row: dict) -> int:
+    """Sum the nested cache-creation input tokens (`cache_creation.ephemeral_*`)."""
+    cc = row.get("cache_creation")
+    if not isinstance(cc, dict):
+        return 0
+    return sum(_int(cc.get(key)) for key in _CACHE_CREATION_KEYS)
 
 
 def _sum_tokens(results: list) -> tuple[int, int, list[str]]:
@@ -31,7 +44,7 @@ def _sum_tokens(results: list) -> tuple[int, int, list[str]]:
     for row in results:
         if not isinstance(row, dict):
             continue
-        in_tokens += sum(_int(row.get(key)) for key in _INPUT_KEYS)
+        in_tokens += sum(_int(row.get(key)) for key in _INPUT_KEYS) + _cache_creation_tokens(row)
         out_tokens += _int(row.get("output_tokens"))
         model = row.get("model")
         if isinstance(model, str) and model and model not in models:

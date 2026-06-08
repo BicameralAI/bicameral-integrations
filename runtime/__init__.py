@@ -10,6 +10,7 @@ from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, PollError
 from .poll_client import (
     HttpTransport,
     OffsetPager,
+    PageNumberPager,
     PageToken,
     PollSpec,
     UrllibTransport,
@@ -51,6 +52,7 @@ __all__ = [
     "PollSpec",
     "PageToken",
     "OffsetPager",
+    "PageNumberPager",
     "ApiKeyHeaderAuth",
     "BearerAuth",
     "BasicAuth",

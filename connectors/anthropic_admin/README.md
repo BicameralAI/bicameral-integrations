@@ -21,7 +21,7 @@ end-to-end by `runtime/tests/test_runtime.py`, with **zero cross-repo dependency
 - `parse_usage(bucket)` — an Anthropic usage time-bucket → `Observation`. Excerpt = summed
   input/output token totals + distinct models across the bucket's `results`; `starting_at` →
   ref (`anthropic-usage` floor); `kind="usage_metrics"`. Input = `uncached_input_tokens` +
-  `cache_read_input_tokens` + `cache_creation_input_tokens`.
+  `cache_read_input_tokens` + the nested `cache_creation.{ephemeral_1h,ephemeral_5m}_input_tokens`.
 - `AnthropicAdminConnector` — identity + capabilities (`ACTIVE`); `observations()` parses one bucket.
 
 ## Privacy

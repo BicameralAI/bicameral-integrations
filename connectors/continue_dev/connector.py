@@ -41,7 +41,9 @@ def parse_event(event: dict) -> Observation:
     version-skewed event carrying a non-string field is normalized, not crashed
     (the schema is documented to churn — see the connector docstring).
     """
-    name = str(event.get("name") or "continue-event")
+    # verified docs.continue.dev 2026-06-08: the base event field is `eventName`
+    # (legacy `name` kept as a tolerant fallback); there is no event-id field.
+    name = str(event.get("eventName") or event.get("name") or "continue-event")
     timestamp = str(event.get("timestamp") or event.get("ts") or "")
     ref = str(event.get("eventId") or event.get("id") or f"{name}:{timestamp}")
     return Observation(
@@ -54,7 +56,7 @@ def parse_event(event: dict) -> Observation:
         metadata={
             "name": name,
             "schema": str(event.get("schema") or ""),
-            "model": str(event.get("modelTitle") or event.get("model") or ""),
+            "model": str(event.get("modelTitle") or event.get("modelName") or event.get("model") or ""),
         },
     )
 

@@ -26,7 +26,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 
 ## Verified API/webhook contract (as built, 2026-06-05)
 
-- **Dev-data event (parsed)**: `parse_event` reads `{name, timestamp/ts, eventId/id, prompt, completion, content, message, userId, schema, modelTitle/model}`; excerpt is the first non-empty text field among `prompt`, `completion`, `content`, `message`, falling back to `"continue {name}"`. The schema (`0.1.0`/`0.2.0`) is documented to churn; all field access is str-coerced.
+- **Dev-data event (parsed, verified 2026-06-08 docs.continue.dev)**: `parse_event` reads `{eventName (legacy `name` fallback), timestamp/ts, prompt, completion, content, message, userId, schema, modelTitle/modelName/model}`; the base schema field is **`eventName`** and there is **no event-id field** (ref floors to `eventName:timestamp`); excerpt is the first non-empty text field among `prompt`, `completion`, `content`, `message`, falling back to `"continue {eventName}"`. The schema (`0.1.0`/`0.2.0`) is documented to churn; all field access is str-coerced.
 - **Verification**: no verify — passive file import; no network delivery, no signature.
 - **Auth (deferred)**: none for local file ingest (T0); HTTP-sink path uses Bearer `apiKey` in `config.yaml` — deferred. No live network this cycle.
 - **Modes**: passive only; no webhooks (provider id `"continue"`; package `continue_dev`).
