@@ -1,0 +1,14 @@
+id: ownership-routing
+version: 0.1.0
+name: Ownership Routing
+outputs:
+  - owner_lens_hint
+  - routing_hint
+  - source_evidence_annotation
+forbidden_actions:
+  - write_canonical_decision
+  - approve_signoff
+  - resolve_compliance
+  - create_blocking_ci_result
+  - assign_reviewer
+  - bypass_branch_protection

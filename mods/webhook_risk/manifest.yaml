@@ -1,0 +1,15 @@
+id: webhook-risk
+version: 0.1.0
+name: Webhook Risk
+outputs:
+  - advisory_governance_result
+  - routing_hint
+  - source_evidence_annotation
+forbidden_actions:
+  - write_canonical_decision
+  - approve_signoff
+  - resolve_compliance
+  - create_blocking_ci_result
+  - accept_webhook_event
+  - execute_external_mutation
+  - send_external_notification

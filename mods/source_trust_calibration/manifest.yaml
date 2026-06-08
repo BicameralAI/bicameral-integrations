@@ -1,0 +1,14 @@
+id: source-trust-calibration
+version: 0.1.0
+name: Source Trust Calibration
+outputs:
+  - advisory_governance_result
+  - routing_hint
+  - source_evidence_annotation
+forbidden_actions:
+  - write_canonical_decision
+  - approve_signoff
+  - resolve_compliance
+  - create_blocking_ci_result
+  - change_trust_tier
+  - promote_evidence

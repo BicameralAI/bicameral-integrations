@@ -1,0 +1,15 @@
+id: code-review-risk
+version: 0.1.0
+name: Code Review Risk
+outputs:
+  - advisory_governance_result
+  - routing_hint
+  - source_evidence_annotation
+  - suggested_review_question
+forbidden_actions:
+  - write_canonical_decision
+  - approve_signoff
+  - resolve_compliance
+  - create_blocking_ci_result
+  - post_external_comment
+  - merge_pull_request
