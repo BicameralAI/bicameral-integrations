@@ -198,3 +198,83 @@ def test_oversized_source_id_rejected():
     with pytest.raises(EmissionContractError):
         validate_emissions([_emission(source_id="a" * 200)])
     assert validate_emissions([_emission(source_id="github")])  # normal still passes
+
+
+# --- ADR-0014: connector metadata preserved through normalize + screened per-leaf ---
+
+_AKIA = "AKIAIOSFODNN7EXAMPLE"  # fake AWS access key (matches \bAKIA[0-9A-Z]{16}\b)
+_PAN = "4111111111111111"  # Luhn-valid test PAN
+
+
+class _Stringy:
+    """A non-str scalar whose ``__str__`` carries a secret (must be screened)."""
+
+    def __str__(self) -> str:
+        return f"leaked {_AKIA}"
+
+
+def test_normalize_preserves_metadata():
+    # FX-ADP-001: Observation.metadata survives normalize into emission.metadata,
+    # nested-intact, as a DEFENSIVE COPY (not the same object).
+    md = {"severity": "HIGH", "packages": "requests", "nested": {"k": "v"}}
+    obs = Observation(source_ref=_ref(), excerpt="vuln summary", metadata=md)
+    out = normalize([obs], adapter_version="osv/0.1.0")
+    assert out[0].metadata == md
+    assert out[0].metadata is not md  # defensive copy
+
+
+def test_clean_metadata_passes_unchanged():
+    # Non-vacuous companion: structured, nested, container-bearing clean metadata passes.
+    md = {"severity": "HIGH", "packages": ["requests", "urllib3"], "nested": {"k": "v"}}
+    em = _emission(metadata=md)
+    assert validate_emissions([em]) == [em]
+
+
+def test_secret_in_metadata_flat_value_rejected():
+    with pytest.raises(EmissionContractError) as exc:
+        validate_emissions([_emission(metadata={"note": f"key {_AKIA}"})])
+    assert str(exc.value).startswith("sensitive_data:")
+
+
+def test_secret_in_metadata_nested_value_rejected():
+    # nested inside a list-of-dicts — proves the recursion screens deep leaves.
+    md = {"signals": [{"detail": f"found {_AKIA}"}]}
+    with pytest.raises(EmissionContractError) as exc:
+        validate_emissions([_emission(metadata=md)])
+    assert str(exc.value).startswith("sensitive_data:")
+
+
+def test_secret_in_metadata_key_rejected():
+    # a secret in a KEY (not value) must not escape — keys are scanned too.
+    with pytest.raises(EmissionContractError) as exc:
+        validate_emissions([_emission(metadata={_AKIA: "v"})])
+    assert str(exc.value).startswith("sensitive_data:")
+
+
+def test_secret_in_metadata_non_str_scalar_rejected():
+    # a non-str scalar is stringified before screening (malicious __str__ can't dodge).
+    with pytest.raises(EmissionContractError) as exc:
+        validate_emissions([_emission(metadata={"obj": _Stringy()})])
+    assert str(exc.value).startswith("sensitive_data:")
+
+
+def test_secret_in_metadata_tuple_and_set_rejected():
+    for container in ({"t": (f"x {_AKIA}",)}, {"s": {f"y {_AKIA}"}}):
+        with pytest.raises(EmissionContractError) as exc:
+            validate_emissions([_emission(metadata=container)])
+        assert str(exc.value).startswith("sensitive_data:")
+
+
+def test_metadata_per_leaf_no_false_adjacency():
+    # per-leaf scan: an id-label in one leaf must NOT suppress a PAN in a DIFFERENT leaf
+    # (a single-join screen would fabricate _is_id_preceded suppression → false negative).
+    md = {"a": "order_id:", "b": _PAN}
+    with pytest.raises(EmissionContractError) as exc:
+        validate_emissions([_emission(metadata=md)])
+    assert str(exc.value).startswith("sensitive_data:")
+
+
+def test_metadata_id_labeled_pan_within_one_leaf_passes():
+    # legitimate within-leaf suppression is preserved: an order_id-labelled run is NOT a PAN.
+    em = _emission(metadata={"x": f"order_id: {_PAN}"})
+    assert validate_emissions([em]) == [em]

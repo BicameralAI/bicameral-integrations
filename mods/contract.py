@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint
+from adapter.core.pipeline import validate_emissions
 from adapter.core.sensitive import detect_sensitive
 
 from ._manifest import Manifest, ModManifestError, load_manifest
@@ -126,13 +127,19 @@ def validate_manifest(manifest: Manifest, mod: Mod) -> None:
 
 
 def _flatten_strings(value: object) -> list[str]:
-    """All string leaves of a (possibly nested) metadata value, for the sensitive screen.
-    Walks dicts/lists/tuples/sets so a secret nested in metadata cannot escape; non-str
-    scalars are stringified (a custom ``__str__`` or ``bytes`` can't dodge the screen)."""
+    """All string leaves AND dict keys of a (possibly nested) metadata value, for the
+    sensitive screen. Walks dict keys+values, lists/tuples/sets so a secret nested in
+    metadata (or smuggled into a KEY) cannot escape; non-str scalars are stringified (a
+    custom ``__str__`` or ``bytes`` can't dodge the screen). Behaviourally identical to
+    ``adapter.core.pipeline._metadata_strings`` (intentional duplication — change both)."""
     if isinstance(value, str):
         return [value] if value else []
     if isinstance(value, dict):
-        return [s for v in value.values() for s in _flatten_strings(v)]
+        out: list[str] = []
+        for key, sub in value.items():
+            out.extend(_flatten_strings(key))
+            out.extend(_flatten_strings(sub))
+        return out
     if isinstance(value, (list, tuple, set)):
         return [s for item in value for s in _flatten_strings(item)]
     return [] if value is None else [str(value)]
@@ -199,12 +206,16 @@ def run_mod(
 ) -> list[ModEmission]:
     """Run a mod under its manifest, EM-safe + FX-SEC-001 enforced. Fail-closed.
 
-    Validates the manifest⟷code contract, runs ``mod.evaluate``, then for every produced
+    Re-screens the **input** emissions (``validate_emissions``) before ``evaluate`` sees them —
+    a defensive boundary mirroring ``GatewaySink.emit``: a hand-built emission carrying a secret
+    in ``metadata`` (now preserved through ``normalize``, ADR-0014) must not reach a mod raw.
+    Then validates the manifest⟷code contract, runs ``mod.evaluate``, and for every produced
     artifact enforces: ``output_type`` is manifest-declared; no opaque confidence score; and
     no secret/PHI/PAN in any wire-bound field (a hit HARD-rejects — a mod must never surface a
     secret it detected in cleartext). Returns the validated, screened artifacts. The runner
     writes nothing canonical — it hands advisory artifacts to its caller (operator runtime).
     """
+    validate_emissions(emissions)  # input boundary: fail-closed on secret-bearing/invalid input
     validate_manifest(manifest, mod)
     results = list(mod.evaluate(emissions))
     for emission in results:
