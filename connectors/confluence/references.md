@@ -29,12 +29,14 @@ maintained provider-docs table and refresh cadence.
   representation}}, _links: {base, webui}}`. `parse_content` flattens the XHTML `body.storage.value`
   to text (lossy `_strip_storage_html` — tag strip + entity unescape + whitespace collapse, **not a
   sanitizer**); `id` → ref; `_links.base + _links.webui` → url; `kind="page"`.
-- **Verification (DEFERRED — intentional)**: Confluence **Cloud** has **no payload-signature scheme
-  confirmable from current Atlassian docs** (Cloud webhooks are Connect/app-context). The HMAC
-  `X-Hub-Signature` (HMAC-SHA256, secret-keyed) scheme is documented for **Data Center / Server** only.
-  Per verify-before-cite, no `verify()` is built on uncertain ground; the connector is proven through
-  the poll/active parse path. A future Cloud-signature confirmation (or a DC deployment) would reuse
-  `adapter.core.webhook_security.verify_hmac_hex`.
+- **Verification (DEFERRED — corrected rationale, verified 2026-06-08)**: Confluence **Cloud**
+  webhooks DO carry a verifiable scheme, but it is **Connect-app JWT** (`Authorization: JWT <token>`,
+  **HS256** over the per-tenant install shared secret, with a `qsh` request binding) — NOT an HMAC
+  payload signature. The Data-Center/Server HMAC `X-Hub-Signature` does not transfer to Cloud. The
+  earlier "no confirmable signature scheme" claim was too strong. `verify()` stays deferred for the
+  correct reason: the JWT path needs a registered Connect app + the install-handshake shared-secret
+  store + a JWT/qsh verifier (`verify_hmac_hex` over the raw body is the wrong primitive), so it is
+  built only when an operator runs a Connect app. The connector is proven through the poll/active path.
 - **Active fetch (deferred)**: `GET /wiki/rest/api/content/{id}?expand=body.storage`; OAuth 2.0 (3LO)
   or API-token Basic; Connect-app JWT (`qsh`). No live network this cycle.
 - **Events** (when webhook lands): `page_created` / `page_updated` / `page_deleted`.
