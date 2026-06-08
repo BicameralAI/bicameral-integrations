@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bicameral.ai/schemas/connector-config.schema.json",
+  "title": "Connector config descriptor",
+  "description": "Machine-readable per-connector configuration contract consumed by the mcp UI. Holds requirements/permissions/instructions only — never secret values (secrets stay in the operator runtime via SecretResolver). Structural rules live here; the semantic rules (id==source_id, modes subset of capabilities, conditional instructions[].ref) are enforced by scripts/validate_connector_config.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "description", "category", "trust_tier", "status", "available", "modes", "credentials", "data", "instructions", "references"],
+  "properties": {
+    "id": {"type": "string", "description": "Stable connector id; equals the folder name AND the connector's source_id."},
+    "name": {"type": "string", "description": "Human display name."},
+    "description": {"type": "string", "description": "One-line summary for the UI connector card."},
+    "icon": {"type": "string", "description": "Optional icon/logo slug for the UI."},
+    "category": {"type": "string"},
+    "trust_tier": {"type": "string"},
+    "status": {"type": "string", "enum": ["scoped", "candidate", "beta", "live-ready"]},
+    "available": {"type": "boolean", "description": "Canonical 'show as available vs coming-soon' flag the UI keys off (status/live_readiness can disagree)."},
+    "modes": {"type": "array", "items": {"type": "string", "enum": ["webhook", "active", "passive"]}},
+    "credentials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "type", "label", "required", "obtain"],
+        "properties": {
+          "key": {"type": "string", "description": "The SecretResolver key (source_id, or a namespaced key for multi-credential connectors)."},
+          "type": {"type": "string", "enum": ["api_key", "oauth2", "webhook_secret", "basic"]},
+          "label": {"type": "string"},
+          "required": {"type": "boolean"},
+          "header": {"type": "string", "description": "How the credential is presented on the wire (e.g. 'Authorization (raw, no Bearer)')."},
+          "scopes": {"type": "array", "items": {"type": "string"}, "description": "OAuth2 scopes."},
+          "refresh_owner": {"type": "string", "enum": ["operator"]},
+          "wiring_oversight": {"type": "boolean", "description": "True when the credential's wiring (e.g. OAuth token exchange/refresh) needs operator oversight beyond the UI."},
+          "validation": {"type": "string", "description": "Optional regex/format hint to catch paste errors."},
+          "obtain": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["url", "steps"],
+            "properties": {
+              "url": {"type": "string"},
+              "steps": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "runtime_config": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "label", "required", "description"],
+        "properties": {
+          "key": {"type": "string"},
+          "label": {"type": "string"},
+          "required": {"type": "boolean"},
+          "default": {},
+          "description": {"type": "string"}
+        }
+      }
+    },
+    "webhook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signature_scheme", "header", "setup", "receiver"],
+      "properties": {
+        "signature_scheme": {"type": "string"},
+        "header": {"type": "string"},
+        "events": {"type": "array", "items": {"type": "string"}},
+        "setup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["steps"],
+          "properties": {
+            "url": {"type": "string", "description": "The provider's setup PAGE."},
+            "steps": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "receiver": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "label", "provisioned_by"],
+          "properties": {
+            "required": {"type": "boolean"},
+            "label": {"type": "string", "description": "The inbound URL the operator pastes INTO the provider (distinct from setup.url)."},
+            "provisioned_by": {"type": "string", "enum": ["operator"]}
+          }
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["emits", "pii_posture"],
+      "properties": {
+        "emits": {"type": "array", "items": {"type": "string"}},
+        "pii_posture": {"type": "string"},
+        "redaction": {"type": "string"}
+      }
+    },
+    "instructions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action", "text"],
+        "properties": {
+          "action": {"type": "string", "enum": ["open_url", "paste_secret", "oauth_consent", "register_webhook", "configure", "verify"]},
+          "text": {"type": "string"},
+          "link": {"type": "string"},
+          "ref": {"type": "string", "description": "Citation back to the verified auth.md/references line. REQUIRED for open_url/register_webhook/configure (enforced by the validator)."}
+        }
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "url"],
+        "properties": {"kind": {"type": "string"}, "url": {"type": "string"}}
+      }
+    },
+    "wire_gates": {"type": "array", "items": {"type": "string"}},
+    "live_readiness": {"type": "string"}
+  }
+}

@@ -1,0 +1,6 @@
+# Connector config descriptors + the generated index are byte-deterministic artifacts (FX-CFG-001):
+# pin them to LF so `build_connector_index` output matches the committed file on every OS (the
+# validator's freshness check is byte-exact). Scoped narrowly — NOT a repo-wide renormalization.
+connectors/index.json text eol=lf
+connectors/*/config.json text eol=lf
+connectors/_schema/*.json text eol=lf

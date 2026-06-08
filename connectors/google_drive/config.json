@@ -1,0 +1,71 @@
+{
+  "id": "google_drive",
+  "name": "Google Drive (Docs)",
+  "description": "Google Docs documents fetched by id (documents.get) as governed evidence.",
+  "category": "docs",
+  "trust_tier": "T1/T3",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["active"],
+  "credentials": [
+    {
+      "key": "google_drive",
+      "type": "oauth2",
+      "label": "Google OAuth access token",
+      "required": true,
+      "header": "Authorization: Bearer <access_token>",
+      "scopes": [
+        "https://www.googleapis.com/auth/documents.readonly",
+        "https://www.googleapis.com/auth/drive.readonly"
+      ],
+      "refresh_owner": "operator",
+      "wiring_oversight": true,
+      "obtain": {
+        "url": "https://developers.google.com/identity/protocols/oauth2",
+        "steps": [
+          "Register an OAuth client and grant consent for the documents.readonly / drive.readonly scopes.",
+          "The mcp UI owns the consent UX; the operator runtime stores the access token and OWNS refresh (the SecretResolver returns a valid token)."
+        ]
+      }
+    }
+  ],
+  "runtime_config": [
+    {
+      "key": "document_id",
+      "label": "Document ID",
+      "required": true,
+      "description": "The Google Doc id to fetch (validated [A-Za-z0-9_-]{1,200}; spliced into GET /v1/documents/{id})."
+    }
+  ],
+  "data": {
+    "emits": ["document"],
+    "pii_posture": "Document title + flattened body text (untrusted, possibly PII-dense). FX-SEC-001 producer screen rejects secret/PHI/PAN before emit.",
+    "redaction": "none (FX-SEC-001 screen is the backstop)"
+  },
+  "instructions": [
+    {
+      "action": "oauth_consent",
+      "text": "Connect Google and grant read-only Docs/Drive access (documents.readonly / drive.readonly). Token refresh is handled by the operator runtime.",
+      "link": "https://developers.google.com/identity/protocols/oauth2"
+    },
+    {
+      "action": "configure",
+      "text": "Provide the Google Doc id to fetch.",
+      "ref": "connectors/google_drive/auth.md (Live fetch)"
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: documents.get should return the document; its text is screened before emission."
+    }
+  ],
+  "references": [
+    {"kind": "api", "url": "https://developers.google.com/docs/api/reference/rest/v1/documents/get"},
+    {"kind": "auth", "url": "https://developers.google.com/identity/protocols/oauth2"},
+    {"kind": "drive-api", "url": "https://developers.google.com/drive/api/guides/about-sdk"}
+  ],
+  "wire_gates": [
+    "Bearer-header assumption + multi-tab docs confirmed against a live response before the Live flip. Multi-tab docs (content under tabs[].documentTab.body) emit title-only — extract_document_text walks the legacy body; includeTabsContent/tabs[] deferred.",
+    "OAuth token refresh + folder polling (Drive files.list) + push-notification webhooks are operator-runtime / deferred."
+  ],
+  "live_readiness": "Code-ready (FX-GDRIVE-002, documents.get). Operator provides a valid OAuth access token (refresh operator-owned) + a document id; then wires GatewaySink."
+}

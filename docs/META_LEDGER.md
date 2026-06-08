@@ -3339,7 +3339,92 @@ OAuth token). Independent VETO→PASS (3 BLOCKING + dict-only) + pre-seal devil'
 sweep: **437 passed** (+13 this cycle), ruff clean, mypy 153 files clean, bandit clean (doc_fetch.py = 0
 findings), governance gate verifies chain #1–#114. **Both operator-queued go-live cycles COMPLETE.** L2.
 
+### Entry #115: GATE AUDIT — connector config descriptor contract (FX-CFG-001)
+
+**Entry ID**: `cfgDescriptor115audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L2 (cross-repo contract declaring credential/permission requirements; no secret values)
+
+**Content Hash**:
+```
+SHA256(plan-connector-config-descriptors-2026-06-08.md)
+= 79de78da316d48091426ab020ccc709532cd2c9e98dd791e23b0e5f776502570
+```
+
+**Previous Hash**: 02ac2bb1807c70b33b40405add4d83a8b94f850458830c5be2bd786f7b0b825a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fb9faa0f30e4a3120b289fafc8e3f725eab1754896fc77bbc00d2016873774f4
+```
+
+**Decision**: Operator asked what UI surface serves connector config + how to isolate the required
+configs/permissions/data/instructions per connector for the mcp UI. Decision (operator-confirmed):
+this repo ships a **machine-readable data contract**; mcp **renders** it; reference-first (Linear +
+Google Drive), then fan out 24. Independent fresh-context audit **VETOed** iteration 2 with **3
+BLOCKING**: (1) wiring the connector-importing validator into `governance_gate.py` would break the
+portable cross-repo gate (the other 3 Bicameral repos have no `connectors/` package) → standalone
+`ci.yml` step instead; (2) the schema omitted the webhook **receiver** URL (what the operator pastes
+INTO the provider, distinct from the provider's setup page) — the UI can't render `register_webhook`
+without it; (3) the `modes⊆capabilities` drift-guard couldn't fail with the two exemplars (Google Drive
+declares all 3 modes) → a synthetic `modes:["discovery"]`-vs-real-`LinearConnector` test. All folded +
+5 advisories (fail-closed unknown-key rejection, required `description`/`available`, conditional
+`instructions[].ref`, importlib fail-closed, per-malformation tests). **PASS** iter 3. Pre-seal
+devil's-advocate **CHANGES-REQUIRED → addressed**: B1 — the committed `index.json` had CRLF while
+`render()` promises LF (a cross-OS determinism trap; `write_text` translates newlines) → fixed with
+`write_bytes` + a scoped `.gitattributes` LF pin + byte-exact freshness compare; advisories A3 (never-throw
+on a non-dict instruction), A4 (nested unknown-key test), A5 (wrong-scalar-type test). L2.
+
+---
+
+### Entry #116: SESSION SEAL — connector config descriptor contract (FX-CFG-001)
+
+**Entry ID**: `cfgDescriptor116seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 946d1eeb3d007f2890c86ef3b9907d9c8244ba97876ac5420ebbedd14cbf20fb
+```
+
+**Previous Hash**: fb9faa0f30e4a3120b289fafc8e3f725eab1754896fc77bbc00d2016873774f4
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5826af5d7c2bf51d90f484eded9343bca5b0340c019639c5d7e578b749e8fda9
+```
+
+**Decision**: Built the **connector config descriptor contract** — the mcp-UI data contract.
+`connectors/_schema/connector-config.schema.json` (the published JSON Schema) + per-connector
+`connectors/<id>/config.json` (identity / credentials[typed: api_key/oauth2/webhook_secret/basic, with
+scopes/refresh_owner/wiring_oversight/validation/obtain] / runtime_config / webhook[+`receiver`] / data
+[emits/pii_posture] / instructions[ordered config-on-rails, typed by action] / references / wire_gates /
+live_readiness) + a committed `connectors/index.json` (one-fetch aggregate) + `docs/UI_RENDERING_SPEC.md`
+(how mcp renders each field/action — the boundary doc). **This repo ships the contract; mcp renders it;
+NO secret values here.** `scripts/validate_connector_config.py` (standalone `ci.yml` step — `governance_gate.py`
+UNTOUCHED for cross-repo portability): fail-closed stdlib JSON-Schema-lite checker (rejects unknown keys
+at every nesting level, `mods/_manifest.py` discipline; stated subset) + code drift-guard (`id`==folder==
+`source_id`; `modes`⊆`capabilities.modes` via fail-closed `importlib`; webhook block iff webhook mode;
+`instructions[].ref` REQUIRED for open_url/register_webhook/configure — anti-fabrication) + byte-exact
+index freshness. `scripts/build_connector_index.py` (write_bytes → LF on every OS; `.gitattributes` pins
+the artifacts to LF). **Exemplars from VERIFIED docs:** Linear (api_key + webhook_secret — the
+**two-secret resolver gap surfaced as a wire_gate**, not hidden) + Google Drive (oauth2;
+`refresh_owner:operator`/`wiring_oversight:true` — UI owns consent, operator runtime owns refresh:
+the operator's "simple UX, careful wiring" concern encoded structurally). **ADR-0015**; FX-CFG-001;
+SYSTEM_STATE. The remaining 24 connectors fan out (batched, each validated on commit). Independent
+VETO→PASS (3 BLOCKING) + pre-seal devil's-advocate (B1 + 3 advisories addressed). Full sweep: **474
+passed** (+11 scripts/tests this cycle), ruff/mypy(153)/bandit clean, governance gate verifies chain
+#1–#116. L2.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/google-drive-live`) — **Google Docs documents.get fetch SEALED at Entry #114 (`02ac2bb1`; L2).** Both operator-queued go-live cycles DONE: Linear (FX-LINEAR-003, webhook + GraphQL) + Google Drive (FX-GDRIVE-002, `documents.get` single-GET). Three live-fetch shapes now exist: REST list (`poll_client`), GraphQL cursor (`graphql_poll`), single-resource GET (`doc_fetch`). The live network flips are operator-gated (Linear API key; Google OAuth token + refresh). Prior seals stand: dependency_risk mod (#110), metadata preservation (#108), mod contract (#106), connector verification COMPLETE (#104).*
-*Next required action: **resume the mod fan-out** — 12 mods remain Scoped (noisy_source_gate, security_mentions, then the planned suite) on the ADR-0013 contract + the ADR-0014 metadata input, in the dependency_risk pattern; OR (operator's call) wire more connectors Live. Admin (you): branch protection (B5); the Linear/GDrive Live flips need operator secrets. Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/connector-config-descriptors`) — **Connector config descriptor contract SEALED at Entry #116 (`5826af5d`; L2).** The mcp UI now has a machine-readable contract: per-connector `config.json` (credentials/scopes/runtime/webhook-receiver/data/instructions/references) + JSON Schema + `index.json` + `UI_RENDERING_SPEC.md`, CI-validated (fail-closed + code-drift-guarded + byte-fresh). Reference exemplars: Linear + Google Drive. This repo ships the contract; mcp renders it; no secrets here. Prior seals stand: Linear/GDrive go-live (#112/#114), dependency_risk (#110), metadata (#108), mod contract (#106).*
+*Next required action: **fan out the remaining 24 connector `config.json` descriptors** (batched governed cycles, each validated on commit) so the mcp UI can render the full catalog; AND/OR resume the **mod fan-out** (12 Scoped mods on the ADR-0013/0014 contract). Operator: the Linear/GDrive Live flips + multi-secret resolver namespacing (the surfaced wire_gate) are runtime cycles needing operator secrets/decision. Admin: branch protection (B5). Open: bot #73 (release signing).*
