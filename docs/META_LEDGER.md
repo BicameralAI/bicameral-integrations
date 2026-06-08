@@ -2944,7 +2944,87 @@ spot-check; the one connector whose scheme is not doc-confirmed), claude_code (o
 line-schema). **`mods/` untouched.** pytest **406 passed** (unchanged — doc-only), governance gate
 verifies chain #1–#104. **VERIFICATION CAMPAIGN COMPLETE: all 26 connectors doc-verified-and-correct.**
 
+### Entry #105: GATE AUDIT — mod execution contract (ADR-0013)
+
+**Entry ID**: `modContract105audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent pre-impl audit + pre-seal devil's-advocate)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(plan-mod-execution-contract-2026-06-08.md)
+= 4967473f8a787cfe8197b14a7e69103aa0c376580e202c147309775a745c7aae
+```
+
+**Previous Hash**: a81a4fd4b63148bbc6fcfdc9023c5996ce1e300cbabe9a1307db0d2b48d22e05
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 0f893947714d8cd907099dfb02516655b62a92b349d235ed59ec2b41329f6f9d
+```
+
+**Decision**: Independent pre-impl audit **VETOed** the iteration-1 plan with **6 BLOCKING** findings —
+(1) `ModEmission` union dropped `owner_lens_hint`/`suggested_review_question`; (2) `output_type` not
+bound to artifact type; (3) `_EM_SAFE_FORBIDDEN` only 4 of 7 actions + manifests inconsistent +
+`metadata:Any` opaque-score escape; (4) no all-13-manifest representability test; (5) `id`/`version`
+unchecked; (6) **FX-SEC-001 not applied to mod outputs** (a security mod could surface a secret). All 6
+folded into iteration 2 and implemented. The **pre-seal devil's-advocate** then found 2 further
+BLOCKING Reality≠Promise gaps in the *implementation*: (A) the FX-SEC-001 screen missed
+`AdvisoryResult.evidence_ids` and non-top-level metadata (a nested secret could escape); (B) the
+opaque-score check matched only the literal keys `confidence`/`score`, so `confidence_score`/
+`risk_score`/nested scores passed — while the ADR claimed the hatch was "closed." Both fixed:
+`_wire_text` now screens `evidence_ids` + recursively-flattened metadata; `_reject_opaque_score` now
+substring-matches `confidence`/`score`/`probability`/`likelihood` with ancestor-key taint across nested
+metadata; the ADR claim was rewritten honestly (structural absence of a score *field* is the guarantee,
+the key lint is defence-in-depth). Both regression-locked (6 new tests). **PASS** after fixes. L1.
+
+---
+
+### Entry #106: SESSION SEAL — mod execution contract (ADR-0013); FX-MOD-001
+
+**Entry ID**: `modContract106seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 9c55692418ddf70e3d01bc9c4721ed57700bfd71d1c1458be1f298973ad426fd
+```
+
+**Previous Hash**: 0f893947714d8cd907099dfb02516655b62a92b349d235ed59ec2b41329f6f9d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= d13ad161273b7937c3b0dada8cead4df8f83b3adf8bddcced111c1f17d4f1ca2
+```
+
+**Decision**: Built the **mod execution contract** — the foundation all 13 EM-safe mods will run
+through (greenfield: no `Mod` interface or runner existed). `mods/contract.py` (233 L): `Mod` protocol
+(`id`/`version`/`outputs`/`evaluate`), `ModEmission` (frozen; `__post_init__` binds `output_type`↔
+artifact — only `routing_hint`→`RoutingHint`, the other 5 kinds→`AdvisoryResult` by `kind`), and
+`run_mod` — the single EM-safe chokepoint. EM-safe **by construction**: write-canonical/approve/
+resolve/block are non-representable (return-only API), mutate-evidence impossible (frozen
+`AdapterEmission`/`SourceEvidence`). `run_mod` enforces the rest at runtime: outputs allowlist,
+`id`/`version`/`outputs` mirror `manifest.yaml`, no opaque numeric score (dimensional
+`ConfidenceSurface` only), and the **FX-SEC-001 `detect_sensitive` screen over every wire-bound
+mod-output field** (message + evidence_ids + recursively-flattened metadata + routing reason/role).
+`mods/_manifest.py` (96 L): stdlib YAML-subset loader (no PyYAML; CRLF/BOM-tolerant, str-version,
+fail-closed on nesting/tabs/dup-keys/unknown-keys/empty-forbidden). All 13 `manifest.yaml` normalized
+to the 7-action ADR-0007 baseline. **ADR-0013** accepted; **FX-MOD-001** added (test_path
+`mods/tests/test_contract.py`, 18 tests). CI scope extended to `mods` (ruff/mypy/pytest + bandit).
+`mods/` ownership transferred to this track (PR #76 scaffolds adopted; Codex half-landed). No mod logic
+yet — **dependency_risk** is the first to get logic (next cycle), then fan out, then go-live one at a
+time. Full sweep: **398 passed**, ruff clean, mypy 145 files clean, bandit clean, governance gate
+verifies chain #1–#106. `mods/*/manifest.yaml` content preserved (not clobbered). L1.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `docs/connector-verification-corrections`) — **Connector verification campaign COMPLETE at Entry #104 (`a81a4fd4`; L1).** All 26 connectors are doc-verified-and-correct against authoritative provider docs: Phase-1 verified (PR #71), 7 code-drift connectors fixed (Cycles 1–3, PRs #72/#73/#74), doc-only corrections + pre-Live notes landed (Cycle 4). mcp_registry graduated Candidate→Beta. The connector **code** baseline matches the verified provider contracts; remaining go-live items are operator-runtime (live network + the per-connector pre-Live tests/spot-checks noted in each `auth.md`).*
-*Next required action: **Phase 2 (mod reference docs + architectural groundwork)** — GATED on Codex committing/landing its in-flight `mods/` work (reconcile-first; never clobber). Optional now: take a connector to Live (operator wires `GatewaySink` + `poll`/`deliver_webhook`); confirm the 3 pre-Live notes (sentry/pagerduty/claude_code). Admin (you): branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/mod-execution-contract`) — **Mod execution contract SEALED at Entry #106 (`d13ad161`; L1).** ADR-0013 runner (`mods/contract.py` + `_manifest.py`) is the manifest-enforced, EM-safe, FX-SEC-001-screened chokepoint all mods pass; 13 manifests normalized; FX-MOD-001 verified (18 tests). `mods/` is owned by this track. Connector verification campaign remains COMPLETE (all 26 doc-verified, Entry #104).*
+*Next required action: **build `dependency_risk` as the reference mod** (next governed cycle: research → plan → audit → implement its `evaluate` logic on this contract), then fan out the remaining 12 mods in the same fashion, then bring mods live one at a time. Optional now: take a connector to Live (operator wires `GatewaySink` + `poll`/`deliver_webhook`); confirm the 3 pre-Live notes (sentry/pagerduty/claude_code). Admin (you): branch protection (B5). Open: bot #73 (release signing).*
