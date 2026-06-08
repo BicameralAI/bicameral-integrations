@@ -36,7 +36,7 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [sarif](sarif/) | **Beta** | passive | `parse_sarif` / `parse_result` | — |
 | [slack](slack/) | **Beta** | webhook | `parse_message` | ✓ (v0 + 5m replay) |
 | [notion](notion/) | **Beta** | active, webhook | `parse_page` | ✓ (HMAC, `sha256=`) |
-| [mcp_registry](mcp_registry/) | **Beta** | active | `parse_server` | — |
+| [mcp_registry](mcp_registry/) | **Beta** | active | `parse_server` | — (poll; **live-poll client built** — public no-auth `GET /v0/servers`, cursor-paginated) |
 | [continue_dev](continue_dev/) | **Beta** | passive | `parse_event` | — |
 | [aider](aider/) | **Beta** | passive | `parse_commit` | — |
 | [claude_code](claude_code/) | **Beta** | passive | `parse_session_line` | n/a (local file) |

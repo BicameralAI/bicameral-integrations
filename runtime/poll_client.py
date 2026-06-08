@@ -52,26 +52,40 @@ class HttpTransport(Protocol):
     ) -> HttpResponse: ...
 
 
+def _dig(obj: object, dotted: str) -> object:
+    """Walk a dotted key path through nested dicts (`"metadata.nextCursor"`); ``None`` if
+    any segment is missing or non-dict. A single segment (`"next_page"`) is a plain lookup."""
+    cur = obj
+    for seg in dotted.split("."):
+        if not isinstance(cur, dict):
+            return None
+        cur = cur.get(seg)
+    return cur
+
+
 @dataclass(frozen=True)
 class PageToken:
-    """Token pagination: response carries ``has_more_field`` (bool) + ``token_field``
-    (a continuation token), re-sent as query param ``next_param``. The param NAME +
-    transport may be UNVERIFIED — see the connector's ``auth.md`` (A2). The
-    provider token is untrusted: rejected on control chars, then URL-encoded.
+    """Token / cursor pagination: the response carries a continuation token at
+    ``token_field`` (a dotted path is allowed, e.g. ``metadata.nextCursor``), re-sent as
+    query param ``next_param``. ``has_more_field`` gates advance when set (string path);
+    when **``None``** there is no boolean has-more and advance stops purely on an
+    absent/empty token (e.g. the MCP Registry). The param NAME/transport may be UNVERIFIED
+    for some providers — see the connector's ``auth.md``. The provider token is untrusted:
+    rejected on control chars, then URL-encoded.
     """
 
     next_param: str
     token_field: str = "next_page"
-    has_more_field: str = "has_more"
+    has_more_field: str | None = "has_more"
 
     def next_url(self, current_url: str, page: object, item_count: int) -> str | None:
-        if not isinstance(page, dict):  # a list/array page can't carry has_more
+        if not isinstance(page, dict):  # a list/array page can't carry a token
             return None
-        if not page.get(self.has_more_field):
+        if self.has_more_field is not None and not _dig(page, self.has_more_field):
             return None
-        token = page.get(self.token_field)
+        token = _dig(page, self.token_field)
         if not isinstance(token, str) or not token:
-            return None  # has_more true but no usable token → stop closed, never loop
+            return None  # no usable token → stop closed, never loop
         _reject_control_chars("page_token", token)
         return _with_query_param(current_url, self.next_param, token)
 

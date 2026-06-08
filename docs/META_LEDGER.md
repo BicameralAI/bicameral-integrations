@@ -2804,6 +2804,79 @@ docstring still claimed `name`) → fixed. **`mods/` untouched.** pytest **401 p
 anthropic/copilot/cursor/continue_dev FX MODIFIED.
 
 ---
+
+### Entry #101: GATE AUDIT — graduate mcp_registry Candidate→Beta (PASS)
+
+**Entry ID**: `mcpGrad101audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit / pre-seal review)
+**Author**: Judge (devil's-advocate review)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(plan-mcp-registry-graduation-2026-06-08.md)
+= 02cf68668565de832763a91898fff45a3829bf3be250cb0836936e808630d383
+```
+
+**Previous Hash**: f3e8708f793d2936af10c974bbf3e8ddf28f73b5a94a517611d828d3fd62390f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ee3c29e6913d99f40a40a51c6705b1e0ede2bc7d87a14bce31cb67ed60d81a35
+```
+
+**Decision**: Before wiring, a targeted re-verify parsed the official OpenAPI
+(registry.modelcontextprotocol.io/openapi.yaml) to PIN the two details Batch-3 left tentative —
+top-level key `servers`, per-entry `element.server`, request `cursor`, response `metadata.nextCursor`
+(camelCase, nested, no has-more), public no-auth — rather than invent them (verify-before-cite). The
+pre-seal devil's-advocate review returned **CHANGES-REQUIRED** (2 BLOCKING): the runtime wiring +
+auth.md + references.md were correct, but the **class docstring + the connector README still published
+the OLD "deferred/Candidate" contract** — the recurring stale-doc failure mode. Both fixed; + 2
+advisories landed (`parse_server` guards a non-dict `repository`; a malformed-`servers`-entry test
+locks the unwrap tolerance). Re-review clean → PASS. Backward-compat of the `PageToken` change
+(dotted `_dig` + optional `has_more_field`) verified against all four existing consumers.
+
+---
+
+### Entry #102: SESSION SEAL — mcp_registry graduated Candidate→Beta (Fix Cycle 3)
+
+**Entry ID**: `mcpGrad102seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 63a908b9330645c52e72af178353ec4b42659290d31810e7c70e1bf875ea67a5
+```
+
+**Previous Hash**: ee3c29e6913d99f40a40a51c6705b1e0ede2bc7d87a14bce31cb67ed60d81a35
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 8b6e5e64cb3ae40d1b4f017048cc7d99fac4125cb0373bb0470d60121cc1d72f
+```
+
+**Decision**: Graduated **mcp_registry Candidate → Beta** against the re-verified public OpenAPI
+contract. Harness gained **`NoAuth`** (public, unauthenticated reads — real consumer) and a
+**generalized `PageToken`** (dotted `token_field` via a new `_dig`; `has_more_field: str | None` —
+`None` stops purely on an absent token, for cursor APIs with no boolean has-more). Backward-compatible
+for all four existing token pagers (single-segment `_dig` == old `.get`; string `has_more_field`
+preserves the gate). `build_mcp_registry_spec`: public `GET /v0/servers` via `NoAuth`; unwraps
+`element.server` from the `servers` list; `PageToken(next_param="cursor",
+token_field="metadata.nextCursor", has_more_field=None)`. Connector docstring/auth.md/references.md/
+README reconciled Candidate→Beta + the verified contract; `parse_server` hardened against a non-dict
+`repository`. **Process**: targeted OpenAPI re-verify (no invented details); pre-seal devil's-advocate
+CHANGES-REQUIRED (stale class docstring + README) → fixed. **`mods/` untouched.** pytest **406 passed**
+(+6), ruff + **whole-tree mypy** clean, governance gate verifies chain #1–#102. FX-RUNTIME-003 +
+mcp_registry FX MODIFIED. **All 7 code-drift connectors are now fixed.**
+
+---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `fix/connector-drift-cycle2`) — **Fix Cycle 2 sealed at Entry #100 (`f3e8708f`; L2): the 4 milder drifts (anthropic_admin/copilot/cursor/continue_dev) are corrected.** Of the 7 code-drift connectors, 6 are now fixed (Cycles 1+2); remaining: **mcp_registry graduation** (Candidate→Beta: unwrap `item["server"]` envelope + cursor pagination + public-read auth). Then the **doc-only corrections** (confluence JWT-deferral / google_drive scope / fathom-Svix / notion / sarif) + the pre-Live notes (sentry integration test, pagerduty browser spot-check, claude_code observed-schema). Phase-1 verification complete (PR #71).*
-*Next required action: Fix Cycle 3 — mcp_registry graduation; then the doc-only correction pass. Phase 2 (mod groundwork) remains GATED on Codex committing `mods/`. Admin (you): branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/mcp-registry-graduation`) — **Fix Cycle 3 sealed at Entry #102 (`8b6e5e64`; L2): mcp_registry graduated Candidate→Beta. ALL 7 code-drift connectors from the verification campaign are now fixed.** The connector code baseline matches the verified provider contracts. Remaining program items are **doc-only corrections** (confluence JWT-deferral reason / google_drive scope / fathom-Svix attribution / notion prefix-note / sarif level) + **pre-Live notes** (sentry raw-body integration test, pagerduty browser sig spot-check, claude_code observed-schema) — none change connector code. Phase-1 verification complete (PR #71).*
+*Next required action: the doc-only correction pass (confluence/google_drive/fathom/notion/sarif) + pre-Live notes; then the connector baseline is fully verified-and-correct. Phase 2 (mod groundwork) remains GATED on Codex committing `mods/`. Admin (you): branch protection (B5). Open: bot #73 (release signing).*

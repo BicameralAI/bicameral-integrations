@@ -1,0 +1,15 @@
+{
+  "servers": [
+    {
+      "server": {
+        "name": "io.github.example/sqlite",
+        "title": "SQLite MCP",
+        "description": "Query a local SQLite database over MCP.",
+        "version": "0.4.1",
+        "repository": { "url": "https://github.com/example/sqlite-mcp", "source": "github" }
+      },
+      "_meta": { "io.modelcontextprotocol.registry/official": { "isLatest": true } }
+    }
+  ],
+  "metadata": { "count": 1, "nextCursor": null }
+}

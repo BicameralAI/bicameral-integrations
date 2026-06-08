@@ -17,18 +17,21 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 
 | Kind | Link |
 |---|---|
-| API | https://github.com/modelcontextprotocol/registry |
-| Webhook/event | Registry metadata + repo updates |
-| Auth | GitHub/auth model depending on usage |
+| API (OpenAPI) | https://registry.modelcontextprotocol.io/openapi.yaml |
+| API (reference) | https://github.com/modelcontextprotocol/registry (docs/reference/api, server-json) |
+| Webhook/event | none (poll only) |
+| Auth | **public — no auth on reads** (`GET /v0/servers`); auth only on publish/POST |
 | Changelog/notes | https://github.com/modelcontextprotocol/registry/releases |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+## Verified API contract (doc-confirmed 2026-06-08, registry.modelcontextprotocol.io/openapi.yaml)
 
-- **Server entry (parsed)**: `parse_server` reads `{name, title, description, repository.{url, source}, websiteUrl, version}`; ref is `name` or `title`; excerpt is `description` falling back to `title`/`name`; metadata carries `version` and `repository_source`.
-- **Verification**: no verify — active poll/import; no webhook delivery, no signature.
-- **Auth (deferred)**: GitHub/auth model depending on usage; live registry fetch deferred. No live network this cycle.
+- **Endpoint**: public `GET /v0/servers` (also `/v0.1/servers`, the docs-canonical current path); no auth on reads. Cursor pagination — request `cursor` (+ optional `limit`, default 30/max 100); response token `metadata.nextCursor` (no has-more; stop on absent).
+- **Envelope**: list under top-level `servers`; each entry is `{server: {ServerJSON}, _meta}`. The runtime spec unwraps `element.server` before `parse_server`.
+- **Server entry (parsed)**: `parse_server` reads `{name, title, description, repository.{url, source}, websiteUrl, version}` from `element.server`; ref is `name` or `title`; excerpt is `description` falling back to `title`/`name`; metadata carries `version` and `repository_source`. (Registry status lives under `element._meta`; not surfaced this cycle.)
+- **Verification**: no verify — public poll; no webhook delivery, no signature.
 - **Modes**: active only (read-only scoring/allowlist); no webhooks.
 - **PII handling**: server metadata (name, description, repo URL) emitted; no user PII in the registry schema.
+- **Drift corrected (was 2026-06-05)**: prior docs said "GitHub/auth depending on usage" + "live fetch deferred / Candidate" — the registry now has a defined public contract (graduated to Beta with the verified live list path).
 
 ## Canonical governance references
 

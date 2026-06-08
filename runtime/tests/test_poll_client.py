@@ -23,9 +23,10 @@ from connectors.copilot.connector import CopilotConnector
 from connectors.devin.connector import DevinConnector
 from connectors.granola.connector import GranolaConnector
 from connectors.cursor.connector import CursorConnector
+from connectors.mcp_registry.connector import McpRegistryConnector
 from connectors.openai_admin.connector import OpenAIAdminConnector
 from connectors.servicenow.connector import ServiceNowConnector
-from runtime.poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, PollError
+from runtime.poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, NoAuth, PollError
 from runtime.poll_client import (
     HttpResponse,
     _read_capped,
@@ -37,6 +38,7 @@ from runtime.poll_specs import (
     build_cursor_spec,
     build_devin_spec,
     build_granola_spec,
+    build_mcp_registry_spec,
     build_openai_admin_spec,
     build_servicenow_spec,
 )
@@ -443,3 +445,59 @@ def test_blank_secret_fails_closed_basic() -> None:
     with pytest.raises(PollError) as e2:
         build_servicenow_spec(empty, instance="x", username="u")
     assert e2.value.reason == "secret_unresolved:servicenow"
+
+
+# --- mcp_registry graduation: public no-auth list + nested-cursor pagination ------
+
+def test_no_auth_sends_no_credential_header() -> None:
+    assert NoAuth().headers() == {}
+    assert NoAuth(extra={"Accept": "application/json"}).headers() == {"Accept": "application/json"}
+
+
+def test_mcp_registry_no_auth_and_server_unwrap() -> None:
+    # single page (nextCursor null) → one request; NoAuth → no Authorization header;
+    # the `server` envelope is unwrapped so parse_server reads name/description.
+    transport = RecordedTransport([_resp("mcp_registry_servers_page2.json")])
+    sink = CollectingSink()
+    count = poll(McpRegistryConnector(), build_mcp_registry_spec(), transport=transport, sink=sink)
+    assert count == 1
+    assert len(transport.requests) == 1
+    assert "Authorization" not in transport.requests[0][2]  # public, no auth
+    e = sink.emissions[0]
+    assert e.title == "SQLite MCP"  # from servers[i].server.title
+    assert "SQLite database" in e.body  # servers[i].server.description (unwrapped)
+
+
+def test_mcp_registry_nested_cursor_pagination() -> None:
+    # nested token metadata.nextCursor + no has_more: advance on token present, stop on null.
+    transport = RecordedTransport([_resp("mcp_registry_servers_page1.json"),
+                                   _resp("mcp_registry_servers_page2.json")])
+    count = poll(McpRegistryConnector(), build_mcp_registry_spec(),
+                 transport=transport, sink=CollectingSink())
+    assert count == 2
+    q2 = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(transport.requests[1][1]).query))
+    assert q2.get("cursor") == "cur2"  # nested metadata.nextCursor re-sent as ?cursor=
+    assert len(transport.requests) == 2  # page2 nextCursor null → stop
+
+
+def test_mcp_registry_wrong_envelope_key_emits_zero() -> None:
+    # a {data:[...]} body (wrong top-level key) yields 0 — the `servers` key is verified.
+    transport = RecordedTransport([_json_resp({"data": [{"server": {"name": "x"}}]})])
+    assert poll(McpRegistryConnector(), build_mcp_registry_spec(),
+                transport=transport, sink=CollectingSink()) == 0
+
+
+def test_mcp_registry_unwrap_tolerates_malformed_entries() -> None:
+    # the `element.server` unwrap skips non-dict elements + missing/non-dict `server`,
+    # and parse_server tolerates a non-dict `repository` — only the one good entry emits.
+    body = {"servers": [
+        "notadict",
+        {"no_server": 1},
+        {"server": "notadict"},
+        {"server": {"name": "ok", "repository": "oops"}},
+    ]}
+    sink = CollectingSink()
+    count = poll(McpRegistryConnector(), build_mcp_registry_spec(),
+                 transport=RecordedTransport([_json_resp(body)]), sink=sink)
+    assert count == 1
+    assert sink.emissions[0].title == "ok"

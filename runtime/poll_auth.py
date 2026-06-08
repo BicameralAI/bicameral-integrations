@@ -88,3 +88,16 @@ class BasicAuth:
 
     def headers(self) -> dict[str, str]:
         return dict(self._headers)
+
+
+class NoAuth:
+    """No-auth strategy for public, unauthenticated reads (e.g. the MCP Registry list,
+    OSV). Sends no credential header. Optional ``extra`` headers (CR/LF-screened)."""
+
+    def __init__(self, *, extra: dict[str, str] | None = None) -> None:
+        self._headers = dict(extra or {})
+        for key, val in self._headers.items():
+            _reject_control_chars(f"auth_header:{key}", val)
+
+    def headers(self) -> dict[str, str]:
+        return dict(self._headers)

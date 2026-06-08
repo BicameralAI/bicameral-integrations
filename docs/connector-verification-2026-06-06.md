@@ -64,7 +64,7 @@ Status legend: ☐ pending · ✅ confirmed · ⚠ drift (fix needed) · ◑ doc
 4. **copilot** — **✅ FIXED (Fix Cycle 2)**: `page`/`per_page` pagination wired via new `PageNumberPager` (100-day lookback, stop-on-short-page); api-version noted valid-but-not-latest.
 5. **cursor** — **✅ FIXED (Fix Cycle 2, doc)**: dropped `name` from row docs (verified absent on this endpoint); host/body/`data` envelope confirmed; pagination **deferred-with-reason** (page/pageSize transport query-vs-body unverified — not invented).
 6. **continue_dev** — **✅ FIXED (Fix Cycle 2)**: reads `eventName` (legacy `name` fallback) + `modelName`; ref floors to `eventName:timestamp` (no event-id).
-7. **mcp_registry** — unwrap `item["server"]` envelope + cursor pagination; flip auth string to public-read; reconcile Candidate→Beta. *(Fix Cycle 3)*
+7. **mcp_registry** — **✅ FIXED / GRADUATED (Fix Cycle 3, 2026-06-08)**: re-verified the exact OpenAPI contract (top-level `servers`, per-entry `element.server`, request `cursor`, response `metadata.nextCursor`, public no-auth); wired `build_mcp_registry_spec` with new `NoAuth` + nested-path `PageToken` (`has_more_field=None`); Candidate→**Beta**. **All 7 code-drift connectors now fixed.**
 
 **Doc-only corrections (no code):** confluence (JWT deferral reason), google_drive (scope `drive.readonly`/`drive.file`), fathom (Svix-attribution + window note), sarif (add `level` to contract line), notion (prefix-from-examples note).
 

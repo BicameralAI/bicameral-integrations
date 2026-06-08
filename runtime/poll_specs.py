@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 
-from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, PollError
+from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, NoAuth, PollError
 from .poll_client import OffsetPager, PageNumberPager, PageToken, PollSpec
 from .secrets import SecretResolver
 
@@ -197,3 +197,25 @@ def build_servicenow_spec(
 def _with_fields(base: str, fields: str) -> str:
     """Append ``sysparm_fields`` to the base URL (string-built so no import churn)."""
     return f"{base}&sysparm_fields={fields}"
+
+
+# --- mcp_registry (public registry server list; no auth) --------------------------
+# verified registry.modelcontextprotocol.io/openapi.yaml 2026-06-08: public no-auth
+# `GET /v0/servers`; list under `servers`; each entry wraps the server under `server`;
+# cursor pagination — request `cursor`, response token `metadata.nextCursor` (no has_more).
+_MCP_BASE = "https://registry.modelcontextprotocol.io/v0/servers"
+
+
+def build_mcp_registry_spec(*, base_url: str = _MCP_BASE) -> PollSpec:
+    """mcp_registry: PUBLIC (no auth) list of MCP servers; unwraps the `server` envelope;
+    cursor pagination via the nested `metadata.nextCursor` (no resolver — reads are public)."""
+    return PollSpec(
+        base_url=base_url,
+        auth=NoAuth(),
+        items=lambda page: [
+            e["server"]
+            for e in page.get("servers", [])
+            if isinstance(e, dict) and isinstance(e.get("server"), dict)
+        ],
+        pagination=PageToken(next_param="cursor", token_field="metadata.nextCursor", has_more_field=None),
+    )
