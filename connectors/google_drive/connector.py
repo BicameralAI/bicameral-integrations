@@ -2,9 +2,11 @@
 
 Provider-specific knowledge lives here: the Docs/Drive URL grammar and the
 structured-document body walk. Normalization into an AdapterEmission is the
-universal adapter's job (ADR-0004). The live ``documents.get`` HTTP path and
-OAuth credential resolution are deferred (no live API this cycle); this
-connector provides the provider-neutral parse surface the active path shares.
+universal adapter's job (ADR-0004). The live ``documents.get`` fetch is built this
+cycle in ``runtime.doc_fetch`` (driven by ``poll_specs.build_google_drive_spec``) —
+this connector stays a **pure parse surface** (it does not itself call the network).
+OAuth token refresh, folder polling (Drive ``files.list``), and push-notification
+webhooks remain operator-runtime / deferred.
 """
 
 from __future__ import annotations

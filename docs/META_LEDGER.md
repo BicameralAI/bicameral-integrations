@@ -3258,7 +3258,88 @@ operator's API key). Independent VETO→PASS (3 BLOCKING) + pre-seal devil's-adv
 findings; the 5 pre-existing runtime Mediums are B106/B107 false-positives on pagination field NAMES),
 governance gate verifies chain #1–#112. L2.
 
+### Entry #113: GATE AUDIT — Google Docs documents.get live-fetch path (FX-GDRIVE-002)
+
+**Entry ID**: `gdriveDoc113audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L2 (operator-runtime fetch; outward network + OAuth token)
+
+**Content Hash**:
+```
+SHA256(plan-google-drive-live-2026-06-08.md)
+= a2debbf666a2ac634ac03f2ac3560b10aa6d44652a58681b49549d8314459a42
+```
+
+**Previous Hash**: 929859fada99b463109342fe6a0ad1308266898165e0f42d1239932473fdd94d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= cda001ccb72db6e52c52d8bcc71e644281037538362e3d5d616935c442bd3b76
+```
+
+**Decision**: Second operator-queued go-live cycle. Research verified `documents.get` against
+developers.google.com/docs/api: a **single-resource GET by id** (`GET .../v1/documents/{documentId}`,
+`Authorization: Bearer`), neither paginated (poll_client) nor GraphQL (graphql_poll) — a third fetch
+shape → new `runtime/doc_fetch.py`. Independent fresh-context audit **VETOed** iteration 2 with **3
+BLOCKING**: (1) the `document_id` guard must be **`re.fullmatch`** (fully anchored) — a half-anchored
+`re.match` admits `x/../y`/`x?a=b`/`x@evil.com`/`x\r\n` on a valid prefix → path/URL/host injection;
+(2) the injection test must be **parametrized** over those valid-prefix vectors (the easy `../foo` case
+masks the bug); (3) the oversized-body test must drive a `RecordedTransport` over the local
+`_MAX_RESPONSE` (proving `fetch_document` caps itself — the graphql_poll lesson). Plus ADVISORY-4
+(treated as required): **dict-ONLY** decode (reject list/scalar), since `parse_document` is
+non-self-guarding and this is its sole guard. All folded. **PASS** on iteration 3. Pre-seal
+devil's-advocate **PASS** (Reality==Promise; 4 advisory, 2 applied: `null`-body test case +
+id-length-divergence comment). L2.
+
+---
+
+### Entry #114: SESSION SEAL — Google Docs documents.get live-fetch path (FX-GDRIVE-002)
+
+**Entry ID**: `gdriveDoc114seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= eba83126dee8e281bdac96956537eebcf76e6497824db9e97fee627a371389b2
+```
+
+**Previous Hash**: cda001ccb72db6e52c52d8bcc71e644281037538362e3d5d616935c442bd3b76
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 02ac2bb1807c70b33b40405add4d83a8b94f850458830c5be2bd786f7b0b825a
+```
+
+**Decision**: Built Google Drive's ACTIVE `documents.get` live-fetch — the deferred half of its go-live
+(the parse surface was already shipped). `runtime/doc_fetch.py` (73 L): `DocFetchSpec` +
+`fetch_document(spec, transport, sink)` — the **single-resource GET** fetch shape (a third module beside
+REST `poll_client` and GraphQL `graphql_poll`: one GET → one Document → one Observation, no pagination).
+`poll_specs.build_google_drive_spec(resolver, document_id=...)` wires it: `BearerAuth` (operator-refreshed
+token) + the `document_id` **`re.fullmatch`-validated** (`[A-Za-z0-9_-]{1,200}`) BEFORE the URL splice
+(path/URL-injection guard — fail-closed `bad_document_id`, no secret resolved, no request). `fetch_document`
+fail-closes on every untrusted edge: status ≠ 200, explicit local `_MAX_RESPONSE` body cap (the
+RecordedTransport doesn't cap), unparseable, and **dict-ONLY** (rejects a list/scalar/null 200 — the sole
+guard since `parse_document` is non-self-guarding). **FX-SEC-001** via the real `pipeline.normalize` — a
+secret in the (untrusted, PII-dense) doc text is HARD-rejected before `sink.emit` (no partial —
+regression-locked); the token never appears in a `PollError`. **OAuth boundary:** the `SecretResolver`
+returns a valid access token; the grant + refresh stay operator-runtime (our code only sets the Bearer
+header). Corrected the stale "deferred" docstring (connector stays a pure parse surface — ADR-0004).
+**FX-GDRIVE-002** added; auth.md/references updated with the doc-verified contract + the wire-gate
+(multi-tab → title-only); SYSTEM_STATE runtime tree updated. HTTP boundary operator-run (recorded
+transport proves the path; a mock does NOT promote to Live — ADR-0012; the flip needs the operator's
+OAuth token). Independent VETO→PASS (3 BLOCKING + dict-only) + pre-seal devil's-advocate PASS. Full
+sweep: **437 passed** (+13 this cycle), ruff clean, mypy 153 files clean, bandit clean (doc_fetch.py = 0
+findings), governance gate verifies chain #1–#114. **Both operator-queued go-live cycles COMPLETE.** L2.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/linear-graphql-live`) — **Linear GraphQL active-fetch SEALED at Entry #112 (`929859fa`; L2).** Linear is now Live-ready on BOTH paths: webhook (FX-LINEAR-002, Beta-proven) + ACTIVE GraphQL fetch (FX-LINEAR-003, new `runtime/graphql_poll.py`). The live network flip is operator-gated (needs the Linear API key + GatewaySink wiring). Prior seals stand: dependency_risk mod (#110), metadata preservation (#108), mod contract (#106).*
-*Next required action (operator-queued): **Google Drive go-live** — the second queued connector; DEFERRED from poll (doesn't fit page-list), so code the **OAuth + `documents.get`** fetch path (scope `drive.readonly`/`drive.file`), research-first, harness-proven. Then resume the mod fan-out (12 remaining: noisy_source_gate/security_mentions/… on the ADR-0013 contract). Admin (you): branch protection (B5). Open: bot #73 (release signing). The Linear/GDrive live flips need operator secrets.*
+*Status: `main` (cycle on `feat/google-drive-live`) — **Google Docs documents.get fetch SEALED at Entry #114 (`02ac2bb1`; L2).** Both operator-queued go-live cycles DONE: Linear (FX-LINEAR-003, webhook + GraphQL) + Google Drive (FX-GDRIVE-002, `documents.get` single-GET). Three live-fetch shapes now exist: REST list (`poll_client`), GraphQL cursor (`graphql_poll`), single-resource GET (`doc_fetch`). The live network flips are operator-gated (Linear API key; Google OAuth token + refresh). Prior seals stand: dependency_risk mod (#110), metadata preservation (#108), mod contract (#106), connector verification COMPLETE (#104).*
+*Next required action: **resume the mod fan-out** — 12 mods remain Scoped (noisy_source_gate, security_mentions, then the planned suite) on the ADR-0013 contract + the ADR-0014 metadata input, in the dependency_risk pattern; OR (operator's call) wire more connectors Live. Admin (you): branch protection (B5); the Linear/GDrive Live flips need operator secrets. Open: bot #73 (release signing).*

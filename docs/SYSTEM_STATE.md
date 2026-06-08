@@ -47,6 +47,8 @@ bicameral-integrations/
 |              wiring (anthropic/openai/copilot/devin/granola/cursor/servicenow);
 |              graphql_poll.py = the GraphQL fetch counterpart (FX-LINEAR-003: cursor-in-body,
 |              200-with-errors + 400-RATELIMITED fail-closed, FX-SEC-001 via normalize) — Linear;
+|              doc_fetch.py = the single-resource GET fetch (FX-GDRIVE-002: documents.get by id,
+|              fullmatch id-guard, dict-only, FX-SEC-001 via normalize) — google_drive;
 |              library-only, stdlib urllib)
 |-- mods/  (EM-safe advisory mods, OWNED by this track since 2026-06-08; contract.py/_manifest.py =
 |           the ADR-0013 execution contract: Mod protocol + ModEmission + manifest-enforced run_mod
