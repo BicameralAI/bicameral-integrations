@@ -46,7 +46,9 @@ bicameral-integrations/
 |              GET + POST body), poll_auth (ApiKeyHeader/Bearer/Basic), poll_specs per-connector
 |              wiring (anthropic/openai/copilot/devin/granola/cursor/servicenow);
 |              library-only, stdlib urllib)
-|-- mods/  (structure under active build by Codex — not edited by this track)
+|-- mods/  (EM-safe advisory mods, OWNED by this track since 2026-06-08; 13 mods Scoped
+|           + contract.py/_manifest.py = the ADR-0013 execution contract: Mod protocol +
+|           ModEmission + manifest-enforced run_mod (EM-safe + FX-SEC-001-screened); no mod logic yet)
 |-- scripts/  (governance_gate.py + check_license_headers.py + tests/)
 |-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME, SYSTEM_STATE,
 |          GOVERNANCE_INDEX, BACKLOG, FEATURE_INDEX, adr/, compliance/, ecosystem/, research-brief-*)
@@ -182,7 +184,7 @@ bicameral-integrations/
 - [x] **Beta graduation (Entry #68): every connector earned Beta** — 18 Beta / 0 Prototype; each via a real runtime-harness proof (deliver_webhook / deliver_poll), not a doc flip. Posted the integrations-side dependency on bot #109 (Live gate).
 - [ ] **Next (operator decision)**: the PII **redaction-and-pass model** (unblocks live Zendesk + CS set); ServiceNow (P2); GitHub Copilot/Cursor/Admin (P1); **Live-stage wiring when bot #109 lands** (GatewaySink → real emission). Admin: branch protection (B5).
 - [ ] **Connector build-out (next)**: GitHub Copilot / Cursor / OpenAI-Anthropic Admin (P1 read APIs) — from the value-add shortlist; B9 Devin (P1).
-- [ ] `mods/` structure is under active build by **Codex** — not edited by this (connector/hardening) track.
+- [x] `mods/` **ownership transferred to this track (2026-06-08)** — Codex's in-flight scaffolds adopted (PR #76); the ADR-0013 execution contract (`mods/contract.py` + `_manifest.py`) is built; 13 mods Scoped, dependency_risk is the first to get logic (next cycle).
 - [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).
 - [ ] adapter→gateway emission: map `AdapterEmission` to the **published** v1 ingest schema (bot PR #95, `protocol/schemas/v1/`) + a conformance test. The schema is NOT a blocker; *safe* live emission gates on the cross-repo deps below.
 - [x] Cross-repo deps (verified 2026-06-05): bot **#109 CLOSED/COMPLETED** (PR #131 — gateway `/api/v1/ingest` ingest guards landed: body-size/rate/sensitive-data). The Live-emission gate is **lifted**; `GatewaySink` is now real (Entry #71). Remaining bot context: **#73** OPEN (release signing/trust posture); MCP→ToolRequest refactor ongoing. #108 CLOSED. (Prior "bot #99 v1-schema blocker" was a misattribution — SG-2026-06-04-N.)

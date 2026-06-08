@@ -9,4 +9,6 @@ forbidden_actions:
   - approve_signoff
   - resolve_compliance
   - create_blocking_ci_result
-
+  - bypass_governance_policy
+  - mutate_source_evidence
+  - collapse_confidence_score

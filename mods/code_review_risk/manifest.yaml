@@ -11,5 +11,6 @@ forbidden_actions:
   - approve_signoff
   - resolve_compliance
   - create_blocking_ci_result
-  - post_external_comment
-  - merge_pull_request
+  - bypass_governance_policy
+  - mutate_source_evidence
+  - collapse_confidence_score

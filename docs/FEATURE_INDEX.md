@@ -70,6 +70,14 @@ Single canonical cross-reference of every user-touchable feature in Bicameral In
 
 ---
 
+## Section: Mods (EM-safe advisory post-processors)
+
+| entry_id | feature | source_doc | source_file | test_path | status | notes |
+|---|---|---|---|---|---|---|
+| FX-MOD-001 | Mod execution contract — manifest-enforced, EM-safe runner for advisory mods | docs/adr/0013-mod-execution-contract.md, docs/adr/0002-em-safe-mod-manifest.md, docs/adr/0007-em-safe-mod-boundary.md, docs/plan-mod-execution-contract-2026-06-08.md | mods/contract.py, mods/_manifest.py | mods/tests/test_contract.py | Verified | `Mod` protocol (`id`/`version`/`outputs`/`evaluate`) + `ModEmission` (frozen; `__post_init__` binds `output_type`↔artifact — only `routing_hint`→`RoutingHint`, the other 5 kinds→`AdvisoryResult` by `kind`) + `run_mod`. EM-safe boundary: write-canonical/approve/resolve/block **non-representable** (return-only API), mutate-evidence impossible (frozen `AdapterEmission`/`SourceEvidence`); runtime checks — outputs allowlist, `id`/`version`/`outputs` mirror `manifest.yaml`, **no opaque numeric score** (dimensional `ConfidenceSurface` only), and **FX-SEC-001 `detect_sensitive` screen over every wire-bound mod-output field** (a mod that finds a secret can't surface it). `_EM_SAFE_FORBIDDEN` = full ADR-0007 7-action set; all 13 manifests normalized to declare it. Stdlib YAML-subset loader (`_manifest.py`; no PyYAML; CRLF/BOM-tolerant, str-version, fail-closed on nesting/tabs/dup-keys/unknown-keys/empty-forbidden). v1 manifest narrows ADR-0002/0007 (source-types/confidence-dims/audit-preservation deferred). Independent pre-impl audit (VETO→addressed) + pre-seal devil's-advocate. No mod logic yet (dependency_risk = next cycle). L1 |
+
+---
+
 ## Section: CI & Governance Gates
 
 | ID | Feature | Doc | Code | Test | Status | Notes |

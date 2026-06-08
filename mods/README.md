@@ -12,9 +12,29 @@ integrations observe; they never own authority.
 ## What a mod produces
 
 Mods emit only advisory artifacts — `source_evidence_annotation`,
-`routing_hint`, `advisory_governance_result`, and similar. A mod may surface a
-concern; it may not act on it. Every mod output is reviewable, attributable, and
-non-blocking by construction.
+`routing_hint`, `advisory_governance_result`, `owner_lens_hint`,
+`suggested_review_question`, `dependency_signal`. A mod may surface a concern; it
+may not act on it. Every mod output is reviewable, attributable, and non-blocking
+by construction.
+
+## How a mod runs (ADR-0013)
+
+A mod implements the `Mod` protocol in [`contract.py`](contract.py) (`id` /
+`version` / `outputs` + `evaluate(emissions) -> list[ModEmission]`) and is executed
+through `run_mod`, the single EM-safe chokepoint:
+
+- **evidence is immutable** (frozen `AdapterEmission`/`SourceEvidence`) and the only
+  output channel is *returning* `ModEmission` artifacts — so writing canonical
+  decisions, approving signoff, resolving compliance, blocking, or mutating evidence
+  are not representable;
+- `run_mod` enforces the rest at runtime: a mod may emit only its **manifest-declared
+  `outputs`**; `id`/`version`/`outputs` must **mirror its `manifest.yaml`**; no opaque
+  numeric confidence score (dimensional `ConfidenceSurface` only); and every wire-bound
+  artifact field is run through the **FX-SEC-001** sensitive screen (a mod that *finds*
+  a secret must not surface it). All fail-closed.
+
+Manifests are loaded by the stdlib reader in [`_manifest.py`](_manifest.py) (no
+PyYAML). See [ADR-0013](../docs/adr/0013-mod-execution-contract.md).
 
 ## Mods
 

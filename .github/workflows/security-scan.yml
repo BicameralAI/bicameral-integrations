@@ -19,8 +19,8 @@ jobs:
         with:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip bandit==1.8.6
-      - name: Bandit (adapter + connectors + scripts, excluding tests)
-        run: bandit -r adapter connectors scripts -x '*/tests/*' --skip B101
+      - name: Bandit (adapter + connectors + scripts + mods, excluding tests)
+        run: bandit -r adapter connectors scripts mods -x '*/tests/*' --skip B101
 
   pip-audit:
     name: pip-audit (advisory)
