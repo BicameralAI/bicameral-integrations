@@ -1,0 +1,14 @@
+id: connector-freshness
+version: 0.1.0
+name: Connector Freshness
+outputs:
+  - advisory_governance_result
+  - routing_hint
+  - source_evidence_annotation
+forbidden_actions:
+  - write_canonical_decision
+  - approve_signoff
+  - resolve_compliance
+  - create_blocking_ci_result
+  - fetch_unapproved_external_source
+  - expand_credential_scope

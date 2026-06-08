@@ -1,0 +1,14 @@
+id: data-classification
+version: 0.1.0
+name: Data Classification
+outputs:
+  - advisory_governance_result
+  - routing_hint
+  - source_evidence_annotation
+forbidden_actions:
+  - write_canonical_decision
+  - approve_signoff
+  - resolve_compliance
+  - create_blocking_ci_result
+  - delete_source_evidence
+  - send_external_notification
