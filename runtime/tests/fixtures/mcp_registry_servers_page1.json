@@ -1,0 +1,16 @@
+{
+  "servers": [
+    {
+      "server": {
+        "name": "io.github.example/filesystem",
+        "title": "Filesystem MCP",
+        "description": "Read-only filesystem access for MCP clients.",
+        "version": "1.2.0",
+        "repository": { "url": "https://github.com/example/filesystem-mcp", "source": "github" },
+        "websiteUrl": "https://example.com/filesystem-mcp"
+      },
+      "_meta": { "io.modelcontextprotocol.registry/official": { "isLatest": true } }
+    }
+  ],
+  "metadata": { "count": 1, "nextCursor": "cur2" }
+}

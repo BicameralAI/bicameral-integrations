@@ -12,14 +12,18 @@ Phase-1 foundation candidate from the
   `Observation` (`parse_server`). Read-only evidence for scoring and allowlist
   decisions; no canonical-state writes (ADR-0008).
 
-The live registry-fetch path remains **deferred** to the operator runtime (see
-[`auth.md`](auth.md)).
+The live HTTP poll runs in the operator runtime via the built, fixture-proven
+`build_mcp_registry_spec` (see [`auth.md`](auth.md)).
 
 ## Readiness: Beta (ADR-0012)
 
-Promoted to **Beta**: its `runtime.deliver_poll` → reference sink path is proven
-end-to-end by `runtime/tests/test_runtime.py`, with **zero cross-repo
-dependency**. Live (gateway emission) is now operator-actionable — `GatewaySink` is real (bot #109 landed, PR #131); an operator configures it against a real gateway to go Live.
+Graduated from Candidate → **Beta** (2026-06-08) against the **verified public contract**
+(registry.modelcontextprotocol.io/openapi.yaml): the **no-auth** `GET /v0/servers` list, with
+entries wrapped under `servers` → `element.server` (unwrapped by the spec), and cursor
+pagination (`cursor` → `metadata.nextCursor`, no has-more). `build_mcp_registry_spec` uses
+`NoAuth` + `PageToken(token_field="metadata.nextCursor", has_more_field=None)`, proven end-to-end
+through the `runtime/` poll harness against recorded fixtures (the operator supplies the live
+transport). Live (gateway emission) is operator-actionable — `GatewaySink` is real (bot #109, PR #131).
 
 ## Surface
 
@@ -32,4 +36,4 @@ dependency**. Live (gateway emission) is now operator-actionable — `GatewaySin
 ## References
 
 - Canonical documentation: [references.md](references.md)
-- Auth model (deferred): [auth.md](auth.md)
+- Auth model (public, no-auth reads): [auth.md](auth.md)
