@@ -21,6 +21,18 @@ pytest -v tests/
 pre-commit run --all-files
 ```
 
+## Bring your own tools — the sibling registry
+
+You are **not** required to adopt the maintainer's process tooling. The only thing your
+PR must satisfy is the shared **bic-logic** contract plus a clean working tree. Everything
+you run *locally* — a governance system, an AI assistant, an IDE plugin, or a homegrown
+framework — is welcome as a **registered sibling**: leak-guarded, never tracked, never
+referenced.
+
+To use your own tool: add a row to [`docs/governance/SIBLINGS.md`](docs/governance/SIBLINGS.md),
+add its scratch root to `.gitignore`, and keep its artifacts out of tracked files. See the
+registry for the full rules.
+
 ## Issue Reports
 
 Use the issue templates for bugs, feature requests, and documentation problems.
