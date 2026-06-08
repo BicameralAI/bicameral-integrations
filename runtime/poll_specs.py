@@ -17,9 +17,12 @@ before live-network wiring (verify-before-cite).
 from __future__ import annotations
 
 import json
+import re
 
+from connectors.google_drive.connector import parse_document
 from connectors.linear.connector import parse_issue_node
 
+from .doc_fetch import DocFetchSpec
 from .graphql_poll import GraphQLPollSpec
 from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, NoAuth, PollError
 from .poll_client import OffsetPager, PageNumberPager, PageToken, PollSpec
@@ -252,4 +255,28 @@ def build_linear_graphql_spec(
         page_info_path="data.issues.pageInfo",
         parse=parse_issue_node,
         page_size=page_size,
+    )
+
+
+# --- google_drive (ACTIVE single-document fetch: Google Docs documents.get) -------
+# verified developers.google.com/docs/api 2026-06-08: GET https://docs.googleapis.com/v1/documents/{id};
+# Bearer OAuth access token (operator-refreshed); response is a Document object (documentId/title/body).
+# scopes: documents.readonly / drive.readonly / drive.file (NOT drive.metadata.readonly).
+_GDRIVE_DOCS_BASE = "https://docs.googleapis.com/v1/documents/"
+# Deliberately looser than the connector's URL-parser `{25,128}` (connectors/google_drive _URL_RE):
+# fetch-by-id accepts operator-supplied ids the URL grammar wouldn't mint; the 200 ceiling is the cap.
+_GDRIVE_DOC_ID_RE = re.compile(r"[A-Za-z0-9_-]{1,200}")  # fully anchored via fullmatch below
+
+
+def build_google_drive_spec(resolver: SecretResolver, *, document_id: str) -> DocFetchSpec:
+    """google_drive: ACTIVE single-document fetch (`documents.get`). `document_id` is
+    **fullmatch-validated** before the URL splice (path/URL-injection guard — a half-anchored match
+    would admit `x/../y`/`x?a=b`/`x@host`/`x\\r\\n`); fail-closed. Bearer OAuth token (operator-refreshed)."""
+    if not _GDRIVE_DOC_ID_RE.fullmatch(document_id):
+        raise PollError(0, "bad_document_id")  # token-free; no request attempted
+    token = _require_secret(resolver, "google_drive")
+    return DocFetchSpec(
+        url=_GDRIVE_DOCS_BASE + document_id,
+        auth=BearerAuth(token),
+        parse=parse_document,
     )
