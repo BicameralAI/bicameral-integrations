@@ -3103,7 +3103,82 @@ run_mod-input/output-key), ruff clean, mypy 145 files clean, bandit clean, gover
 chain #1–#108. Residuals (ADR-0014): exotic/cyclic metadata types stringified-not-walked (fail-closed,
 out of the JSON-sourced surface); two flatteners duplicated-but-parallel (no shared parity test). L2.
 
+### Entry #109: GATE AUDIT — dependency_risk reference mod (FX-MOD-002)
+
+**Entry ID**: `depRisk109audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L1 (read-only advisory mod; no auth, no network, no security seam)
+
+**Content Hash**:
+```
+SHA256(plan-mod-dependency-risk-2026-06-08.md)
+= 9c5f7f6a4c4e1ee60d404ca55459e667a479afba32abb6ef94cdb909c98b79b4
+```
+
+**Previous Hash**: 42ffb2662b758b5001618cbf2439490ed34dff28a114017c2927ecfb39d56f28
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 286cafbaa1c909a8d83b97d2b81ecfca19e8f02cb2b0def67bf6034e0141c3ca
+```
+
+**Decision**: First mod logic on the ADR-0013 contract — the reference that sets the fan-out pattern.
+Independent fresh-context audit **VETOed** iteration 2 with **3 BLOCKING**: (1) the design read
+`evidence[0]` but `AdapterEmission.evidence` is a tuple — a future multi-evidence emission would be
+silently missed → now **iterates all evidence**, keying on `ev.source_ref.kind`; (2) `evidence_ids`
+justified as "secret-safe by construction" — reframed as **screened by `run_mod`'s `_wire_text`**, the
+text path emits `evidence_ids=()` (a PR/MR ref is user-controlled), + a planted-secret-in-ref rejection
+test; (3) only 1 declared test → **5** (OSV end-to-end, manifest-acceptance set-equality, manifest-
+mention, no-false-positive, secret-in-ref). 2 advisories folded (contiguous-substring token note;
+`aliases` split + `CVE-`/`GHSA-` prefix for priority — honest, no CVSS-band fabrication). **PASS** on
+iteration 3. Pre-seal devil's-advocate **PASS** (Reality==Promise), 3 advisory polish notes (1 applied:
+emission-level-metadata docstring; 2 accepted: `go.mod`/`gemfile` substring is low-confidence non-routing
+by design; output-screen already covered by the FX-MOD-001 suite). L1.
+
+---
+
+### Entry #110: SESSION SEAL — dependency_risk reference mod (FX-MOD-002)
+
+**Entry ID**: `depRisk110seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 078db9e35d2b6381c20b5186c5f3341931f3923c8b5dc5349a28f5dafbd9fdae
+```
+
+**Previous Hash**: 286cafbaa1c909a8d83b97d2b81ecfca19e8f02cb2b0def67bf6034e0141c3ca
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fc06af9bcaad6ed62f03dc54f9902f4a6015b0706f96facd8fdd165c22027962
+```
+
+**Decision**: Built **`dependency_risk`** — the first mod logic, the reference for the other 12.
+`mods/dependency_risk/connector.py` (108 L): `DependencyRiskMod` (`Mod` protocol; `outputs` exactly
+mirrors `manifest.yaml`). Two deterministic, stdlib-only, read-only paths over `list[AdapterEmission]`:
+**vulnerability** (iterates ALL evidence; for `source_ref.kind=="vulnerability"` reads the connector
+`metadata` preserved by ADR-0014 — `packages`/`severity`/`aliases` — and emits a `dependency_signal` +
+security `routing_hint` (`priority="high"` iff a `CVE-`/`GHSA-` alias is present; **no CVSS-band
+fabrication**) + `source_evidence_annotation`) and **manifest-mention** (no-vuln emissions whose
+lowercased text contains a dependency-manifest filename as a contiguous substring → low-confidence
+`dependency_signal` + annotation, **no routing**, `evidence_ids=()`). Pure function; every output passes
+`run_mod` (outputs-allowlist + opaque-score + FX-SEC-001). **Proves the ADR-0014 unblock end-to-end:**
+OSV fixture → `parse_vuln` → `normalize` → `run_mod` → `metadata["packages"]=="example-pkg"`,
+`priority=="high"`. **FX-MOD-002** added; SYSTEM_STATE mods tree updated; README Outputs drift corrected
+(was `advisory_governance_result` → now the manifest's 3). Independent VETO→PASS (3 BLOCKING) + pre-seal
+devil's-advocate PASS (1 polish applied, 2 accepted residuals). Full sweep: **414 passed** (+5 mod tests),
+ruff clean, mypy 149 files clean, bandit clean, governance gate verifies chain #1–#110. L1.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/emission-metadata-preservation`) — **Metadata preservation SEALED at Entry #108 (`42ffb266`; L2).** Connectors' structured `metadata` now survives `normalize` into `AdapterEmission.metadata` (in-process for mods, screened per-leaf incl. keys, NOT wire-forwarded); `run_mod` re-screens inputs. The mod-input contract is now correct — mods can read `emission.metadata`. Prior seals stand: mod execution contract (#106), connector verification campaign COMPLETE (#104).*
-*Next required action: **build `dependency_risk` as the reference mod** (next governed cycle) — now on the corrected input contract: `evaluate` reads OSV `metadata["packages"]`/`["severity"]` + free-text fallback for PR/MR bodies → emits `dependency_signal`/`routing_hint`/`source_evidence_annotation`. Then fan out the remaining 12 mods, then go-live one at a time. Optional: take a connector Live (operator wires `GatewaySink` + `poll`/`deliver_webhook`); confirm the 3 pre-Live notes (sentry/pagerduty/claude_code). Admin (you): branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/mod-dependency-risk`) — **dependency_risk reference mod SEALED at Entry #110 (`fc06af9b`; L1).** First mod logic on the ADR-0013 contract; reads structured metadata (ADR-0014) + free-text; emits advisory dependency signals only (EM-safe). 1 of 13 mods now has logic; the pattern is proven for the fan-out. Prior seals stand: metadata preservation (#108), mod execution contract (#106), connector verification COMPLETE (#104).*
+*Next required action (operator-queued 2026-06-08): **go-live testing/coding push for Linear, then Google Drive** — Linear (webhook verify/normalize built, FX-LINEAR-002 → wire Live runtime + ACTIVE GraphQL if pulling); Google Drive (DEFERRED from poll — code the OAuth + `documents.get` fetch path, scope `drive.readonly`/`drive.file`). Each its own governed cycle, Live one connector at a time (ADR-0012). THEN resume the mod fan-out (12 remaining). Admin (you): branch protection (B5). Open: bot #73 (release signing).*
