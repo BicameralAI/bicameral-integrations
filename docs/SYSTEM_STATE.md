@@ -46,9 +46,10 @@ bicameral-integrations/
 |              GET + POST body), poll_auth (ApiKeyHeader/Bearer/Basic), poll_specs per-connector
 |              wiring (anthropic/openai/copilot/devin/granola/cursor/servicenow);
 |              library-only, stdlib urllib)
-|-- mods/  (EM-safe advisory mods, OWNED by this track since 2026-06-08; 13 mods Scoped
-|           + contract.py/_manifest.py = the ADR-0013 execution contract: Mod protocol +
-|           ModEmission + manifest-enforced run_mod (EM-safe + FX-SEC-001-screened); no mod logic yet)
+|-- mods/  (EM-safe advisory mods, OWNED by this track since 2026-06-08; contract.py/_manifest.py =
+|           the ADR-0013 execution contract: Mod protocol + ModEmission + manifest-enforced run_mod
+|           (EM-safe + FX-SEC-001-screened, input+output). dependency_risk/connector.py = the FIRST mod
+|           logic (FX-MOD-002, reference mod: OSV-vuln + manifest-mention paths); 12 mods still Scoped)
 |-- scripts/  (governance_gate.py + check_license_headers.py + tests/)
 |-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME, SYSTEM_STATE,
 |          GOVERNANCE_INDEX, BACKLOG, FEATURE_INDEX, adr/, compliance/, ecosystem/, research-brief-*)
