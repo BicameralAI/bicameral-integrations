@@ -3846,7 +3846,49 @@ verifies chain #1–#127 (research #125 + audit #126 + seal #127). L2.
 
 ---
 
+### Entry #128: SESSION SEAL — governance wrap-up (mcp#572 handoff + Linear/GDrive flip-ready + qor-logic distribution)
+
+**Entry ID**: `wrapup128seal`
+**Timestamp**: 2026-06-08T18:00:00-04:00
+**Phase**: SUBSTANTIATE (docs / governance)
+**Author**: Judge (qor-substantiate)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= cf875a7295099ee02d97eaf7e207160c237fb901517fcdc8a5bdc34caeb77dba
+```
+
+**Previous Hash**: fcfb03f8c907eb9be2c3364a27d3d75cf557b3bd2f44a3da21e7ea4440911b11
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= caf5beaf109daa1c4aabe82d7646650f2395763f95126726cd66311309d8c55a
+```
+
+**Decision**: Docs/governance-only wrap-up; no code or runtime change (FEATURE_INDEX unchanged — no new
+features — so the seal anchor hash equals #127's). **(1) mcp UI handoff:** opened
+`BicameralAI/bicameral-mcp#572` to build the Linear + Google Drive connector config UI against the
+FX-CFG-001 descriptor contract (config.json + index.json + JSON Schema + `UI_RENDERING_SPEC.md`); a
+back-reference pointer was added to `docs/UI_RENDERING_SPEC.md` (PR #89, merged). **(2) Linear + Google
+Drive → flip-ready, NOT yet Live (operator decision):** each descriptor's `live_readiness` + a closing
+`wire_gates` entry + `references.md` readiness now record the explicit pre-Live gate — code-complete and
+harness-proven against a reference sink, but UNVERIFIED against the live API with real secrets. `status`
+stays `live-ready` (schema's top enum; there is deliberately no `live` value — Live = operator wires real
+secrets + verifies). `connectors/index.json` + both `SETUP.md` regenerated (LF-pinned, byte-exact);
+validator + 18 config tests green (PR #90, merged). **(3) qor-logic corpus distribution:** verified
+in-sync via `qor-logic install --host claude --scope repo` (v0.103.1) — idempotent, zero diff to
+`.claude/agents/` + `.claude/skills/`. **(4) Doc currency (/qor-document):** added `docs/WHATS_NEXT.md`
+session handoff; README Design Principles now name the config-descriptor contract + the headless
+`runtime.cli` runner (both verified non-fabricated). SYSTEM_STATE refreshed. Pre-seal: governance-health
+8/8 OK; full sweep **523 passed**; secret-scan clean; no drift-prone count badges. Review Boundary held —
+no tag/release. L1.
+
+---
+
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/google-oauth-refresh-resolver`) — **Google OAuth doc fix + RefreshTokenSecretResolver SEALED at Entry #127 (`fcfb03f8`; L2).** Research #125 redirected the build (service-account = RS256 = not stdlib; refresh = plain POST = stdlib). The misleading "stores the access token" doc is corrected; `runtime.RefreshTokenSecretResolver` is the durable stdlib Google auth path (token-safe, fail-closed). Prior seals stand: mod fan-out batch 1 (#124), mode-scoped credentials (#122), backend docs (#120).*
-*The platform is end-to-end for Linear + Google Drive (parse → live fetch → config.json [UI] → SETUP.md [backend] → RUNNERS [headless] → mode-scoped multi-secret credentials + durable Google OAuth), usable WITHOUT the mcp UI. 3 of 13 mods built, all runner-wired. Secrets never committed nor printed.*
-*Next required action (operator's call): continue the **mod fan-out** (10 Scoped mods remain — batch them in the same pattern) and/or the **connector fan-out** (24 remaining — each gets config.json + generated SETUP.md + a RUNNERS wire, validated on commit). Operator: the Linear/GDrive Live flips need operator secrets — runnable via `python -m runtime.cli run linear --sink gateway`. Admin: branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `chore/governance-wrapup`) — **governance wrap-up SEALED at Entry #128 (`caf5beaf`; L1).** Linear + Google Drive are **flip-ready, NOT yet Live**: code-complete + harness-proven, but the Live flip is gated on operator human review + a live test with real secrets (no machine has hit the live endpoint). mcp UI work item `bicameral-mcp#572` is open against the FX-CFG-001 contract. qor-logic corpus verified distributed in-sync (v0.103.1). Prior seals stand: Google OAuth refresh resolver (#127), mod fan-out batch 1 (#124), mode-scoped credentials (#122).*
+*The platform is end-to-end for Linear + Google Drive (parse → live fetch → config.json [UI] → SETUP.md [backend] → RUNNERS [headless] → mode-scoped multi-secret credentials + durable Google OAuth), usable WITHOUT the mcp UI. 3 of 13 mods built, all runner-wired. No connector is Live yet; all 26 Beta. Secrets never committed nor printed.*
+*Next required action (operator's call): **wire + live-test Linear, then Google Drive** (`GatewaySink` + real secrets), review, and promote each to Live; build `bicameral-mcp#572`; resume the **mod fan-out** (10 Scoped) and **connector fan-out** (24 remaining). Admin: branch protection (B5). Open: bot #73 (release signing).*
