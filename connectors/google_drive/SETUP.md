@@ -17,8 +17,10 @@ See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for
 - Refresh owner: **operator** (token exchange/refresh needs operator oversight)
 - Supply via config key `google_drive` **or** env `BICAMERAL_GOOGLE_DRIVE` (env wins when set).
 - Where to get it: https://developers.google.com/identity/protocols/oauth2
-  - Register an OAuth client and grant consent for the documents.readonly / drive.readonly scopes.
-  - The mcp UI owns the consent UX; the operator runtime stores the access token and OWNS refresh (the SecretResolver returns a valid token).
+  - An access token is SHORT-LIVED (~1 hour; honor the returned expires_in) — pasting one is a quick test, not a durable setup.
+  - Durable option A (user OAuth): register an OAuth client (Testing publishing status = NO verification for your own/test users), grant the documents.readonly / drive.readonly scopes, and persist the REFRESH token + client id/secret. The stdlib runtime.RefreshTokenSecretResolver mints fresh access tokens from these (plain POST, no RSA).
+  - Durable option B (server, service account): use a service-account JSON; share the doc with the SA email (or use domain-wide delegation to impersonate). This needs RS256 JWT signing (google-auth) and is OPERATOR-RUNTIME — NOT stdlib.
+  - Quick test token: the OAuth 2.0 Playground (developers.google.com/oauthplayground) issues a ~1h access token for the selected scopes. Restricted-scope verification only applies to apps DISTRIBUTED to other users.
 
 ## Backend config
 
@@ -67,7 +69,7 @@ python -m runtime.cli run google_drive --sink gateway   # real POST (go-live; de
 Readiness: Code-ready (FX-GDRIVE-002, documents.get). Operator provides a valid OAuth access token (refresh operator-owned) + a document id; then wires GatewaySink.
 
 - Gate: Bearer-header assumption + multi-tab docs confirmed against a live response before the Live flip. Multi-tab docs (content under tabs[].documentTab.body) emit title-only — extract_document_text walks the legacy body; includeTabsContent/tabs[] deferred.
-- Gate: OAuth token refresh + folder polling (Drive files.list) + push-notification webhooks are operator-runtime / deferred.
+- Gate: OAuth token refresh is now stdlib (runtime.RefreshTokenSecretResolver, FX-RUNTIME-006) — pasting a raw access token is a ~1h TEST only; the durable path is the refresh resolver (user OAuth) or a service-account JSON (operator-runtime, RS256/google-auth, not stdlib). Folder polling (Drive files.list) + push-notification webhooks remain deferred.
 
 ## References
 

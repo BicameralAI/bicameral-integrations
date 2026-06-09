@@ -56,6 +56,8 @@ bicameral-integrations/
 |              local_config.py + runner_registry.py + cli.py = the headless operator runner
 |              (FX-RUNTIME-004: `python -m runtime.cli list|run|run-mods`; FileSecretResolver
 |              env-over-gitignored-file; CLI prints screened emissions, never a secret);
+|              google_oauth.py = RefreshTokenSecretResolver (FX-RUNTIME-006: durable stdlib Google
+|              auth — refresh-token grant is a plain POST, no RSA; token-safe, fail-closed);
 |              library-only, stdlib urllib)
 |-- config/  (bicameral.example.json [committed template]; bicameral.local.json = operator secrets,
 |             GITIGNORED via glob + !example negation — NEVER committed)

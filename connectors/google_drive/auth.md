@@ -35,3 +35,19 @@ HTTP boundary is operator-run (a recorded transport proves the path; a mock does
 (content under `tabs[].documentTab.body`) emits **title-only** evidence (not a crash; `includeTabsContent`/`tabs[]`
 deferred). Folder polling (Drive `files.list`) + push-notification webhooks remain deferred.
 
+## OAuth credential facts (verified 2026-06-08 — research brief #125)
+
+- **Access token: short-lived** (~1 h; the token response carries `expires_in` — honor it, do not hardcode).
+  Source: developers.google.com/identity/protocols/oauth2/web-server.
+- **Refresh-token exchange = plain form POST, NO signing:** `POST https://oauth2.googleapis.com/token`,
+  `Content-Type: application/x-www-form-urlencoded`, `grant_type=refresh_token` + `client_id` +
+  `client_secret` + `refresh_token` → `{access_token, expires_in}`. **Stdlib-feasible** — implemented as
+  `runtime.RefreshTokenSecretResolver` (FX-RUNTIME-006), the durable in-repo path.
+- **Service account = RS256 JWT signing required** (`grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer`,
+  private key from the SA JSON). RSA → **NOT stdlib** → operator-runtime (`google-auth`). SA reads a Doc via
+  doc-sharing with the SA email or domain-wide delegation. Source: …/oauth2/service-account.
+- **Scope verification** (sensitive/restricted: `documents.readonly`/`drive.readonly`/`drive.file`) is required
+  only for apps **distributed to other users** on consumer data; a **Testing**-status OAuth client (own/test
+  users) needs none (user cap + ~7-day refresh-token lifetime per Google's OAuth verification FAQ). Source:
+  …/oauth2/production-readiness/restricted-scope-verification + support.google.com/cloud/answer/9110914.
+
