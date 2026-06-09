@@ -3502,7 +3502,87 @@ FX-RUNTIME-004; SYSTEM_STATE (+`config/`). Independent VETO→PASS (3 BLOCKING o
 pre-seal exhaustive secret-leak trace PASS. Full sweep: **489 passed** (+15 this cycle), ruff/mypy(158)/
 bandit clean, governance gate verifies chain #1–#118. L2.
 
+### Entry #119: GATE AUDIT — connector backend how-to docs (FX-CFG-001 extension)
+
+**Entry ID**: `backendDocs119audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L1 (docs + a deterministic generator; no secrets, no network)
+
+**Content Hash**:
+```
+SHA256(plan-connector-backend-setup-docs-2026-06-08.md)
+= 8ed28e5003239557ab6c2dc403ef0dd588aeeb20bafee19dcf3cfec30a1176cb
+```
+
+**Previous Hash**: 03a2eb5f2b69ee2963f2eb0993a4d359ba79f75d6a29223c1b3027781785306e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c52444b038ed5354b7e8d258e12ca60e6cff43ec9f748f53cd36ba606448b57a
+```
+
+**Decision**: Operator: "back end configuration for connectors requires back-end how-to documentation."
+Decision (operator-confirmed): a hand-authored framework doc + **per-connector `SETUP.md` generated from
+`config.json`** (DRY, validator-fresh), reference-first on Linear + Google Drive. Independent fresh-context
+audit **VETOed** iteration 2 with **5 BLOCKING**: (1) the env var is **per-credential-key** (`BICAMERAL_
+LINEAR` AND `BICAMERAL_LINEAR_WEBHOOK`), not per connector; (2) the Linear webhook secret is a **trap** —
+`runtime.cli run` (GraphQL) never consumes it → must annotate "receive-path-only"; (3) no determinism
+test (the markdown generator can't `sort_keys`-reserialize like the index → explicit-field access +
+order-invariance test); (4) no secret-shape backstop over the generated SETUP.md; (5) validator must
+glob config.json-bearing connectors + missing→fail-closed. All folded + 3 advisories (absent-default →
+"—", `events` guard, verbatim error/CLI strings). **PASS** iter 3. Pre-seal devil's-advocate verified all
+8 requirements + verbatim-checked every cited error string/CLI flag against the code → **PASS**, no
+actionable findings. L1.
+
+---
+
+### Entry #120: SESSION SEAL — connector backend how-to docs (FX-CFG-001 extension)
+
+**Entry ID**: `backendDocs120seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 8d75013750f96eec2da5bb80fa5802f181f2a26cce2e0af444fb8bc70bb9d1dc
+```
+
+**Previous Hash**: c52444b038ed5354b7e8d258e12ca60e6cff43ec9f748f53cd36ba606448b57a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 990d16dd97c54b6656a3236641c686cd98543484fcbe518bb328cddb50d937dc
+```
+
+**Decision**: Closed the backend how-to gap. `docs/CONNECTOR_BACKEND_SETUP.md` (hand-authored framework:
+the config model, secrets file/env, the `runtime.cli` runner, webhooks, OAuth, go-live, **troubleshooting
+with the real error strings** — `secret_unresolved:<source_id>`/`bad_document_id`/`GatewayEmissionGated`/
+`missing required credential(s)`/`unknown or not-runnable connector`, all verbatim-verified). `scripts/
+build_connector_setup.py` (139 L): `build_setup(descriptor)` renders a **deterministic** per-connector
+runbook from `config.json` (explicit-field access — no `dict.items()`, key-order-invariant; `write_bytes`
+LF on every OS; `.gitattributes` pins `connectors/*/SETUP.md`): prerequisites, credentials (where-to-get +
+config key + **per-credential `BICAMERAL_<KEY>` env var** — Linear yields BOTH `BICAMERAL_LINEAR` and
+`BICAMERAL_LINEAR_WEBHOOK`; a `webhook_secret` is annotated **receive-path-only, NOT consumed by
+`runtime.cli run`**), the placeholder local-config stanza + runtime table (absent default → "—"), webhook
+setup (receiver URL as an instruction, not a value; `events` guarded), the exact CLI commands, data/
+permissions, go-live (`wire_gates`/`live_readiness`), references. Generated **`connectors/linear/SETUP.md`
++ `connectors/google_drive/SETUP.md`**. `validate_connector_config.py` extended: each SETUP.md is
+**byte-fresh-checked** (glob-scoped to config.json-bearing connectors; missing→fail-closed), still a
+standalone `ci.yml` step (governance_gate untouched). **No secret values** (placeholders + a secret-shape
+backstop over the generated docs). FX-CFG-001 row grows; SYSTEM_STATE. Independent VETO→PASS (5 BLOCKING)
++ pre-seal devil's-advocate (8/8 requirements + verbatim error-string check) PASS. Full sweep: **494
+passed** (+5), ruff/mypy(158)/bandit clean, governance gate verifies chain #1–#120. Remaining 24
+connectors' SETUP.md generate near-free as their `config.json` lands. L1.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/operator-local-runner`) — **Operator-local config + headless runner SEALED at Entry #118 (`03a2eb5f`; L2).** Connectors + mods are usable WITHOUT the mcp UI: `python -m runtime.cli list|run|run-mods` over a gitignored `config/bicameral.local.json` (or env). Secrets never committed (glob + shape-scan) and never printed (exhaustive leak trace). The mcp UI contract (FX-CFG-001) + this headless runner (FX-RUNTIME-004) together: UI-optional. Prior seals stand: config descriptors (#116), Linear/GDrive go-live (#112/#114), dependency_risk (#110).*
-*Next required action (operator's call): **fan out the remaining 24 connector `config.json` descriptors** (UI catalog) and/or **wire those connectors into `RUNNERS`** (headless catalog); **resume the mod fan-out** (12 Scoped mods); runtime: **multi-secret resolver namespacing** (the surfaced wire_gate) + a `mode`-scoped required-credential filter (relax linear's active-only over-require). Operator: the Linear/GDrive Live flips need operator secrets — now runnable via `python -m runtime.cli run linear --sink gateway`. Admin: branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/connector-backend-setup-docs`) — **Connector backend how-to docs SEALED at Entry #120 (`990d16dd`; L1).** Backend engineers now have a runbook: `docs/CONNECTOR_BACKEND_SETUP.md` (framework) + generated `connectors/<id>/SETUP.md` per connector (validator-fresh from config.json). The connector-config story is complete across audiences: machine (config.json/index.json), UI (UI_RENDERING_SPEC), backend operator (SETUP.md). Prior seals stand: headless runner (#118), config descriptors (#116), Linear/GDrive go-live (#112/#114).*
+*Connectors + mods are usable WITHOUT the mcp UI (`python -m runtime.cli`, FX-RUNTIME-004 #118); the connector-config story now spans machine (config.json/index.json), UI (UI_RENDERING_SPEC), and backend operator (SETUP.md). Secrets never committed (glob + shape-scan) and never printed.*
+*Next required action (operator's call): **fan out the remaining 24 connectors** — each gets `config.json` (UI), a generated `SETUP.md` (backend runbook), and a `RUNNERS` wire (headless), validated on commit; **resume the mod fan-out** (12 Scoped mods); runtime: **multi-secret resolver namespacing** (the surfaced wire_gate) + a `mode`-scoped required-credential filter (relax linear's active-only over-require). Operator: the Linear/GDrive Live flips need operator secrets — runnable via `python -m runtime.cli run linear --sink gateway`. Admin: branch protection (B5). Open: bot #73 (release signing).*
