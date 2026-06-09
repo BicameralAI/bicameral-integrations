@@ -12,6 +12,7 @@ See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for
 
 ### `linear` — Personal API key (api_key, required)
 - Wire format: `Authorization (raw key, NO Bearer prefix)`
+- Serves run mode(s): `active`
 - Supply via config key `linear` **or** env `BICAMERAL_LINEAR` (env wins when set).
 - Where to get it: https://linear.app/developers/graphql
   - In your Linear workspace settings, create a personal API key.
@@ -19,6 +20,7 @@ See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for
 
 ### `linear_webhook` — Webhook signing secret (webhook_secret, required)
 - Wire format: `Linear-Signature (hex HMAC-SHA256 over the raw body)`
+- Serves run mode(s): `webhook`
 - **Note:** webhook-*receive* path only — **NOT** consumed by `runtime.cli run` (the active fetch uses the API credential).
 - Supply via config key `linear_webhook` **or** env `BICAMERAL_LINEAR_WEBHOOK` (env wins when set).
 - Where to get it: https://linear.app/developers/webhooks
@@ -80,7 +82,7 @@ python -m runtime.cli run linear --sink gateway   # real POST (go-live; default-
 
 Readiness: Code-ready on both paths (FX-LINEAR-002 webhook, FX-LINEAR-003 GraphQL). Operator provides: the API key, the webhook signing secret, and a webhook receiver URL; then wires GatewaySink.
 
-- Gate: Two-secret gap: SecretResolver.resolve(connector_id) returns ONE secret per source_id, but Linear needs two (the GraphQL API key resolved as 'linear' + the webhook signing secret injected via LinearConnector(secret=...)). The 'linear_webhook' key is declarative; resolver key-namespacing is a separate runtime cycle.
+- Gate: Two-secret model (RESOLVED, FX-RUNTIME-005): Linear needs two namespaced credential keys — 'linear' (GraphQL API key, modes: active) + 'linear_webhook' (webhook signing secret, modes: webhook). The resolver resolves each by key (env BICAMERAL_LINEAR / BICAMERAL_LINEAR_WEBHOOK), and assert_runnable is mode-scoped so an active `runtime.cli run linear` requires only 'linear'. Residual: injecting 'linear_webhook' into deliver_webhook's receive path stays operator-runtime (the CLI runs active fetches, not webhook receipt).
 - Gate: GraphQL issue field set (id/identifier/title/description/url/updatedAt/state.name) confirmed against a live response before the Live flip (verify-before-cite).
 
 ## References

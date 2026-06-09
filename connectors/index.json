@@ -8,6 +8,9 @@
           "header": "Authorization: Bearer <access_token>",
           "key": "google_drive",
           "label": "Google OAuth access token",
+          "modes": [
+            "active"
+          ],
           "obtain": {
             "steps": [
               "Register an OAuth client and grant consent for the documents.readonly / drive.readonly scopes.",
@@ -92,6 +95,9 @@
           "header": "Authorization (raw key, NO Bearer prefix)",
           "key": "linear",
           "label": "Personal API key",
+          "modes": [
+            "active"
+          ],
           "obtain": {
             "steps": [
               "In your Linear workspace settings, create a personal API key.",
@@ -107,6 +113,9 @@
           "header": "Linear-Signature (hex HMAC-SHA256 over the raw body)",
           "key": "linear_webhook",
           "label": "Webhook signing secret",
+          "modes": [
+            "webhook"
+          ],
           "obtain": {
             "steps": [
               "When you create the Linear webhook, Linear shows a signing secret.",
@@ -212,7 +221,7 @@
         "signature_scheme": "hex HMAC-SHA256 over the raw request body"
       },
       "wire_gates": [
-        "Two-secret gap: SecretResolver.resolve(connector_id) returns ONE secret per source_id, but Linear needs two (the GraphQL API key resolved as 'linear' + the webhook signing secret injected via LinearConnector(secret=...)). The 'linear_webhook' key is declarative; resolver key-namespacing is a separate runtime cycle.",
+        "Two-secret model (RESOLVED, FX-RUNTIME-005): Linear needs two namespaced credential keys — 'linear' (GraphQL API key, modes: active) + 'linear_webhook' (webhook signing secret, modes: webhook). The resolver resolves each by key (env BICAMERAL_LINEAR / BICAMERAL_LINEAR_WEBHOOK), and assert_runnable is mode-scoped so an active `runtime.cli run linear` requires only 'linear'. Residual: injecting 'linear_webhook' into deliver_webhook's receive path stays operator-runtime (the CLI runs active fetches, not webhook receipt).",
         "GraphQL issue field set (id/identifier/title/description/url/updatedAt/state.name) confirmed against a live response before the Live flip (verify-before-cite)."
       ]
     }

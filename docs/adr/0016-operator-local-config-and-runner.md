@@ -57,13 +57,24 @@ the *values*; the loader cross-checks the two.
 - Reference-first: `linear` + `google_drive` + `dependency_risk` are the proven exemplars; the registry is
   the extension point for the connector/mod fan-out.
 
+## Amendment 2026-06-08 — multi-secret + mode-scoped credentials (FX-RUNTIME-005)
+
+Resolves the `linear_webhook` over-require residual below. **Credential-key namespacing is formalized:**
+a connector resolves each secret by its credential **key** (`SecretResolver.resolve(key)`) — single-secret
+connectors use their `source_id`; multi-credential connectors use namespaced keys `<connector>[_<purpose>]`
+(`linear` + `linear_webhook`), globally unique by the `load_config` dup-key guard, env `BICAMERAL_<KEY>`.
+**`assert_runnable(config, id, *, mode="active")` is now mode-scoped:** a credential declares
+`config.json` `credentials[].modes`; the runner requires only credentials serving the run's mode, where an
+**absent OR empty `modes` means all-mode** (`mode in (c.get("modes") or [mode])`). So an active
+`run linear` requires only `linear`; `linear_webhook` (`modes:["webhook"]`) is not demanded. The unknown-key
+rejection stays mode-independent (a typo'd key hard-fails on any mode), and a genuinely-missing active
+credential still fail-closes at `_require_secret`. **Residual:** injecting the webhook signing secret into
+`deliver_webhook`'s *receive* path stays operator-runtime (the CLI runs active fetches, not webhook receipt).
+
 ## Residual / accepted limitations
 
-- **`linear_webhook` over-require:** `assert_runnable` requires ALL the descriptor's `required` credentials,
-  so an active-GraphQL-only `run linear` still requires the (unused) webhook signing secret. Conservative
-  (fail-closed > fail-open) but mildly bad UX; a future `mode`-scoped required-credential filter would
-  relax it. `linear_webhook` is otherwise **declarative-only** for the runner (the GraphQL auth header uses
-  only `linear`).
+- ~~**`linear_webhook` over-require**~~ — **resolved** by the FX-RUNTIME-005 amendment above (mode-scoped
+  `assert_runnable`). The webhook-*receive* secret injection into `deliver_webhook` remains operator-runtime.
 - **`--only-verified`** in the secret scanner won't flag a pasted-but-revoked/non-verifiable key, and the
   shape-scan can't catch a **prefix-less** secret (e.g. a ServiceNow Basic password) — for those the
   **gitignore glob is the primary control**. Accepted residual.

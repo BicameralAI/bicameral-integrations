@@ -133,3 +133,11 @@ def test_no_secret_shapes_in_tracked_config():
         text = (_REPO / rel).read_text(encoding="utf-8")
         for shape in shapes:
             assert not re.search(shape, text), f"{rel} matches secret shape {shape}"
+
+
+def test_run_connector_active_needs_only_active_credential():
+    # FX-RUNTIME-005: an active run no longer demands linear_webhook (modes=["webhook"]).
+    cfg = LocalConfig(connectors={"linear": {"enabled": True, "secrets": {"linear": "lin_key"}, "runtime": {}}},
+                      mods={}, gateway={}, secret_map={"linear": "lin_key"})
+    transport = _RecordingTransport([_gql_page([_issue("ENG-1")], has_next=False, end_cursor=None)])
+    assert run_connector("linear", cfg, transport, CollectingSink()) == 1

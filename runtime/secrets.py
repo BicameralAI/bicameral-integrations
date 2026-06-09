@@ -13,7 +13,13 @@ from typing import Protocol, runtime_checkable
 
 @runtime_checkable
 class SecretResolver(Protocol):
-    """Resolve a connector's webhook/API secret. Operator runtime supplies the real one."""
+    """Resolve a secret by its **credential key**. Operator runtime supplies the real one.
+
+    The argument is the credential **key** — for a single-secret connector that is its ``source_id``
+    (e.g. ``"google_drive"``); a multi-credential connector uses **namespaced** keys
+    ``<connector>[_<purpose>]`` (e.g. ``"linear"`` for the API key + ``"linear_webhook"`` for the webhook
+    signing secret). Keys are globally unique (``load_config`` rejects a cross-connector duplicate).
+    ``FileSecretResolver`` resolves env ``BICAMERAL_<KEY>`` then the file (FX-RUNTIME-004/005)."""
 
     def resolve(self, connector_id: str) -> str: ...
 

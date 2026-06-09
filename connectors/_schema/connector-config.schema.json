@@ -27,6 +27,7 @@
           "type": {"type": "string", "enum": ["api_key", "oauth2", "webhook_secret", "basic"]},
           "label": {"type": "string"},
           "required": {"type": "boolean"},
+          "modes": {"type": "array", "items": {"type": "string", "enum": ["webhook", "active", "passive"]}, "description": "Which run modes this credential serves. ABSENT or EMPTY = all modes (the runner requires it on any run). A mode-scoped run requires only credentials serving that mode."},
           "header": {"type": "string", "description": "How the credential is presented on the wire (e.g. 'Authorization (raw, no Bearer)')."},
           "scopes": {"type": "array", "items": {"type": "string"}, "description": "OAuth2 scopes."},
           "refresh_owner": {"type": "string", "enum": ["operator"]},

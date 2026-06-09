@@ -25,6 +25,8 @@ def _credential(c: dict) -> list[str]:
     out = [f"### `{c['key']}` — {c['label']} ({c['type']}, {req})"]
     if c.get("header"):
         out.append(f"- Wire format: `{c['header']}`")
+    if c.get("modes"):
+        out.append("- Serves run mode(s): " + ", ".join(f"`{m}`" for m in c["modes"]))
     if c.get("scopes"):
         out.append("- OAuth scopes: " + ", ".join(f"`{s}`" for s in c["scopes"]))
     if c.get("refresh_owner"):

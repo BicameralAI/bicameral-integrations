@@ -150,3 +150,22 @@ def test_setup_docs_fresh():
         assert any("SETUP.md" in k for k in report)
     finally:
         md_path.write_bytes(original)
+
+
+def test_credential_modes_optional_and_validated():
+    # FX-RUNTIME-005: credentials[].modes is enum-validated, optional; exemplars (with modes) stay fresh.
+    assert vcc.validate_all() == {}
+    d = _linear()
+    del d["credentials"][0]["modes"]  # absent modes still structurally valid (all-mode at runtime)
+    assert not [e for e in vcc._check(d, _SCHEMA, "x") if "modes" in e]
+    d2 = _linear()
+    d2["credentials"][0]["modes"] = ["bogus"]  # out-of-enum rejected
+    assert any("not in" in e for e in vcc._check(d2, _SCHEMA, "x"))
+
+
+def test_credential_modes_must_be_in_connector_modes():
+    # FX-RUNTIME-005 defense-in-depth: a credential serving a mode the connector doesn't declare is rejected.
+    d = _linear()  # connector modes ["webhook","active"]
+    d["credentials"][0]["modes"] = ["passive"]  # not a Linear mode
+    errs = vcc._semantic(d, "linear")
+    assert any("not in connector modes" in e for e in errs)
