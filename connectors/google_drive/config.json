@@ -68,7 +68,8 @@
   ],
   "wire_gates": [
     "Bearer-header assumption + multi-tab docs confirmed against a live response before the Live flip. Multi-tab docs (content under tabs[].documentTab.body) emit title-only — extract_document_text walks the legacy body; includeTabsContent/tabs[] deferred.",
-    "OAuth token refresh is now stdlib (runtime.RefreshTokenSecretResolver, FX-RUNTIME-006) — pasting a raw access token is a ~1h TEST only; the durable path is the refresh resolver (user OAuth) or a service-account JSON (operator-runtime, RS256/google-auth, not stdlib). Folder polling (Drive files.list) + push-notification webhooks remain deferred."
+    "OAuth token refresh is now stdlib (runtime.RefreshTokenSecretResolver, FX-RUNTIME-006) — pasting a raw access token is a ~1h TEST only; the durable path is the refresh resolver (user OAuth) or a service-account JSON (operator-runtime, RS256/google-auth, not stdlib). Folder polling (Drive files.list) + push-notification webhooks remain deferred.",
+    "Live flip GATED on human review + live testing: code-complete and harness-proven through runtime/ against a reference sink, but UNVERIFIED against the live Google Docs API with a real OAuth credential — no machine has minted a real token and fetched a real document yet. The operator must run the live test (durable path = the refresh resolver) and review the result before promoting; until then this connector is flip-ready, NOT Live (ADR-0012)."
   ],
-  "live_readiness": "Code-ready (FX-GDRIVE-002, documents.get). Operator provides a valid OAuth access token (refresh operator-owned) + a document id; then wires GatewaySink."
+  "live_readiness": "Flip-ready, NOT yet Live. Code-ready (FX-GDRIVE-002, documents.get) and harness-proven against a reference sink — but still incomplete: the Live flip is gated on operator human review + a live test against the real Google Docs API with a real OAuth credential. To flip: provide a durable credential (refresh token via RefreshTokenSecretResolver, or a service-account JSON at the operator runtime) + a document id; wire GatewaySink; run the live test; review before promoting to Live."
 }

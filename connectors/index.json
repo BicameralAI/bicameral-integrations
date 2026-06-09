@@ -55,7 +55,7 @@
           "text": "Test the connection: documents.get should return the document; its text is screened before emission."
         }
       ],
-      "live_readiness": "Code-ready (FX-GDRIVE-002, documents.get). Operator provides a valid OAuth access token (refresh operator-owned) + a document id; then wires GatewaySink.",
+      "live_readiness": "Flip-ready, NOT yet Live. Code-ready (FX-GDRIVE-002, documents.get) and harness-proven against a reference sink — but still incomplete: the Live flip is gated on operator human review + a live test against the real Google Docs API with a real OAuth credential. To flip: provide a durable credential (refresh token via RefreshTokenSecretResolver, or a service-account JSON at the operator runtime) + a document id; wire GatewaySink; run the live test; review before promoting to Live.",
       "modes": [
         "active"
       ],
@@ -86,7 +86,8 @@
       "trust_tier": "T1/T3",
       "wire_gates": [
         "Bearer-header assumption + multi-tab docs confirmed against a live response before the Live flip. Multi-tab docs (content under tabs[].documentTab.body) emit title-only — extract_document_text walks the legacy body; includeTabsContent/tabs[] deferred.",
-        "OAuth token refresh is now stdlib (runtime.RefreshTokenSecretResolver, FX-RUNTIME-006) — pasting a raw access token is a ~1h TEST only; the durable path is the refresh resolver (user OAuth) or a service-account JSON (operator-runtime, RS256/google-auth, not stdlib). Folder polling (Drive files.list) + push-notification webhooks remain deferred."
+        "OAuth token refresh is now stdlib (runtime.RefreshTokenSecretResolver, FX-RUNTIME-006) — pasting a raw access token is a ~1h TEST only; the durable path is the refresh resolver (user OAuth) or a service-account JSON (operator-runtime, RS256/google-auth, not stdlib). Folder polling (Drive files.list) + push-notification webhooks remain deferred.",
+        "Live flip GATED on human review + live testing: code-complete and harness-proven through runtime/ against a reference sink, but UNVERIFIED against the live Google Docs API with a real OAuth credential — no machine has minted a real token and fetched a real document yet. The operator must run the live test (durable path = the refresh resolver) and review the result before promoting; until then this connector is flip-ready, NOT Live (ADR-0012)."
       ]
     },
     "linear": {
@@ -164,7 +165,7 @@
           "text": "Test the connection: a signed test webhook should produce one emission; an active GraphQL fetch should return recent issues."
         }
       ],
-      "live_readiness": "Code-ready on both paths (FX-LINEAR-002 webhook, FX-LINEAR-003 GraphQL). Operator provides: the API key, the webhook signing secret, and a webhook receiver URL; then wires GatewaySink.",
+      "live_readiness": "Flip-ready, NOT yet Live. Code-ready on both paths (FX-LINEAR-002 webhook, FX-LINEAR-003 GraphQL) and harness-proven against a reference sink — but still incomplete: the Live flip is gated on operator human review + a live test against Linear's real API/webhook with real secrets. To flip: provide the API key, the webhook signing secret, and a webhook receiver URL; wire GatewaySink; run the live test; review before promoting to Live.",
       "modes": [
         "webhook",
         "active"
@@ -224,7 +225,8 @@
       },
       "wire_gates": [
         "Two-secret model (RESOLVED, FX-RUNTIME-005): Linear needs two namespaced credential keys — 'linear' (GraphQL API key, modes: active) + 'linear_webhook' (webhook signing secret, modes: webhook). The resolver resolves each by key (env BICAMERAL_LINEAR / BICAMERAL_LINEAR_WEBHOOK), and assert_runnable is mode-scoped so an active `runtime.cli run linear` requires only 'linear'. Residual: injecting 'linear_webhook' into deliver_webhook's receive path stays operator-runtime (the CLI runs active fetches, not webhook receipt).",
-        "GraphQL issue field set (id/identifier/title/description/url/updatedAt/state.name) confirmed against a live response before the Live flip (verify-before-cite)."
+        "GraphQL issue field set (id/identifier/title/description/url/updatedAt/state.name) confirmed against a live response before the Live flip (verify-before-cite).",
+        "Live flip GATED on human review + live testing: code-complete and harness-proven through runtime/ against a reference sink, but UNVERIFIED against Linear's live API/webhook with real secrets — no machine has hit the live endpoint yet. The operator must run the live test and review the result before promoting; until then this connector is flip-ready, NOT Live (ADR-0012)."
       ]
     }
   }
