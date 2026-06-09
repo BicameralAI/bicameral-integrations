@@ -2,6 +2,9 @@
 
 **Status:** Reference spec (v1, 2026-06-08). **This is a contract for the mcp UI team, not code.**
 
+**Tracked in:** [BicameralAI/bicameral-mcp#572](https://github.com/BicameralAI/bicameral-mcp/issues/572)
+— the mcp work item to render the **Linear + Google Drive** connector config UI against this spec.
+
 `bicameral-integrations` ships the **data contract** — a per-connector `connectors/<id>/config.json`
 (schema: `connectors/_schema/connector-config.schema.json`) and an aggregated `connectors/index.json`.
 The **mcp repo renders it**. This repo holds no UI code and no secret values. This spec defines how each
