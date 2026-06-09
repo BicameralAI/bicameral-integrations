@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P0 |
 | Default trust tier | T1/T3 |
 | Integration role | evidence + event |
-| Readiness (lifecycle) | Beta (parse + webhook verify, proven end-to-end through the `runtime/` harness against a reference sink; ADR-0012) |
+| Readiness (lifecycle) | Beta → **flip-ready, NOT yet Live** (parse + webhook + GraphQL active fetch, proven end-to-end through the `runtime/` harness against a reference sink; ADR-0012). The Live flip is gated on operator human review + a live test against Linear's real API/webhook with real secrets — still incomplete until then. |
 
 ## Provider documentation (verify on refresh)
 

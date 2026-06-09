@@ -106,7 +106,8 @@
   ],
   "wire_gates": [
     "Two-secret model (RESOLVED, FX-RUNTIME-005): Linear needs two namespaced credential keys — 'linear' (GraphQL API key, modes: active) + 'linear_webhook' (webhook signing secret, modes: webhook). The resolver resolves each by key (env BICAMERAL_LINEAR / BICAMERAL_LINEAR_WEBHOOK), and assert_runnable is mode-scoped so an active `runtime.cli run linear` requires only 'linear'. Residual: injecting 'linear_webhook' into deliver_webhook's receive path stays operator-runtime (the CLI runs active fetches, not webhook receipt).",
-    "GraphQL issue field set (id/identifier/title/description/url/updatedAt/state.name) confirmed against a live response before the Live flip (verify-before-cite)."
+    "GraphQL issue field set (id/identifier/title/description/url/updatedAt/state.name) confirmed against a live response before the Live flip (verify-before-cite).",
+    "Live flip GATED on human review + live testing: code-complete and harness-proven through runtime/ against a reference sink, but UNVERIFIED against Linear's live API/webhook with real secrets — no machine has hit the live endpoint yet. The operator must run the live test and review the result before promoting; until then this connector is flip-ready, NOT Live (ADR-0012)."
   ],
-  "live_readiness": "Code-ready on both paths (FX-LINEAR-002 webhook, FX-LINEAR-003 GraphQL). Operator provides: the API key, the webhook signing secret, and a webhook receiver URL; then wires GatewaySink."
+  "live_readiness": "Flip-ready, NOT yet Live. Code-ready on both paths (FX-LINEAR-002 webhook, FX-LINEAR-003 GraphQL) and harness-proven against a reference sink — but still incomplete: the Live flip is gated on operator human review + a live test against Linear's real API/webhook with real secrets. To flip: provide the API key, the webhook signing secret, and a webhook receiver URL; wire GatewaySink; run the live test; review before promoting to Live."
 }
