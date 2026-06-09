@@ -21,6 +21,8 @@ from connectors.openai_admin.connector import OpenAIAdminConnector
 from connectors.servicenow.connector import ServiceNowConnector
 from mods.contract import Manifest, Mod, load_manifest
 from mods.dependency_risk import DependencyRiskMod
+from mods.noisy_source_gate import NoisySourceGateMod
+from mods.security_mentions import SecurityMentionsMod
 
 from .doc_fetch import fetch_document
 from .graphql_poll import poll_graphql
@@ -81,6 +83,8 @@ RUNNERS: dict[str, Runner] = {
 
 _MODS: dict[str, tuple[Callable[[], Mod], Path]] = {
     "dependency_risk": (DependencyRiskMod, _MODS_DIR / "dependency_risk" / "manifest.yaml"),
+    "noisy_source_gate": (NoisySourceGateMod, _MODS_DIR / "noisy_source_gate" / "manifest.yaml"),
+    "security_mentions": (SecurityMentionsMod, _MODS_DIR / "security_mentions" / "manifest.yaml"),
 }
 
 

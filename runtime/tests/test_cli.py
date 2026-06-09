@@ -141,3 +141,11 @@ def test_run_connector_active_needs_only_active_credential():
                       mods={}, gateway={}, secret_map={"linear": "lin_key"})
     transport = _RecordingTransport([_gql_page([_issue("ENG-1")], has_next=False, end_cursor=None)])
     assert run_connector("linear", cfg, transport, CollectingSink()) == 1
+
+
+def test_run_mods_registry_resolves_batch1():
+    # FX-MOD-003/004: the new mods are wired into the runner registry (cls + pinned manifest).
+    from runtime.runner_registry import load_mod
+    for mod_id in ("dependency_risk", "noisy_source_gate", "security_mentions"):
+        mod, manifest = load_mod(mod_id)
+        assert mod.id == manifest.id  # cls.id mirrors the pinned manifest

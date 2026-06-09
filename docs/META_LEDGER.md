@@ -3658,8 +3658,80 @@ noted; ADR-0016 amended. Independent VETO→PASS (2 BLOCKING) + pre-seal devil's
 reality-alignment) PASS. Full sweep: **502 passed** (+8), ruff/mypy(158)/bandit clean, governance gate
 verifies chain #1–#122. L2.
 
+### Entry #123: GATE AUDIT — mod fan-out batch 1 (FX-MOD-003 + FX-MOD-004)
+
+**Entry ID**: `modsBatch1_123audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L1 (read-only advisory mods; no auth/network/security-seam)
+
+**Content Hash**:
+```
+SHA256(plan-mods-fanout-batch1-2026-06-08.md)
+= adbe1c8a83a493a66972901d34fbdd4e0da1d44418c380d3fcd125e57aa6492b
+```
+
+**Previous Hash**: 52bf6873e5b8f9b203aedeaa289f2dde78c145a46c25fd0422b58cb839ca57f6
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 94d802d8dec2965c33d70758ee728778ddddd438d695fb7ee48cf5af5495897c
+```
+
+**Decision**: Resume the mod fan-out (operator-directed) in the dependency_risk pattern — `noisy_source_gate`
++ `security_mentions` `evaluate` logic on the ADR-0013 contract. Independent fresh-context audit **PASSed**
+(no BLOCKING) — confirmed contract conformance (outputs set-equality per manifest), EM-safety by
+construction, determinism, honesty (config-as-code noisy set; mentions-not-secrets), and the central worry
+**unfounded**: `security_mentions` echoing "secret"/"token" does NOT trip FX-SEC-001 (`detect_sensitive`
+flags secret SHAPES — AKIA/ghp_/JWT/PAN — not English words). 4 advisories folded as tests: whole-word
+boundary (tokenize-no/CVE-yes), the **keystone `run_mod` self-screen** (the mod names what it found without
+leaking), excerpt-only surfaced, valid-evidence fixtures. Pre-seal devil's-advocate **PASS** (5/5 dimensions
+clean); 1 advisory applied (noisy README over-claimed "email" → corrected to the actual `{slack, granola,
+fathom}` set). L1.
+
+---
+
+### Entry #124: SESSION SEAL — mod fan-out batch 1 (FX-MOD-003 + FX-MOD-004)
+
+**Entry ID**: `modsBatch1_124seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= 67071c60efa7e456ef5e02876adc45e690bd4f61ac1fa7abe7e35511f647ebad
+```
+
+**Previous Hash**: 94d802d8dec2965c33d70758ee728778ddddd438d695fb7ee48cf5af5495897c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 0b04d97574f2648c564011916066e5fa76d1c1b28dd037814c14309a7b866c07
+```
+
+**Decision**: Mod fan-out batch 1 — two more mods built on the ADR-0013 contract.
+**`noisy_source_gate`** (`NoisySourceGateMod`, FX-MOD-003, 44 L): reads `source_id`; for a high-noise
+source (`{slack, granola, fathom}` — chat + meeting transcripts, config-as-code) emits a `routing_hint`
+(reviewer, low) + `advisory_governance_result` suggesting a manual gate unless trust is operator-raised;
+suggests, never enforces; non-noisy → `[]`. **`security_mentions`** (`SecurityMentionsMod`, FX-MOD-004,
+60 L): scans title+body+excerpts for **whole-word** security keywords (`\b<kw>\b`, deterministic sorted)
+→ `advisory_governance_result` + security `routing_hint` + `source_evidence_annotation`; surfaces
+**mentions**, never secrets (complements FX-SEC-001 — the keystone test proves the mod can name "oauth
+token"/"secret" without tripping the output screen). Both `outputs` mirror their `manifest.yaml`
+(set-equality), pure/deterministic, every output passes `run_mod`, EM-safe. Both **wired into
+`runtime/runner_registry._MODS`** (runnable via `runtime.cli run-mods <connector> --mods …`). READMEs
+marked Built + corrected. **FX-MOD-003/004**; SYSTEM_STATE. Independent audit PASS + pre-seal
+devil's-advocate PASS. Full sweep: **511 passed** (+9), ruff/mypy(166)/bandit clean, governance gate
+verifies chain #1–#124. **3 of 13 mods built; 10 remain Scoped (fan-out continues).** L1.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/multi-secret-mode-scoped-credentials`) — **Multi-secret + mode-scoped credentials SEALED at Entry #122 (`52bf6873`; L2).** The two-secret wire_gate is RESOLVED: connectors resolve multiple namespaced secret keys + an active `runtime.cli run` requires only the active-mode credential. Backward-compatible for the 24-connector fan-out. Prior seals stand: backend how-to docs (#120), headless runner (#118), config descriptors (#116).*
-*The connector platform is complete end-to-end for Linear + Google Drive: verified parse → live fetch → `config.json` (UI) → generated `SETUP.md` (backend runbook) → `RUNNERS` wire (headless) → mode-scoped multi-secret credentials. Usable WITHOUT the mcp UI (`python -m runtime.cli`). Secrets never committed nor printed.*
-*Next required action (in progress, operator-directed): **resume the mod fan-out** (12 Scoped mods on the ADR-0013/0014 contract, dependency_risk pattern) — current cycle. Then: **fan out the remaining 24 connectors** (each gets `config.json` + generated `SETUP.md` + a `RUNNERS` wire, validated on commit). Operator: the Linear/GDrive Live flips need operator secrets — runnable via `python -m runtime.cli run linear --sink gateway`. Admin: branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/mods-fanout-batch1`) — **Mod fan-out batch 1 SEALED at Entry #124 (`0b04d975`; L1).** 3 of 13 mods built (dependency_risk + noisy_source_gate + security_mentions), all wired into the runner. The batch fan-out pattern is proven. Prior seals stand: mode-scoped credentials (#122), backend docs (#120), headless runner (#118).*
+*The platform is end-to-end for Linear + Google Drive (parse → live fetch → config.json [UI] → SETUP.md [backend] → RUNNERS [headless] → mode-scoped multi-secret credentials), usable WITHOUT the mcp UI. The mod platform has 3 of 13 mods built, all runner-wired. Secrets never committed nor printed.*
+*Next required action (operator's call): continue the **mod fan-out** (10 Scoped mods remain — batch them in the same pattern) and/or the **connector fan-out** (24 remaining — each gets config.json + generated SETUP.md + a RUNNERS wire, validated on commit). Operator: the Linear/GDrive Live flips need operator secrets — runnable via `python -m runtime.cli run linear --sink gateway`. Admin: branch protection (B5). Open: bot #73 (release signing).*
