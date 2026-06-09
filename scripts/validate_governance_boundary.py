@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import fnmatch
 import os
-import subprocess
+import subprocess  # nosec B404 — git invocation, not user-controlled
 import sys
 from pathlib import Path
 
@@ -53,7 +53,7 @@ GOVERNANCE_ALLOWLIST = {
 
 
 def git_lines(args: list[str]) -> list[str]:
-    result = subprocess.run(
+    result = subprocess.run(  # nosec B603 B607
         ["git", *args],
         cwd=ROOT,
         check=False,
@@ -88,13 +88,13 @@ def registry_roots() -> list[str]:
             if set(cells[0]) <= set("-: "):  # table separator row
                 continue
             # cells[1] is Root(s); collect every `code-span` token.
-            token = ""
+            token = ""  # nosec B105
             in_tick = False
             for ch in cells[1]:
                 if ch == "`":
                     if in_tick and token:
                         roots.append(token.strip())
-                    token = ""
+                    token = ""  # nosec B105
                     in_tick = not in_tick
                 elif in_tick:
                     token += ch
