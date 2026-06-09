@@ -61,8 +61,9 @@ bicameral-integrations/
 |             GITIGNORED via glob + !example negation — NEVER committed)
 |-- mods/  (EM-safe advisory mods, OWNED by this track since 2026-06-08; contract.py/_manifest.py =
 |           the ADR-0013 execution contract: Mod protocol + ModEmission + manifest-enforced run_mod
-|           (EM-safe + FX-SEC-001-screened, input+output). dependency_risk/connector.py = the FIRST mod
-|           logic (FX-MOD-002, reference mod: OSV-vuln + manifest-mention paths); 12 mods still Scoped)
+|           (EM-safe + FX-SEC-001-screened, input+output). dependency_risk (FX-MOD-002, reference),
+|           noisy_source_gate (FX-MOD-003), security_mentions (FX-MOD-004) = built mod logic;
+|           3 of 13 mods built, 10 still Scoped (fan-out); all wired into runtime/runner_registry._MODS)
 |-- scripts/  (governance_gate.py + check_license_headers.py + contributor_check.py +
 |              validate_connector_config.py + build_connector_index.py + build_connector_setup.py
 |              [FX-CFG-001] + tests/)

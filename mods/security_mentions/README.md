@@ -1,6 +1,12 @@
 # Security Mentions Mod
 
-Status: Scoped
+Status: Built (FX-MOD-004) — `SecurityMentionsMod` in [`connector.py`](connector.py), run via `mods.contract.run_mod`.
+
+Scans `title`+`body`+evidence excerpts for **whole-word** security keywords (auth/token/secret/
+credential/oauth/webhook/cve/…), case-insensitive + deterministic (sorted). On a match: emits an
+`advisory_governance_result`, a security `routing_hint`, and a `source_evidence_annotation`. Surfaces
+*mentions* (the word "token"), never secrets — **complements, never replaces** FX-SEC-001 (the producer
+screen + `run_mod`'s input re-screen already removed any real secret; `run_mod` re-screens this output).
 
 Advisory mod for surfacing security-relevant mentions in adapter evidence —
 authentication, tokens, secrets, PII, webhook verification, and transport
