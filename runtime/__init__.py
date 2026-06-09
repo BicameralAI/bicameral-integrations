@@ -26,6 +26,7 @@ from .poll_specs import (
     build_openai_admin_spec,
     build_servicenow_spec,
 )
+from .google_oauth import OAuthRefreshError, RefreshTokenSecretResolver
 from .local_config import (
     ConfigError,
     FileSecretResolver,
@@ -60,6 +61,8 @@ __all__ = [
     "load_config",
     "resolver_from",
     "ConfigError",
+    "RefreshTokenSecretResolver",
+    "OAuthRefreshError",
     "poll",
     "PollError",
     "PollSpec",

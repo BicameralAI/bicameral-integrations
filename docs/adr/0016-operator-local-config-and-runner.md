@@ -71,6 +71,17 @@ rejection stays mode-independent (a typo'd key hard-fails on any mode), and a ge
 credential still fail-closes at `_require_secret`. **Residual:** injecting the webhook signing secret into
 `deliver_webhook`'s *receive* path stays operator-runtime (the CLI runs active fetches, not webhook receipt).
 
+## Amendment 2026-06-08 — Google OAuth refresh-token resolver (FX-RUNTIME-006)
+
+Concretizes `refresh_owner: operator` for Google. `runtime.RefreshTokenSecretResolver` (a `SecretResolver`)
+is the **durable stdlib Google auth path**: it mints a fresh access token from a **refresh token** on each
+`resolve(target_key)`, caching until `expires_in`, and delegates other keys to a base resolver. Research
+(#125) verified the refresh grant is a **plain form POST (no RSA)** → stdlib; a **service-account** token
+needs **RS256** → **not stdlib** → stays operator-runtime (`google-auth`), documented but not built here.
+Token-safe (errors are `(status, reason)` only; the transport error is raised outside the `except` so no
+`__cause__`/`__context__` carries the urlencoded body = the secrets). This resolves the "stores the access
+token" doc drift — a pasted access token is a ~1h test; the durable credential is the refresh token / SA JSON.
+
 ## Residual / accepted limitations
 
 - ~~**`linear_webhook` over-require**~~ — **resolved** by the FX-RUNTIME-005 amendment above (mode-scoped

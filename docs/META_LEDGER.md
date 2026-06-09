@@ -3730,8 +3730,123 @@ marked Built + corrected. **FX-MOD-003/004**; SYSTEM_STATE. Independent audit PA
 devil's-advocate PASS. Full sweep: **511 passed** (+9), ruff/mypy(166)/bandit clean, governance gate
 verifies chain #1–#124. **3 of 13 mods built; 10 remain Scoped (fan-out continues).** L1.
 
+### Entry #125: RESEARCH BRIEF — Google OAuth credentials for google_drive
+
+**Entry ID**: `googleOauth125research`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(research-brief-google-oauth-credentials-2026-06-08.md)
+= cc2e726a031490bd1d243155874a040b628949f8c26112f0744592f9f8a4a722
+```
+
+**Previous Hash**: 0b04d97574f2648c564011916066e5fa76d1c1b28dd037814c14309a7b866c07
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 8f53b599632e8495a568a3862b020b217519327f66a158a179404c9f18eebabc
+```
+
+**Decision**: Verified Google OAuth facts against authoritative Google docs before planning the OAuth-doc
+fix + a durable resolver. **Decisive findings:** (F2) the refresh-token exchange is a **plain `urllib`
+form POST** (`https://oauth2.googleapis.com/token`, `grant_type=refresh_token`) with **NO RSA/JWT
+signing** → a refresh resolver is **stdlib-feasible**; (F3) a **service-account** token requires signing a
+JWT with **RS256 (RSA-SHA256)** + a private key → **NOT stdlib** (Python stdlib has no RSA), so the
+previously-floated "stdlib ServiceAccountSecretResolver" is **invalid** — redirect to a refresh-token
+resolver; (F1) access tokens are short-lived (~1h, honor `expires_in`); (F5) restricted-scope verification
+applies only to distributed/published apps on consumer data — Testing-mode (own/test users) needs none.
+**Blueprint DRIFT:** the shipped `google_drive` obtain.steps + `CONNECTOR_BACKEND_SETUP.md` §5 imply a
+static stored token (the over-claim the operator flagged). **Recommends:** [L1] correct the docs; [L2]
+build a stdlib `RefreshTokenSecretResolver` (the durable in-repo path); document the service-account path
+as operator-runtime (needs google-auth/RS256, not stdlib). Lesson: verify the *signing* requirement before
+scoping an auth helper as stdlib-only. Feeds `/qor-auto-dev-1`.
+
 ---
+
+### Entry #126: GATE AUDIT — Google OAuth doc fix + RefreshTokenSecretResolver (FX-RUNTIME-006)
+
+**Entry ID**: `googleOauth126audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L2 (reads secrets; hits the token endpoint)
+
+**Content Hash**:
+```
+SHA256(plan-google-oauth-refresh-resolver-2026-06-08.md)
+= 6c6c3e7e7931b8692ca3192c44ae46eaba52b87ae919a007407754f0f09e7ddb
+```
+
+**Previous Hash**: 8f53b599632e8495a568a3862b020b217519327f66a158a179404c9f18eebabc
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= e3192552d0974166dc3d3307d93e36fbb9a062c614d8f1bd52846e686388c5e5
+```
+
+**Decision**: Plan to act on research #125 (fix the misleading Google OAuth docs + build a durable
+resolver). Independent fresh-context audit **VETOed** iteration 2 with **2 BLOCKING**, both on the L2
+secret-leak surface: (1) the resolver must own a **local `_MAX_RESPONSE` body cap** before `json.loads`
+(the recorded transport doesn't cap); (2) `OAuthRefreshError` must be **`(status, reason)`-only** and use
+`raise … from None` — else a urllib exception's message (which can embed the urlencoded POST body = the
+secrets) rides the traceback. Both folded; the implementation went further (raised OUTSIDE the `except` so
+even `__context__` is null). Plus advisories (`_reject_control_chars`, `expires_in` re-mint, the §5
+both-paths split, delegation-leak test). **PASS** iter 3. Pre-seal devil's-advocate ran an **exhaustive
+secret-leak trace** (every raise; `__cause__`+`__context__`; delegation; cache) → **PASS**. L2.
+
+---
+
+### Entry #127: SESSION SEAL — Google OAuth doc fix + RefreshTokenSecretResolver (FX-RUNTIME-006)
+
+**Entry ID**: `googleOauth127seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= cf875a7295099ee02d97eaf7e207160c237fb901517fcdc8a5bdc34caeb77dba
+```
+
+**Previous Hash**: e3192552d0974166dc3d3307d93e36fbb9a062c614d8f1bd52846e686388c5e5
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fcfb03f8c907eb9be2c3364a27d3d75cf557b3bd2f44a3da21e7ea4440911b11
+```
+
+**Decision**: Acted on research #125. `runtime/google_oauth.py` (113 L): `RefreshTokenSecretResolver`
+(`SecretResolver`) — the **durable stdlib Google auth path**: mints a fresh access token from a **refresh
+token** (the grant is a plain `urllib` form POST, **no RSA** — #125 F2), caches until `expires_in`,
+delegates other keys to a base resolver. **Token-safe (L2):** `OAuthRefreshError(status, reason)` only; the
+transport error is raised **OUTSIDE the `except`** so neither `__cause__` NOR `__context__` carries the
+urllib exception whose message can embed the urlencoded POST body (= refresh_token + client_secret);
+inputs `_reject_control_chars`-screened; secrets never in any error/traceback/log/delegated-resolve; token
+in **memory only**. **Fail-closed:** non-200 (incl. `400 invalid_grant`), local `_MAX_RESPONSE` cap before
+parse, unparseable/non-dict/missing-`access_token`, **absent/non-numeric `expires_in` → re-mint** (never a
+stale large default; `bool` excluded). Service-account stays operator-runtime (RS256/`google-auth`,
+**not** stdlib — #125 F3), documented not built. **Doc DRIFT corrected (operator-flagged):** google_drive
+`obtain.steps` no longer "stores the access token" (short-lived + durable=refresh(stdlib)/SA-JSON(operator-
+runtime)); `CONNECTOR_BACKEND_SETUP.md` §5 names both paths + the stdlib/non-stdlib split; auth.md records
+the verified facts; SETUP.md/index regenerated; ADR-0016 amended. **FX-RUNTIME-006**; SYSTEM_STATE. 12
+tests (mint, cache+expiry, delegate-no-touch, invalid_grant token-free, transport-exc-drops-cause [no
+`__context__` leak], missing/non-dict/non-str-token, oversized-body, missing-`expires_in` re-mint, control-
+char-reject). Independent VETO→PASS (2 BLOCKING: body cap, `from None`/`__context__` leak) + pre-seal
+exhaustive leak trace PASS. Full sweep: **523 passed** (+12), ruff/mypy(168)/bandit clean, governance gate
+verifies chain #1–#127 (research #125 + audit #126 + seal #127). L2.
+
+---
+
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/mods-fanout-batch1`) — **Mod fan-out batch 1 SEALED at Entry #124 (`0b04d975`; L1).** 3 of 13 mods built (dependency_risk + noisy_source_gate + security_mentions), all wired into the runner. The batch fan-out pattern is proven. Prior seals stand: mode-scoped credentials (#122), backend docs (#120), headless runner (#118).*
-*The platform is end-to-end for Linear + Google Drive (parse → live fetch → config.json [UI] → SETUP.md [backend] → RUNNERS [headless] → mode-scoped multi-secret credentials), usable WITHOUT the mcp UI. The mod platform has 3 of 13 mods built, all runner-wired. Secrets never committed nor printed.*
+*Status: `main` (cycle on `feat/google-oauth-refresh-resolver`) — **Google OAuth doc fix + RefreshTokenSecretResolver SEALED at Entry #127 (`fcfb03f8`; L2).** Research #125 redirected the build (service-account = RS256 = not stdlib; refresh = plain POST = stdlib). The misleading "stores the access token" doc is corrected; `runtime.RefreshTokenSecretResolver` is the durable stdlib Google auth path (token-safe, fail-closed). Prior seals stand: mod fan-out batch 1 (#124), mode-scoped credentials (#122), backend docs (#120).*
+*The platform is end-to-end for Linear + Google Drive (parse → live fetch → config.json [UI] → SETUP.md [backend] → RUNNERS [headless] → mode-scoped multi-secret credentials + durable Google OAuth), usable WITHOUT the mcp UI. 3 of 13 mods built, all runner-wired. Secrets never committed nor printed.*
 *Next required action (operator's call): continue the **mod fan-out** (10 Scoped mods remain — batch them in the same pattern) and/or the **connector fan-out** (24 remaining — each gets config.json + generated SETUP.md + a RUNNERS wire, validated on commit). Operator: the Linear/GDrive Live flips need operator secrets — runnable via `python -m runtime.cli run linear --sink gateway`. Admin: branch protection (B5). Open: bot #73 (release signing).*

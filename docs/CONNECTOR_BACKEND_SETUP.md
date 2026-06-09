@@ -69,9 +69,27 @@ the signature + replay window on each delivery.
 
 ## 5. OAuth (OAuth connectors, e.g. Google Drive)
 
-OAuth credentials carry `refresh_owner: operator`. The **UI owns the consent UX**; the **operator runtime
-owns token exchange + refresh** — your `SecretResolver` must return a *valid* access token (refresh it
-out-of-band). The CLI only sets `Authorization: Bearer <token>`; it does not perform the OAuth dance.
+OAuth credentials carry `refresh_owner: operator`. The **UI owns the consent UX**; the CLI only sets
+`Authorization: Bearer <token>` and does not perform the OAuth dance. A Google **access token is
+short-lived (~1 hour** — the response carries `expires_in`), so a pasted token is a **test, not a setup**.
+The *durable* credential is the **refresh token** (user OAuth) or a **service-account JSON** (server).
+Three ways to supply auth:
+
+- **Quick test** — paste a ~1 h access token (OAuth 2.0 Playground or your app) as the connector's secret /
+  `BICAMERAL_<KEY>`. It 401s after ~1 hour.
+- **Durable, stdlib (recommended for user OAuth)** — `runtime.RefreshTokenSecretResolver` (FX-RUNTIME-006):
+  give it the **refresh token + client id/secret**, and it mints a fresh access token on each `resolve`,
+  caching until `expires_in`. The refresh grant is a **plain form POST (no RSA)**, so it's stdlib-only.
+  Construct it in your operator runtime in place of `FileSecretResolver` (it delegates other keys to a base
+  resolver). An OAuth client in **Testing** publishing status needs **no Google verification** for your own
+  / test-user accounts.
+- **Durable, server (service account)** — a service-account JSON; share the doc with the SA email (or use
+  domain-wide delegation to impersonate a user). Minting a token here requires **RS256 JWT signing**, which
+  needs `google-auth` / `cryptography` — it is **operator-runtime, NOT stdlib** (this repo does not ship a
+  stdlib service-account resolver). Your operator runtime supplies that `SecretResolver`.
+
+Restricted-scope **verification** (and a security assessment) is required only for apps **distributed to
+other users** on consumer data — not for your own account / a service account on your own data.
 
 ## 6. Go-live (real emission)
 
