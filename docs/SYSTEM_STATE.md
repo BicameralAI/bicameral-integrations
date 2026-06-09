@@ -4,11 +4,11 @@
 
 | Attribute | Value |
 |-----------|-------|
-| **Last Updated** | 2026-06-05 |
-| **Updated By** | Orchestrator (qor-auto-dev-1) |
+| **Last Updated** | 2026-06-08 |
+| **Updated By** | Judge (qor-substantiate) |
 | **Phase** | `main` + **security red-team COMPLETE (Cycles A/B/C, GH #50-#61 all closed)** — Cycle C: id-less webhook replays deduped by body hash for the 4 windowless providers (#60; bounded-cache eviction/TTL residual documented); emission contract rejects zero-width-only excerpt + bounds `source_id` (#61). Cores were sound; the 12 edge findings (guarantee-violations A, DoS/robustness B, replay/nits C) are all fixed. 26 Beta connectors; parse surfaces hardened — the before-Live DoS gate is cleared |
 | **Iteration** | 30 governed cycles (… redaction retrofit; references.md parity; security red-team **Cycle A** (#52/#53/#54), **Cycle B** (#50/#51/#55-#59 DoS), **Cycle C** (#60 replay / #61 nits) — all 12 red-team issues closed) |
-| **Session Seal** | `<pending Entry #90>` (prior tip `563f9938` — Entry #88) |
+| **Session Seal** | `<pending Entry #128>` (prior tip `fcfb03f8` — Entry #127) |
 
 ---
 
@@ -208,6 +208,9 @@ bicameral-integrations/
 - [ ] adapter→gateway emission: map `AdapterEmission` to the **published** v1 ingest schema (bot PR #95, `protocol/schemas/v1/`) + a conformance test. The schema is NOT a blocker; *safe* live emission gates on the cross-repo deps below.
 - [x] Cross-repo deps (verified 2026-06-05): bot **#109 CLOSED/COMPLETED** (PR #131 — gateway `/api/v1/ingest` ingest guards landed: body-size/rate/sensitive-data). The Live-emission gate is **lifted**; `GatewaySink` is now real (Entry #71). Remaining bot context: **#73** OPEN (release signing/trust posture); MCP→ToolRequest refactor ongoing. #108 CLOSED. (Prior "bot #99 v1-schema blocker" was a misattribution — SG-2026-06-04-N.)
 - [ ] **Live operator-actionable (next)**: an operator configures `GatewaySink(endpoint, token)` against a real gateway to promote a connector to **Live** (the repo delivers the verified seam; the deployment earns Live).
+- [x] **Linear + Google Drive → flip-ready, NOT yet Live (2026-06-08, Entry #128)**: each descriptor's `live_readiness` + a closing `wire_gates` entry + `references.md` readiness record the explicit pre-Live gate — code-complete and harness-proven against a reference sink, but unverified against the live API with real secrets. `status` stays `live-ready` (no `live` enum; Live = operator wires real secrets + verifies). The flip is operator-gated (PR #90).
+- [x] **mcp UI handoff opened**: BicameralAI/bicameral-mcp#572 — build the Linear/GDrive connector config UI against the FX-CFG-001 descriptor contract; `docs/UI_RENDERING_SPEC.md` back-references it (PR #89).
+- [x] **qor-logic corpus distribution verified in-sync** (host=claude, repo scope, v0.103.1 — idempotent install, zero diff to `.claude/`). `docs/WHATS_NEXT.md` session handoff added; README Design Principles now name the config-descriptor contract + the headless `runtime.cli` runner.
 
 ---
 
