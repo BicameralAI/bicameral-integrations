@@ -26,6 +26,13 @@ from .poll_specs import (
     build_openai_admin_spec,
     build_servicenow_spec,
 )
+from .local_config import (
+    ConfigError,
+    FileSecretResolver,
+    LocalConfig,
+    load_config,
+    resolver_from,
+)
 from .secrets import MappingSecretResolver, SecretResolver
 from .sinks import (
     CollectingSink,
@@ -48,6 +55,11 @@ __all__ = [
     "emission_to_ingest_request",
     "SecretResolver",
     "MappingSecretResolver",
+    "FileSecretResolver",
+    "LocalConfig",
+    "load_config",
+    "resolver_from",
+    "ConfigError",
     "poll",
     "PollError",
     "PollSpec",

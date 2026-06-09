@@ -1,0 +1,32 @@
+{
+  "_comment": "Copy to config/bicameral.local.json (GITIGNORED) and fill REAL values, or set BICAMERAL_<KEY> env vars (which override the file). NEVER commit real secrets. Each connector's required credential KEYS are declared in connectors/<id>/config.json.",
+  "connectors": {
+    "linear": {
+      "enabled": false,
+      "secrets": {
+        "linear": "<personal API key — raw, no prefix>",
+        "linear_webhook": "<webhook signing secret (webhook receive path only)>"
+      },
+      "runtime": {"page_size": 50}
+    },
+    "google_drive": {
+      "enabled": false,
+      "secrets": {
+        "google_drive": "<OAuth access token — operator runtime refreshes this>"
+      },
+      "runtime": {"document_id": "<a Google Doc id to fetch>"}
+    },
+    "anthropic_admin": {
+      "enabled": false,
+      "secrets": {"anthropic_admin": "<admin API key>"},
+      "runtime": {}
+    }
+  },
+  "mods": {
+    "dependency_risk": {"enabled": true}
+  },
+  "gateway": {
+    "endpoint": "",
+    "token": ""
+  }
+}
