@@ -1,12 +1,16 @@
-# AI governance and local session state
+# Sibling tools — local process/AI tooling (see docs/governance/SIBLINGS.md).
+# Never tracked, never referenced.
 .agent/
+.agents/
 .claude/
 .failsafe/
 .qor/
+.bicameral/
 CLAUDE.md
 GEMINI.md
 COPILOT.md
 CURSOR.md
+RUN_SUMMARY.md
 
 # Planning drafts
 plan-*.md
