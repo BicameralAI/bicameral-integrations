@@ -18,6 +18,12 @@ Planning/
 .cursor/
 .windsurf/
 
+# Operator-local config secrets — NEVER commit (glob block; the example stays committed via negation)
+config/bicameral.local*.json
+config/*.local.json
+config/secrets*.json
+!config/bicameral.example.json
+
 # Python local artifacts
 .pytest_cache/
 __pycache__/
@@ -27,3 +33,4 @@ venv/
 # qor:seed -- do not edit between markers
 .qor/session/
 # qor:seed/end
+.codex/

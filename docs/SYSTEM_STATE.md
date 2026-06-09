@@ -51,7 +51,12 @@ bicameral-integrations/
 |              200-with-errors + 400-RATELIMITED fail-closed, FX-SEC-001 via normalize) — Linear;
 |              doc_fetch.py = the single-resource GET fetch (FX-GDRIVE-002: documents.get by id,
 |              fullmatch id-guard, dict-only, FX-SEC-001 via normalize) — google_drive;
+|              local_config.py + runner_registry.py + cli.py = the headless operator runner
+|              (FX-RUNTIME-004: `python -m runtime.cli list|run|run-mods`; FileSecretResolver
+|              env-over-gitignored-file; CLI prints screened emissions, never a secret);
 |              library-only, stdlib urllib)
+|-- config/  (bicameral.example.json [committed template]; bicameral.local.json = operator secrets,
+|             GITIGNORED via glob + !example negation — NEVER committed)
 |-- mods/  (EM-safe advisory mods, OWNED by this track since 2026-06-08; contract.py/_manifest.py =
 |           the ADR-0013 execution contract: Mod protocol + ModEmission + manifest-enforced run_mod
 |           (EM-safe + FX-SEC-001-screened, input+output). dependency_risk/connector.py = the FIRST mod

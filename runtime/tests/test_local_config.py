@@ -1,0 +1,77 @@
+# SPDX-License-Identifier: MIT
+"""Behavior tests for the operator-local config + resolver (FX-RUNTIME-004)."""
+
+from __future__ import annotations
+
+import json
+
+import pytest
+
+from runtime.local_config import (
+    ConfigError,
+    FileSecretResolver,
+    assert_runnable,
+    load_config,
+)
+
+
+def _write(tmp_path, obj) -> str:
+    p = tmp_path / "cfg.json"
+    p.write_text(json.dumps(obj), encoding="utf-8")
+    return str(p)
+
+
+def test_env_overrides_file(monkeypatch):
+    r = FileSecretResolver({"linear": "file_val"})
+    monkeypatch.setenv("BICAMERAL_LINEAR", "env_val")
+    assert r.resolve("linear") == "env_val"          # set + non-empty wins
+    monkeypatch.setenv("BICAMERAL_LINEAR", "")
+    assert r.resolve("linear") == "file_val"          # set-but-empty falls through to file
+    monkeypatch.delenv("BICAMERAL_LINEAR", raising=False)
+    assert r.resolve("linear") == "file_val"          # absent -> file
+    assert r.resolve("unknown_key") == ""             # unknown -> ""
+
+
+def test_load_config_fail_closed(tmp_path):
+    with pytest.raises(ConfigError):
+        load_config(_write(tmp_path, ["not", "an", "object"]))
+    with pytest.raises(ConfigError):
+        load_config(_write(tmp_path, {"connectors": {}, "surprise": 1}))  # unknown top key
+    with pytest.raises(ConfigError):
+        load_config(_write(tmp_path, {"connectors": {"x": {"bogus": 1}}}))  # unknown connector key
+
+
+def test_duplicate_credential_key_rejected(tmp_path):
+    cfg = {"connectors": {
+        "a": {"enabled": True, "secrets": {"shared": "1"}},
+        "b": {"enabled": True, "secrets": {"shared": "2"}},
+    }}
+    with pytest.raises(ConfigError) as exc:
+        load_config(_write(tmp_path, cfg))
+    assert "duplicate credential key" in str(exc.value)
+
+
+def test_load_config_builds_flat_secret_map(tmp_path):
+    cfg = {"connectors": {"linear": {"enabled": True, "secrets": {"linear": "k", "linear_webhook": "w"}}}}
+    config = load_config(_write(tmp_path, cfg))
+    assert config.secret_map == {"linear": "k", "linear_webhook": "w"}
+
+
+def test_assert_runnable_rejects_unknown_credential_key(tmp_path):
+    # B3: a secret under an unknown credential key hard-fails, naming the KEY not the value.
+    cfg = {"connectors": {"linear": {"enabled": True, "secrets": {"bogus": "SECRET_VALUE"}}}}
+    config = load_config(_write(tmp_path, cfg))
+    with pytest.raises(ConfigError) as exc:
+        assert_runnable(config, "linear")
+    assert "bogus" in str(exc.value)
+    assert "SECRET_VALUE" not in str(exc.value)  # never leaks the value
+
+
+def test_assert_runnable_rejects_missing_required(tmp_path, monkeypatch):
+    monkeypatch.delenv("BICAMERAL_LINEAR", raising=False)
+    monkeypatch.delenv("BICAMERAL_LINEAR_WEBHOOK", raising=False)
+    cfg = {"connectors": {"linear": {"enabled": True, "secrets": {}}}}  # required creds absent
+    config = load_config(_write(tmp_path, cfg))
+    with pytest.raises(ConfigError) as exc:
+        assert_runnable(config, "linear")
+    assert "missing required" in str(exc.value)

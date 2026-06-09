@@ -3424,7 +3424,85 @@ VETO→PASS (3 BLOCKING) + pre-seal devil's-advocate (B1 + 3 advisories addresse
 passed** (+11 scripts/tests this cycle), ruff/mypy(153)/bandit clean, governance gate verifies chain
 #1–#116. L2.
 
+### Entry #117: GATE AUDIT — operator-local config + headless runner (FX-RUNTIME-004)
+
+**Entry ID**: `localRunner117audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L2 (reads real secrets; can egress to the gateway)
+
+**Content Hash**:
+```
+SHA256(plan-operator-local-runner-2026-06-08.md)
+= 5cd8fb5425f8b23f634e380d423a9a22929d4c6d4a8defd7d1312e369a144b6d
+```
+
+**Previous Hash**: 5826af5d7c2bf51d90f484eded9343bca5b0340c019639c5d7e578b749e8fda9
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 9f0b0a597997401ccca4dd47e6477b4422672b4b5fe0eb66952f56817e0953f3
+```
+
+**Decision**: Operator: "until the UI is implemented and even after, maintain a configuration by file…
+so we can leverage these connectors and mods without the UI as a blocker." Built a file/env-backed config
++ runner CLI. Decisions locked: gitignored local file + committed example + env override; `python -m
+runtime.cli` (`list`/`run`/`run-mods`), local sink by default. Independent fresh-context audit **VETOed**
+iteration 2 with **3 BLOCKING** — all on the never-commit-secrets layer: (1) the gitignore single-literal
+admits renamed/typo'd secret files → a **glob block** + `!example` negation; (2) TruffleHog
+`--only-verified` won't flag a pasted-but-revoked key → a **secret-shape scan over tracked `config/*.json`**;
+(3) `run`-time descriptor validation was **fail-open** → `run_connector` HARD-fails token-free (KEY-NAME-
+only) on a bad credential. All folded + 8 advisories (env empty-string fall-through, duplicate-key guard,
+pinned manifest path, google_drive doc-id fail, `--limit` semantics, unknown-id, no-`repr(config)` except
+rule, ADR records). **PASS** iter 3. Pre-seal devil's-advocate ran an **exhaustive secret-leakage trace**
+(every print/error/log path) → **PASS**, 4 advisory (1 applied: removed a dead import). L2.
+
+---
+
+### Entry #118: SESSION SEAL — operator-local config + headless runner (FX-RUNTIME-004)
+
+**Entry ID**: `localRunner118seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= b107932c00da16ca5030a456d6e921c7e21a48e917335685bb312064b27b0174
+```
+
+**Previous Hash**: 9f0b0a597997401ccca4dd47e6477b4422672b4b5fe0eb66952f56817e0953f3
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 03a2eb5f2b69ee2963f2eb0993a4d359ba79f75d6a29223c1b3027781785306e
+```
+
+**Decision**: Built the **operator-local config + headless runner** — connectors + mods are now usable
+WITHOUT the mcp UI (the UI is no longer a blocker). `runtime/local_config.py`: `FileSecretResolver` (env
+`BICAMERAL_<KEY>` wins when set+non-empty, else gitignored-file flat map; **never echoes a secret**),
+`load_config` (fail-closed: non-dict/unknown-key/**duplicate-credential-key** rejected; `_`-comment keys),
+`assert_runnable` (HARD-fail token-free KEY-NAME-only on unknown/missing-required credential for the
+target — required checked via the resolver so env-only passes). `runtime/runner_registry.py`: `RUNNERS`
+dispatch (`linear` GraphQL / `google_drive` documents.get / 7 REST poll connectors — absorbs `poll`'s
+connector-first-arg asymmetry); `load_mod` pins the manifest path. `runtime/cli.py`: `python -m runtime.cli
+list|run|run-mods`; default local `CollectingSink` prints **screened** emissions (source/title/excerpt —
+never a secret); `--sink gateway` = real POST (**default-gated**); `--limit` caps printed; `run-mods` pipes
+through `run_mod` (dependency_risk). `config/bicameral.example.json` (committed placeholders);
+`.gitignore` **glob block** (`config/bicameral.local*.json` + `config/*.local.json` + `config/secrets*.json`
++ `!example`). **Never-commit-secrets:** a test proves the glob (3 variants) + a secret-shape scan over
+tracked `config/*.json` (independent of `--only-verified`); `main()`'s except handler prints `str(exc)`
+only (never `repr(config)`/token); `test_no_secret_in_stdout` asserts the value never leaks. **ADR-0016**;
+FX-RUNTIME-004; SYSTEM_STATE (+`config/`). Independent VETO→PASS (3 BLOCKING on the secrets layer) +
+pre-seal exhaustive secret-leak trace PASS. Full sweep: **489 passed** (+15 this cycle), ruff/mypy(158)/
+bandit clean, governance gate verifies chain #1–#118. L2.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/connector-config-descriptors`) — **Connector config descriptor contract SEALED at Entry #116 (`5826af5d`; L2).** The mcp UI now has a machine-readable contract: per-connector `config.json` (credentials/scopes/runtime/webhook-receiver/data/instructions/references) + JSON Schema + `index.json` + `UI_RENDERING_SPEC.md`, CI-validated (fail-closed + code-drift-guarded + byte-fresh). Reference exemplars: Linear + Google Drive. This repo ships the contract; mcp renders it; no secrets here. Prior seals stand: Linear/GDrive go-live (#112/#114), dependency_risk (#110), metadata (#108), mod contract (#106).*
-*Next required action: **fan out the remaining 24 connector `config.json` descriptors** (batched governed cycles, each validated on commit) so the mcp UI can render the full catalog; AND/OR resume the **mod fan-out** (12 Scoped mods on the ADR-0013/0014 contract). Operator: the Linear/GDrive Live flips + multi-secret resolver namespacing (the surfaced wire_gate) are runtime cycles needing operator secrets/decision. Admin: branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/operator-local-runner`) — **Operator-local config + headless runner SEALED at Entry #118 (`03a2eb5f`; L2).** Connectors + mods are usable WITHOUT the mcp UI: `python -m runtime.cli list|run|run-mods` over a gitignored `config/bicameral.local.json` (or env). Secrets never committed (glob + shape-scan) and never printed (exhaustive leak trace). The mcp UI contract (FX-CFG-001) + this headless runner (FX-RUNTIME-004) together: UI-optional. Prior seals stand: config descriptors (#116), Linear/GDrive go-live (#112/#114), dependency_risk (#110).*
+*Next required action (operator's call): **fan out the remaining 24 connector `config.json` descriptors** (UI catalog) and/or **wire those connectors into `RUNNERS`** (headless catalog); **resume the mod fan-out** (12 Scoped mods); runtime: **multi-secret resolver namespacing** (the surfaced wire_gate) + a `mode`-scoped required-credential filter (relax linear's active-only over-require). Operator: the Linear/GDrive Live flips need operator secrets — now runnable via `python -m runtime.cli run linear --sink gateway`. Admin: branch protection (B5). Open: bot #73 (release signing).*
