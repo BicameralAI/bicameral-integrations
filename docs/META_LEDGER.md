@@ -3581,8 +3581,85 @@ backstop over the generated docs). FX-CFG-001 row grows; SYSTEM_STATE. Independe
 passed** (+5), ruff/mypy(158)/bandit clean, governance gate verifies chain #1–#120. Remaining 24
 connectors' SETUP.md generate near-free as their `config.json` lands. L1.
 
+### Entry #121: GATE AUDIT — multi-secret + mode-scoped credentials (FX-RUNTIME-005)
+
+**Entry ID**: `modeScoped121audit`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (independent fresh-context audit + pre-seal devil's-advocate)
+**Risk Grade**: L2 (relaxes the operator-runtime credential gate)
+
+**Content Hash**:
+```
+SHA256(plan-multi-secret-mode-scoped-credentials-2026-06-08.md)
+= 584222b511b040b93dc0535575fee792a2d54ddf7996b25bb4c364cbbee161dc
+```
+
+**Previous Hash**: 990d16dd97c54b6656a3236641c686cd98543484fcbe518bb328cddb50d937dc
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fd92543c9195bb20709d8173ee13ad08b0ba9639572814cf2ec14ba77a5722d8
+```
+
+**Decision**: Operator chose to close the surfaced two-secret wire_gate. Research found multi-secret
+resolution **already works** by namespaced key (FileSecretResolver's flat map + the dup-key guard); the
+real defect is `assert_runnable` **over-requiring** — an active `run linear` demanded the unused webhook
+secret. Independent fresh-context audit **VETOed** iteration 2 with **2 BLOCKING**: (1) `modes:[]` would
+be a **silent permanent under-require** (present-but-includes-no-mode → required for NO mode ever) → fixed
+with `mode in (c.get("modes") or [mode])` so absent AND empty both mean all-mode; (2) the backward-compat
+test would pass for the wrong reason once linear's creds carry modes → a **synthetic** absent-modes test
+proves the 24-future-connector path. All folded + 4 advisories (unknown-key mode-independence, two-active,
+wire_gate regen, SETUP rendering). **PASS** iter 3. Pre-seal devil's-advocate traced all four mode cases
+(empty/absent/off-mode/on-mode) + the reality-alignment (active fetch resolves only the active-mode key) →
+**PASS**; one advisory applied (a `credentials[].modes ⊆ connector modes` validator drift-guard for the
+fan-out). L2.
+
+---
+
+### Entry #122: SESSION SEAL — multi-secret + mode-scoped credentials (FX-RUNTIME-005)
+
+**Entry ID**: `modeScoped122seal`
+**Timestamp**: 2026-06-08T00:00:00-04:00
+**Phase**: SUBSTANTIATE (implement)
+**Author**: Judge / Orchestrator (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(FEATURE_INDEX.md)
+= aa24bdbea03c4658717f952eb892ed2825c51c0a7fd85d7b6eae3b4f85ff7ea9
+```
+
+**Previous Hash**: fd92543c9195bb20709d8173ee13ad08b0ba9639572814cf2ec14ba77a5722d8
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 52bf6873e5b8f9b203aedeaa289f2dde78c145a46c25fd0422b58cb839ca57f6
+```
+
+**Decision**: Closed the two-secret wire_gate (FX-RUNTIME-005). **Namespacing formalized** (`SecretResolver`
+docstring + ADR-0016 amendment): resolve by credential **key** — single-secret = `source_id`, multi-
+credential = namespaced `<connector>[_<purpose>]` (`linear` + `linear_webhook`), globally unique by the
+`load_config` dup-key guard, env `BICAMERAL_<KEY>`. **Mode-scoped gate:** optional `credentials[].modes`
+added to the schema (enum); `assert_runnable(config, id, *, mode="active")` requires only credentials
+serving the run's mode — **absent OR empty `modes` = all-mode** (`mode in (c.get("modes") or [mode])`,
+closing the `modes:[]` silent-never-required hole) — so an active `run linear` requires only `linear`,
+not the webhook secret. Unknown-key rejection stays **mode-independent**; a genuinely-missing active
+credential still fail-closes at `_require_secret`. linear (`linear`→active / `linear_webhook`→webhook) +
+google_drive (`google_drive`→active) descriptors gain per-credential modes; the linear wire_gate is
+rewritten (gap **resolved**). The validator adds a `credentials[].modes ⊆ connector modes` drift-guard.
+`index.json` + `SETUP.md` regenerated (LF, byte-fresh; SETUP shows "Serves run mode(s)"). The gate is
+**relaxed strictly** (fewer required); backward-compatible (descriptors without `modes` gate on all
+modes). `cli.run_connector` passes `mode="active"`. **FX-RUNTIME-005**; FX-RUNTIME-004 + FX-CFG-001 rows
+noted; ADR-0016 amended. Independent VETO→PASS (2 BLOCKING) + pre-seal devil's-advocate (4-case trace +
+reality-alignment) PASS. Full sweep: **502 passed** (+8), ruff/mypy(158)/bandit clean, governance gate
+verifies chain #1–#122. L2.
+
 ---
 *Chain integrity: VALID*
-*Status: `main` (cycle on `feat/connector-backend-setup-docs`) — **Connector backend how-to docs SEALED at Entry #120 (`990d16dd`; L1).** Backend engineers now have a runbook: `docs/CONNECTOR_BACKEND_SETUP.md` (framework) + generated `connectors/<id>/SETUP.md` per connector (validator-fresh from config.json). The connector-config story is complete across audiences: machine (config.json/index.json), UI (UI_RENDERING_SPEC), backend operator (SETUP.md). Prior seals stand: headless runner (#118), config descriptors (#116), Linear/GDrive go-live (#112/#114).*
-*Connectors + mods are usable WITHOUT the mcp UI (`python -m runtime.cli`, FX-RUNTIME-004 #118); the connector-config story now spans machine (config.json/index.json), UI (UI_RENDERING_SPEC), and backend operator (SETUP.md). Secrets never committed (glob + shape-scan) and never printed.*
-*Next required action (operator's call): **fan out the remaining 24 connectors** — each gets `config.json` (UI), a generated `SETUP.md` (backend runbook), and a `RUNNERS` wire (headless), validated on commit; **resume the mod fan-out** (12 Scoped mods); runtime: **multi-secret resolver namespacing** (the surfaced wire_gate) + a `mode`-scoped required-credential filter (relax linear's active-only over-require). Operator: the Linear/GDrive Live flips need operator secrets — runnable via `python -m runtime.cli run linear --sink gateway`. Admin: branch protection (B5). Open: bot #73 (release signing).*
+*Status: `main` (cycle on `feat/multi-secret-mode-scoped-credentials`) — **Multi-secret + mode-scoped credentials SEALED at Entry #122 (`52bf6873`; L2).** The two-secret wire_gate is RESOLVED: connectors resolve multiple namespaced secret keys + an active `runtime.cli run` requires only the active-mode credential. Backward-compatible for the 24-connector fan-out. Prior seals stand: backend how-to docs (#120), headless runner (#118), config descriptors (#116).*
+*The connector platform is complete end-to-end for Linear + Google Drive: verified parse → live fetch → `config.json` (UI) → generated `SETUP.md` (backend runbook) → `RUNNERS` wire (headless) → mode-scoped multi-secret credentials. Usable WITHOUT the mcp UI (`python -m runtime.cli`). Secrets never committed nor printed.*
+*Next required action (in progress, operator-directed): **resume the mod fan-out** (12 Scoped mods on the ADR-0013/0014 contract, dependency_risk pattern) — current cycle. Then: **fan out the remaining 24 connectors** (each gets `config.json` + generated `SETUP.md` + a `RUNNERS` wire, validated on commit). Operator: the Linear/GDrive Live flips need operator secrets — runnable via `python -m runtime.cli run linear --sink gateway`. Admin: branch protection (B5). Open: bot #73 (release signing).*

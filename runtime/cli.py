@@ -43,7 +43,7 @@ def run_connector(
     runner = RUNNERS.get(connector_id)
     if runner is None:
         raise ConfigError(f"unknown or not-runnable connector: {connector_id!r}")
-    assert_runnable(config, connector_id)  # B3: hard-fail (token-free) on a bad credential key
+    assert_runnable(config, connector_id, mode="active")  # the CLI run path is always the active fetch
     runtime = (config.connectors.get(connector_id) or {}).get("runtime", {})
     count = runner(resolver_from(config), runtime, document_id, transport, sink)
     if limit is not None and isinstance(sink, CollectingSink) and len(sink.emissions) > limit:

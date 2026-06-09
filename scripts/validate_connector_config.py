@@ -106,6 +106,10 @@ def _semantic(descriptor: dict, folder: str) -> list[str]:
     has_webhook_mode = "webhook" in declared
     if has_webhook_mode != ("webhook" in descriptor):
         errs.append(f"{folder}: webhook block {'required' if has_webhook_mode else 'unexpected'} for declared modes")
+    for c in descriptor.get("credentials", []):  # FX-RUNTIME-005: a credential serving a mode the connector
+        cred_extra = set(c.get("modes") or []) - declared  # doesn't declare is dead → latent silent under-require
+        if cred_extra:
+            errs.append(f"{folder}: credential {c.get('key')!r} modes {cred_extra} not in connector modes {declared}")
     for i, step in enumerate(descriptor.get("instructions", [])):
         if not isinstance(step, dict):  # _check already flags the type; never throw here (return errors)
             continue

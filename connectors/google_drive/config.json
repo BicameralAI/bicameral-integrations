@@ -13,6 +13,7 @@
       "type": "oauth2",
       "label": "Google OAuth access token",
       "required": true,
+      "modes": ["active"],
       "header": "Authorization: Bearer <access_token>",
       "scopes": [
         "https://www.googleapis.com/auth/documents.readonly",

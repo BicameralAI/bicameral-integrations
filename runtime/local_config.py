@@ -103,9 +103,13 @@ def validate_against_descriptors(config: LocalConfig) -> list[str]:
     return warns
 
 
-def assert_runnable(config: LocalConfig, connector_id: str) -> None:
-    """Hard-fail (token-free, KEY-NAME-only) if the TARGET connector is mis-credentialed (B3).
-    Required credentials are checked via the RESOLVER (env OR file), so an env-only operator passes."""
+def assert_runnable(config: LocalConfig, connector_id: str, *, mode: str = "active") -> None:
+    """Hard-fail (token-free, KEY-NAME-only) if the TARGET connector is mis-credentialed for ``mode``.
+    Required credentials are checked via the RESOLVER (env OR file), so an env-only operator passes.
+    **Mode-scoped (FX-RUNTIME-005):** only credentials serving ``mode`` are required — a credential's
+    ``modes`` that is absent OR empty means **all modes** (``mode in (c.get("modes") or [mode])``), so an
+    active ``run`` does not demand a credential that only serves the webhook-receive path. The unknown-key
+    rejection below is mode-INDEPENDENT (a typo'd key hard-fails on any mode)."""
     block = config.connectors.get(connector_id)
     if not block:
         raise ConfigError(f"connector {connector_id!r} not in config")
@@ -118,7 +122,8 @@ def assert_runnable(config: LocalConfig, connector_id: str) -> None:
         raise ConfigError(f"{connector_id}: secret(s) under unknown credential key(s): {sorted(unknown)}")
     resolver = resolver_from(config)
     missing = [c["key"] for c in desc.get("credentials", [])
-               if c.get("required") and not resolver.resolve(c["key"])]
+               if c.get("required") and mode in (c.get("modes") or [mode])
+               and not resolver.resolve(c["key"])]
     if missing:
         raise ConfigError(f"{connector_id}: missing required credential(s): {sorted(missing)} "
                           f"(set in config or BICAMERAL_<KEY>)")

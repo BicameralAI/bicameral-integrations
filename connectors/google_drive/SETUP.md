@@ -12,6 +12,7 @@ See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for
 
 ### `google_drive` — Google OAuth access token (oauth2, required)
 - Wire format: `Authorization: Bearer <access_token>`
+- Serves run mode(s): `active`
 - OAuth scopes: `https://www.googleapis.com/auth/documents.readonly`, `https://www.googleapis.com/auth/drive.readonly`
 - Refresh owner: **operator** (token exchange/refresh needs operator oversight)
 - Supply via config key `google_drive` **or** env `BICAMERAL_GOOGLE_DRIVE` (env wins when set).
