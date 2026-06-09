@@ -29,6 +29,7 @@ import sys
 from pathlib import Path
 
 from build_connector_index import build_index, render
+from build_connector_setup import build_setup
 
 _REPO = Path(__file__).resolve().parents[1]
 if str(_REPO) not in sys.path:  # CLI: sys.path[0] is scripts/, not repo root — make `connectors` importable
@@ -134,6 +135,12 @@ def validate_all(connectors_dir: Path = _CONNECTORS) -> dict[str, list[str]]:
     committed = _INDEX.read_bytes() if _INDEX.exists() else b""  # byte-exact: catches CRLF drift too
     if fresh != committed:
         report["connectors/index.json"] = ["stale — run scripts/build_connector_index.py"]
+    for path in sorted(connectors_dir.glob("*/config.json")):  # only config.json-bearing connectors
+        setup = path.parent / "SETUP.md"
+        fresh_setup = build_setup(json.loads(path.read_text(encoding="utf-8"))).encode("utf-8")
+        have = setup.read_bytes() if setup.exists() else b""  # missing -> b"" -> mismatch, fail-closed
+        if fresh_setup != have:
+            report[str(setup.relative_to(_REPO))] = ["stale/missing — run scripts/build_connector_setup.py"]
     return report
 
 

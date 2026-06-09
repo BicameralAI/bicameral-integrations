@@ -10,6 +10,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import build_connector_index as bci  # noqa: E402
+import build_connector_setup as bcs  # noqa: E402
 import validate_connector_config as vcc  # noqa: E402
 
 _REPO = Path(__file__).resolve().parents[2]
@@ -93,3 +94,59 @@ def test_modes_not_in_capabilities_rejected():
     d["modes"] = ["discovery"]  # DISCOVERY is a valid SourceMode but not in Linear's frozenset
     errs = vcc._semantic(d, "linear")
     assert any("not in capabilities" in e for e in errs)
+
+
+# --- backend setup docs (FX-CFG-001 grows) ---
+
+import re  # noqa: E402
+
+
+def _gdrive() -> dict:
+    return json.loads((_CONNECTORS / "google_drive" / "config.json").read_text(encoding="utf-8"))
+
+
+def test_setup_renders_from_descriptor():
+    md = bcs.build_setup(_linear())
+    assert "BICAMERAL_LINEAR" in md and "BICAMERAL_LINEAR_WEBHOOK" in md  # B1: per-credential env vars
+    assert "webhook-*receive* path only" in md and "NOT** consumed by `runtime.cli run`" in md  # B2
+    assert "python -m runtime.cli run linear" in md
+    assert "you provision this inbound URL" in md  # receiver as instruction, not a value
+    assert "## Go-live" in md
+
+
+def test_setup_deterministic():
+    d = _linear()
+    assert bcs.build_setup(d) == bcs.build_setup(d)
+    reordered = json.loads(json.dumps(d, sort_keys=True))  # B3: key-order-invariant
+    assert bcs.build_setup(d) == bcs.build_setup(reordered)
+
+
+def test_setup_generated_for_exemplars():
+    for cid in ("linear", "google_drive"):
+        md = (_CONNECTORS / cid / "SETUP.md").read_text(encoding="utf-8")
+        assert md.startswith("<!-- GENERATED from config.json")
+    gd = bcs.build_setup(_gdrive())
+    assert "oauth2" in gd and "--document-id" in gd and "## Webhook setup" not in gd  # active-only
+
+
+def test_setup_no_secret_shapes():
+    # B4: the generated docs render placeholders only — no real secret shape.
+    shapes = [r"lin_api_[A-Za-z0-9]{10,}", r"ya29\.[A-Za-z0-9_-]{10,}", r"\bAKIA[0-9A-Z]{16}\b",
+              r"whsec_[A-Za-z0-9]{10,}", r"eyJ[A-Za-z0-9_-]+\.eyJ", r"Bearer [A-Za-z0-9._-]{12,}"]
+    for path in _CONNECTORS.glob("*/SETUP.md"):
+        text = path.read_text(encoding="utf-8")
+        for shape in shapes:
+            assert not re.search(shape, text), f"{path} matches {shape}"
+
+
+def test_setup_docs_fresh():
+    # B5: every SETUP.md is byte-fresh vs build_setup of its config.json (validate_all reports stale).
+    assert vcc.validate_all() == {}  # exemplars fresh
+    md_path = _CONNECTORS / "linear" / "SETUP.md"
+    original = md_path.read_bytes()
+    try:
+        md_path.write_bytes(original + b"\ntampered\n")
+        report = vcc.validate_all()
+        assert any("SETUP.md" in k for k in report)
+    finally:
+        md_path.write_bytes(original)

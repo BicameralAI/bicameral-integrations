@@ -4,3 +4,4 @@
 connectors/index.json text eol=lf
 connectors/*/config.json text eol=lf
 connectors/_schema/*.json text eol=lf
+connectors/*/SETUP.md text eol=lf
