@@ -38,11 +38,19 @@ def test_parse_maps_summary_key_metadata():
     assert obs.source_ref.source_id == "jira"
     assert obs.source_ref.ref == "PROJ-123"
     assert obs.source_ref.url.endswith("/issue/10002")
-    assert obs.author == "Ada Lovelace"
+    assert obs.author == ""  # actor displayName (a real name) dropped, PII-safe (SG-2026-06-11-D)
     assert obs.timestamp == "2026-06-04T00:05:00.000+0000"
     assert obs.metadata["status"] == "To Do"
     assert obs.metadata["issuetype"] == "Bug"
     assert obs.metadata["project"] == "PROJ"
+
+
+def test_summary_redacted_and_pass():
+    # the summary is free-text -> redact-and-pass scrubs an embedded email; non-PII text survives.
+    ev = {"issue": {"key": "K-9", "fields": {"summary": "Reopen for bob@corp.com per ticket"}}}
+    obs = parse_issue(ev)
+    assert "bob@corp.com" not in obs.excerpt
+    assert "Reopen for" in obs.excerpt
 
 
 def test_excerpt_never_uses_adf_description():

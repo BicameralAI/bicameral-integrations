@@ -27,6 +27,7 @@ from collections.abc import Callable
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -53,8 +54,8 @@ def parse_issue(event: dict) -> Observation:
     fields = issue.get("fields")
     fields = fields if isinstance(fields, dict) else {}
     key = _text(issue.get("key")) or _text(issue.get("id")) or "jira-issue"
-    summary = _text(fields.get("summary"))  # never fields.description (ADF object)
-    user = event.get("user")
+    # summary is free-text -> redact-and-pass (never fields.description, an ADF object).
+    summary = redact(_text(fields.get("summary")))
     return Observation(
         source_ref=SourceRef(
             source_id="jira",
@@ -65,7 +66,7 @@ def parse_issue(event: dict) -> Observation:
         excerpt=summary or key,
         mode=SourceMode.WEBHOOK,
         title=summary or key,
-        author=_text(user.get("displayName")) if isinstance(user, dict) else "",
+        author="",  # PII-safe: the actor's displayName (a real name) is NOT surfaced (SG-2026-06-11-D)
         timestamp=_text(fields.get("updated")) or _text(fields.get("created")) or str(event.get("timestamp") or ""),
         metadata={
             "event": _text(event.get("webhookEvent")),

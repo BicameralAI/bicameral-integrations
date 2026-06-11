@@ -1,0 +1,75 @@
+{
+  "id": "jira",
+  "name": "Jira",
+  "description": "Jira Cloud issue webhook events as redact-and-pass governed evidence.",
+  "category": "project-management",
+  "trust_tier": "T1",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["webhook"],
+  "credentials": [
+    {
+      "key": "jira_webhook",
+      "type": "webhook_secret",
+      "label": "Webhook signing secret",
+      "required": true,
+      "modes": ["webhook"],
+      "header": "X-Hub-Signature (sha256= hex HMAC-SHA256 over the raw body, WebSub)",
+      "obtain": {
+        "url": "https://developer.atlassian.com/server/jira/platform/webhooks/",
+        "steps": [
+          "When you create the Jira webhook, set a Secret (classic webhooks sign with it).",
+          "Copy it — Bicameral verifies X-Hub-Signature (hex HMAC-SHA256, sha256= prefix) over the raw body, constant-time, fail-closed."
+        ]
+      }
+    }
+  ],
+  "webhook": {
+    "signature_scheme": "hex HMAC-SHA256 over the raw request body (X-Hub-Signature, sha256= prefix, WebSub)",
+    "header": "X-Hub-Signature",
+    "events": ["jira:issue_created", "jira:issue_updated", "jira:issue_deleted"],
+    "setup": {
+      "url": "https://support.atlassian.com/cloud-automation/docs/jira-webhooks/",
+      "steps": [
+        "In Jira (system or app webhooks), create a webhook on Issue created/updated/deleted with a Secret.",
+        "Set its URL to your Bicameral webhook receiver (see receiver below)."
+      ]
+    },
+    "receiver": {
+      "required": true,
+      "label": "Bicameral webhook receiver URL (operator-provisioned)",
+      "provisioned_by": "operator"
+    }
+  },
+  "data": {
+    "emits": ["issue"],
+    "pii_posture": "Title/excerpt come from issue.fields.summary (a string), passed through adapter.core.redaction.redact (redact-and-pass: scrubs secret/PHI/PAN + email/phone). fields.description is an Atlassian Document Format OBJECT and is NEVER read. The issue actor's displayName (a real name) is NOT surfaced (author dropped, PII-safe). FX-SEC-001 is the un-bypassable backstop.",
+    "redaction": "redact-and-pass (summary); ADF description never read; actor identity dropped"
+  },
+  "instructions": [
+    {
+      "action": "register_webhook",
+      "text": "Create a Jira webhook on Issue created/updated/deleted with a Secret, pointing at your Bicameral receiver URL.",
+      "link": "https://support.atlassian.com/cloud-automation/docs/jira-webhooks/",
+      "ref": "connectors/jira/auth.md (Verification)"
+    },
+    {
+      "action": "paste_secret",
+      "text": "Paste the webhook signing secret you set when creating the webhook."
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: a signed test issue event should produce one emission (summary redact-and-passed); a duplicate delivery is deduped."
+    }
+  ],
+  "references": [
+    {"kind": "webhook", "url": "https://developer.atlassian.com/cloud/jira/platform/webhooks/"},
+    {"kind": "api", "url": "https://developer.atlassian.com/cloud/jira/platform/rest/v3/"}
+  ],
+  "wire_gates": [
+    "Webhook path built + verified: X-Hub-Signature (sha256= hex HMAC-SHA256, constant-time, fail-closed). Jira documents NO anti-replay window, so best-effort dedup (X-Atlassian-Webhook-Identifier -> issue.id -> body-hash) is the only replay guard. summary redact-and-passed; ADF description never read.",
+    "The ACTIVE REST fetch is in capabilities but NOT wired this cycle; Connect-JWT / Forge / Automation auth are deferred -- the classic signed webhook is the ingest path.",
+    "Webhook RECEIPT is operator-runtime (receiver URL + jira_webhook injection). Live flip gated on operator review + a signed live delivery (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Parse + X-Hub-Signature verify + best-effort dedup are built and harness-proven; summary redact-and-passed, ADF description never read, actor identity dropped. Gated on operator review + a live signed delivery with a real webhook secret + a provisioned receiver. To flip: create the webhook + secret + receiver; wire GatewaySink; send a signed test delivery; review before promoting."
+}
