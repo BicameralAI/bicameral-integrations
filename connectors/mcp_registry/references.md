@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P0 |
 | Default trust tier | T1 |
 | Integration role | read-only scoring/allowlist |
-| Readiness (lifecycle) | Beta (proven end-to-end through the `runtime/` harness against a reference sink; ADR-0012) |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (public no-auth parse + live fetch-half `build_mcp_registry_spec`, runner-wired; FX-CFG-001 descriptor shipped, no credential). Live flip gated only on the operator wiring GatewaySink + running the public poll. |
 
 ## Provider documentation (verify on refresh)
 
