@@ -4130,7 +4130,89 @@ NO connector parse contract changed. Runbook PR tags **@jinhongkuan** for review
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#134 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: `feat/golive-hardening-runbooks` -- **go-live hardening + runbooks SEALED at Entry #134 (`fe07ea16`; L1).** Linear + Google Drive + Devin are **machine-side go-live APPROVED**: SSRF blocker + all needs-fix gaps + DOS-1 fixed, locked by **30** Red Team regression gates; only the deliberately-retained within-field-PAN policy remains (documented accepted-risk). Operator live-flip runbooks shipped (`docs/runbooks/`). Prior seals: purple-team hardening (#133), Devin descriptor (#131), Linear/GDrive flip-ready (#128).*
-*The platform is end-to-end + hardened for all 3 connectors. 26 Beta connectors; secrets never committed nor printed.*
-*Next required action: **@jinhongkuan** reviews the runbook PR + runs the per-connector live flip (real secrets + `--sink gateway` + verify wire_gates + promote). Backlog: branch protection (B5); bot #73 (release signing).*
+### Entry #135: RESEARCH BRIEF -- cursor + granola live-contract verification + doc standard
+
+**Entry ID**: `cursorGranolaDoc135research`
+**Timestamp**: 2026-06-11T20:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-research)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(research-brief-cursor-granola-doc-standard-2026-06-11.md)
+= 1c0978050075f2b2fbc2eaecfba813dea9c5ca63a83150f0f652dec64dca7cac
+```
+
+**Previous Hash**: fe07ea16b9ab31816fdb9b536798ccfe523a867d531690fe1c8c0c0b8c0f5a9b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 75d720dc471b50c9731f9b6477b899bae9c6e137e5d022bc080528208f986292
+```
+
+**Decision**: Verify-before-cite for the go-live batch's two flagged connectors (live docs re-fetched
+2026-06-11). **cursor: VERIFIED** -- host `api.cursor.com`, `POST /teams/daily-usage-data`, Basic
+key-as-username, `{startDate,endDate}` epoch-ms <=30d, `data` envelope, rows (userId/email/metrics, no
+`name`) all confirm; **pagination RESOLVED = POST-body `page`/`pageSize` + response
+`pagination.hasNextPage`** (the deferred open question is answered). `poll_specs.py` carried STALE
+"inferred/unverified" comments (reconcile in build). PII allowlist correct. -> **descriptor-ready, L1.**
+**granola: DRIFT** -- live note identity is **`owner` {name,email}**, but the connector reads a
+non-existent **`attendees`** field (author empty/wrong live); transcript is emitted **verbatim with no
+`redact()`** and a person's name rides as `author`, while FX-SEC-001 (secret/PHI/PAN only) does NOT catch
+generic spoken email/phone -> **PII gap**. Auth key is `grn_`-prefixed; `speaker` is an anonymized object.
+-> granola needs a **connector correction (re-point to `owner`, redact-and-pass the transcript, drop raw
+attendee identity) BEFORE its descriptor -- L2, not the assumed L1.** Docs corrected to the verified
+standard (`cursor/auth.md`, `granola/auth.md`); SG-2026-06-11-D recorded. Brief:
+`docs/research-brief-cursor-granola-doc-standard-2026-06-11.md`. Updates the go-live batch scope: cursor +
+copilot + servicenow proceed as L1 descriptors; granola is split to an L2 connector-correction sub-cycle. L1.
+
+---
+
+### Entry #136: SESSION SEAL -- go-live L1 descriptor batch (cursor + copilot + servicenow) + noisy_source_gate enablement
+
+**Entry ID**: `goliveBatchL136seal`
+**Timestamp**: 2026-06-11T21:00:00-04:00
+**Phase**: SUBSTANTIATE (descriptors + config)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/index.json)
+= dcf74e1d6411702b681763e958bf7372b0d7548506b089f9fe3ca9040bae0da8
+```
+
+**Previous Hash**: 75d720dc471b50c9731f9b6477b899bae9c6e137e5d022bc080528208f986292
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 24b356fae4613a4b38ce775aa96f1475bcd1f7a71cf05c059edb47b6de57c753
+```
+
+**Decision**: Authored FX-CFG-001 descriptors for the verified L1 go-live batch -- **cursor, copilot,
+servicenow** -- promoting each Beta -> flip-ready (NOT yet Live), and enabled the **noisy_source_gate**
+mod. Consumes research #135 (cursor verified live; granola split to L2). **Audit (inline, L1): PASS** --
+grep-verified each `source_id`==folder, `capabilities`=={ACTIVE}, runtime_config keys match the
+`build_*_spec` kwargs (cursor base_url/body; copilot base_url/api_version/per_page; servicenow
+instance/username/limit/fields), credential types (cursor/servicenow basic, copilot api_key);
+`validate_connector_config.py` is the binding gate (exit 0). **Descriptors:** cursor (PII-free allowlist;
+Basic key-as-username; host-pinned api.cursor.com; body-pagination documented), copilot (PII-free
+aggregate; Bearer read:org; org-templated base_url), servicenow (incident redact-and-pass; Basic;
+instance/username runtime; SSRF-4-fixed). **Also:** reconciled the stale cursor comments in
+`runtime/poll_specs.py` to the 2026-06-11 verified contract + added host-pin; lifted 3 `references.md`
+readiness lines; enabled `noisy_source_gate` in `config/bicameral.example.json` + documented the operator
+knob (`docs/runbooks/README.md`). **NO connector parse/fetch code changed** (descriptors + config + a
+poll_specs comment/host-pin only). **Measured:** full suite **553 passed**, ruff/mypy(168)/bandit clean,
+governance-gate #1..#136 OK, connector-config OK (6 descriptors valid + index/SETUP fresh). 6 of 26
+connectors now flip-ready. Carries the uncommitted #135 research (folded per operator). Review Boundary:
+**staged only** (no commit/push/PR authorized this cycle). L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#136 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: go-live **L1 descriptor batch SEALED at Entry #136 (`24b356fa`; L1)** on `feat/golive-batch-l1-descriptors`. **6 of 26 connectors flip-ready** (linear, google_drive, devin, cursor, copilot, servicenow); `noisy_source_gate` enabled for the live stream. granola remains the L2 connector-correction follow-on. Prior: #135 research, #134 runbooks+DOS-1, #133 purple-team hardening.*
+*The platform is end-to-end + hardened for 6 flip-ready connectors. 26 Beta connectors; secrets never committed nor printed.*
+*Next required action: (1) operator reviews/stages this cycle (commit/push/PR commands in the handoff) -- builds on the open PR #104 chain; (2) **@jinhongkuan** live-flips Linear/GDrive/Devin; (3) the **granola L2 sub-cycle** (re-point to `owner`, redact-and-pass transcript, drop raw attendee identity, then descriptor). Backlog: branch protection (B5); bot #73 (release signing).*

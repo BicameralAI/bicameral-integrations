@@ -8,7 +8,7 @@
 | **Updated By** | Judge (qor-substantiate) |
 | **Phase** | `main` + **security red-team COMPLETE (Cycles A/B/C, GH #50-#61 all closed)** — Cycle C: id-less webhook replays deduped by body hash for the 4 windowless providers (#60; bounded-cache eviction/TTL residual documented); emission contract rejects zero-width-only excerpt + bounds `source_id` (#61). Cores were sound; the 12 edge findings (guarantee-violations A, DoS/robustness B, replay/nits C) are all fixed. 26 Beta connectors; parse surfaces hardened — the before-Live DoS gate is cleared |
 | **Iteration** | 30 governed cycles (… redaction retrofit; references.md parity; security red-team **Cycle A** (#52/#53/#54), **Cycle B** (#50/#51/#55-#59 DoS), **Cycle C** (#60 replay / #61 nits) — all 12 red-team issues closed) |
-| **Session Seal** | `fe07ea16` — Entry #134 (DOS-1 aggregate cap + operator go-live runbooks, L1; branch `feat/golive-hardening-runbooks`). Prior: #133 purple-team hardening (`623c907c`), #131 Devin (`e5c46942`), #128 (`caf5beaf`) |
+| **Session Seal** | `24b356fa` — Entry #136 (go-live L1 descriptor batch: cursor+copilot+servicenow + noisy_source_gate, L1; branch `feat/golive-batch-l1-descriptors`). Prior: #135 research, #134 runbooks+DOS-1 (`fe07ea16`), #133 (`623c907c`) |
 
 ---
 
@@ -20,8 +20,8 @@ bicameral-integrations/
 |   `-- core/  (emissions, observations, contracts, capabilities, pipeline,
 |              sensitive, webhook_security, filters, fixtures, __init__ + tests/)
 |-- connectors/  (each: connector.py, __init__, README, auth.md, references.md, fixtures/, tests/;
-|                 + config.json = the FX-CFG-001 mcp-UI descriptor [linear + google_drive + devin exemplars,
-|                 23 to fan out]; _schema/connector-config.schema.json + index.json [generated];
+|                 + config.json = the FX-CFG-001 mcp-UI descriptor [6 done: linear, google_drive, devin,
+|                 cursor, copilot, servicenow; 20 to fan out]; _schema/connector-config.schema.json + index.json [generated];
 |                 SETUP.md = generated backend how-to runbook [from config.json; docs/CONNECTOR_BACKEND_SETUP.md
 |                 = the hand-authored framework])
 |   |-- github/         (PR -> Observation; ACTIVE+WEBHOOK)
@@ -210,6 +210,7 @@ bicameral-integrations/
 - [ ] **Live operator-actionable (next)**: an operator configures `GatewaySink(endpoint, token)` against a real gateway to promote a connector to **Live** (the repo delivers the verified seam; the deployment earns Live).
 - [x] **Linear + Google Drive → flip-ready, NOT yet Live (2026-06-08, Entry #128)**: each descriptor's `live_readiness` + a closing `wire_gates` entry + `references.md` readiness record the explicit pre-Live gate — code-complete and harness-proven against a reference sink, but unverified against the live API with real secrets. `status` stays `live-ready` (no `live` enum; Live = operator wires real secrets + verifies). The flip is operator-gated (PR #90).
 - [x] **mcp UI handoff opened**: BicameralAI/bicameral-mcp#572 — build the Linear/GDrive connector config UI against the FX-CFG-001 descriptor contract; `docs/UI_RENDERING_SPEC.md` back-references it (PR #89).
+- [x] **Go-live L1 descriptor batch (2026-06-11, Entry #136, L1)**: FX-CFG-001 descriptors for cursor + copilot + servicenow (flip-ready, NOT yet Live); cursor contract re-verified live (#135). `noisy_source_gate` mod enabled in the example config + documented. 6 of 26 connectors now flip-ready. granola = L2 follow-on (owner-field + transcript-PII correction). NO parse/fetch code changed.
 - [x] **Go-live hardening + runbooks (2026-06-11, Entry #134, L1)**: closed DOS-1 (aggregate item cap across paginated pages, `poll_client` + `graphql_poll`; 30 Red Team gates now) and shipped operator live-flip runbooks `docs/runbooks/{README,golive-linear,golive-google_drive,golive-devin}.md`. Within-field `order_id: <PAN>` retained as documented accepted-risk. Runbook PR tags @jinhongkuan for review + live test.
 - [x] **Purple-team go-live hardening (2026-06-11, Entry #133, L2)**: multi-agent purple team (35 agents, 17 confirmed gaps; issues #94-#102) on all 3 connectors. Fixed the SSRF redirect blocker (no-follow opener, `UrllibTransport`+`GatewaySink`) + per-leaf FX-SEC-001 screen + url/ref redaction + RecursionError/type-confusion fail-closed + servicenow URL injection + GatewaySink body-reflection + runtime-key allowlist/endpoint pin. Locked by 28 Red Team regression gates (`tests/redteam/` + `red-team.yml`). All 3 **machine-side go-live APPROVED (purple-team)**; Live flip operator-gated. Accepted-risk deferred in #101.
 - [x] **Devin → flip-ready, NOT yet Live (2026-06-11, Entry #131)**: authored `connectors/devin/config.json` (poll-only; Bearer `cog_` Service-User; required `base_url` runtime_config) + regenerated index/SETUP; v3 enterprise contract re-verified live (MATCH; SG-2026-06-11-A guards the v1/v3 trap). The THIRD FX-CFG-001 exemplar; no runtime code changed. Live flip operator-gated. Review Boundary held (staged, not pushed).

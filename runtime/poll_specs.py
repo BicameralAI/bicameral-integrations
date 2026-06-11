@@ -176,8 +176,10 @@ def build_granola_spec(resolver: SecretResolver, *, base_url: str = _GRANOLA_BAS
 
 
 # --- cursor (team daily-usage; PII-free allowlist; POST date-range body) ----------
-# host `api.cursor.com` inferred — the path POST /teams/daily-usage-data is documented;
-# confirm the host against live Cursor docs before real-network use (verify-before-cite).
+# VERIFIED live 2026-06-11 (cursor.com/docs/account/teams/admin-api): host api.cursor.com;
+# POST /teams/daily-usage-data; Basic (key as username); body {startDate,endDate} epoch-ms <=30d;
+# `data` envelope. Pagination is POST-body page/pageSize + response pagination.hasNextPage (NOT
+# wired here — single request; widen pageSize or add a body-page pager for teams > one page).
 _CURSOR_BASE = "https://api.cursor.com/teams/daily-usage-data"
 
 
@@ -186,18 +188,19 @@ def build_cursor_spec(
 ) -> PollSpec:
     """cursor: HTTP Basic (API key as username, empty password); POST a date-range body.
 
-    The body field names/units are UNVERIFIED — the caller supplies the dict (e.g.
-    ``{"startDate": …, "endDate": …}``); it is json-encoded, not baked. Envelope key
-    ``data`` is also a config callable. No pagination (date-range bounded).
+    Body `{startDate, endDate}` is epoch-ms, range <= 30 days (verified 2026-06-11) — the caller
+    supplies the dict; it is json-encoded, not baked. Response `data` envelope (verified). Single
+    request (body-based page/pageSize pagination verified but not wired).
     """
     secret = _require_secret(resolver, "cursor")
+    _require_https_endpoint(base_url, allow=("api.cursor.com",))  # pin the credentialed POST host
     auth = BasicAuth(secret, "", extra={"Content-Type": "application/json"})
     return PollSpec(
         base_url=base_url,
         auth=auth,
         method="POST",
-        body=json.dumps(body or {}).encode("utf-8"),  # caller-supplied date range (unverified shape)
-        items=lambda page: page.get("data", []),  # unverified envelope (data? array?)
+        body=json.dumps(body or {}).encode("utf-8"),  # caller-supplied date range {startDate,endDate} epoch-ms
+        items=lambda page: page.get("data", []),  # verified envelope: top-level `data` array
         pagination=None,
     )
 

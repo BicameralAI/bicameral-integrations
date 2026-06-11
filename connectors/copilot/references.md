@@ -12,7 +12,7 @@ maintained provider-docs table and refresh cadence.
 | Priority | P1 |
 | Default trust tier | T1 |
 | Integration role | AI-leverage usage evidence (aggregate) |
-| Readiness (lifecycle) | Beta (aggregate metrics parse; proven via `deliver_poll`; ADR-0012) |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (PII-free aggregate parse + live fetch-half `build_copilot_spec`; contract verified 2026-06-08; FX-CFG-001 descriptor shipped). Live flip gated on operator review + a live poll with a real read:org token. |
 
 ## Provider documentation (verify on refresh)
 

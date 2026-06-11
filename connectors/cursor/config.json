@@ -1,0 +1,77 @@
+{
+  "id": "cursor",
+  "name": "Cursor",
+  "description": "Cursor team daily-usage metrics (Admin API) as PII-free, governed evidence.",
+  "category": "developer-ai",
+  "trust_tier": "T1",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["active"],
+  "credentials": [
+    {
+      "key": "cursor",
+      "type": "basic",
+      "label": "Team Admin API key",
+      "required": true,
+      "modes": ["active"],
+      "header": "Authorization: Basic (API key as username, empty password)",
+      "obtain": {
+        "url": "https://cursor.com/docs/account/teams/admin-api",
+        "steps": [
+          "A team administrator mints an Admin API key in the Cursor dashboard (team settings).",
+          "The key is sent as HTTP Basic with the key as the username and an empty password."
+        ]
+      }
+    }
+  ],
+  "runtime_config": [
+    {
+      "key": "base_url",
+      "label": "Daily-usage endpoint",
+      "required": false,
+      "default": "https://api.cursor.com/teams/daily-usage-data",
+      "description": "The Cursor Admin API daily-usage endpoint (host pinned api.cursor.com; verified 2026-06-11)."
+    },
+    {
+      "key": "body",
+      "label": "Date-range request body",
+      "required": true,
+      "description": "POST body {startDate, endDate} in epoch MILLISECONDS, range <= 30 days. page/pageSize (body) paginate; the reference client fetches one page (widen pageSize for teams > one page)."
+    }
+  ],
+  "data": {
+    "emits": ["usage_metrics"],
+    "pii_posture": "PII-free by construction: parse-time allowlist reads only numeric metrics + mostUsedModel + the OPAQUE integer userId; email/name/clientVersion are NEVER read (FX-SEC-001 does not detect a generic email, so the control is the allowlist, not a downstream screen). Free-text day/model pass through redact().",
+    "redaction": "parse-time PII exclusion (allowlist) + redact() on free-text; opaque userId for pseudonymous per-developer attribution (SG-2026-06-05-D)"
+  },
+  "instructions": [
+    {
+      "action": "open_url",
+      "text": "A team admin mints a Cursor Admin API key (team settings).",
+      "link": "https://cursor.com/docs/account/teams/admin-api",
+      "ref": "connectors/cursor/auth.md (Active fetch auth)"
+    },
+    {
+      "action": "paste_secret",
+      "text": "Paste the Admin API key (sent as HTTP Basic username, empty password)."
+    },
+    {
+      "action": "configure",
+      "text": "Provide the date-range request body {startDate, endDate} in epoch milliseconds (range <= 30 days).",
+      "ref": "connectors/cursor/auth.md (Live path — reference poll client)"
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: an active poll returns PII-free per-user-day usage rows (opaque userId only)."
+    }
+  ],
+  "references": [
+    {"kind": "admin-api", "url": "https://cursor.com/docs/account/teams/admin-api"}
+  ],
+  "wire_gates": [
+    "Contract verified live 2026-06-11: POST https://api.cursor.com/teams/daily-usage-data, HTTP Basic (key as username), body {startDate,endDate} epoch-ms <= 30 days, `data` envelope; rows carry userId/email/metrics, no `name`.",
+    "Pagination is POST-body `page`/`pageSize` with response `pagination.hasNextPage` (verified 2026-06-11). The reference client (build_cursor_spec) issues a SINGLE request and is NOT yet wired for multi-page — a team larger than one page truncates; widen `pageSize` or wire a body-page pager before relying on full coverage. (runtime/poll_specs.py build_cursor_spec carries stale 'inferred/unverified' comments to reconcile.)",
+    "PII control is the parse-time allowlist (no downstream screen for generic email) — do NOT relax it. Operator runs the live poll + reviews before promoting to Live (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Parse surface (PII-free allowlist) + the live fetch-half (build_cursor_spec) are built and harness-proven against a recorded fixture; contract re-verified live 2026-06-11. Gated on operator human review + a live poll with a real team Admin API key. To flip: provide the key + a date-range body; wire GatewaySink; run the live poll; review before promoting."
+}
