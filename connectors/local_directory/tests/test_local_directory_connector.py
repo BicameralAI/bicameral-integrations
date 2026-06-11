@@ -47,6 +47,36 @@ def test_parse_falls_back_to_stem_when_content_empty():
     assert obs.excerpt == "2026-06-01-event-store"
 
 
+def test_content_redact_and_pass_scrubs_email_and_phone():
+    # F1 (medium): operator-dropped file content is redact-and-passed — email/phone scrubbed.
+    payload = _payload()
+    payload["content"] = "Reach Dana at dana@corp.com or +1 415 555 0199 about the rollout."
+    obs = parse_file(payload)
+    assert "dana@corp.com" not in obs.excerpt
+    assert "555 0199" not in obs.excerpt
+    assert "rollout" in obs.excerpt  # non-sensitive evidence text preserved
+
+
+def test_filename_stem_redact_and_passes_email():
+    # F2 (low): a PII-bearing filename (email in the stem) is scrubbed from title + excerpt floor.
+    payload = _payload()
+    payload["path"] = "inbox/contact-jane@corp.com-notes.md"
+    payload["content"] = ""
+    obs = parse_file(payload)
+    assert "jane@corp.com" not in obs.title
+    assert "jane@corp.com" not in obs.excerpt
+
+
+def test_path_token_ref_is_opaque_not_redacted():
+    # The sha256 path token is an opaque floor — stable, and never the filesystem layout.
+    payload = _payload()
+    payload["path"] = "secret/dir/+1-415-555-0199.md"
+    obs = parse_file(payload)
+    assert obs.source_ref.ref.startswith("local-")
+    assert "415" not in obs.source_ref.ref  # hashed, not the raw path
+    assert "/" not in obs.source_ref.ref
+
+
 def test_end_to_end_normalizes_to_emission():
     payload = _payload()
     out = normalize(

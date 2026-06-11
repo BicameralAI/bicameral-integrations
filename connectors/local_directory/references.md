@@ -24,11 +24,11 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 
 ## Verified API/webhook contract (as built, 2026-06-05)
 
-- **File payload (parsed)**: `parse_file` reads `{path, content, modified, source_type_label}`; ref is `"local-{sha256(path)[:16]}"` (stable, opaque — operator filesystem layout never stored in the ledger); excerpt is full file content falling back to the filename stem.
+- **File payload (parsed)**: `parse_file` reads `{path, content, modified, source_type_label}`; ref is `"local-{sha256(path)[:16]}"` (stable, opaque — operator filesystem layout never stored in the ledger); excerpt is the **redact-and-passed** file content, falling back to the redacted filename stem then the opaque path token.
 - **Verification**: no verify — local filesystem import; no network delivery, no signature.
 - **Auth (deferred)**: none (no network credentials); host filesystem permissions are the access control. Live directory scan, extension allow-list, 1 MiB size cap, and watermark two-phase commit are deferred to the operator runtime.
 - **Modes**: passive only; no webhooks.
-- **PII handling**: full file content emitted as excerpt; operator is responsible for extension/size filtering and directory scoping. Producer sensitive screen (`FX-SEC-001`) is the guard.
+- **PII handling**: file content + the filename stem are emitted via **redact-and-pass** — `adapter.core.redaction.redact` scrubs secret/PHI/PAN + email/phone to placeholders before emission (SG-2026-06-13-A: a local/passive source still needs redaction parity; no network boundary is not no PII boundary). The path is sha256-tokenized into an opaque ref (no FS-layout leak). The operator additionally owns extension/size filtering and directory scoping. Producer sensitive screen (`FX-SEC-001`) remains the fail-closed backstop for secret/PHI/PAN.
 
 ## Canonical governance references
 

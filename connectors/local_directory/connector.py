@@ -16,6 +16,7 @@ from pathlib import PurePosixPath
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 
 _DEFAULT_KIND = "planning"
 
@@ -32,13 +33,17 @@ def _path_token(path: str) -> str:
 def parse_file(payload: dict) -> Observation:
     """Map a ``{path, content, modified}`` file payload into an Observation.
 
-    The excerpt is the full file content, falling back to the filename stem so
-    the contract's non-empty-excerpt rule holds.
+    File content + the filename stem are operator-supplied free text -> **redact-and-pass**
+    (secret/PHI/PAN + email/phone scrubbed; SG-2026-06-13-A: a local/passive source still
+    needs redaction parity — no network boundary is not no PII boundary, and FX-SEC-001
+    only backstops secret/PHI/PAN). The excerpt is the redacted content, falling back to the
+    redacted stem then the opaque path token so the non-empty-excerpt rule always holds. The
+    sha256 path token (the ``ref``) is an opaque floor and is NOT redacted.
     """
     path = str(payload.get("path") or "")
-    content = str(payload.get("content") or "")
+    content = redact(str(payload.get("content") or ""))
     token = _path_token(path)
-    stem = PurePosixPath(path).stem or token
+    stem = redact(PurePosixPath(path).stem) or token
     kind = str(payload.get("source_type_label") or _DEFAULT_KIND)
     return Observation(
         source_ref=SourceRef(source_id="local_directory", ref=f"local-{token}", kind=kind),
