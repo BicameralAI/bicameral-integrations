@@ -63,6 +63,22 @@ def test_run_connector_emits():
     assert run_connector("linear", _linear_config(), transport, sink) == 2
 
 
+def _mcp_config() -> LocalConfig:
+    return LocalConfig(
+        connectors={"mcp_registry": {"enabled": True, "secrets": {}, "runtime": {}}},
+        mods={}, gateway={}, secret_map={},
+    )
+
+
+def test_run_connector_mcp_registry_public_no_auth():
+    # Public, no-auth: the new _run_mcp_registry runner runs with NO secret and emits the server list.
+    body = {"servers": [{"server": {"name": "io.example/srv", "description": "a server"}}], "metadata": {}}
+    transport = _RecordingTransport([HttpResponse(200, json.dumps(body).encode("utf-8"))])
+    sink = CollectingSink()
+    assert run_connector("mcp_registry", _mcp_config(), transport, sink) == 1
+    assert sink.emissions[0].source_id == "mcp_registry"
+
+
 def test_unknown_connector_fails_closed():
     with pytest.raises(ConfigError) as exc:
         run_connector("nope", _linear_config(), _RecordingTransport([]), CollectingSink())

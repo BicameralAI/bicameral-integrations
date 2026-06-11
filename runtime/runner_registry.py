@@ -17,6 +17,7 @@ from connectors.copilot.connector import CopilotConnector
 from connectors.cursor.connector import CursorConnector
 from connectors.devin.connector import DevinConnector
 from connectors.granola.connector import GranolaConnector
+from connectors.mcp_registry.connector import McpRegistryConnector
 from connectors.openai_admin.connector import OpenAIAdminConnector
 from connectors.servicenow.connector import ServiceNowConnector
 from mods.contract import Manifest, Mod, load_manifest
@@ -36,6 +37,7 @@ from .poll_specs import (
     build_google_drive_spec,
     build_granola_spec,
     build_linear_graphql_spec,
+    build_mcp_registry_spec,
     build_openai_admin_spec,
     build_servicenow_spec,
 )
@@ -56,6 +58,12 @@ def _run_google_drive(resolver, runtime, document_id, transport, sink) -> int:
     if not doc_id:
         raise ConfigError("google_drive: --document-id (or runtime.document_id) is required")
     return fetch_document(build_google_drive_spec(resolver, document_id=doc_id), transport, sink)
+
+
+def _run_mcp_registry(resolver, runtime, document_id, transport, sink) -> int:  # noqa: ARG001
+    """mcp_registry is PUBLIC (no auth) — its builder takes no resolver, so it needs a dedicated
+    runner rather than `_rest_runner` (which passes the resolver positionally)."""
+    return poll(McpRegistryConnector(), build_mcp_registry_spec(**runtime), transport=transport, sink=sink)
 
 
 def _rest_runner(builder, connector_cls) -> Runner:
@@ -79,6 +87,7 @@ RUNNERS: dict[str, Runner] = {
     "cursor": _rest_runner(build_cursor_spec, CursorConnector),
     "servicenow": _rest_runner(build_servicenow_spec, ServiceNowConnector),
     "devin": _rest_runner(build_devin_spec, DevinConnector),
+    "mcp_registry": _run_mcp_registry,
 }
 
 _MODS: dict[str, tuple[Callable[[], Mod], Path]] = {

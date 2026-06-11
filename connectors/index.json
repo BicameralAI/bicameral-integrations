@@ -573,6 +573,62 @@
         "Live flip GATED on human review + live testing: code-complete and harness-proven through runtime/ against a reference sink, but UNVERIFIED against Linear's live API/webhook with real secrets — no machine has hit the live endpoint yet. The operator must run the live test and review the result before promoting; until then this connector is flip-ready, NOT Live (ADR-0012)."
       ]
     },
+    "mcp_registry": {
+      "available": true,
+      "category": "agent-ecosystem",
+      "credentials": [],
+      "data": {
+        "emits": [
+          "mcp_server"
+        ],
+        "pii_posture": "Public registry metadata only (server name/title/description, repository/website URL, version). PII-free; no credential; no per-person data.",
+        "redaction": "none (public, PII-free by construction)"
+      },
+      "description": "Public MCP Registry server entries as PII-free, no-auth governed evidence.",
+      "id": "mcp_registry",
+      "instructions": [
+        {
+          "action": "open_url",
+          "link": "https://registry.modelcontextprotocol.io/openapi.yaml",
+          "ref": "connectors/mcp_registry/auth.md",
+          "text": "No credential needed — this is a public, no-auth registry. Review the server-list API."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: an active poll returns the public MCP server list (one emission per server)."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Public no-auth parse + live fetch-half (build_mcp_registry_spec) built, harness-proven, and runner-wired this cycle. No secret to provision. To flip: configure the gateway endpoint; run the public poll; review before promoting to Live.",
+      "modes": [
+        "active"
+      ],
+      "name": "MCP Registry",
+      "references": [
+        {
+          "kind": "openapi",
+          "url": "https://registry.modelcontextprotocol.io/openapi.yaml"
+        },
+        {
+          "kind": "reference",
+          "url": "https://github.com/modelcontextprotocol/registry"
+        }
+      ],
+      "runtime_config": [
+        {
+          "default": "https://registry.modelcontextprotocol.io/v0/servers",
+          "description": "Public, no-auth GET /v0/servers list (verified 2026-06-08). Cursor pagination via metadata.nextCursor.",
+          "key": "base_url",
+          "label": "Registry servers endpoint",
+          "required": false
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T1",
+      "wire_gates": [
+        "Verified contract (registry.modelcontextprotocol.io/openapi.yaml 2026-06-08): public no-auth GET /v0/servers; list under `servers`; each entry nests the server under `server`; cursor pagination via response `metadata.nextCursor` (no has-more — stop on absent).",
+        "No credential (public). Live flip is gated only on the operator wiring GatewaySink + running the public poll + review (ADR-0012)."
+      ]
+    },
     "servicenow": {
       "available": true,
       "category": "itsm",

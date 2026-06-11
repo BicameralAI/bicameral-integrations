@@ -1,0 +1,46 @@
+{
+  "id": "mcp_registry",
+  "name": "MCP Registry",
+  "description": "Public MCP Registry server entries as PII-free, no-auth governed evidence.",
+  "category": "agent-ecosystem",
+  "trust_tier": "T1",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["active"],
+  "credentials": [],
+  "runtime_config": [
+    {
+      "key": "base_url",
+      "label": "Registry servers endpoint",
+      "required": false,
+      "default": "https://registry.modelcontextprotocol.io/v0/servers",
+      "description": "Public, no-auth GET /v0/servers list (verified 2026-06-08). Cursor pagination via metadata.nextCursor."
+    }
+  ],
+  "data": {
+    "emits": ["mcp_server"],
+    "pii_posture": "Public registry metadata only (server name/title/description, repository/website URL, version). PII-free; no credential; no per-person data.",
+    "redaction": "none (public, PII-free by construction)"
+  },
+  "instructions": [
+    {
+      "action": "open_url",
+      "text": "No credential needed — this is a public, no-auth registry. Review the server-list API.",
+      "link": "https://registry.modelcontextprotocol.io/openapi.yaml",
+      "ref": "connectors/mcp_registry/auth.md"
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: an active poll returns the public MCP server list (one emission per server)."
+    }
+  ],
+  "references": [
+    {"kind": "openapi", "url": "https://registry.modelcontextprotocol.io/openapi.yaml"},
+    {"kind": "reference", "url": "https://github.com/modelcontextprotocol/registry"}
+  ],
+  "wire_gates": [
+    "Verified contract (registry.modelcontextprotocol.io/openapi.yaml 2026-06-08): public no-auth GET /v0/servers; list under `servers`; each entry nests the server under `server`; cursor pagination via response `metadata.nextCursor` (no has-more — stop on absent).",
+    "No credential (public). Live flip is gated only on the operator wiring GatewaySink + running the public poll + review (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Public no-auth parse + live fetch-half (build_mcp_registry_spec) built, harness-proven, and runner-wired this cycle. No secret to provision. To flip: configure the gateway endpoint; run the public poll; review before promoting to Live."
+}
