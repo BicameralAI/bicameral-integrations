@@ -5321,7 +5321,44 @@ local_directory). EM-safe + read-only + ADR-0012 hold. L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#165 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **RESEARCH SEALED at #165 (`6667b024`; L1)** -- local_directory + aider + zendesk flip-ready foundation; ZERO contract drift (zendesk sig + aider attribution re-verified live). Flip = descriptor + redaction-parity (local_directory/aider) / descriptor-only (zendesk). **14 of 26 connectors flip-ready** + 13 mods. Prior: #164 PT2, #163 PT1.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 14 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** per connector (local_directory -> aider -> zendesk), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #166: SESSION SEAL -- local_directory flip-ready (redact-and-pass parity + FX-CFG-001 descriptor)
+
+**Entry ID**: `localdirectory166flip`
+**Timestamp**: 2026-06-13T15:30:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/local_directory/connector.py)
+= b73e4b2945ac158d6181450c93e1fbf4df0d23e9e9dcbb9b9006c087e0144fef
+```
+
+**Previous Hash**: 6667b024e9b52fefea09279877dbd0774c1b6431dab1f98d547bde82a84cd061
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= cd048327d155aa427a988c91dd0fd63a2584de452ef3b8e725e4b71f475f3475
+```
+
+**Decision**: local_directory flipped flip-ready (1 of 3 this lane). Closed the two research findings +
+authored the FX-CFG-001 descriptor. **F1 (medium):** `parse_file` now redact-and-passes the operator-dropped
+file **content** (`redact(content)`) -- previously emitted raw, with only FX-SEC-001 (secret/PHI/PAN) backstop,
+so email/phone/names leaked (SG-2026-06-13-A: no network boundary != no PII boundary). **F2 (low):** the filename
+**stem** is redact-and-passed too (`redact(stem) or token`) so an email/phone in a filename is scrubbed from
+title + excerpt floor. The sha256 path **token** (the `ref`) stays an opaque, un-redacted floor (no FS-layout
+leak). Authored `connectors/local_directory/config.json` (modes `["passive"]`, `credentials:[]`, `runtime_config`
+for directory/extensions/max_bytes, `configure`+`verify` instructions citing auth.md), regenerated `SETUP.md` +
+`index.json`, corrected the references.md PII line. **Tests:** content email/phone scrub + non-sensitive text
+preserved; PII-in-filename scrub; opaque-token ref. **Measured:** full suite **666 passed**, ruff clean,
+whole-tree mypy (210 files) clean, validator OK (descriptors valid + index fresh), governance-gate #1..#166 OK.
+**15 of 26 connectors flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#166 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **local_directory FLIP-READY, SEALED at #166 (`cd048327`; L1)** -- redact-and-pass content + filename stem (SG-2026-06-13-A) + FX-CFG-001 descriptor; opaque sha256 path token. **15 of 26 connectors flip-ready** + 13 mods. Prior: #165 research, #164 PT2.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 15 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-auto-dev-1** aider (F3 subject redact + F4 author-provenance descriptor) then zendesk (descriptor-only), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

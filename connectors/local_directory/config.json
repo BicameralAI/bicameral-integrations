@@ -1,0 +1,59 @@
+{
+  "id": "local_directory",
+  "name": "Local Directory",
+  "description": "Files dropped in a watched local directory as redact-and-pass governed evidence (no network credentials; host filesystem permissions are the access control).",
+  "category": "file/static-import",
+  "trust_tier": "T0",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["passive"],
+  "credentials": [],
+  "runtime_config": [
+    {
+      "key": "directory",
+      "label": "Watched directory path",
+      "required": true,
+      "description": "Absolute path the operator runtime scans (non-recursive iterdir; hidden files and subdirectories ignored). Files become evidence — scope it to a directory whose contents you intend to govern."
+    },
+    {
+      "key": "extensions",
+      "label": "Extension allow-list",
+      "required": false,
+      "default": [".md", ".txt", ".json"],
+      "description": "Only files with these extensions are ingested. Operator-runtime filter."
+    },
+    {
+      "key": "max_bytes",
+      "label": "File-size cap (bytes)",
+      "required": false,
+      "default": 1048576,
+      "description": "Files larger than this are skipped, not ingested (default 1 MiB). Operator-runtime guard."
+    }
+  ],
+  "data": {
+    "emits": ["planning"],
+    "pii_posture": "File content and the filename stem are operator-supplied free text -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed to placeholders; SG-2026-06-13-A — a local/passive source still needs redaction parity, since no network boundary is not no PII boundary). The file path is sha256-tokenized into an opaque ref so the operator's filesystem layout never enters the ledger. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop. The operator additionally owns directory scoping, the extension allow-list, and the size cap.",
+    "redaction": "redact-and-pass (file content + filename stem); path sha256-tokenized (opaque ref, never the FS layout); FX-SEC-001 rejects secret/PHI/PAN"
+  },
+  "instructions": [
+    {
+      "action": "configure",
+      "text": "Point the operator runtime at the local directory to watch, and (optionally) set the extension allow-list and file-size cap. There are no network credentials — host filesystem permissions are the access control. Scope the directory to contents you intend to govern.",
+      "ref": "connectors/local_directory/auth.md (Local-Directory Auth)"
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: dropping a file into the watched directory should produce one emission (content + filename stem redact-and-passed; the ref is an opaque sha256 token, not the path)."
+    }
+  ],
+  "references": [
+    {"kind": "auth", "url": "connectors/local_directory/auth.md"},
+    {"kind": "contract", "url": "connectors/local_directory/references.md"}
+  ],
+  "wire_gates": [
+    "No external provider contract — local filesystem source; nothing to re-verify against a vendor API. Parse shape {path, content, modified, source_type_label} ported from bicameral-mcp events/sources/local_directory.py.",
+    "PII: file content + filename stem redact-and-passed (secret/PHI/PAN + email/phone); path sha256-tokenized into an opaque ref (no FS-layout leak). FX-SEC-001 backstops secret/PHI/PAN.",
+    "Live directory scan, non-recursive iterdir, extension allow-list, 1 MiB size cap, and watermark two-phase commit are operator-runtime; no live ingest this cycle. Live flip gated on operator review + a real watched-directory scan (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Parse + redact-and-pass + opaque path tokenization are built and harness-proven. No network credentials exist (host filesystem permissions). Gated on operator review + wiring the live directory scan (with the extension allow-list, size cap, and watermark two-phase commit) to a GatewaySink. To flip: set the watched directory path; wire the runtime scan; drop a test file; review before promoting."
+}
