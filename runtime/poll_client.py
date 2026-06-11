@@ -34,6 +34,21 @@ _MAX_PAGES = 100  # cap a runaway/cyclic pager (fail-safe)
 _OK_STATUS = 200
 
 
+class _NoFollowRedirect(urllib.request.HTTPRedirectHandler):
+    """Never auto-follow a provider 3xx. The provider response is untrusted; following a
+    redirect would re-send the operator credential (Authorization / x-api-key) to an
+    attacker-chosen host (token exfiltration + SSRF) before the 200-only guard runs
+    (purple-team SSRF-1, 2026-06-11). Returning None surfaces the 3xx as an HTTPError, which
+    `UrllibTransport.request` maps to a non-200 HttpResponse -> fail-closed PollError."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        return None
+
+
+# Module-level no-follow opener (built once; stdlib HTTPRedirectHandler is otherwise default-on).
+_NO_FOLLOW_OPENER = urllib.request.build_opener(_NoFollowRedirect).open
+
+
 @dataclass(frozen=True)
 class HttpResponse:
     """A transport result: HTTP ``status`` + raw ``body`` bytes."""
@@ -169,7 +184,10 @@ class UrllibTransport:
     """
 
     def __init__(self, *, opener: Callable[..., Any] | None = None, timeout: float = 10.0) -> None:
-        self._opener = opener or urllib.request.urlopen
+        # No-follow opener by default: a provider 3xx must NOT auto-redirect a credentialed
+        # request to a second host (SSRF-1). An operator who genuinely needs redirects passes
+        # an explicit opener that strips auth headers + host-pins first.
+        self._opener = opener or _NO_FOLLOW_OPENER
         self._timeout = timeout
 
     def request(
@@ -199,7 +217,7 @@ def _fetch_page(transport: HttpTransport, spec: PollSpec, url: str) -> object:
         raise PollError(response.status, "unexpected_status_expected_200")
     try:
         parsed = json.loads(response.body)
-    except (ValueError, UnicodeDecodeError):
+    except (ValueError, UnicodeDecodeError, RecursionError):  # deeply-nested body -> fail closed (PARSE-1)
         raise PollError(0, "unparseable_body") from None
     if not isinstance(parsed, (dict, list)):
         raise PollError(0, "non_object_body")

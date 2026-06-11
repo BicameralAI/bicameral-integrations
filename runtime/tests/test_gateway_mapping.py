@@ -155,17 +155,21 @@ def _error_opener(code: int, body: bytes):
     return opener
 
 
-def test_gatewaysink_rejection_raises_with_reason_and_no_token_leak():
+def test_gatewaysink_rejection_fixed_reason_no_body_reflection():
+    # SECRET-LEAK-1 (purple-team 2026-06-11): the untrusted gateway response body is NOT
+    # reflected into the error. A gateway that echoes the request (incl. the Authorization
+    # header) into its rejection body must not leak the token; status still disambiguates.
+    leaky_body = b'{"reason":"' + _TOKEN.encode() + b'"}'  # gateway echoes the token back
     sink = GatewaySink(
         endpoint="https://gw/api/v1/ingest",
         token=_TOKEN,
-        opener=_error_opener(429, b'{"reason":"RateLimitExceeded"}'),
+        opener=_error_opener(429, leaky_body),
     )
     with pytest.raises(GatewayEmissionError) as exc:
         sink.emit([_emission()])
-    assert exc.value.status == 429
-    assert exc.value.reason == "RateLimitExceeded"
-    assert _TOKEN not in str(exc.value)  # F-4: token never in the error
+    assert exc.value.status == 429                  # status preserved (retryable vs terminal)
+    assert exc.value.reason == "gateway_rejected"   # fixed discriminator, body not reflected
+    assert _TOKEN not in str(exc.value)             # token never in the error, even if echoed
 
 
 def test_gatewaysink_transport_error_raises_without_token():

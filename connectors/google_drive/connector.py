@@ -21,6 +21,9 @@ _URL_RE = re.compile(
     r"^https?://(?:docs\.google\.com/document/d/|drive\.google\.com/file/d/)"
     r"(?P<id>[A-Za-z0-9_-]{25,128})(?:[/?#].*)?$"
 )
+# A response documentId must match the Docs id grammar to become the wire ref. Defense-in-depth
+# so a hostile 200 cannot make a 16-digit PAN the SourceRef.ref (purple-team PII-3, 2026-06-11).
+_DOC_ID_RE = re.compile(r"[A-Za-z0-9_-]{25,128}")
 
 
 def parse_gdrive_url(url: str) -> str:
@@ -40,12 +43,28 @@ def parse_gdrive_url(url: str) -> str:
     return m.group("id")
 
 
+def _dicts(value: object) -> list[dict]:
+    """The dict members of ``value`` when it is a list, else ``[]``. The Google Docs body is
+    an untrusted 200 payload: a non-list container or non-dict member must be skipped, not
+    iterated/joined into a crash (purple-team PARSE-3, the #59 skip-don't-crash discipline)."""
+    return [m for m in value if isinstance(m, dict)] if isinstance(value, list) else []
+
+
+def _named_style(para: dict) -> str:
+    """``paragraphStyle.namedStyleType`` if present and well-typed, else ``""`` (no crash on a
+    non-dict ``paragraphStyle``)."""
+    style = para.get("paragraphStyle")
+    named = style.get("namedStyleType") if isinstance(style, dict) else None
+    return named if isinstance(named, str) else ""
+
+
 def _extract_text_from_paragraph(para: dict) -> str:
-    """Concatenate textRun content across a paragraph's elements."""
+    """Concatenate textRun content across a paragraph's elements (type-guarded)."""
     pieces: list[str] = []
-    for elem in para.get("elements") or []:
-        run = elem.get("textRun") or {}
-        pieces.append(run.get("content") or "")
+    for elem in _dicts(para.get("elements")):
+        run = elem.get("textRun")
+        content = run.get("content") if isinstance(run, dict) else None
+        pieces.append(content if isinstance(content, str) else "")
     return "".join(pieces).strip()
 
 
@@ -67,24 +86,23 @@ def _decorate_paragraph(text: str, named_style: str) -> str:
 
 
 def _table_cell_texts(cell: dict) -> list[str]:
-    """Flatten one table cell's paragraphs into decorated strings."""
+    """Flatten one table cell's paragraphs into decorated strings (type-guarded)."""
     out: list[str] = []
-    for sub_elem in cell.get("content") or []:
-        if "paragraph" not in sub_elem:
+    for sub_elem in _dicts(cell.get("content")):
+        para = sub_elem.get("paragraph")
+        if not isinstance(para, dict):
             continue
-        para = sub_elem["paragraph"]
-        style = (para.get("paragraphStyle") or {}).get("namedStyleType") or ""
-        decorated = _decorate_paragraph(_extract_text_from_paragraph(para), style)
+        decorated = _decorate_paragraph(_extract_text_from_paragraph(para), _named_style(para))
         if decorated:
             out.append(decorated)
     return out
 
 
 def _walk_table(table: dict) -> list[str]:
-    """Flatten table cells into a list of paragraph strings (nesting <=3)."""
+    """Flatten table cells into a list of paragraph strings (nesting <=3; type-guarded)."""
     out: list[str] = []
-    for row in table.get("tableRows") or []:
-        for cell in row.get("tableCells") or []:
+    for row in _dicts(table.get("tableRows")):
+        for cell in _dicts(row.get("tableCells")):
             out.extend(_table_cell_texts(cell))
     return out
 
@@ -96,16 +114,17 @@ def extract_document_text(document: dict) -> str:
     other structural elements are skipped intentionally.
     """
     blocks: list[str] = []
-    body = document.get("body") or {}
-    for elem in body.get("content") or []:
-        if "paragraph" in elem:
-            para = elem["paragraph"]
-            style = (para.get("paragraphStyle") or {}).get("namedStyleType") or ""
-            decorated = _decorate_paragraph(_extract_text_from_paragraph(para), style)
+    body = document.get("body")
+    content = body.get("content") if isinstance(body, dict) else None
+    for elem in _dicts(content):
+        para = elem.get("paragraph")
+        table = elem.get("table")
+        if isinstance(para, dict):
+            decorated = _decorate_paragraph(_extract_text_from_paragraph(para), _named_style(para))
             if decorated:
                 blocks.append(decorated)
-        elif "table" in elem:
-            blocks.extend(_walk_table(elem["table"]))
+        elif isinstance(table, dict):
+            blocks.extend(_walk_table(table))
     return "\n".join(blocks).strip()
 
 
@@ -115,8 +134,10 @@ def parse_document(document: dict) -> Observation:
     The excerpt is the flattened document text, falling back to the title when
     the body is empty. ``documentId`` becomes the stable provider ref.
     """
-    doc_id = document.get("documentId") or ""
-    title = document.get("title") or doc_id
+    raw_id = document.get("documentId")
+    doc_id = raw_id if isinstance(raw_id, str) and _DOC_ID_RE.fullmatch(raw_id) else ""
+    raw_title = document.get("title")
+    title = raw_title if isinstance(raw_title, str) and raw_title else (doc_id or "google-doc")
     text = extract_document_text(document)
     return Observation(
         source_ref=SourceRef(

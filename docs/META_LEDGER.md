@@ -3888,7 +3888,212 @@ no tag/release. L1.
 
 ---
 
-*Chain integrity: VALID*
-*Status: `main` (cycle on `chore/governance-wrapup`) — **governance wrap-up SEALED at Entry #128 (`caf5beaf`; L1).** Linear + Google Drive are **flip-ready, NOT yet Live**: code-complete + harness-proven, but the Live flip is gated on operator human review + a live test with real secrets (no machine has hit the live endpoint). mcp UI work item `bicameral-mcp#572` is open against the FX-CFG-001 contract. qor-logic corpus verified distributed in-sync (v0.103.1). Prior seals stand: Google OAuth refresh resolver (#127), mod fan-out batch 1 (#124), mode-scoped credentials (#122).*
-*The platform is end-to-end for Linear + Google Drive (parse → live fetch → config.json [UI] → SETUP.md [backend] → RUNNERS [headless] → mode-scoped multi-secret credentials + durable Google OAuth), usable WITHOUT the mcp UI. 3 of 13 mods built, all runner-wired. No connector is Live yet; all 26 Beta. Secrets never committed nor printed.*
-*Next required action (operator's call): **wire + live-test Linear, then Google Drive** (`GatewaySink` + real secrets), review, and promote each to Live; build `bicameral-mcp#572`; resume the **mod fan-out** (10 Scoped) and **connector fan-out** (24 remaining). Admin: branch protection (B5). Open: bot #73 (release signing).*
+### Entry #129: RESEARCH BRIEF -- Devin flip-ready (FX-CFG-001 descriptor + readiness ladder)
+
+**Entry ID**: `devinFlipReady129research`
+**Timestamp**: 2026-06-11T12:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(research-brief-devin-flip-ready-2026-06-11.md)
+= edb1d274b7cf351dd3b482e4574da2b66e320edccd2264a29c3f0a15beef3a7c
+```
+
+**Previous Hash**: caf5beaf109daa1c4aabe82d7646650f2395763f95126726cd66311309d8c55a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= e3675c115fc0aad1ef0a9e4fe9b41e36fec2273f1293ae8d74afe566eb8bfaa9
+```
+
+**Decision**: Research for the Devin->flip-ready cycle (descriptor + docs only; NO runtime code).
+**(1) Localized documentation standard defined** from `connectors/_schema/connector-config.schema.json`
++ `scripts/validate_connector_config.py` (structural fail-closed + semantic: id==folder==source_id,
+modes subset of capabilities, webhook-block iff webhook mode, credential.modes subset of declared,
+instructions[].ref for open_url/register_webhook/configure) + the two generators
+(`build_connector_index.py`, `build_connector_setup.py` -- index.json + SETUP.md are GENERATED and
+byte-exact freshness-checked, never hand-written) + the Linear/GDrive exemplars. **Devin gaps:** has
+connector.py + references.md (verified) + auth.md + README.md + the built fetch-half (`build_devin_spec`,
+runner-wired `runner_registry.py:81`); MISSING `config.json`, generated `SETUP.md`, `index.json`
+membership, and `live_readiness`+`wire_gates` language (still labeled Beta in references.md).
+**(2) Devin v3 contract RE-VERIFIED live 2026-06-11** against
+`docs.devinenterprise.com/api-reference/v3/sessions/organizations-sessions`: endpoint
+`GET /v3/organizations/{org}/sessions`, `items` envelope, cursor `end_cursor`/`has_next_page`/`after`
+(plus `total`), `pull_requests[]` of `{pr_url, pr_state}`, Bearer `cog_` -- ALL MATCH, no drift.
+**New hazard SG-2026-06-11-A:** Devin ships a parallel v1 API (`docs.devin.ai`: `sessions` envelope /
+singular `pull_request` / limit-offset / `apk_` keys) whose shape IS the 2026-06-08-corrected drift;
+pin the v3 enterprise doc host per connector. Brief:
+`docs/research-brief-devin-flip-ready-2026-06-11.md`. Next: `/qor-plan` to author config.json, then
+regenerate SETUP.md + index.json and run the validator green. Review Boundary held. L1.
+
+---
+
+### Entry #130: GATE TRIBUNAL -- PASS -- Devin flip-ready descriptor
+
+**Entry ID**: `devinFlipReady130audit`
+**Timestamp**: 2026-06-11T13:00:00-04:00
+**Phase**: GATE (audit)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(plan-devin-flip-ready-descriptor-2026-06-11.md)
+= 452cfb70cd14d02db7d0bb31f53c8dcfc717ad3471157e05bb25e975b8f658aa
+```
+
+**Previous Hash**: e3675c115fc0aad1ef0a9e4fe9b41e36fec2273f1293ae8d74afe566eb8bfaa9
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 9a5ea58d4ad0d5219ad2ec322077b37c774ecad27d952a6b8ee0684b3ce79c76
+```
+
+**Verdict**: **PASS** (L1, solo; codex-plugin shortfall recorded). Audited
+`docs/plan-devin-flip-ready-descriptor-2026-06-11.md`. All infrastructure claims grep-verified against
+current source: `connectors/devin/connector.py:71-72` (`source_id="devin"`, `capabilities={ACTIVE}`) ->
+`id`/`modes` SATISFIABLE; `str(SourceMode.ACTIVE)=="active"` -> validator string-compare accepts;
+`runtime/poll_specs.py:87` `build_devin_spec(resolver, *, base_url)` required-no-default -> `runtime_config.base_url`
+`required:true` CORRECT; `runtime/runner_registry.py:65` `spec = builder(resolver, **runtime)` -> base_url
+flows from `config.connectors.devin.runtime`, fail-closed when absent. SETUP.md + index.json are
+generator-emitted + byte-exact freshness-checked (`validate_connector_config.py:138-147`) -> the
+no-hand-edit boundary is machine-enforced. Passes: Prompt-Injection (canary exit 0), Security-L3 (no
+secret values in descriptor), OWASP (pure JSON + generators), Razor/Dependency/Macro/Orphan (no code,
+no new dep), Test-Functionality (the validator INVOKES the rules, not presence-only). One non-blocking
+advisory: disambiguate the v3 enterprise vs v1 reference host labels (already gated by `wire_gates` +
+SG-2026-06-11-A; re-verified live 2026-06-11 = MATCH). Report: `.agent/staging/AUDIT_REPORT.md`. Cleared
+to `/qor-implement`. Review Boundary held. L1.
+
+---
+
+### Entry #131: SESSION SEAL -- Devin flip-ready descriptor (FX-CFG-001)
+
+**Entry ID**: `devinFlipReady131seal`
+**Timestamp**: 2026-06-11T14:00:00-04:00
+**Phase**: SUBSTANTIATE (descriptor + docs)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/devin/config.json)
+= da64b773d7465a4cddddd430d0ec8d4d652fa77af79ce6487acb59577d901a53
+```
+
+**Previous Hash**: 9a5ea58d4ad0d5219ad2ec322077b37c774ecad27d952a6b8ee0684b3ce79c76
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= e5c46942f308a1c3c55583af665c23960866cc4406a452774e0d4ba844e11ed3
+```
+
+**Decision**: Reality == Promise for `plan-devin-flip-ready-descriptor-2026-06-11` (PASS audit #130,
+L1). Devin promoted **Beta -> flip-ready (NOT yet Live)**, reaching FX-CFG-001 parity with
+Linear/Google_Drive. **Authored** `connectors/devin/config.json` (the only hand-written artifact):
+poll-only `modes:["active"]` (no webhook block), one `api_key` credential `devin` (Bearer `cog_`
+Service-User, `modes:["active"]`), a REQUIRED `base_url` runtime_config (operator templates `org_id`;
+`build_devin_spec` has no default), `data.emits:["session"]` redact-and-pass, instructions with `ref`
+citations, `live_readiness` + 3 `wire_gates`. **Regenerated** (never hand-edited) `connectors/index.json`
+(3 connectors) + `connectors/devin/SETUP.md` via the sealed generators; `references.md` readiness line
+lifted Beta -> flip-ready. **NO runtime code change** (git diff: nothing under `runtime/`/`adapter/`/`mods/`/
+`connectors/devin/connector.py`). v3 enterprise contract re-verified LIVE 2026-06-11
+(`docs.devinenterprise.com`) = MATCH; `SG-2026-06-11-A` records the v1/v3 re-drift trap. Gates:
+governance-health 8/8 file-OK; `validate_connector_config.py` exit 0 (descriptors valid + index + SETUP
+fresh); `secret_scanner --staged` clean; `skill_admission` ADMITTED; `gate_skill_matrix` 0 broken. Tests:
+connectors+runtime **369 passed**, config/descriptor **35 passed**, devin **3 passed**. **SKIP
+(disclosed):** `intent_lock` not captured at implement Step 5.5 (orchestrator shortfall; L1, non-severe).
+**Carried-forward (OUT OF SCOPE):** META_LEDGER #123-128 fail `qor-logic verify-ledger` canonical-markup;
+root cause IDENTIFIED this cycle (bare-hex `Previous Hash` not matched by `PREV_HASH_RE`; non-destructive
+fix = backtick the value); #129/#130/#131 already use canonical markup. Review Boundary HELD -- staged
+only, NO commit/tag/push/PR. L1.
+
+---
+
+### Entry #132: PURPLE-TEAM ASSESSMENT -- go-live readiness (Linear / Google Drive / Devin)
+
+**Entry ID**: `purpleTeamGolive132assess`
+**Timestamp**: 2026-06-11T16:00:00-04:00
+**Phase**: GATE (adversarial assessment)
+**Author**: Judge (multi-agent purple team)
+**Risk Grade**: L2 (security surface, cross-connector)
+
+**Content Hash**:
+```
+SHA256(research-brief-purple-team-golive-2026-06-11.md)
+= 2ccc1a3dbaa9d5fde11f234735b1713c0aa49d11da171a4cd2aa40c5f21c1ce6
+```
+
+**Previous Hash**: e5c46942f308a1c3c55583af665c23960866cc4406a452774e0d4ba844e11ed3
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c4123727ff4d48465292d25dc134bad4fd07848c86850bf1160b1b954ef68b9f
+```
+
+**Decision**: Multi-agent purple team (8 red attack classes x blue adversarial verification -> per-connector
+synthesis; 35 agents, 24 findings, **17 confirmed real gaps**) on the go-live path of linear/google_drive/devin,
+both directions. Pre-fix verdict: **all three BLOCKED**. Sole HIGH blocker **SSRF-1** (shared) -- `UrllibTransport`
++ `GatewaySink` follow provider 3xx redirects and re-send the auth secret cross-host (token exfil + SSRF) before
+the 200-only/screen defenses. Confirmed needs-fix: **PII-1..4/GATEWAY-1** (`_screen_sensitive` joins core wire
+fields -> cross-field PAN suppression; un-redacted url/ref email/phone), **PARSE-1** (RecursionError bypasses
+fail-closed parse on 3 paths), **PARSE-2** (devin scalar type-confusion crash), **PARSE-3** (gdrive body-walk
+crash), **SSRF-4** (servicenow URL injection), **SECRET-LEAK-1** (GatewaySink reflects untrusted gateway body).
+Accepted-risk: aggregate memory cap (DOS-1), within-field PAN policy. Cores held; gaps are the SG-2026-06-05
+family one layer deeper (transport + per-leaf). Issues #94-#102 filed. Brief:
+`docs/research-brief-purple-team-golive-2026-06-11.md`. SG-2026-06-11-B/C recorded. Next: remediate + gate. L2.
+
+---
+
+### Entry #133: SESSION SEAL -- purple-team go-live hardening + Red Team CI gates
+
+**Entry ID**: `purpleTeamGolive133seal`
+**Timestamp**: 2026-06-11T17:00:00-04:00
+**Phase**: SUBSTANTIATE (security fixes + CI gates)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(tests/redteam/test_redteam_gates.py)
+= 3616bacabc27d3f44973d64de8b6659312d5a20e96e227ef59e75c6469296a7d
+```
+
+**Previous Hash**: c4123727ff4d48465292d25dc134bad4fd07848c86850bf1160b1b954ef68b9f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 623c907c3765b153e4d573509b280c83c60c0bfb4c9d2528c382854c28c4716a
+```
+
+**Decision**: Remediated the purple-team assessment (#132), clearing the blocker + every needs-fix gap so
+linear/google_drive/devin are **machine-side go-live APPROVED (purple-team)**; the operator live flip (real
+secrets + live network; ADR-0012) is the sole remaining step. **Fixes:** (SSRF-1/#94) no-follow redirect opener
+on `UrllibTransport` + `GatewaySink` -> a 3xx fails closed at the 200-only guard, secret never re-sent;
+(PII/#95) `_screen_sensitive` scans EACH wire field per-leaf (+ ev.author/timestamp), `gateway_mapping._source`
+redacts url/ref, gdrive documentId fullmatch-guarded; (PARSE-1/#96) `RecursionError` caught on all 3 parse
+paths; (PARSE-2/#97) devin `_text` non-string guard; (PARSE-3/#98) gdrive body-walk isinstance guards;
+(SSRF-4/#99) servicenow host validation + urlencoded query + shared `_require_bare_host`/`_require_https_endpoint`;
+(SECRET-LEAK-1/#100) GatewaySink fixed `gateway_rejected` discriminator (no body reflection); (CONFIG/#101)
+runtime_config key allowlist + Linear endpoint host-pin + Devin https requirement. **Red Team CI gates (#102):**
+`tests/redteam/test_redteam_gates.py` (28 behavioral regression tests) + new blocking `.github/workflows/red-team.yml`,
+wired into `ci.yml`. **Measured:** full suite **551 passed** (+28), ruff clean, mypy 168 OK, bandit 0 high/med,
+governance-gate OK, connector-config OK. Per-leaf screen change rejects NO legitimate emission (full-suite
+measured, SG-2026-06-05-F). Accepted-risk deferred (DOS-1 aggregate cap, within-field PAN) tracked in #101.
+**Correction:** #131's "backtick the Previous Hash" suggestion was itself drift -- backticking breaks the repo's
+`governance_gate.py` CI gate; bare hex is canonical here (SG-2026-06-11-C). No connector parse contract changed
+for legitimate payloads. **User-authorized commit/push/PR this cycle.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#133 clean; bare-hex Previous Hash + `sha256(content+previous)` is the repo's canonical format -- SG-2026-06-11-C).*
+*Status: `feat/devin-flip-ready-descriptor` -- **purple-team go-live hardening SEALED at Entry #133 (`623c907c`; L2).** Linear + Google Drive + Devin are **machine-side go-live APPROVED (purple-team)**: the SSRF blocker + all needs-fix gaps (#94-#100 + cheap #101) are fixed and locked by 28 Red Team regression gates (`red-team.yml`); only documented accepted-risk (#101 DOS-1/within-field PAN) remains. Devin flip-ready descriptor (#131) + Linear/GDrive (#128) stand. The actual Live flip is operator-gated (real secrets + live network test + review; ADR-0012).*
+*The platform is end-to-end for all 3 connectors (parse -> screen -> live fetch -> GatewaySink -> gateway; config.json -> mcp UI). 26 Beta connectors; secrets never committed nor printed.*
+*Next required action: review the PR (this cycle: Devin descriptor commit + purple-team hardening commit); then per-connector operator live flip per each `SETUP.md` go-live + `wire_gates`. Backlog: accepted-risk #101 (aggregate cap); branch protection (B5); bot #73 (release signing).*

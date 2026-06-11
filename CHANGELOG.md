@@ -5,7 +5,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Security
+
+- Purple-team go-live hardening for Linear, Google Drive, and Devin (issues
+  #94–#102): disabled provider-redirect following in `UrllibTransport` +
+  `GatewaySink` (no-follow opener) so an untrusted 3xx can no longer re-send the
+  auth secret cross-host (SSRF/token-exfil); per-leaf FX-SEC-001 screening (no
+  cross-field PAN suppression) + `gateway` source url/ref redaction; fail-closed
+  on deeply-nested JSON (`RecursionError`) and non-string provider scalars;
+  ServiceNow URL host/query injection guard; GatewaySink no longer reflects the
+  untrusted gateway response body into errors; runtime-key allowlist + credentialed
+  endpoint host-pinning. Locked by 28 Red Team regression gates
+  (`tests/redteam/` + the new blocking `red-team.yml` workflow).
+
 ### Added
+
+- **Devin** connector flip-ready FX-CFG-001 descriptor (`config.json` +
+  generated `SETUP.md` + `index.json`) — the third config-descriptor exemplar
+  (poll-only; Bearer `cog_` Service-User; operator-templated `base_url`).
 
 - Universal adapter core: provider-neutral `Observation` → `AdapterEmission`
   normalization seam (`adapter/core`), with a producer sensitive-data screen
