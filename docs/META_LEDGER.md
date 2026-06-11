@@ -4808,7 +4808,44 @@ suite **604 passed**, ruff clean, mypy clean, governance-gate #1..#152 OK. **6 o
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#152 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **mods M1 SEALED at #152 (`304d8574`; L1)** -- adapter_contract + source_trust_calibration wired. **6 of 13 mods complete**; 7 scaffolds remain (M2-M4). **12 of 26 connectors flip-ready**. Prior: #151 mod scope, #150 shared-lows.*
-*The platform is end-to-end + deep-audit-hardened for 12 flip-ready connectors + 6 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Mod Cycle M2** (webhook_risk + connector_freshness). Then M3 (code_review_risk + authority_boundary + test_adequacy), M4 (ownership_routing + decision_drift). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #153: SESSION SEAL -- mods M2: webhook_risk + connector_freshness (8 of 13)
+
+**Entry ID**: `modsm2153seal`
+**Timestamp**: 2026-06-12T17:45:00-04:00
+**Phase**: SUBSTANTIATE (mod build)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(mods/webhook_risk/connector.py)
+= 25fd7c16371b8d70a7ebb434fa7eaebea9d03ac089f899b78cc31d7d76991a5a
+```
+
+**Previous Hash**: 304d85741348cbe3b52d0318a4a1babd9501f67248b22395c3f7022e0f9bec39
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ab959e90f7bafe42e6622aeb885503b381c17b26d95c7f91c373a6d3098520aa
+```
+
+**Decision**: Built M2 (connector/source health). **webhook_risk** (`webhook-risk`): annotates any emission
+whose text references a webhook surface (webhook / a provider signature header / svix / hmac), and routes
+SECURITY (high) only when a concrete risk is NAMED (replay/spoof/unverified/bypass/missing-signature) --
+absence-of-mention is deliberately NOT treated as risk. **connector_freshness** (`connector-freshness`):
+routes CONNECTORS review when a provider deprecation/sunset/EOL/breaking-change/version-migration term is
+named; soft api-version mention annotates only. Both pure, deterministic, stdlib-only `evaluate` over the
+emission text; silence the default. Wired into `_MODS` (now 8) + `__init__` exports + behavior tests
+(no-context→silent, context-only→annotate, named-risk→route). **Process note:** the M1 PR (#120) failed CI
+`lint+type+test` on a whole-tree mypy error my targeted `mypy <file>` missed (an empty-tuple test var
+needed `tuple[SourceEvidence, ...]`); fixed + henceforth run `mypy adapter connectors runtime mods` (the
+CI-exact invocation) before sealing. **Measured:** full suite **612 passed**, ruff clean, mypy
+(whole-tree, 188 files) clean, governance-gate #1..#153 OK. **8 of 13 mods complete.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#153 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **mods M2 SEALED at #153 (`ab959e90`; L1)** -- webhook_risk + connector_freshness wired. **8 of 13 mods complete**; 5 scaffolds remain (M3-M4). **12 of 26 connectors flip-ready**. Prior: #152 mods M1, #151 mod scope.*
+*The platform is end-to-end + deep-audit-hardened for 12 flip-ready connectors + 8 mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **Mod Cycle M3** (code_review_risk + authority_boundary + test_adequacy). Then M4 (ownership_routing + decision_drift) -> all 13. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
