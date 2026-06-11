@@ -35,6 +35,14 @@ def test_parse_maps_text_author_ref():
     assert obs.metadata["channel"] == "C12345"
 
 
+def test_message_text_redacted_and_pass():
+    # message text is free-text -> redact-and-pass scrubs an embedded email; non-PII text survives.
+    obs = parse_message({"event": {"type": "message", "channel": "C1", "user": "U1",
+                                   "text": "ship it, cc dave@corp.com", "ts": "1.2"}})
+    assert "dave@corp.com" not in obs.excerpt
+    assert "ship it" in obs.excerpt
+
+
 def test_parse_accepts_bare_message():
     bare = _event()["event"]
     obs = parse_message(bare)

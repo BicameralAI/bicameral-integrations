@@ -34,6 +34,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   first live flip; operator opt-out knob documented in `docs/runbooks/`).
 - **data_classification** mod (4 of 13 built): cross-cutting advisory analyzer that flags
   confidentiality markers + redaction-placeholders for restricted review (EM-safe; emit-on-signal).
+- **Slack** connector flip-ready (webhook): FX-CFG-001 descriptor (X-Slack-Signature v0 +
+  5-min replay); message text redact-and-passed, opaque user id surfaced (T2 read/ingest).
 - **Jira** connector flip-ready (webhook): FX-CFG-001 descriptor (X-Hub-Signature verify +
   dedup); issue summary redact-and-passed, actor displayName dropped, ADF description never read.
 - **GitHub** connector flip-ready (webhook): FX-CFG-001 descriptor (X-Hub-Signature-256

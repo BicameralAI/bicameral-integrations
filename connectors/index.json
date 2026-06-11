@@ -906,6 +906,95 @@
         "OAuth 2.0 is a deferred alternative; Basic auth this cycle.",
         "Live flip gated on operator human review + a live Table-API poll with a real integration-user credential (ADR-0012)."
       ]
+    },
+    "slack": {
+      "available": true,
+      "category": "communication",
+      "credentials": [
+        {
+          "header": "X-Slack-Signature (v0= hex HMAC-SHA256 over 'v0:{timestamp}:{raw_body}') + X-Slack-Request-Timestamp",
+          "key": "slack_webhook",
+          "label": "Slack signing secret",
+          "modes": [
+            "webhook"
+          ],
+          "obtain": {
+            "steps": [
+              "In your Slack app's Basic Information, copy the Signing Secret.",
+              "Bicameral verifies X-Slack-Signature (v0= HMAC-SHA256 over 'v0:{ts}:{body}') with a 5-minute replay window, constant-time, fail-closed."
+            ],
+            "url": "https://api.slack.com/authentication/verifying-requests-from-slack"
+          },
+          "required": true,
+          "type": "webhook_secret"
+        }
+      ],
+      "data": {
+        "emits": [
+          "message"
+        ],
+        "pii_posture": "Message text is PII-dense human communication -> passed through adapter.core.redaction.redact (redact-and-pass: scrubs secret/PHI/PAN + email/phone). author is the OPAQUE Slack user id (e.g. U0123ABC) -- pseudonymous (the operator holds the id->identity mapping; SG-2026-06-05-D), not a name/email. FX-SEC-001 is the un-bypassable backstop.",
+        "redaction": "redact-and-pass (message text); opaque Slack user id surfaced (pseudonymous)"
+      },
+      "description": "Slack message events as redact-and-pass governed evidence (read/ingest).",
+      "id": "slack",
+      "instructions": [
+        {
+          "action": "register_webhook",
+          "link": "https://api.slack.com/apis/connections/events-api",
+          "ref": "connectors/slack/auth.md (Verification)",
+          "text": "Create a Slack app with Event Subscriptions on message events, pointing the Request URL at your Bicameral receiver."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the Slack app Signing Secret."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: a signed message event should produce one emission (text redact-and-passed); the url_verification handshake + replays are dropped."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Parse + X-Slack-Signature verify (v0, 5-min replay) + handshake/dedup are built and harness-proven; message text redact-and-passed, opaque user id surfaced. Gated on operator review + a live signed event with a real signing secret + a provisioned receiver. To flip: create the app + signing secret + Request URL receiver; wire GatewaySink; send a signed test event; review before promoting.",
+      "modes": [
+        "webhook"
+      ],
+      "name": "Slack",
+      "references": [
+        {
+          "kind": "events-api",
+          "url": "https://api.slack.com/apis/connections/events-api"
+        },
+        {
+          "kind": "verify",
+          "url": "https://api.slack.com/authentication/verifying-requests-from-slack"
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T2",
+      "webhook": {
+        "events": [
+          "message"
+        ],
+        "header": "X-Slack-Signature",
+        "receiver": {
+          "label": "Bicameral webhook receiver URL (operator-provisioned)",
+          "provisioned_by": "operator",
+          "required": true
+        },
+        "setup": {
+          "steps": [
+            "Create a Slack app, enable Event Subscriptions, subscribe to message events.",
+            "Set the Request URL to your Bicameral webhook receiver (see receiver below); the url_verification handshake is handled."
+          ],
+          "url": "https://api.slack.com/apis/connections/events-api"
+        },
+        "signature_scheme": "v0= hex HMAC-SHA256 over 'v0:{X-Slack-Request-Timestamp}:{raw_body}', 5-minute replay window"
+      },
+      "wire_gates": [
+        "Webhook path built + verified: X-Slack-Signature v0= HMAC-SHA256 over 'v0:{ts}:{body}' + 5-minute replay window (constant-time, fail-closed); url_verification handshake + unverified deliveries normalize to []. Message text redact-and-passed; opaque user id (pseudonymous) surfaced.",
+        "Trust tier T2 (read/ingest). Notify/write (T3+) is deferred (ADR-0008, evidence-before-action).",
+        "Webhook RECEIPT is operator-runtime (receiver URL + slack_webhook injection). Live flip gated on operator review + a signed live event (ADR-0012)."
+      ]
     }
   }
 }
