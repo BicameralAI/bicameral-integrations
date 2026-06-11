@@ -1,5 +1,188 @@
 {
   "connectors": {
+    "copilot": {
+      "available": true,
+      "category": "developer-ai",
+      "credentials": [
+        {
+          "header": "Authorization: Bearer <token>",
+          "key": "copilot",
+          "label": "GitHub token (PAT/OAuth) with read:org",
+          "modes": [
+            "active"
+          ],
+          "obtain": {
+            "steps": [
+              "Create a PAT (or OAuth app token) with `manage_billing:copilot` OR `read:org` / `read:enterprise`.",
+              "Sent as Authorization: Bearer (with Accept: application/vnd.github+json + X-GitHub-Api-Version)."
+            ],
+            "url": "https://docs.github.com/en/rest/copilot/copilot-metrics"
+          },
+          "required": true,
+          "type": "api_key"
+        }
+      ],
+      "data": {
+        "emits": [
+          "usage_metrics"
+        ],
+        "pii_posture": "PII-free: the aggregate metrics object carries no per-developer identity (one emission per day). The newer per-user NDJSON usage-metrics report is deferred behind a future redaction-and-pass model.",
+        "redaction": "none (aggregate, PII-free by construction)"
+      },
+      "description": "GitHub Copilot org metrics (aggregate, PII-free) as governed evidence.",
+      "id": "copilot",
+      "instructions": [
+        {
+          "action": "open_url",
+          "link": "https://docs.github.com/en/rest/copilot/copilot-metrics",
+          "ref": "connectors/copilot/auth.md (Active fetch auth)",
+          "text": "Create a GitHub PAT/OAuth token with manage_billing:copilot or read:org."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the token (sent as Authorization: Bearer)."
+        },
+        {
+          "action": "configure",
+          "ref": "connectors/copilot/auth.md (Live path — reference poll client)",
+          "text": "Provide the org-templated metrics endpoint (.../orgs/<org>/copilot/metrics)."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: an active poll returns aggregate daily metrics (one emission per day), no per-developer identity."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Aggregate PII-free parse surface + the live fetch-half (build_copilot_spec) are built and harness-proven against a recorded fixture (contract verified 2026-06-08). Gated on operator review + a live poll with a real token. To flip: provide a read:org token + the org-templated endpoint; wire GatewaySink; run the live poll; review before promoting.",
+      "modes": [
+        "active"
+      ],
+      "name": "GitHub Copilot",
+      "references": [
+        {
+          "kind": "api",
+          "url": "https://docs.github.com/en/rest/copilot/copilot-metrics"
+        },
+        {
+          "kind": "auth",
+          "url": "https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens"
+        }
+      ],
+      "runtime_config": [
+        {
+          "description": "GET .../orgs/<org>/copilot/metrics — template YOUR org in (default carries an ORG placeholder).",
+          "key": "base_url",
+          "label": "Copilot metrics endpoint (org-templated)",
+          "required": true
+        },
+        {
+          "default": "2022-11-28",
+          "description": "GitHub REST API version header (valid; EOL 2028-03-10).",
+          "key": "api_version",
+          "label": "X-GitHub-Api-Version",
+          "required": false
+        },
+        {
+          "default": 100,
+          "description": "Results per page (max 100; page-number pagination, 100-day lookback).",
+          "key": "per_page",
+          "label": "Page size",
+          "required": false
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T1",
+      "wire_gates": [
+        "Contract verified docs.github.com 2026-06-08: top-level JSON array of day objects (one emission/day); page/per_page pagination (max 100; 100-day lookback) via PageNumberPager (stop-on-short-page). X-GitHub-Api-Version 2022-11-28 is an argument, not baked.",
+        "Operator templates their org into base_url (required; the default carries an ORG placeholder that will 404).",
+        "Live flip gated on operator human review + a live poll with a real read:org token (ADR-0012)."
+      ]
+    },
+    "cursor": {
+      "available": true,
+      "category": "developer-ai",
+      "credentials": [
+        {
+          "header": "Authorization: Basic (API key as username, empty password)",
+          "key": "cursor",
+          "label": "Team Admin API key",
+          "modes": [
+            "active"
+          ],
+          "obtain": {
+            "steps": [
+              "A team administrator mints an Admin API key in the Cursor dashboard (team settings).",
+              "The key is sent as HTTP Basic with the key as the username and an empty password."
+            ],
+            "url": "https://cursor.com/docs/account/teams/admin-api"
+          },
+          "required": true,
+          "type": "basic"
+        }
+      ],
+      "data": {
+        "emits": [
+          "usage_metrics"
+        ],
+        "pii_posture": "PII-free by construction: parse-time allowlist reads only numeric metrics + mostUsedModel + the OPAQUE integer userId; email/name/clientVersion are NEVER read (FX-SEC-001 does not detect a generic email, so the control is the allowlist, not a downstream screen). Free-text day/model pass through redact().",
+        "redaction": "parse-time PII exclusion (allowlist) + redact() on free-text; opaque userId for pseudonymous per-developer attribution (SG-2026-06-05-D)"
+      },
+      "description": "Cursor team daily-usage metrics (Admin API) as PII-free, governed evidence.",
+      "id": "cursor",
+      "instructions": [
+        {
+          "action": "open_url",
+          "link": "https://cursor.com/docs/account/teams/admin-api",
+          "ref": "connectors/cursor/auth.md (Active fetch auth)",
+          "text": "A team admin mints a Cursor Admin API key (team settings)."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the Admin API key (sent as HTTP Basic username, empty password)."
+        },
+        {
+          "action": "configure",
+          "ref": "connectors/cursor/auth.md (Live path — reference poll client)",
+          "text": "Provide the date-range request body {startDate, endDate} in epoch milliseconds (range <= 30 days)."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: an active poll returns PII-free per-user-day usage rows (opaque userId only)."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Parse surface (PII-free allowlist) + the live fetch-half (build_cursor_spec) are built and harness-proven against a recorded fixture; contract re-verified live 2026-06-11. Gated on operator human review + a live poll with a real team Admin API key. To flip: provide the key + a date-range body; wire GatewaySink; run the live poll; review before promoting.",
+      "modes": [
+        "active"
+      ],
+      "name": "Cursor",
+      "references": [
+        {
+          "kind": "admin-api",
+          "url": "https://cursor.com/docs/account/teams/admin-api"
+        }
+      ],
+      "runtime_config": [
+        {
+          "default": "https://api.cursor.com/teams/daily-usage-data",
+          "description": "The Cursor Admin API daily-usage endpoint (host pinned api.cursor.com; verified 2026-06-11).",
+          "key": "base_url",
+          "label": "Daily-usage endpoint",
+          "required": false
+        },
+        {
+          "description": "POST body {startDate, endDate} in epoch MILLISECONDS, range <= 30 days. page/pageSize (body) paginate; the reference client fetches one page (widen pageSize for teams > one page).",
+          "key": "body",
+          "label": "Date-range request body",
+          "required": true
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T1",
+      "wire_gates": [
+        "Contract verified live 2026-06-11: POST https://api.cursor.com/teams/daily-usage-data, HTTP Basic (key as username), body {startDate,endDate} epoch-ms <= 30 days, `data` envelope; rows carry userId/email/metrics, no `name`.",
+        "Pagination is POST-body `page`/`pageSize` with response `pagination.hasNextPage` (verified 2026-06-11). The reference client (build_cursor_spec) issues a SINGLE request and is NOT yet wired for multi-page — a team larger than one page truncates; widen `pageSize` or wire a body-page pager before relying on full coverage. (runtime/poll_specs.py build_cursor_spec carries stale 'inferred/unverified' comments to reconcile.)",
+        "PII control is the parse-time allowlist (no downstream screen for generic email) — do NOT relax it. Operator runs the live poll + reviews before promoting to Live (ADR-0012)."
+      ]
+    },
     "devin": {
       "available": true,
       "category": "developer-ai",
@@ -315,6 +498,104 @@
         "Two-secret model (RESOLVED, FX-RUNTIME-005): Linear needs two namespaced credential keys — 'linear' (GraphQL API key, modes: active) + 'linear_webhook' (webhook signing secret, modes: webhook). The resolver resolves each by key (env BICAMERAL_LINEAR / BICAMERAL_LINEAR_WEBHOOK), and assert_runnable is mode-scoped so an active `runtime.cli run linear` requires only 'linear'. Residual: injecting 'linear_webhook' into deliver_webhook's receive path stays operator-runtime (the CLI runs active fetches, not webhook receipt).",
         "GraphQL issue field set (id/identifier/title/description/url/updatedAt/state.name) confirmed against a live response before the Live flip (verify-before-cite).",
         "Live flip GATED on human review + live testing: code-complete and harness-proven through runtime/ against a reference sink, but UNVERIFIED against Linear's live API/webhook with real secrets — no machine has hit the live endpoint yet. The operator must run the live test and review the result before promoting; until then this connector is flip-ready, NOT Live (ADR-0012)."
+      ]
+    },
+    "servicenow": {
+      "available": true,
+      "category": "itsm",
+      "credentials": [
+        {
+          "header": "Authorization: Basic (integration username:password)",
+          "key": "servicenow",
+          "label": "Integration-user password",
+          "modes": [
+            "active"
+          ],
+          "obtain": {
+            "steps": [
+              "Create a dedicated integration user with `rest_service` + the incident table-read roles (least privilege).",
+              "The password is the resolved secret; the instance host + username are non-secret runtime config (below)."
+            ],
+            "url": "https://docs.servicenow.com/bundle/xanadu-platform-administration/page/integrate/inbound-rest/concept/c_TableAPI.html"
+          },
+          "required": true,
+          "type": "basic"
+        }
+      ],
+      "data": {
+        "emits": [
+          "incident"
+        ],
+        "pii_posture": "Incident description/short_description are free-text that routinely carry secrets/PII -> passed through adapter.core.redaction.redact (redact-and-pass: scrubs secret/PHI/PAN + email/phone). The caller_id/caller identity field is NEVER read. number/state/priority are the non-PII metadata surface. FX-SEC-001 is the un-bypassable backstop.",
+        "redaction": "redact-and-pass (description + short_description); caller identity never read"
+      },
+      "description": "ServiceNow ITSM incidents (Table API) as redact-and-pass governed evidence.",
+      "id": "servicenow",
+      "instructions": [
+        {
+          "action": "open_url",
+          "link": "https://docs.servicenow.com/bundle/xanadu-platform-administration/page/integrate/inbound-rest/concept/c_TableAPI.html",
+          "ref": "connectors/servicenow/auth.md (Active fetch auth)",
+          "text": "Create a least-privilege ServiceNow integration user (rest_service + incident table-read roles)."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the integration-user password (Basic auth)."
+        },
+        {
+          "action": "configure",
+          "ref": "connectors/servicenow/auth.md (Live path — reference poll client)",
+          "text": "Provide the instance host + integration username (non-secret runtime config)."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: an active poll returns recent incidents with description redact-and-passed; caller identity is never read."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Parse + redact-and-pass surface + the live fetch-half (build_servicenow_spec, Basic + offset pagination) are built and harness-proven against recorded 2-page fixtures; the SSRF-4 URL-injection gap is fixed (#133). Gated on operator review + a live poll with a real integration-user credential. To flip: provide the password + instance + username; wire GatewaySink; run the live poll; review before promoting.",
+      "modes": [
+        "active"
+      ],
+      "name": "ServiceNow",
+      "references": [
+        {
+          "kind": "api",
+          "url": "https://docs.servicenow.com/bundle/xanadu-platform-administration/page/integrate/inbound-rest/concept/c_TableAPI.html"
+        }
+      ],
+      "runtime_config": [
+        {
+          "description": "Bare hostname, e.g. acme.service-now.com (host-validated before the URL is built; no path/query injection).",
+          "key": "instance",
+          "label": "ServiceNow instance host",
+          "required": true
+        },
+        {
+          "description": "Non-secret Basic-auth username for the integration user (paired with the resolved password).",
+          "key": "username",
+          "label": "Integration-user username",
+          "required": true
+        },
+        {
+          "default": 100,
+          "description": "Rows per page; sysparm_offset advances by this until a short page (offset pagination).",
+          "key": "limit",
+          "label": "Page size (sysparm_limit)",
+          "required": false
+        },
+        {
+          "description": "Optional field selection (urlencoded; cannot inject sibling query params).",
+          "key": "fields",
+          "label": "sysparm_fields (comma list)",
+          "required": false
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T1",
+      "wire_gates": [
+        "Table API documented shape: GET https://<instance>/api/now/table/incident, HTTP Basic, `{result:[...]}` envelope, sysparm_offset/sysparm_limit offset pagination (stop-on-short-page). instance is host-validated + the URL is urllib-built (SSRF-4 fix, #133) so instance/fields cannot inject host/path/query.",
+        "OAuth 2.0 is a deferred alternative; Basic auth this cycle.",
+        "Live flip gated on operator human review + a live Table-API poll with a real integration-user credential (ADR-0012)."
       ]
     }
   }

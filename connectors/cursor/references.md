@@ -12,7 +12,7 @@ maintained provider-docs table and refresh cadence.
 | Priority | P1 |
 | Default trust tier | T1 |
 | Integration role | AI-leverage usage evidence |
-| Readiness (lifecycle) | Beta (aggregate usage parse, PII-dropped; proven via `deliver_poll`; ADR-0012) |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (PII-free allowlist parse + live fetch-half `build_cursor_spec`; contract re-verified live 2026-06-11; FX-CFG-001 descriptor shipped). Live flip gated on operator review + a live poll with a real team Admin API key. |
 
 ## Provider documentation (verify on refresh)
 

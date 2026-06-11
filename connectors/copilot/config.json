@@ -1,0 +1,85 @@
+{
+  "id": "copilot",
+  "name": "GitHub Copilot",
+  "description": "GitHub Copilot org metrics (aggregate, PII-free) as governed evidence.",
+  "category": "developer-ai",
+  "trust_tier": "T1",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["active"],
+  "credentials": [
+    {
+      "key": "copilot",
+      "type": "api_key",
+      "label": "GitHub token (PAT/OAuth) with read:org",
+      "required": true,
+      "modes": ["active"],
+      "header": "Authorization: Bearer <token>",
+      "obtain": {
+        "url": "https://docs.github.com/en/rest/copilot/copilot-metrics",
+        "steps": [
+          "Create a PAT (or OAuth app token) with `manage_billing:copilot` OR `read:org` / `read:enterprise`.",
+          "Sent as Authorization: Bearer (with Accept: application/vnd.github+json + X-GitHub-Api-Version)."
+        ]
+      }
+    }
+  ],
+  "runtime_config": [
+    {
+      "key": "base_url",
+      "label": "Copilot metrics endpoint (org-templated)",
+      "required": true,
+      "description": "GET .../orgs/<org>/copilot/metrics — template YOUR org in (default carries an ORG placeholder)."
+    },
+    {
+      "key": "api_version",
+      "label": "X-GitHub-Api-Version",
+      "required": false,
+      "default": "2022-11-28",
+      "description": "GitHub REST API version header (valid; EOL 2028-03-10)."
+    },
+    {
+      "key": "per_page",
+      "label": "Page size",
+      "required": false,
+      "default": 100,
+      "description": "Results per page (max 100; page-number pagination, 100-day lookback)."
+    }
+  ],
+  "data": {
+    "emits": ["usage_metrics"],
+    "pii_posture": "PII-free: the aggregate metrics object carries no per-developer identity (one emission per day). The newer per-user NDJSON usage-metrics report is deferred behind a future redaction-and-pass model.",
+    "redaction": "none (aggregate, PII-free by construction)"
+  },
+  "instructions": [
+    {
+      "action": "open_url",
+      "text": "Create a GitHub PAT/OAuth token with manage_billing:copilot or read:org.",
+      "link": "https://docs.github.com/en/rest/copilot/copilot-metrics",
+      "ref": "connectors/copilot/auth.md (Active fetch auth)"
+    },
+    {
+      "action": "paste_secret",
+      "text": "Paste the token (sent as Authorization: Bearer)."
+    },
+    {
+      "action": "configure",
+      "text": "Provide the org-templated metrics endpoint (.../orgs/<org>/copilot/metrics).",
+      "ref": "connectors/copilot/auth.md (Live path — reference poll client)"
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: an active poll returns aggregate daily metrics (one emission per day), no per-developer identity."
+    }
+  ],
+  "references": [
+    {"kind": "api", "url": "https://docs.github.com/en/rest/copilot/copilot-metrics"},
+    {"kind": "auth", "url": "https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens"}
+  ],
+  "wire_gates": [
+    "Contract verified docs.github.com 2026-06-08: top-level JSON array of day objects (one emission/day); page/per_page pagination (max 100; 100-day lookback) via PageNumberPager (stop-on-short-page). X-GitHub-Api-Version 2022-11-28 is an argument, not baked.",
+    "Operator templates their org into base_url (required; the default carries an ORG placeholder that will 404).",
+    "Live flip gated on operator human review + a live poll with a real read:org token (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Aggregate PII-free parse surface + the live fetch-half (build_copilot_spec) are built and harness-proven against a recorded fixture (contract verified 2026-06-08). Gated on operator review + a live poll with a real token. To flip: provide a read:org token + the org-templated endpoint; wire GatewaySink; run the live poll; review before promoting."
+}

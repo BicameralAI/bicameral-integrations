@@ -12,7 +12,7 @@ maintained provider-docs table and refresh cadence.
 | Priority | P2 |
 | Default trust tier | T1 |
 | Integration role | incident / change evidence (redacted) |
-| Readiness (lifecycle) | Beta (incident parse, redact-and-pass; proven via `deliver_poll`; ADR-0012) |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (incident redact-and-pass parse + live fetch-half `build_servicenow_spec`; SSRF-4 URL-injection fixed #133; FX-CFG-001 descriptor shipped). Live flip gated on operator review + a live Table-API poll with a real integration-user credential. |
 
 ## Provider documentation (verify on refresh)
 
