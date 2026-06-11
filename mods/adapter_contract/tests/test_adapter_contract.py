@@ -19,7 +19,7 @@ def _manifest():
 
 def _emission(*, ref="o/r#1", url="https://x/1", excerpt="changed something",
               kind="pull_request", evidence=True) -> AdapterEmission:
-    evs = ()
+    evs: tuple[SourceEvidence, ...] = ()
     if evidence:
         evs = (SourceEvidence(
             source_ref=SourceRef(source_id="github", ref=ref, url=url, kind=kind),
