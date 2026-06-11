@@ -477,3 +477,27 @@ scrubs email/phone/secret/PHI/PAN but NOT a deliberately-injected display name, 
 now-public "human real names are dropped" guarantee (README / capability matrix) is contradicted on the
 transcript path. **Rule:** identity minimization must cover every structured name a connector INJECTS into
 emitted text, not just the `author` slot — drop or pseudonymize injected speaker/owner/actor names too.
+
+## SG-2026-06-13-A — a local/passive connector that emits raw operator content still needs redact-and-pass parity
+
+`/qor-research` for the local_directory + aider flip found both emit raw free text with NO redaction —
+local_directory the **full file content + filename stem** (`connectors/local_directory/connector.py:39,46`),
+aider the **commit subject** (`connectors/aider/connector.py:57,59`) — on the theory that "it's a local/passive
+source, FX-SEC-001 is the guard." But the absence of a network/provider boundary is **not** the absence of a
+PII boundary: FX-SEC-001 hard-rejects only secret/PHI/PAN, so an email/phone/name in an operator-dropped file
+(or a filename like `jane.doe-severance.md`, or a token pasted into a commit message) reaches the evidence
+stream unredacted. The network connectors (fathom/zendesk) already redact-and-pass free text; redaction is
+non-destructive (scrubs only the sensitive classes), so it is pure upside. **Rule:** apply redact-and-pass to
+ANY free-text excerpt regardless of transport — local, passive, and file-import surfaces included; keep an
+opaque hash/id floor un-redacted so the phone regex cannot mangle it (the claude_code floor discipline).
+
+## SG-2026-06-13-B — for a provenance connector the human name is signal, not noise; decide retain/drop per-connector
+
+The fathom/claude_code flips established "drop real human names" (SG-2026-06-11-D / -H). Applying that
+reflexively to **aider** would be wrong: aider's entire purpose is git provenance — *which human ran the AI
+pair-programmer* — so `author_name` (`connectors/aider/connector.py:65`) is the evidence, at trust tier T0, and
+stripping it would gut the connector. (The connector reads only `author_name`, not `author_email`, so no contact
+handle leaks.) The discipline is per-connector: identity-minimization drops a name when it is **incidental**
+(a meeting speaker, a session OS-username) and retains-and-documents it when it is the **signal** the connector
+exists to carry. **Rule:** never blanket-apply the name-drop; for each connector decide whether the human
+identity is signal or noise, and state the retention explicitly in `data.pii_posture` when you keep it.
