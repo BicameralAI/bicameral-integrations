@@ -41,7 +41,7 @@ Runtime config:
 
 | key | required | default | description |
 |---|---|---|---|
-| `base_url` | False | https://public-api.granola.ai/v1/notes?include=transcript | The notes-with-transcript endpoint (verified 2026-06-11). The incremental created_after watermark + two-phase commit are operator-runtime. |
+| `base_url` | False | https://public-api.granola.ai/v1/notes?include=transcript | The notes-with-transcript endpoint (host pinned public-api.granola.ai; verified 2026-06-11). The incremental created_after watermark + two-phase commit are operator-runtime. |
 
 ## Run it (headless — no UI)
 

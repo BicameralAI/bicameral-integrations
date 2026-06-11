@@ -69,7 +69,7 @@
       ],
       "runtime_config": [
         {
-          "description": "GET .../orgs/<org>/copilot/metrics — template YOUR org in (default carries an ORG placeholder).",
+          "description": "GET .../orgs/<org>/copilot/metrics — template YOUR org in (host pinned api.github.com; default carries an ORG placeholder).",
           "key": "base_url",
           "label": "Copilot metrics endpoint (org-templated)",
           "required": true
@@ -257,7 +257,7 @@
       ],
       "runtime_config": [
         {
-          "description": "The v3 sessions list endpoint with your org templated in: https://api.devin.ai/v3/organizations/<org_id>/sessions. Consumed by runtime build_devin_spec(base_url=...); there is no default (the operator supplies org_id).",
+          "description": "The v3 sessions list endpoint with your org templated in: https://api.devin.ai/v3/organizations/<org_id>/sessions (host pinned api.devin.ai; org_id goes in the path). Consumed by runtime build_devin_spec(base_url=...); there is no default (the operator supplies org_id).",
           "key": "base_url",
           "label": "Sessions endpoint base URL",
           "required": true
@@ -509,7 +509,7 @@
       "runtime_config": [
         {
           "default": "https://public-api.granola.ai/v1/notes?include=transcript",
-          "description": "The notes-with-transcript endpoint (verified 2026-06-11). The incremental created_after watermark + two-phase commit are operator-runtime.",
+          "description": "The notes-with-transcript endpoint (host pinned public-api.granola.ai; verified 2026-06-11). The incremental created_after watermark + two-phase commit are operator-runtime.",
           "key": "base_url",
           "label": "Notes endpoint",
           "required": false

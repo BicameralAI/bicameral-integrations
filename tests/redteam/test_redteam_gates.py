@@ -25,7 +25,9 @@ from runtime.local_config import ConfigError, LocalConfig, assert_runnable
 from runtime.poll_auth import NoAuth, PollError
 from runtime.poll_client import HttpResponse, PollSpec
 from runtime.poll_specs import (
+    build_copilot_spec,
     build_devin_spec,
+    build_granola_spec,
     build_linear_graphql_spec,
     build_servicenow_spec,
 )
@@ -160,6 +162,59 @@ def test_linear_endpoint_host_pinned():
 def test_devin_base_url_requires_https():
     with pytest.raises(PollError):
         build_devin_spec(_Resolver(devin="k"), base_url="http://api.devin.ai/v3/organizations/o/sessions")
+
+
+# --- CONFIG (deep-audit SG-2026-06-12-B): EVERY credentialed build_*_spec host-pins -------
+
+def test_devin_endpoint_host_pinned():
+    # devin was allow=None (scheme-only); now pinned to api.devin.ai. An off-host https
+    # base_url must fail closed before the cog_ Bearer is attached.
+    with pytest.raises(PollError):
+        build_devin_spec(
+            _Resolver(devin="k"),
+            base_url="https://attacker.example/v3/organizations/o/sessions")
+
+
+@pytest.mark.parametrize("evil", [
+    "https://attacker.example/orgs/o/copilot/metrics",   # off-provider host
+    "http://api.github.com/orgs/o/copilot/metrics",      # http cleartext
+    "https://169.254.169.254/orgs/o/copilot/metrics",    # cloud-metadata SSRF
+    "https://user:pw@api.github.com/x",                  # userinfo injection
+])
+def test_copilot_endpoint_host_pinned(evil):
+    # build_copilot_spec previously had NO endpoint guard (deep-audit HIGH): the read:org PAT
+    # would reach any config host. Now pinned to api.github.com, fail-closed token-free.
+    with pytest.raises(PollError):
+        build_copilot_spec(_Resolver(copilot="k"), base_url=evil)
+
+
+@pytest.mark.parametrize("evil", [
+    "https://attacker.example/v1/notes",
+    "http://public-api.granola.ai/v1/notes",
+    "https://169.254.169.254/v1/notes",
+])
+def test_granola_endpoint_host_pinned(evil):
+    # build_granola_spec previously had NO endpoint guard (deep-audit HIGH): the grn_ Bearer
+    # fronting PII-dense transcripts would reach any config host. Now pinned, fail-closed.
+    with pytest.raises(PollError):
+        build_granola_spec(_Resolver(granola="k"), base_url=evil)
+
+
+@pytest.mark.parametrize("evil", ["169.254.169.254", "metadata.google.internal", "127.0.0.1", "10.0.0.5"])
+def test_servicenow_rejects_internal_metadata_instance(evil):
+    # _require_bare_host admitted private/metadata IP literals + metadata names (deep-audit low):
+    # a credentialed Basic request to an SSRF/metadata target. Now denylisted, fail-closed.
+    with pytest.raises(PollError):
+        build_servicenow_spec(_Resolver(servicenow="pw"), instance=evil, username="u")
+
+
+def test_pinned_builders_accept_their_verified_host():
+    # The pins must NOT break the documented host (regression guard against an over-tight pin).
+    assert build_copilot_spec(_Resolver(copilot="k")).base_url.startswith("https://api.github.com/")
+    assert build_granola_spec(_Resolver(granola="k")).base_url.startswith("https://public-api.granola.ai/")
+    assert build_devin_spec(
+        _Resolver(devin="k"), base_url="https://api.devin.ai/v3/organizations/o/sessions"
+    ).base_url.startswith("https://api.devin.ai/")
 
 
 # --- CONFIG (#101): undeclared runtime keys are rejected (no silent widening) --------

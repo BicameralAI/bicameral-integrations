@@ -331,7 +331,9 @@ def test_wrong_envelope_key_emits_zero() -> None:
     # (whose verified keys are items/notes) yields 0 emissions, no error.
     devin_resolver = MappingSecretResolver({"devin": _BEARER})
     t1 = RecordedTransport([_json_resp({"data": [{"session_id": "x"}]})])
-    assert poll(DevinConnector(), build_devin_spec(devin_resolver, base_url="https://x/y"),
+    assert poll(DevinConnector(),
+                build_devin_spec(devin_resolver,
+                                 base_url="https://api.devin.ai/v3/organizations/o/sessions"),
                 transport=t1, sink=CollectingSink()) == 0
     granola_resolver = MappingSecretResolver({"granola": _BEARER})
     t2 = RecordedTransport([_json_resp({"data": [{"id": "x"}]})])

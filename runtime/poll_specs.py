@@ -16,6 +16,7 @@ before live-network wiring (verify-before-cite).
 
 from __future__ import annotations
 
+import ipaddress
 import json
 import re
 import urllib.parse
@@ -39,6 +40,28 @@ def _require_secret(resolver: SecretResolver, source_id: str) -> str:
 
 
 _BARE_HOST_RE = re.compile(r"[A-Za-z0-9.-]{1,253}")
+# Cloud-metadata / link-local names a tampered config might name by hostname (the IP
+# forms are caught by ipaddress below; these are the symbolic aliases).
+_METADATA_HOSTS = frozenset({"metadata.google.internal", "metadata", "instance-data"})
+
+
+def _reject_internal_host(host: str, label: str) -> None:
+    """Fail closed when ``host`` is a cloud-metadata name or an internal IP literal
+    (loopback/private/link-local/reserved/unspecified/multicast). Stops a tampered or
+    fat-fingered config from steering a credentialed request at an SSRF/metadata target
+    (169.254.169.254, 127.0.0.1, 10.x, ...). FQDNs that are not IP literals are allowed
+    so on-prem/self-hosted endpoints (e.g. ServiceNow) keep working (deep-audit, 2026-06-12)."""
+    if host.lower() in _METADATA_HOSTS:
+        raise PollError(0, f"internal_host:{label}")
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return  # not an IP literal -> an ordinary hostname; allowed
+    if (
+        ip.is_private or ip.is_loopback or ip.is_link_local
+        or ip.is_reserved or ip.is_unspecified or ip.is_multicast
+    ):
+        raise PollError(0, f"internal_host:{label}")
 
 
 def _require_bare_host(value: object, label: str) -> str:
@@ -47,19 +70,25 @@ def _require_bare_host(value: object, label: str) -> str:
     sibling query params, or a port. Fail-closed, token-free (purple-team SSRF-4, 2026-06-11)."""
     if not isinstance(value, str) or not _BARE_HOST_RE.fullmatch(value):
         raise PollError(0, f"bad_host:{label}")
+    _reject_internal_host(value, label)  # no private/metadata target (deep-audit, 2026-06-12)
     return value
 
 
 def _require_https_endpoint(url: str, *, allow: tuple[str, ...] | None = None) -> str:
     """An operator-supplied endpoint must be ``https`` with a clean host (no userinfo); when
     ``allow`` is given the host is pinned. Stops a fat-fingered/tampered config from sending the
-    credentialed request to an off-provider host (purple-team SSRF/CONFIG, 2026-06-11)."""
+    credentialed request to an off-provider host (purple-team SSRF/CONFIG, 2026-06-11).
+
+    Every credentialed ``build_*_spec`` MUST call this (deep-audit SG-2026-06-12-B: pin the host,
+    do not leave a sibling builder unpinned). When no allowlist applies (a genuine per-tenant
+    host), the internal/metadata denylist still fails closed on an SSRF target."""
     parts = urllib.parse.urlsplit(url)
     host = parts.hostname or ""
     if parts.scheme != "https" or not host or parts.username or parts.password:
         raise PollError(0, "bad_endpoint")
     if allow is not None and host not in allow:
         raise PollError(0, "endpoint_host_not_allowed")
+    _reject_internal_host(host, "endpoint")  # defense-in-depth for the allow=None path
     return url
 
 
@@ -79,6 +108,7 @@ def build_anthropic_admin_spec(
 ) -> PollSpec:
     """anthropic_admin: ``x-api-key`` + ``anthropic-version``; ``has_more``/``next_page`` cursor."""
     secret = _require_secret(resolver, "anthropic_admin")
+    _require_https_endpoint(base_url, allow=("api.anthropic.com",))  # pin the credentialed host
     auth = ApiKeyHeaderAuth("x-api-key", secret, extra={"anthropic-version": version})
     return PollSpec(
         base_url=base_url,
@@ -100,6 +130,7 @@ def build_openai_admin_spec(
 ) -> PollSpec:
     """openai_admin: Bearer admin key; ``has_more``/``last_id`` cursor re-sent as ``after``."""
     secret = _require_secret(resolver, "openai_admin")
+    _require_https_endpoint(base_url, allow=("api.openai.com",))  # pin the credentialed host
     return PollSpec(
         base_url=base_url,
         auth=BearerAuth(secret),
@@ -115,7 +146,9 @@ def build_devin_spec(resolver: SecretResolver, *, base_url: str) -> PollSpec:
     ``org_id`` into ``/v3/organizations/{org}/sessions`` (auth.md). Envelope key + cursor
     pagination verified against docs.devin.ai (2026-06-08)."""
     secret = _require_secret(resolver, "devin")
-    _require_https_endpoint(base_url)  # https + clean host (enterprise host varies; not hard-pinned)
+    # Pin to the single verified host (auth.md:11/references.md:29 use only api.devin.ai); the
+    # operator still templates org_id into the PATH, not the host (deep-audit SG-2026-06-12-B).
+    _require_https_endpoint(base_url, allow=("api.devin.ai",))
     return PollSpec(
         base_url=base_url,
         auth=BearerAuth(secret),
@@ -144,6 +177,10 @@ def build_copilot_spec(
     = GitHub's default), so the short-page stop is accurate.
     """
     secret = _require_secret(resolver, "copilot")
+    # Pin the read:org PAT to GitHub's fixed metrics host: rejects http cleartext, off-provider
+    # hosts, and 169.254.169.254 metadata before the credentialed request is built (deep-audit
+    # SSRF-ENDPOINT-001/CONFIG-DESCRIPTOR-001, HIGH). GHES self-hosted would relax to allow=None.
+    _require_https_endpoint(base_url, allow=("api.github.com",))
     auth = BearerAuth(
         secret,
         extra={"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": api_version},
@@ -167,6 +204,9 @@ def build_granola_spec(resolver: SecretResolver, *, base_url: str = _GRANOLA_BAS
     """granola: Bearer key. Notes (with embedded transcript) endpoint; the
     ``created_after`` watermark + two-phase commit stay operator-run."""
     secret = _require_secret(resolver, "granola")
+    # Pin the grn_ Bearer (fronts PII-dense notes + transcripts) to the verified host: rejects
+    # http cleartext, off-provider, and internal/metadata targets (deep-audit SSRF, HIGH).
+    _require_https_endpoint(base_url, allow=("public-api.granola.ai",))
     return PollSpec(
         base_url=base_url,
         auth=BearerAuth(secret),

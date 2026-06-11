@@ -4537,7 +4537,48 @@ fixture). No Live flip without operator secrets + live network (ADR-0012). L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#145 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **deep-audit recon SEALED at #145 (`851cb484`; L2)** -- 24 confirmed gaps, 3 BLOCKED targets, 5 remediation cycles queued. **12 of 26 connectors flip-ready** (linear, google_drive, devin, cursor, copilot, servicenow, granola, mcp_registry, github, jira, slack, notion) + 4 advisory mods -- but copilot/granola/notion are now BLOCKED-before-Live pending Cycle 1/3. Prior: #144 notion seal, #143 research.*
+### Entry #146: SESSION SEAL -- host-pin sweep over all credentialed poll builders (deep-audit Cycle 1; copilot+granola HIGH cleared)
+
+**Entry ID**: `hostpin146seal`
+**Timestamp**: 2026-06-12T10:30:00-04:00
+**Phase**: SUBSTANTIATE (runtime SSRF hardening)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L3 (credential-egress SSRF on credentialed paths)
+
+**Content Hash**:
+```
+SHA256(runtime/poll_specs.py)
+= 93e03a76e2dd17d83ce206baf865a417c30e4583121fb9ec8f8db3a07eb105fd
+```
+
+**Previous Hash**: 851cb484f6fe95f32b41fa95d8aff98b770caa7c987e42d6b41dfbf7aa60bf3f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 43b9ca7e8a6cde5bd775f368dc0dc81ef0806e1f2709d88e84b43643feaa5467
+```
+
+**Decision**: Cleared the two deep-audit HIGH blockers + their sibling lows in one sweep
+(SG-2026-06-12-B: pin EVERY credentialed builder, not connector-by-connector). `runtime/poll_specs.py`:
+`build_copilot_spec` (api.github.com) and `build_granola_spec` (public-api.granola.ai) now call
+`_require_https_endpoint` -- previously **neither validated the endpoint**, so the read:org PAT /
+grn_ Bearer (PII-dense transcripts) could egress to any operator-config host incl. http cleartext +
+169.254.169.254 metadata. `build_devin_spec` upgraded allow=None -> `allow=("api.devin.ai",)` (refuted
+"enterprise host varies" comment corrected); `anthropic_admin` + `openai_admin` pinned to their verified
+hosts. New `_reject_internal_host` denylist (loopback/private/link-local/reserved/unspecified/multicast
+IP literals + cloud-metadata names) wired into `_require_bare_host` (servicenow) AND the
+`_require_https_endpoint` allow=None path -- closes the servicenow instance=169.254.169.254 /
+metadata.google.internal low. **Descriptors aligned** (granola/copilot/devin config.json now state the
+pinned host; index.json + 12 SETUP.md regenerated, validator OK). **Red-team gates added**:
+copilot/granola/devin host-pin (off-host + http + metadata + userinfo), servicenow internal/metadata
+reject, and a positive regression that the verified hosts still build. **Measured:** redteam 43 passed,
+full suite **576 passed**, ruff clean, mypy(poll_specs) clean, validator OK, governance-gate #1..#146 OK.
+**copilot + granola UNBLOCKED** (notion still BLOCKED pending Cycle 3). L3.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#146 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **Cycle 1 host-pin SEALED at #146 (`43b9ca7e`; L3)** -- copilot + granola HIGH blockers CLEARED; notion remains BLOCKED pending Cycle 3. **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #145 deep-audit recon, #144 notion seal.*
 *The platform is end-to-end for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Cycle 1 host-pin** (closes copilot+granola HIGH blockers). Then Cycles 2-5. **@jinhongkuan** live-flips per `docs/runbooks/` once the 3 blockers clear. 14 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
+*Next required action: **Cycle 2** (deliver_poll non-string-scalar crash backstop + per-connector guards). Then Cycle 3 (notion HIGH), Cycle 4 (mcp_registry PII + github dedup), Cycle 5 (shared lows). **@jinhongkuan** live-flips per `docs/runbooks/` once the 3 blockers clear. Backlog: branch protection (B5); bot #73.*

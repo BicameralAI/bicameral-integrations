@@ -29,7 +29,7 @@
       "key": "base_url",
       "label": "Copilot metrics endpoint (org-templated)",
       "required": true,
-      "description": "GET .../orgs/<org>/copilot/metrics — template YOUR org in (default carries an ORG placeholder)."
+      "description": "GET .../orgs/<org>/copilot/metrics — template YOUR org in (host pinned api.github.com; default carries an ORG placeholder)."
     },
     {
       "key": "api_version",
