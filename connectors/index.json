@@ -809,6 +809,98 @@
         "No credential (public). Live flip is gated only on the operator wiring GatewaySink + running the public poll + review (ADR-0012)."
       ]
     },
+    "notion": {
+      "available": true,
+      "category": "docs",
+      "credentials": [
+        {
+          "header": "X-Notion-Signature (HMAC-SHA256 over the request body, signed with the verification_token)",
+          "key": "notion_webhook",
+          "label": "Webhook verification token",
+          "modes": [
+            "webhook"
+          ],
+          "obtain": {
+            "steps": [
+              "Create a webhook subscription in your Notion integration; Notion issues a verification_token.",
+              "Bicameral verifies X-Notion-Signature (HMAC-SHA256 over the body) with the verification_token, constant-time, fail-closed."
+            ],
+            "url": "https://developers.notion.com/reference/webhooks"
+          },
+          "required": true,
+          "type": "webhook_secret"
+        }
+      ],
+      "data": {
+        "emits": [
+          "page"
+        ],
+        "pii_posture": "The page title (read from the type=='title' property) is free-text -> passed through adapter.core.redaction.redact (redact-and-pass: scrubs secret/PHI/PAN + email/phone). Block/body content is a separate fetch and is deferred. author is the OPAQUE created_by.id (a Notion user UUID) -- pseudonymous (SG-2026-06-05-D), not a name/email. FX-SEC-001 is the un-bypassable backstop.",
+        "redaction": "redact-and-pass (page title); opaque created_by.id surfaced (pseudonymous); block body deferred"
+      },
+      "description": "Notion page webhook events as redact-and-pass governed evidence.",
+      "id": "notion",
+      "instructions": [
+        {
+          "action": "register_webhook",
+          "link": "https://developers.notion.com/reference/webhooks",
+          "ref": "connectors/notion/auth.md (Verification)",
+          "text": "Add a Notion webhook subscription (capture the verification_token), pointing at your Bicameral receiver URL."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the verification_token Notion issues for the webhook subscription."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: a signed page event should produce one emission (title redact-and-passed)."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Parse + X-Notion-Signature verify + dedup are built and harness-proven; page title redact-and-passed, opaque created_by.id surfaced. Gated on operator review + a live signed delivery with a real verification_token + a provisioned receiver, AND on confirming the X-Notion-Signature prefix format (the one open wire_gate). To flip: add the subscription + verification_token + receiver; wire GatewaySink; send a signed test delivery; confirm the signature format; review before promoting.",
+      "modes": [
+        "webhook"
+      ],
+      "name": "Notion",
+      "references": [
+        {
+          "kind": "webhooks",
+          "url": "https://developers.notion.com/reference/webhooks"
+        },
+        {
+          "kind": "api",
+          "url": "https://developers.notion.com/reference/intro"
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T1",
+      "webhook": {
+        "events": [
+          "page.content_updated",
+          "comment.created",
+          "database.schema_updated",
+          "page.locked"
+        ],
+        "header": "X-Notion-Signature",
+        "receiver": {
+          "label": "Bicameral webhook receiver URL (operator-provisioned)",
+          "provisioned_by": "operator",
+          "required": true
+        },
+        "setup": {
+          "steps": [
+            "In your Notion integration, add a webhook subscription and capture the verification_token.",
+            "Set the subscription URL to your Bicameral webhook receiver (see receiver below)."
+          ],
+          "url": "https://developers.notion.com/reference/webhooks"
+        },
+        "signature_scheme": "HMAC-SHA256 over the (minified-JSON) request body, signed with the verification_token (X-Notion-Signature)"
+      },
+      "wire_gates": [
+        "Contract verified live 2026-06-12 (developers.notion.com): X-Notion-Signature = HMAC-SHA256 over the (minified-JSON) body signed with the verification_token; events page.content_updated/comment.created/database.schema_updated/page.locked. Page title redact-and-passed; opaque created_by.id surfaced.",
+        "UNVERIFIED (verify-before-cite, must confirm before Live): the connector's verify() REQUIRES a `sha256=` PREFIX on X-Notion-Signature and rejects a bare-hex value, but the live docs describe a bare HMAC-SHA256 hash and do NOT confirm a prefix. If Notion sends bare hex, verify() rejects EVERY real delivery (ingest zero) -- confirm the exact header format against a live delivery and relax the prefix requirement if needed (SG-2026-06-12-A). Also: verify() hashes the raw received bytes, which match only if the receiver forwards Notion's exact minified body without re-serializing.",
+        "Webhook RECEIPT is operator-runtime; the active Notion API fetch + block-content retrieval + OAuth are deferred. Live flip gated on operator review + a signed live delivery (ADR-0012)."
+      ]
+    },
     "servicenow": {
       "available": true,
       "category": "itsm",

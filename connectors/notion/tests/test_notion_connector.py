@@ -27,6 +27,15 @@ def test_parse_extracts_title_from_title_property():
     assert obs.excerpt == "Adopt Postgres event store"
 
 
+def test_title_redacted_and_pass():
+    # the page title is free-text -> redact-and-pass scrubs an embedded email; non-PII text survives.
+    page = _page()
+    page["properties"] = {"Name": {"type": "title", "title": [{"plain_text": "Sync with sam@corp.com re: launch"}]}}
+    obs = parse_page(page)
+    assert "sam@corp.com" not in obs.title
+    assert "re: launch" in obs.title
+
+
 def test_parse_falls_back_to_id_when_untitled():
     page = _page()
     page["properties"] = {}

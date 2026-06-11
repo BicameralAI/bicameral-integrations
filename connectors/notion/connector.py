@@ -20,6 +20,7 @@ from collections.abc import Callable
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -40,10 +41,11 @@ def _page_title(properties: dict) -> str:
 def parse_page(page: dict) -> Observation:
     """Map a Notion page object into a provider-neutral Observation."""
     page_id = page.get("id") or ""
-    # Terminal non-empty floor: a page can arrive untitled AND without a usable
-    # id (partial objects, webhook envelopes); the emission contract forbids a
-    # blank excerpt, so fall through to a literal as SARIF/MCP-Registry do.
-    title = _page_title(page.get("properties") or {}) or page_id or "notion-page"
+    # The page title is free-text -> redact-and-pass (FX-SEC-001 alone does not catch a generic
+    # email/name in a title). Terminal non-empty floor: an untitled page without a usable id
+    # (partial objects / webhook envelopes) falls through to a literal (SARIF/MCP-Registry pattern).
+    # author is the OPAQUE created_by.id (a Notion user UUID) -- pseudonymous, kept (SG-2026-06-05-D).
+    title = redact(_page_title(page.get("properties") or {})) or page_id or "notion-page"
     return Observation(
         source_ref=SourceRef(
             source_id="notion",
