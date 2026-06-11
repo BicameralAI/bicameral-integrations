@@ -5,6 +5,13 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-12-A — verify-before-cite is per-connector AND per-cycle; a stale "verified" date does not transfer
+
+**Discovered**: 2026-06-12 (operator caught it: "I'm not seeing where you've performed any of the prerequisite /qor-research").
+**Prevents**: shipping go-live descriptors on a connector's recorded "verified <date>" claim instead of a live re-fetch.
+
+After running verify-before-cite `/qor-research` for cursor + granola (#135 — which caught real drift), the next four go-live cycles (mcp_registry/github/jira/slack) **skipped it** and authored descriptors off each connector's existing `references.md`/`auth.md` "verified 2026-06-08" lines. A recovery re-fetch (#143) confirmed all four MATCH the live docs — **lucky, not safe**: the same re-fetch surfaced a real notion gap (the connector requires a `sha256=` prefix on `X-Notion-Signature` that the live docs don't confirm Notion sends → would reject every delivery). **Rule: every go-live cycle's FIRST step is a live re-fetch of that connector's contract — the verification does not transfer from a sibling cycle or a recorded date.** This is SG-2026-06-11-D applied as a process gate, not just a one-off observation. The four shipped descriptors were retroactively validated by #143; the process, not the output, was the failure.
+
 ## SG-2026-06-11-D — A "verified" claim in a connector's own docs is not verification; re-fetch the live source
 
 **Discovered**: 2026-06-11 (`/qor-research`, cursor + granola pre-go-live contract verification).
