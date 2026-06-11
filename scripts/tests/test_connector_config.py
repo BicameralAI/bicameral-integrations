@@ -87,6 +87,29 @@ def test_rejects_missing_ref_on_open_url():
     assert any("requires a 'ref'" in e for e in vcc._semantic(d, "linear"))
 
 
+def test_rejects_ref_to_nonexistent_file():
+    # deep-audit: anti-fabrication is now resolution-checked, not presence-only.
+    d = _linear()
+    d["instructions"] = [{"action": "open_url", "text": "go", "ref": "connectors/linear/nope.md"}]
+    assert any("does not resolve to a repo file" in e for e in vcc._semantic(d, "linear"))
+
+
+def test_rejects_ref_to_nonexistent_section():
+    d = _linear()
+    d["instructions"] = [
+        {"action": "open_url", "text": "go", "ref": "connectors/linear/auth.md (No Such Section)"}
+    ]
+    assert any("no matching heading" in e for e in vcc._semantic(d, "linear"))
+
+
+def test_accepts_ref_to_existing_section():
+    d = _linear()
+    d["instructions"] = [
+        {"action": "open_url", "text": "go", "ref": "connectors/linear/auth.md (Verification)"}
+    ]
+    assert not any("instructions ref" in e for e in vcc._semantic(d, "linear"))
+
+
 def test_modes_not_in_capabilities_rejected():
     # the real drift-guard: a synthetic descriptor with a mode NOT in LinearConnector's caps.
     # (the two exemplars can't trip this — Google Drive declares all 3 real modes.)

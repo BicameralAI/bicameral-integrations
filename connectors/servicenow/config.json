@@ -61,7 +61,7 @@
       "action": "open_url",
       "text": "Create a least-privilege ServiceNow integration user (rest_service + incident table-read roles).",
       "link": "https://docs.servicenow.com/bundle/xanadu-platform-administration/page/integrate/inbound-rest/concept/c_TableAPI.html",
-      "ref": "connectors/servicenow/auth.md (Active fetch auth)"
+      "ref": "connectors/servicenow/auth.md (Expected secret keys)"
     },
     {
       "action": "paste_secret",

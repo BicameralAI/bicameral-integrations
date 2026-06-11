@@ -56,7 +56,7 @@
       "action": "open_url",
       "text": "Create a GitHub PAT/OAuth token with manage_billing:copilot or read:org.",
       "link": "https://docs.github.com/en/rest/copilot/copilot-metrics",
-      "ref": "connectors/copilot/auth.md (Active fetch auth)"
+      "ref": "connectors/copilot/auth.md (Expected secret keys)"
     },
     {
       "action": "paste_secret",

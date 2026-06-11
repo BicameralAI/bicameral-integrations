@@ -35,7 +35,7 @@
         {
           "action": "open_url",
           "link": "https://docs.github.com/en/rest/copilot/copilot-metrics",
-          "ref": "connectors/copilot/auth.md (Active fetch auth)",
+          "ref": "connectors/copilot/auth.md (Expected secret keys)",
           "text": "Create a GitHub PAT/OAuth token with manage_billing:copilot or read:org."
         },
         {
@@ -132,7 +132,7 @@
         {
           "action": "open_url",
           "link": "https://cursor.com/docs/account/teams/admin-api",
-          "ref": "connectors/cursor/auth.md (Active fetch auth)",
+          "ref": "connectors/cursor/auth.md (Expected secret keys)",
           "text": "A team admin mints a Cursor Admin API key (team settings)."
         },
         {
@@ -219,7 +219,7 @@
         {
           "action": "open_url",
           "link": "https://docs.devin.ai/api-reference/authentication",
-          "ref": "connectors/devin/auth.md (Active fetch auth)",
+          "ref": "connectors/devin/auth.md (Expected secret keys)",
           "text": "Create a Service-User API key (cog_) in your Devin organization settings."
         },
         {
@@ -658,8 +658,8 @@
         "emits": [
           "issue"
         ],
-        "pii_posture": "Webhook: issue identifier/title/description/url + actor.name. GraphQL active fetch: PII-safe (no assignee/creator identity surfaced). FX-SEC-001 producer screen is the backstop.",
-        "redaction": "none (FX-SEC-001 screen rejects secret/PHI/PAN)"
+        "pii_posture": "Webhook: issue identifier/title/description/url; the actor display NAME is dropped (author='') — FX-SEC-001 does not screen a generic name, so it is not surfaced rather than relied on (SG-2026-06-11-D, deep-audit). GraphQL active fetch: PII-safe (no assignee/creator identity surfaced). FX-SEC-001 producer screen remains the un-bypassable secret/PHI/PAN backstop.",
+        "redaction": "author (actor.name) dropped; FX-SEC-001 screen rejects secret/PHI/PAN"
       },
       "description": "Linear issues — webhook events + active GraphQL fetch — as governed evidence.",
       "id": "linear",
@@ -667,7 +667,7 @@
         {
           "action": "open_url",
           "link": "https://linear.app/developers/graphql",
-          "ref": "connectors/linear/references.md (Auth / GraphQL active fetch)",
+          "ref": "connectors/linear/auth.md (GraphQL active fetch)",
           "text": "Create a personal API key in your Linear workspace settings."
         },
         {
@@ -937,7 +937,7 @@
         {
           "action": "open_url",
           "link": "https://docs.servicenow.com/bundle/xanadu-platform-administration/page/integrate/inbound-rest/concept/c_TableAPI.html",
-          "ref": "connectors/servicenow/auth.md (Active fetch auth)",
+          "ref": "connectors/servicenow/auth.md (Expected secret keys)",
           "text": "Create a least-privilege ServiceNow integration user (rest_service + incident table-read roles)."
         },
         {

@@ -16,5 +16,15 @@ Stage: **Beta** — `verify()` is built and proven through the `runtime/` harnes
     mismatch). Confirm byte-equality with a real delivery before relying on it at Live.
 - Active REST auth (deferred): OAuth / integration token (developers.notion.com/docs/authorization).
 
+## Verification
+
+`NotionConnector.verify()` checks `X-Notion-Signature: sha256=<hex HMAC-SHA256(verification_token,
+raw_body)>` (prefix REQUIRED, bare hex rejected), strips the prefix, reuses
+`adapter.core.webhook_security.verify_hmac_hex` — fail-closed + constant-time, over the **raw received
+bytes**. Replay dedup keys on the webhook EVENT id with a `sha256(body)` fallback. The `sha256=`
+prefix is the open wire_gate (confirm against a live delivery; SG-2026-06-12-A). Note (deep-audit
+Cycle 3): the webhook body is a thin EVENT envelope — `normalize_event` parses it via `parse_event`
+into a page-changed pointer keyed by the page `entity.id`, NOT the full page object.
+
 Credentials are resolved by the operator runtime, never stored in this package.
 See [references.md](references.md) and [TRUST_TIER_MODEL](../../docs/TRUST_TIER_MODEL.md).

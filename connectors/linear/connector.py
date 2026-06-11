@@ -52,7 +52,8 @@ def parse_event(event: dict) -> Observation:
         excerpt=excerpt,
         mode=SourceMode.WEBHOOK,
         title=title,
-        author=(event.get("actor") or {}).get("name", ""),
+        author="",  # was actor.name (real-name PII reaching the mod chokepoint) — dropped per
+        # SG-2026-06-11-D (jira/granola precedent); FX-SEC-001 does not screen a generic name.
         timestamp=event.get("createdAt") or "",
         metadata={
             "action": event.get("action", ""),

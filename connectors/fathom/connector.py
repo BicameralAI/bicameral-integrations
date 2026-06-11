@@ -64,7 +64,8 @@ def parse_meeting(meeting: dict) -> Observation:
         excerpt=excerpt,
         mode=SourceMode.PASSIVE,
         title=title,
-        author=(meeting.get("recorded_by") or {}).get("name", ""),
+        author="",  # was recorded_by.name (real-name PII reaching the mod chokepoint) — dropped
+        # per SG-2026-06-11-D (jira/granola precedent); FX-SEC-001 does not screen a generic name.
         timestamp=meeting.get("recording_end_time") or meeting.get("created_at") or "",
     )
 
