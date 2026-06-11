@@ -4578,7 +4578,46 @@ full suite **576 passed**, ruff clean, mypy(poll_specs) clean, validator OK, gov
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#146 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **Cycle 1 host-pin SEALED at #146 (`43b9ca7e`; L3)** -- copilot + granola HIGH blockers CLEARED; notion remains BLOCKED pending Cycle 3. **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #145 deep-audit recon, #144 notion seal.*
+### Entry #147: SESSION SEAL -- parse-robustness backstop + per-connector str-guards (deep-audit Cycle 2)
+
+**Entry ID**: `parserobust147seal`
+**Timestamp**: 2026-06-12T11:45:00-04:00
+**Phase**: SUBSTANTIATE (availability hardening)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(runtime/delivery.py)
+= 327959977e3f476e1d839e484923e8c20e166a586ee2923cc503a24b4c914e7a
+```
+
+**Previous Hash**: 43b9ca7e8a6cde5bd775f368dc0dc81ef0806e1f2709d88e84b43643feaa5467
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 384d37e631a4c12acd6158f4e2ad07901674c9d72fa3496a2a19c55a4575d4b9
+```
+
+**Decision**: Closed the recurring **non-string-scalar crash** (deep-audit medium, 6 connectors): a truthy
+non-string field (`day`/`date`/`title`/`body`/`text`/...) in a malformed/hostile provider row crashed
+`.strip()`/`redact()` with AttributeError/TypeError, and the un-guarded `deliver_poll` loop propagated it,
+**aborting the whole batch** (DoS + silent ingest loss). **Two-layer fix:** (1) `runtime/delivery.py`
+`deliver_poll` now wraps each per-payload `connector.observations()` in a log-and-skip try/except over the
+data-shape family (AttributeError/TypeError/ValueError/LookupError) -- one bad row is skipped (logging only
+the connector id + exception type, never the payload, for PII/secret hygiene), the batch survives; a true
+FX-SEC-001 emission-contract breach still raises from `normalize` (NOT caught here), so it still propagates.
+(2) Per-connector str-guards: cursor `_day`, copilot `_date`, github `_text` (title/body) + non-empty ref
+floor, slack `_first_str` (text/channel/ts/user). **Red-team gates:** parametrized parse-tolerance over
+cursor/copilot/github/slack non-string rows + a `deliver_poll` backstop test (one crashing row skipped, good
+rows still emit). (mcp_registry's str-coercion folds into Cycle 4 with its redact-and-pass, one touch.)
+**Measured:** redteam 50 passed, full suite **583 passed**, ruff clean, mypy clean, validator OK,
+governance-gate #1..#147 OK. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#147 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **Cycle 2 parse-robustness SEALED at #147 (`384d37e6`; L2)** -- batch-abort crash closed across cursor/copilot/github/slack + a deliver_poll backstop for all 26. copilot + granola UNBLOCKED (#146); notion remains BLOCKED pending Cycle 3. **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #146 host-pin, #145 deep-audit recon.*
 *The platform is end-to-end for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Cycle 2** (deliver_poll non-string-scalar crash backstop + per-connector guards). Then Cycle 3 (notion HIGH), Cycle 4 (mcp_registry PII + github dedup), Cycle 5 (shared lows). **@jinhongkuan** live-flips per `docs/runbooks/` once the 3 blockers clear. Backlog: branch protection (B5); bot #73.*
+*Next required action: **Cycle 3** (notion webhook HIGH: ref=entity.id + real-envelope parse). Then Cycle 4 (mcp_registry PII + github dedup), Cycle 5 (shared lows). **@jinhongkuan** live-flips per `docs/runbooks/` once notion clears. Backlog: branch protection (B5); bot #73.*

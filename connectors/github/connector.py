@@ -37,6 +37,13 @@ def _d(value: object) -> dict:
     return value if isinstance(value, dict) else {}
 
 
+def _text(value: object) -> str:
+    """Free-text scalar as a string (``''`` when absent/non-string). A truthy non-string
+    ``title``/``body`` must not crash ``redact()`` with TypeError and abort the batch
+    (deep-audit PARSE; mirrors devin's PARSE-2 fix)."""
+    return value if isinstance(value, str) else ""
+
+
 def parse_pull_request(payload: dict) -> Observation:
     """Map a GitHub pull-request object into a provider-neutral Observation.
 
@@ -49,18 +56,22 @@ def parse_pull_request(payload: dict) -> Observation:
     """
     repo = _d(_d(payload.get("base")).get("repo")).get("full_name", "")
     number = payload.get("number", "")
-    title = redact(payload.get("title", "") or "")
-    body = payload.get("body", "") or ""
+    ref = f"{repo}#{number}"
+    title = redact(_text(payload.get("title")))
+    body = _text(payload.get("body"))
+    # Non-empty floor: a PR whose title+body are both empty/non-string (provider drift / hostile
+    # row) still yields a valid Observation via the ref locator (SARIF/mcp-registry pattern).
+    floor = ref if ref.strip("#") else "github-pull-request"
     return Observation(
         source_ref=SourceRef(
             source_id="github",
-            ref=f"{repo}#{number}",
+            ref=ref,
             url=payload.get("html_url", ""),
             kind="pull_request",
         ),
-        excerpt=redact(body) or title,
+        excerpt=redact(body) or title or floor,
         mode=SourceMode.ACTIVE,
-        title=title,
+        title=title or floor,
         author=_d(payload.get("user")).get("login", ""),
         timestamp=payload.get("merged_at", ""),
     )
