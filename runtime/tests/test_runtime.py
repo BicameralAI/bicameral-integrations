@@ -184,6 +184,19 @@ def test_deliver_webhook_fathom_bad_sig_emits_nothing():
     assert sink.emissions == []
 
 
+def test_fathom_normalize_event_signed_non_dict_body_returns_empty():
+    # purple-team parse_robustness: a validly-SIGNED top-level non-dict JSON body (e.g. [1,2,3])
+    # must skip via the shared dict-guard, not raise AttributeError out of normalize_event.
+    fx = json.loads((_FIXTURES / "fathom" / "fixtures" / "webhook_signed.json").read_text(encoding="utf-8"))
+    body = b"[1,2,3]"
+    wid, ts, secret = fx["webhook_id"], fx["webhook_timestamp"], fx["secret"]
+    key = base64.b64decode(secret[len("whsec_"):])
+    sig = base64.b64encode(hmac.new(key, f"{wid}.{ts}.".encode() + body, hashlib.sha256).digest())
+    headers = {"webhook-id": wid, "webhook-timestamp": str(ts), "webhook-signature": "v1," + sig.decode()}
+    conn = FathomConnector(secret=secret, clock=lambda: float(ts))
+    assert conn.normalize_event(headers=headers, body=body) == []
+
+
 def _signed_sentry() -> tuple[SentryConnector, bytes, str]:
     secret = "sentry-webhook-secret"
     body = (_FIXTURES / "sentry" / "fixtures" / "issue_event.json").read_bytes()

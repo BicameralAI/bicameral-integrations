@@ -32,13 +32,32 @@ from adapter.core.redaction import redact
 _EVIDENCE_TYPES = frozenset({"user", "assistant", "summary"})
 # Collapse a user-home prefix to ``~/`` so a cwd never leaks the OS username (FX-SEC-001 does not
 # catch a username path); keeps the project path. Covers Windows + POSIX (mod purple-team-class PII).
-_HOME_RE = re.compile(r"^(?:[A-Za-z]:[\\/]Users[\\/]|/Users/|/home/)[^\\/]+[\\/]?", re.IGNORECASE)
+# Cover every home layout so the OS username never survives (SG-2026-06-12-J): drive-letter, POSIX
+# /Users//home//export/home, AND a UNC share `\\server\Users\<u>` / WSL `\\wsl$\<distro>\home\<u>`
+# (the optional middle segment handles the WSL distro before `home`). A purple-team UNC-path leak
+# motivated the UNC/WSL/export-home branches.
+_HOME_RE = re.compile(
+    r"^(?:"
+    r"\\\\[^\\/]+[\\/]+(?:[^\\/]+[\\/]+)?(?:Users|home)[\\/]"
+    r"|[A-Za-z]:[\\/]Users[\\/]"
+    r"|/Users/|/home/|/export/home/"
+    r")[^\\/]+[\\/]?",
+    re.IGNORECASE,
+)
+_REF_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
 
 
 def _safe_cwd(value: object) -> str:
     """``cwd`` with any user-home prefix collapsed to ``~/`` (drops the OS username; keeps the path)."""
     cwd = value if isinstance(value, str) else ""
     return _HOME_RE.sub("~/", cwd, count=1)
+
+
+def _safe_ref(ref: str) -> str:
+    """An opaque id for the un-redacted floor literal + ``source_ref.ref``: a clean
+    ``[A-Za-z0-9_-]{1,64}`` id passes; anything else (e.g. a poisoned email-shaped uuid) is elided,
+    so the floor cannot carry an email/phone past the secret/PHI/PAN screen (purple-team pii_on_wire)."""
+    return ref if _REF_RE.fullmatch(ref) else "id-elided"
 
 
 def _text(value: object, _depth: int = 0) -> str:
@@ -105,7 +124,7 @@ def parse_session_line(line: dict) -> Observation | None:
     kind = kind if isinstance(kind, str) else "unknown"
     if kind not in _EVIDENCE_TYPES:
         return None
-    ref = str(line.get("uuid") or line.get("sessionId") or "claude_code:unknown")
+    ref = _safe_ref(str(line.get("uuid") or line.get("sessionId") or "claude-code-unknown"))
     ts = line.get("timestamp")  # transcript ts is an ISO str; history.jsonl is epoch-ms int
     msg_raw = line.get("message")
     msg = msg_raw if isinstance(msg_raw, dict) else {}

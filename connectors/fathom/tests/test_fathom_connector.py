@@ -40,6 +40,15 @@ def test_parse_drops_speaker_names_keeps_text():
     assert "Sam Rivera" not in obs.excerpt
 
 
+def test_non_dict_default_summary_does_not_crash():
+    # purple-team parse_robustness (medium): a truthy non-dict default_summary must floor, not crash.
+    meeting = _meeting()
+    meeting["transcript"] = []
+    meeting["default_summary"] = "oops, a string not an object"
+    obs = parse_meeting(meeting)  # must not raise
+    assert obs.excerpt and obs.title  # floors to the title, no AttributeError
+
+
 def test_transcript_redact_and_pass_scrubs_email():
     meeting = _meeting()
     meeting["transcript"] = [{"speaker": {"display_name": "Dana"}, "text": "ping me at dana@corp.com"}]

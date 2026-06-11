@@ -60,7 +60,8 @@ def parse_meeting(meeting: dict) -> Observation:
     """
     recording_id = meeting.get("recording_id", "")
     title = redact(_s(meeting.get("meeting_title")) or _s(meeting.get("title")) or str(recording_id))
-    summary = _s((meeting.get("default_summary") or {}).get("markdown_formatted"))
+    ds = meeting.get("default_summary")  # isinstance guard: a truthy non-dict must floor, not crash
+    summary = _s(ds.get("markdown_formatted")) if isinstance(ds, dict) else ""
     excerpt = redact(_flatten_transcript(meeting.get("transcript")) or summary) or title
     return Observation(
         source_ref=SourceRef(
@@ -133,4 +134,6 @@ class FathomConnector:
             payload = json.loads(body)
         except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
-        return [parse_meeting(payload)]
+        # route through observations() so the dict-guard is shared by both modes: a signed body that
+        # decodes to a non-dict (list/scalar) is skipped, not crashed (purple-team parse_robustness).
+        return self.observations(payload)

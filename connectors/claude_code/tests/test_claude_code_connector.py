@@ -114,3 +114,22 @@ def test_cwd_home_prefix_scrubbed():
     ]:
         obs = parse_session_line({"type": "user", "uuid": "c1", "cwd": raw})
         assert obs is not None and obs.metadata["cwd"] == expect
+
+
+def test_cwd_unc_wsl_export_home_scrubbed():
+    # purple-team SG-2026-06-12-J: UNC / WSL / export-home layouts must also drop the username.
+    for raw, expect in [
+        (r"\\fileserver\Users\bob.jones\proj", "~/proj"),
+        (r"\\wsl$\Ubuntu\home\alice\app", "~/app"),
+        ("/export/home/carol/x", "~/x"),
+    ]:
+        obs = parse_session_line({"type": "user", "uuid": "c1", "cwd": raw})
+        assert obs is not None and obs.metadata["cwd"] == expect
+
+
+def test_email_shaped_uuid_elided_from_floor_and_ref():
+    # purple-team pii_on_wire: a poisoned email-shaped uuid must not reach the un-redacted floor/ref.
+    obs = parse_session_line({"type": "user", "uuid": "contact-jane@corp.com-id", "message": {"content": ""}})
+    assert obs is not None
+    assert "jane@corp.com" not in obs.excerpt and "jane@corp.com" not in obs.source_ref.ref
+    assert "id-elided" in obs.excerpt and obs.source_ref.ref == "id-elided"

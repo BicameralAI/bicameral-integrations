@@ -5240,7 +5240,45 @@ files) clean, governance-gate #1..#163 OK. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#163 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PT1 phone-redaction SEALED at #163 (`c769dc32`; L2)** -- +/00 international + keyword-anchored national; shared (all redact-and-pass connectors). **14 of 26 connectors flip-ready** + 13 mods. Prior: #162 purple-team recon, #161 claude_code flip.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 14 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **PT2** (fathom parse-robustness: default_summary guard + normalize_event dict-guard; claude_code: _HOME_RE UNC/WSL/export + _safe_ref floor + descriptor scope). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #164: SESSION SEAL -- PT2: fathom parse-robustness + claude_code identity/floor (purple-team remediation COMPLETE)
+
+**Entry ID**: `pt2connectors164seal`
+**Timestamp**: 2026-06-13T10:30:00-04:00
+**Phase**: SUBSTANTIATE (connector hardening)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/fathom/connector.py)
+= 2c8a40bd7abd225c0fc3b303f22b38917fab35f1bed5827813e1ec40fcbc1dfc
+```
+
+**Previous Hash**: c769dc32d7e59d9e649ad6f802f492ea219e6b372fa7ff079c63bc44a99ef6ab
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 3635479acc330b56deb46ab5a95095a226bcf39997ec6646022b8cf7e8986ba0
+```
+
+**Decision**: Closed the remaining 5 purple-team findings -- **fathom + claude_code purple-team remediation
+COMPLETE** (all 7 fixed: PT1 #163 phone + PT2 #164). **fathom** (`connectors/fathom/connector.py`): the
+`default_summary` deref now isinstance-guards (`(x or {}).get` floored only falsy -> a truthy non-dict
+crashed; medium); `normalize_event` now routes the decoded body through `self.observations()` so the
+shared dict-guard skips a signed non-dict body instead of raising (low). **claude_code**
+(`connectors/claude_code/connector.py`): `_HOME_RE` extended to **UNC** (`\\server\Users\<u>`), **WSL**
+(`\\wsl$\<distro>\home\<u>`), and **`/export/home/`** so the cwd OS-username no longer leaks on those
+layouts (SG-2026-06-12-J, medium); new `_safe_ref` opaque-id-validates the un-redacted floor literal +
+`source_ref.ref` (`[A-Za-z0-9_-]{1,64}`, else `id-elided`) so a poisoned email-shaped uuid cannot reach the
+wire (low); the config.json + auth.md cwd claim scoped to the covered layouts (descriptor accuracy, low).
+**Tests:** fathom non-dict default_summary + signed non-dict body; claude_code UNC/WSL/export-home cwd +
+email-uuid elision. **Measured:** full suite **663 passed**, ruff clean, whole-tree mypy (210 files) clean,
+validator OK, governance-gate #1..#164 OK. **Both connectors purple-team-validated & remediated.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#164 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PT2 SEALED at #164 (`3635479a`; L2)** -- **fathom + claude_code PURPLE-TEAM REMEDIATION COMPLETE (all 7 findings fixed, PT1 #163 + PT2 #164 on the #162 recon).** Both connectors purple-team-validated. **14 of 26 connectors flip-ready** + 13 mods. Prior: #163 PT1, #162 recon.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 14 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). 12 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
