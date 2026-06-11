@@ -36,8 +36,12 @@ Transcripts are plaintext on disk and contain file contents, command stdout/stde
 - **redact-and-passes** the excerpt content (secret/PHI/PAN + email/phone scrubbed); the
   `[claude_code:kind] <uuid>` floor literal is left un-redacted so an opaque uuid is not
   mis-scrubbed. `FX-SEC-001` (`adapter/core/sensitive.py`) hard-rejects any residual secret/PHI/PAN.
-- **home-prefix-scrubs `cwd`** (`C:\Users\<name>\…` / `/Users/<name>/…` / `/home/<name>/…` → `~/…`)
-  so the OS username does not leak on the wire.
+- **home-prefix-scrubs `cwd`** for the common home layouts — drive-letter (`C:\Users\<name>`), POSIX
+  (`/Users/`, `/home/`, `/export/home/`), UNC (`\\server\Users\<name>`), and WSL
+  (`\\wsl$\<distro>\home\<name>`) → `~/…` — so the OS username is not surfaced (purple-team
+  SG-2026-06-12-J extended the original drive-letter/POSIX-only scrub to UNC/WSL/export-home).
+- **opaque-id-validates** the un-redacted floor literal's id (`[A-Za-z0-9_-]{1,64}`, else elided) so a
+  poisoned email-shaped uuid cannot reach the wire (the floor is not redact-passed).
 
 No credentials are stored in this package. See [references.md](references.md)
 and [TRUST_TIER_MODEL](../../docs/TRUST_TIER_MODEL.md).

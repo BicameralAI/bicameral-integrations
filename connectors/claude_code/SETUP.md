@@ -38,7 +38,7 @@ python -m runtime.cli run claude_code --sink gateway   # real POST (go-live; def
 ## Data & permissions
 
 - Emits: user, assistant, summary
-- PII posture: Transcripts are arbitrary local plaintext (file contents, command stdout/stderr, pasted text -> potential secrets/PII). The excerpt CONTENT is redact-and-passed (secret/PHI/PAN + email/phone scrubbed); the `[claude_code:kind] <uuid>` floor literal is left un-redacted (an opaque uuid must not be mis-scrubbed as a phone). `cwd` is home-prefix-scrubbed (C:\Users\<name>\... / /Users/<name>/... / /home/<name>/... -> ~/...) so the OS username never reaches the wire. FX-SEC-001 hard-rejects any residual secret/PHI/PAN. No credential or secret is stored in this package.
+- PII posture: Transcripts are arbitrary local plaintext (file contents, command stdout/stderr, pasted text -> potential secrets/PII). The excerpt CONTENT is redact-and-passed (secret/PHI/PAN + email/phone scrubbed); the `[claude_code:kind] <id>` floor literal is left un-redacted but its id is opaque-id-validated ([A-Za-z0-9_-]{1,64}, else elided) so a poisoned id cannot carry an email. `cwd` is home-prefix-scrubbed for the common home layouts (drive-letter C:\Users\<name>, POSIX /Users//home//export/home, UNC \\server\Users\<name>, WSL \\wsl$\<distro>\home\<name> -> ~/...) so the OS username is not surfaced. FX-SEC-001 hard-rejects any residual secret/PHI/PAN. No credential or secret is stored in this package.
 
 ## Go-live
 
