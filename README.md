@@ -24,7 +24,7 @@
 
 | | |
 |---|---|
-| **Maturity** | Beta — 26 connectors harness-proven end-to-end; a PII redaction-and-pass model lets PII-dense free-text be emitted safely; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/ingest`) and operator-actionable |
+| **Maturity** | Beta — 26 connectors harness-proven end-to-end, of which **12 are flip-ready** (config descriptor + adversarially hardened, ready for an operator to flip Live) and **13 EM-safe advisory mods** are built; a PII redaction-and-pass model lets PII-dense free-text be emitted safely; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/ingest`) and operator-actionable |
 | **Footprint** | Zero third-party **runtime** dependencies (Python stdlib only) |
 | **Safety model** | Read-only evidence adapters ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)); fail-closed webhook signature verification; a producer-side secret/PII hard-screen on every emission |
 | **Assurance** | Hash-chained governance ledger + machine-verified CI gate; SHA-pinned Actions; CodeQL, Bandit, OpenSSF Scorecard, SBOM |
@@ -49,18 +49,32 @@
 
 ## High-level Architecture
 
-```text
-External source
-Jira / Linear / Slack / Notion / GitHub / email / meetings
-        │
-        ▼
-bicameral-integrations adapter or mod
-        │ emits typed protocol objects
-        ▼
-bicameral-bot gateway
-        │
-        ▼
-local daemon governance + review + storage adapter
+Every source flows through one neutral pipeline: a connector parse surface produces a provider-neutral `Observation`, the universal adapter normalizes it to an `AdapterEmission`, a hard sensitive-data screen rejects anything carrying a secret/PHI/PAN (and redact-and-pass scrubs email/phone from free text), and only then is evidence handed to advisory mods and the gateway.
+
+```mermaid
+flowchart TD
+    subgraph src["Your tools (sources)"]
+      direction LR
+      A1["GitHub · Jira · Linear<br/>Slack · Notion"]
+      A2["Cursor · Copilot · Devin · ServiceNow<br/>Granola · Google Drive · MCP Registry"]
+    end
+    src -->|"webhook · active poll · passive"| conn["Connector parse surface<br/>parse_*(payload) → Observation"]
+    conn --> norm["Universal Adapter<br/>normalize() → AdapterEmission"]
+    norm --> screen{"Hard sensitive-data screen<br/>secret · PHI · PAN"}
+    screen -->|"reject"| drop["✗ Dropped — never leaves the boundary"]
+    screen -->|"redact-and-pass<br/>email · phone · PII"| emit["AdapterEmission<br/>(reviewable evidence)"]
+    emit --> mods["Advisory Mods<br/>annotations · routing hints · review questions"]
+    emit --> sink["GatewaySink → bicameral-bot<br/>POST /api/v1/ingest"]
+    mods --> sink
+```
+
+**Inbound trust boundary** — each mode is authenticated/constrained before a payload is parsed:
+
+```mermaid
+flowchart LR
+    w["Webhook (signed push)"] -->|"constant-time HMAC verify<br/>+ replay window + dedup"| adp["Universal Adapter"]
+    p["Active (API poll)"] -->|"host-pinned · no-follow redirects<br/>· private/metadata denylist · fail-closed"| adp
+    pa["Passive (operator-run)"] -->|"local ingestion"| adp
 ```
 
 ## Repository Layout
@@ -80,47 +94,41 @@ local daemon governance + review + storage adapter
 
 Each connector is a provider-facing **parse surface** — `parse_*(payload) -> Observation` plus a `<Provider>Connector` class — feeding the [universal adapter](adapter/README.md) (`pipeline.normalize()`). All connectors are read-only evidence adapters; they never write canonical state ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)). Readiness follows the [connector readiness ladder](docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md) (`Candidate → Prototype → Beta → Live`); **Beta** = proven end-to-end through the [`runtime/`](runtime/README.md) harness against a reference sink (signed webhook → verify → normalize → emit), with no cross-repo dependency. **Live** (gateway emission) is now operator-actionable — the `GatewaySink` seam maps each emission to the v1 `IngestRequest` and POSTs it to `/api/v1/ingest` (bot ingest guards landed); a connector goes Live when an operator wires `GatewaySink(endpoint, token)` against a real gateway. See [`connectors/README.md`](connectors/README.md) for the full index.
 
-### Beta — webhook verify-wired, harness-proven
+### Flip-ready — capability matrix
 
-| Connector | Source evidence | Modes · verify |
-|---|---|---|
-| [github](connectors/github/) | Pull requests → Observations | webhook (`X-Hub-Signature-256`) + active |
-| [linear](connectors/linear/) | Issue change events | webhook (HMAC + 60 s replay) + active |
-| [fathom](connectors/fathom/) | Meeting transcripts + summaries | webhook (Svix) + passive |
-| [sentry](connectors/sentry/) | Runtime issue/error events | webhook (HMAC) |
-| [pagerduty](connectors/pagerduty/) | Incident / on-call events | webhook (multi-signature `v1=`) |
-| [slack](connectors/slack/) | Channel messages (Events API) | webhook (`v0` + 5 m replay) |
-| [notion](connectors/notion/) | Page objects | webhook (`X-Notion-Signature`) + active |
-| [jira](connectors/jira/) | Jira Cloud issue events | webhook (`X-Hub-Signature` `sha256=`) + active |
-| [zendesk](connectors/zendesk/) | Support tickets (subject only) | webhook (Base64 HMAC) + active |
-| [gitlab](connectors/gitlab/) | Merge-request / issue events | webhook (plaintext `X-Gitlab-Token`) + active |
+**12 connectors** carry a machine-readable config descriptor, adversarial security hardening (two purple-team passes), and an operator runbook — ready to flip Live. Going Live is the operator's action: they supply their own credentials and wire `GatewaySink(endpoint, token)`; this repo holds no secret.
 
-### Beta — poll / parse surface, harness-proven (live ingest deferred per `auth.md`)
+```mermaid
+flowchart LR
+    Candidate --> Prototype --> Beta --> FR["Beta · flip-ready<br/>(descriptor + hardened)"] --> Live["Live<br/>(operator wires secrets + gateway)"]
+```
 
-| Connector | Source evidence | Mode · tier |
-|---|---|---|
-| [granola](connectors/granola/) | Granola meeting transcripts | passive · T1 |
-| [local_directory](connectors/local_directory/) | Local files (path/content/modified) | passive · T1 |
-| [google_drive](connectors/google_drive/) | Google Docs documents | active · T1 |
-| [sarif](connectors/sarif/) | SARIF 2.1.0 static-analysis results | passive · T0 |
-| [mcp_registry](connectors/mcp_registry/) | MCP Registry `server.json` entries | active · T1 |
-| [continue_dev](connectors/continue_dev/) | Continue dev-data events | passive · T0 |
-| [aider](connectors/aider/) | Aider-attributed git commits | passive · T0 |
-| [claude_code](connectors/claude_code/) | Claude Code session transcripts | passive · T0 |
-| [osv](connectors/osv/) | OSV.dev vulnerability records (no-auth aggregator) | active · T1 |
-| [confluence](connectors/confluence/) | Confluence Cloud page content | active/passive · T1 |
-| [copilot](connectors/copilot/) | Copilot aggregate usage metrics (PII-free) | active · T1 |
-| [cursor](connectors/cursor/) | Cursor team usage metrics (PII dropped) | active · T1 |
-| [devin](connectors/devin/) | Devin agentic sessions (body redacted) | active · T1 |
-| [servicenow](connectors/servicenow/) | ServiceNow incidents (redact-and-pass) | active · T1 |
-| [openai_admin](connectors/openai_admin/) | OpenAI org audit-log events (actor dropped) | active · T1 |
-| [anthropic_admin](connectors/anthropic_admin/) | Anthropic org usage/cost (aggregate, PII-free) | active · T1 |
+| Connector | Data in | Data out (neutral evidence) | Mode · security & PII |
+|---|---|---|---|
+| [linear](connectors/linear/) | Linear issues / issue events | `issue` — id, title, description, url | Webhook (`Linear-Signature` HMAC) + active (GraphQL, host-pinned); actor real name dropped |
+| [google_drive](connectors/google_drive/) | A Google Doc | `document` — title + body text | Active; OAuth Bearer, fixed Docs host, id-validated; hard-screen backstop |
+| [devin](connectors/devin/) | Devin coding sessions | `session` — redact-and-passed free text | Active; Bearer service-user key, host-pinned `api.devin.ai` |
+| [cursor](connectors/cursor/) | Per-developer daily usage rows | `usage_metrics` — **PII-free** counts + opaque id | Active; HTTP Basic, host-pinned; email/name never read |
+| [copilot](connectors/copilot/) | Org aggregate Copilot metrics | `usage_metrics` — **PII-free**, no per-person data | Active; Bearer `read:org`, host-pinned `api.github.com` |
+| [servicenow](connectors/servicenow/) | ServiceNow incidents | `incident` — redact-and-passed summary/description | Active; HTTP Basic; instance injection-validated + private/metadata denylist; caller never read |
+| [granola](connectors/granola/) | Meeting notes + transcript | `transcript` — redact-and-passed; owner dropped | Passive; Bearer, host-pinned `public-api.granola.ai` |
+| [mcp_registry](connectors/mcp_registry/) | Public MCP server registry | `mcp_server` — redact-and-passed public text | Active; no credential (public data) |
+| [github](connectors/github/) | Pull-request events | `pull_request` — redact body + title; public author login | Webhook (`X-Hub-Signature-256` HMAC, verify-before-parse); body-hash dedup |
+| [jira](connectors/jira/) | Jira issue created/updated/deleted | `issue` — redact summary; ADF body never read; actor dropped | Webhook (`X-Hub-Signature` HMAC, WebSub); dedup |
+| [slack](connectors/slack/) | Channel messages (Events API) | `message` — redact text; opaque user-id | Webhook (`v0` HMAC over `v0:{ts}:{body}` + 5-min replay) |
+| [notion](connectors/notion/) | Page-change events | page-changed **pointer** keyed by stable page id | Webhook (`X-Notion-Signature` HMAC); body-hash dedup |
+
+### Future Development (Beta — parse surface; descriptor / flip-readiness pending)
+
+These are harness-proven parse surfaces whose config descriptor and flip-readiness hardening are still to come:
+
+[aider](connectors/aider/) · [anthropic_admin](connectors/anthropic_admin/) · [claude_code](connectors/claude_code/) · [confluence](connectors/confluence/) · [continue_dev](connectors/continue_dev/) · [fathom](connectors/fathom/) · [gitlab](connectors/gitlab/) · [local_directory](connectors/local_directory/) · [openai_admin](connectors/openai_admin/) · [osv](connectors/osv/) · [pagerduty](connectors/pagerduty/) · [sarif](connectors/sarif/) · [sentry](connectors/sentry/) · [zendesk](connectors/zendesk/)
 
 Selection criteria and trust tiers: [Integration Candidate Catalog](docs/INTEGRATION_CANDIDATE_CATALOG.md) · [Trust Tier Model](docs/TRUST_TIER_MODEL.md). Provider-evidence vs. agent-action surface choice: the [interactivity-test triage](docs/INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING.md) (read-only evidence → this repo; interactive action → `bicameral-mcp`).
 
-## Planned Mods
+## Mods
 
-Mods are EM-safe advisory packages (under active build by a parallel track) that read evidence and emit hints/advisories — never canonical decisions (see [Mod Safety Contract](#mod-safety-contract)). Each links to its scope spec.
+Mods are **EM-safe advisory packages** — all **13 are built and wired** — that read the neutral evidence stream and emit annotations, routing hints, owner-lens hints, and suggested review questions only; they never write canonical decisions (see [Mod Safety Contract](#mod-safety-contract)). Every mod output passes the same secret/PHI/PAN hard-screen. Each links to its scope spec.
 
 | Mod | Advises on |
 |---|---|
