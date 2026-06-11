@@ -363,6 +363,38 @@ def test_mcp_registry_non_string_fields_no_crash():
     assert obs.excerpt and isinstance(obs.source_ref.ref, str)  # floored, no TypeError
 
 
+# --- CHOKEPOINT (mod purple-team MP1): validate_emissions is uniformly fail-closed ----
+
+def _ev(**kw):
+    base = dict(source_ref=SourceRef(source_id="x", ref="r", url="", kind="k"), excerpt="e")
+    base.update(kw)
+    return SourceEvidence(**base)
+
+
+def _em(**kw):
+    base = dict(source_id="x", title="t", body="b", evidence=(_ev(),), adapter_version="rt/1")
+    base.update(kw)
+    return AdapterEmission(**base)
+
+
+@pytest.mark.parametrize("em", [
+    _em(source_id=123),                    # re.match would TypeError
+    _em(emission_type=["hint"]),           # unhashable membership would TypeError
+    _em(title=5),                          # detect_sensitive would TypeError
+    _em(body=None),
+    _em(adapter_version=9),                # .strip() would AttributeError
+    _em(evidence=5),                       # iteration would TypeError
+    _em(evidence=(_ev(source_ref=None),)),  # .url would AttributeError
+    _em(evidence=(_ev(author=["x"]),)),    # detect_sensitive would TypeError
+    _em(evidence=(_ev(excerpt=42),)),
+])
+def test_validate_emissions_fail_closed_on_malformed(em):
+    # A type-malformed emission must raise the CONTRACT error, never a raw TypeError/AttributeError,
+    # so every consumer (mods, gateway bridge) sees a uniform fail-closed boundary (SG-2026-06-12-F).
+    with pytest.raises(EmissionContractError):
+        validate_emissions([em])
+
+
 # --- redaction invariant (the backstop's core contract) ------------------------------
 
 @pytest.mark.parametrize("sample", [
