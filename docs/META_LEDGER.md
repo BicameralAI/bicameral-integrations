@@ -5040,7 +5040,48 @@ whole-tree mypy (210 files) clean, governance-gate #1..#158 OK. **All 40 purple-
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#158 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **mod purple-team MP2 SEALED at #158 (`d81312aa`; L2)** -- **MOD PURPLE-TEAM REMEDIATION COMPLETE: all 40 findings fixed (MP1 #157 + MP2 #158) on the #156 recon.** The 9 new mods are now purple-team-hardened. **13 advisory mods + 12 flip-ready connectors**, all twice-validated. Prior: #157 MP1 chokepoint, #156 recon.*
-*The platform is end-to-end + deep-audit-hardened + mod-purple-team-hardened: 12 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). Open tracks: descriptor fan-out (14 connectors), go-live enablement (notion sha256 wire-gate + google_drive OAuth), release hardening (B5 branch protection, B12 SBOM-OIDC). Backlog: branch protection (B5); bot #73.*
+### Entry #159: RESEARCH BRIEF -- Fathom + Claude Code connectors (flip-readiness foundation)
+
+**Entry ID**: `fathomclaude159research`
+**Timestamp**: 2026-06-12T22:00:00-04:00
+**Phase**: RESEARCH (verify-before-cite)
+**Author**: Analyst (qor-research)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-fathom-claudecode-2026-06-12.md)
+= d2c43299ff400656f50f2e44257d453ed99bb8f09b1117c95be54b16a06e9dd9
+```
+
+**Previous Hash**: d81312aa8d29b6d5948734e6d8fa23c58e05b5b171bfa88eabcd3e8161dc03a6
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 74c3782d5d8b640687e6d81ad0d412feb9079c97f7b3120b7cacd48637a7b1a7
+```
+
+**Decision**: Verify-before-cite foundation for the next two flip cycles (operator queue: fathom + claude_code).
+**Fathom contract RE-VERIFIED CLEAN against live docs (developers.fathom.ai, 2026-06-12)** -- every parsed
+field matches (recording_id/meeting_title/title/transcript[].speaker.display_name/transcript[].text/
+default_summary.markdown_formatted/share_url/recorded_by.name/recording_end_time; Svix-style webhook sig).
+Two doc updates: REST header is **`X-Api-Key`** (was unnamed); the **5-min replay window is now
+Fathom-documented** (was inferred). **Claude Code schema verified against a REAL 6,008-line transcript** ->
+**DRIFT**: the documented `summary` type is ABSENT in the current format; new types `ai-title`/`pr-link`/
+`system`/`queue-operation` exist (block types text/thinking/tool_use/tool_result + cwd/model/sessionId MATCH).
+**Neither is flip-ready:** both emit PII-dense free text **un-redacted** (HIGH -- fathom transcript +
+claude_code excerpt; the granola-class gap), neither has an **FX-CFG-001 descriptor**, fathom **injects
+`speaker.display_name` real names** (contradicts the now-public "real names dropped" guarantee), and
+claude_code `cwd` leaks the OS username. **Scope:** 2 flip cycles -- fathom P1 + claude_code P0 -- each =
+redact-and-pass + identity handling + descriptor + doc refresh (exceeding minimum) + purple-team.
+**SG-2026-06-12-G** (pin a file-import source's line schema against a REAL captured artifact, not the vendor
+doc) + **SG-2026-06-12-H** (a connector that injects a structured real-name field violates "real names
+dropped" even with `author` dropped). L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#159 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **fathom+claude_code research SEALED at #159 (`74c3782d`; L2)** -- both source contracts verified live; 2 flip cycles scoped (fathom P1, claude_code P0). **12 of 26 connectors flip-ready** + 13 mods. Prior: #158 mod purple-team MP2, #157 MP1.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 12 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-auto-dev-1 fathom flip** (redact-and-pass + drop speaker real names + descriptor + doc refresh + purple-team), then **claude_code flip** (redact-and-pass + cwd-username scrub + schema re-pin + descriptor). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
