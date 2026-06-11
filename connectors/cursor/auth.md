@@ -30,7 +30,7 @@ Auth model recorded for the live cycle; this connector ships the **parse surface
 
 - `api_key` — the team-admin Admin API key (basic-auth username) for the deferred REST poll.
 
-## Live path — reference poll client (contract verified 2026-06-08, cursor.com/docs)
+## Live path — reference poll client (contract verified 2026-06-08, RE-VERIFIED LIVE 2026-06-11, cursor.com/docs/account/teams/admin-api)
 
 The request-construction is **built** in `runtime/poll_specs.py` (`build_cursor_spec`) and proven
 against a recorded fixture. The real network call + key resolution remain operator-run.
@@ -42,12 +42,15 @@ against a recorded fixture. The real network call + key resolution remain operat
   (caller supplies the dict — still not baked); response **`data`** envelope. Each row carries
   `email` + opaque `userId` (the connector reads neither identity beyond the opaque `userId`; there
   is **no `name`** field on this endpoint — earlier docs overstated it).
-- **Pagination — DEFERRED (transport unverified, verify-before-cite)**: the endpoint paginates via
-  `page`/`pageSize` (response carries a `pagination` object with `hasNextPage`), so a team larger
-  than one page truncates with the current single-request fetch. Whether `page`/`pageSize` ride as
-  **query params or POST-body fields** is not documented clearly, so the pager is intentionally NOT
-  wired (we will not invent the transport). The operator widens `pageSize` or paginates manually
-  until the transport is confirmed.
+- **Pagination — VERIFIED 2026-06-11 (transport resolved): POST-body based.** `page` (1-indexed) and
+  `pageSize` ride in the **POST body** alongside `startDate`/`endDate`; the response carries a
+  `pagination` object (`page`, `pageSize`, `totalUsers`, `totalPages`, **`hasNextPage`**, `hasPreviousPage`).
+  The earlier "query-vs-body unclear" note is RESOLVED — it is **body**. The reference pager is still
+  **NOT wired** (`build_cursor_spec` issues a single request), so a team larger than one page truncates;
+  the build cycle either wires a body-page pager (read `pagination.hasNextPage`, send `page`/`pageSize`
+  in the body) or the operator widens `pageSize`. Note `runtime/poll_specs.py` (build_cursor_spec) still
+  carries STALE "host inferred / body+envelope unverified" comments — reconcile them to this verified
+  contract in the build cycle.
 
 ## Deferred live paths
 

@@ -5,6 +5,15 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-11-D — A "verified" claim in a connector's own docs is not verification; re-fetch the live source
+
+**Discovered**: 2026-06-11 (`/qor-research`, cursor + granola pre-go-live contract verification).
+**Prevents**: shipping a descriptor that cites a connector's recorded-but-unverified contract, and under-screening a PII-dense source.
+
+Two connectors carried a "verified 2026-06-08" line in their own `auth.md`; re-fetching the live provider docs found one fully correct and one drifted — the recorded claim alone is worthless without the re-fetch:
+- **cursor**: live docs CONFIRMED every recorded fact (host `api.cursor.com`, `POST /teams/daily-usage-data`, Basic key-as-username, `{startDate,endDate}` epoch-ms ≤30d, `data` envelope, no `name`) **and resolved** the deferred pagination as **POST-body** `page`/`pageSize` + response `pagination.hasNextPage`. Meanwhile `runtime/poll_specs.py` still carried STALE "host inferred / envelope unverified" comments — the *code comment* drifted from the *verified doc*. Lesson: reconcile EVERY site (auth.md, references.md, poll_specs comments) to one verified truth.
+- **granola**: live docs showed the note identity is **`owner` {name, email}**, but the connector reads a non-existent **`attendees`** field → author empty/wrong live. And the **transcript is emitted verbatim with no `redact()`** while a person's name rides as `author`; FX-SEC-001 (secret/PHI/PAN only) does NOT catch generic spoken email/phone/name — so a PII-dense meeting-content source had **no effective PII control on the wire**. **Rule: a meeting/content connector must redact-and-pass its free text and must not emit raw attendee identity; FX-SEC-001 is not a sufficient backstop for generic PII.** Reinforces SG-2026-06-05-D (cursor allowlist) + SG-2026-06-11-A (pin + re-verify the live source, not the recorded claim).
+
 ## SG-2026-06-11-C — Two ledger verifiers with INCOMPATIBLE Previous-Hash markup; the repo CI gate is authoritative
 
 **Discovered**: 2026-06-11 (purple-team fix cycle; the #131 seal's own "fix" suggestion was wrong).
