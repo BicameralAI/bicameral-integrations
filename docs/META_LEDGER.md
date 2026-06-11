@@ -5278,7 +5278,50 @@ validator OK, governance-gate #1..#164 OK. **Both connectors purple-team-validat
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#164 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PT2 SEALED at #164 (`3635479a`; L2)** -- **fathom + claude_code PURPLE-TEAM REMEDIATION COMPLETE (all 7 findings fixed, PT1 #163 + PT2 #164 on the #162 recon).** Both connectors purple-team-validated. **14 of 26 connectors flip-ready** + 13 mods. Prior: #163 PT1, #162 recon.*
+### Entry #165: RESEARCH BRIEF -- local_directory + aider + zendesk flip-ready (verify-before-cite)
+
+**Entry ID**: `research165localdiraiderzendesk`
+**Timestamp**: 2026-06-13T14:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-localdir-aider-zendesk-2026-06-13.md)
+= 785fd38252bcd0ee3dd4fa7fe565359e90dbde7a17ee1a48d57ac4d15a724a63
+```
+
+**Previous Hash**: 3635479acc330b56deb46ab5a95095a226bcf39997ec6646022b8cf7e8986ba0
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 6667b024e9b52fefea09279877dbd0774c1b6431dab1f98d547bde82a84cd061
+```
+
+**Decision**: Research foundation for the next three flip-ready connectors. **Verify-before-cite
+(SG-2026-06-12-A): zero contract drift.** Zendesk's webhook signature re-verified live
+(developer.zendesk.com/documentation/webhooks/verifying -- `base64(HMAC-SHA256(secret, timestamp+body))`,
+headers `x-zendesk-webhook-signature[-timestamp]`, constant-time) MATCHES the built `verify_zendesk_signature`
+(`adapter/core/webhook_security.py:208`). Aider's git attribution re-verified live (aider.chat/docs/git.html --
+`(aider)` on author+committer by default, committer-only for dirty-file commits, `--attribute-co-authored-by`
+opt-in trailer) MATCHES `_attributed_by` (`connectors/aider/connector.py:32`). local_directory has no external
+API (local FS); ref is sha256-tokenized (no layout leak). **All three are Beta + harness-proven, missing only
+the FX-CFG-001 descriptor half** (`config.json`+`SETUP.md`). Flip work: (local_directory) redact-and-pass the
+raw file content + filename stem (F1 medium / F2 low -- FX-SEC-001 backstops only secret/PHI/PAN, so email/phone/
+names in dropped files leak); (aider) redact-and-pass the un-redacted commit subject (F3 low-med) + **retain &
+document the author real name as intentional T0 provenance, NOT a leak to strip** (F4 design call -- the human
+identity IS the evidence); (zendesk) **descriptor-only** -- already redact-and-pass subject+body + HMAC verify +
+dedup + opaque requester_id. Two new lessons: **SG-2026-06-13-A** (no network boundary != no PII boundary; apply
+redact-and-pass to any free-text excerpt regardless of transport) + **SG-2026-06-13-B** (for a provenance
+connector the human name is signal, not noise -- decide name retain/drop per-connector, never reflexively). One
+/qor-auto-dev-1 cycle per connector, then a /qor-deep-audit purple-team (adds path-traversal/symlink for
+local_directory). EM-safe + read-only + ADR-0012 hold. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#165 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **RESEARCH SEALED at #165 (`6667b024`; L1)** -- local_directory + aider + zendesk flip-ready foundation; ZERO contract drift (zendesk sig + aider attribution re-verified live). Flip = descriptor + redaction-parity (local_directory/aider) / descriptor-only (zendesk). **14 of 26 connectors flip-ready** + 13 mods. Prior: #164 PT2, #163 PT1.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 14 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). 12 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
+*Next required action: **/qor-auto-dev-1** per connector (local_directory -> aider -> zendesk), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
