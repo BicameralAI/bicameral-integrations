@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P0 |
 | Default trust tier | T2/T3 |
 | Integration role | notification-first, ingest later |
-| Readiness (lifecycle) | Beta (parse + signature verify, proven end-to-end through the `runtime/` harness; ADR-0012) |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (parse + `X-Slack-Signature` v0 verify + 5-min replay + handshake/dedup; message text redact-and-passed, opaque user id surfaced; FX-CFG-001 webhook descriptor shipped). Read/ingest (T2); notify/write deferred. Webhook receipt operator-runtime. Live flip gated on a signed live event. |
 
 ## Provider documentation (verify on refresh)
 

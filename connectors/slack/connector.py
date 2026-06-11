@@ -21,6 +21,7 @@ from collections.abc import Callable
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -44,7 +45,11 @@ def parse_message(payload: dict) -> Observation:
     inner = nested if isinstance(nested, dict) else {}
     channel = msg.get("channel") or inner.get("channel") or ""
     ts = msg.get("ts") or inner.get("ts") or ""
-    excerpt = (msg.get("text") or inner.get("text") or "").strip() or f"(no text) {channel}:{ts}"
+    # Message text is PII-dense human communication -> redact-and-pass (FX-SEC-001 alone does not
+    # catch generic email/phone). The fallback locating string carries no PII. author is the OPAQUE
+    # Slack user id (e.g. U0123ABC) -- pseudonymous, kept (SG-2026-06-05-D), like cursor's userId.
+    text = (msg.get("text") or inner.get("text") or "").strip()
+    excerpt = redact(text) or f"(no text) {channel}:{ts}"
     return Observation(
         source_ref=SourceRef(source_id="slack", ref=f"{channel}:{ts}", kind="message"),
         excerpt=excerpt,
