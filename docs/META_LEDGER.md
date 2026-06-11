@@ -4920,7 +4920,48 @@ complete — the mod fleet is built (4-cycle M1-M4 build, ledger #152-#155, on t
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#155 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **mods M4 SEALED at #155 (`b2758054`; L1)** -- ownership_routing + decision_drift wired. **ALL 13 MODS COMPLETE** (4 prior + 9 built this session across M1-M4, #152-#155). **12 of 26 connectors flip-ready** + 13 advisory mods. Prior: #154 mods M3, #153 mods M2.*
+### Entry #156: RESEARCH BRIEF -- purple-team review of the 9 new advisory mods
+
+**Entry ID**: `modspurple156research`
+**Timestamp**: 2026-06-12T20:00:00-04:00
+**Phase**: RESEARCH (mod purple-team recon)
+**Author**: Analyst (purple-team workflow, 53 agents)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-mods-purpleteam-2026-06-12.md)
+= 5efe8d7e261c542ef0d4f5ae4bac2fb36f5a4be6539dd580090fed9b40106e17
+```
+
+**Previous Hash**: b2758054ee634043e86d93804c16b696c8ed5cf0c92f47ce29c8559bf9911f9b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a39a72433ae177360b8380b95ac3b56dccf862eebd2a1b50c442f3214a6597b3
+```
+
+**Decision**: Held the 9 newly-built mods to the connector purple-team bar (`wy2vqr6t6`, 53 agents, 6 attack
+classes, blue-verified). **All 9 = approved-with-fixes, ZERO blocked.** **40 confirmed** (of ~44),
+**36 low + 4 medium, none high.** EM-safe cores held: NO em_safe_escape (the `run_mod` chokepoint held),
+no Live consumer, no canonical-write/route-escalation crossing a trust boundary. 4 fix families: **crash_dos
+(14)** -- malformed emission raises raw TypeError/AttributeError vs the contract's fail-closed
+EmissionContractError (run_mod fail-closes FIRST so reachable only via direct evaluate(), but the boundary
+should be uniformly typed); **false_positive_substring (12)** -- bare `t in text` over-fires (auth in
+author, adr in quadratic, retire in retired); **false_negative (12)** -- vocab gaps (CVE/XSS/RCE,
+decommission/EOL, commit/merge_request/ticket); **pii_secret_output (2)** -- raw source_id echoed past the
+secret/PHI/PAN screen (no generic name/email class). The 4 mediums: connector_freshness 'retire' substring;
+code_review_risk + test_adequacy unhashable-kind crash in `_is_change`; test_adequacy 'test' substring
+suppressing a real test-gap. SG-2026-06-12-E (word-boundary-match alphabetic keyword terms) +
+SG-2026-06-12-F (enforce the pure-total-function contract at the shared input boundary, not assume it).
+**Remediation: 2 governed cycles** -- MP1 shared chokepoint type-guards (adapter/core/pipeline.py, closes
+crash_dos for all mods + normalize), MP2 mod precision+totality+leak-safety (word-boundary matcher + vocab +
+evaluate guards + source_id sanitization across the 9 mods). L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#156 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **mod purple-team recon SEALED at #156 (`a39a7243`; L1)** -- all 13 mods built (#152-#155); the 9 new ones now purple-teamed (approved-with-fixes, 40 low/med findings, 0 blocked). **12 of 26 connectors flip-ready** + 13 advisory mods. Prior: #155 mods M4, #154 mods M3.*
 *The platform is end-to-end + deep-audit-hardened: 12 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). Open tracks: descriptor fan-out (14 connectors), go-live enablement (notion sha256 wire-gate + google_drive OAuth), release hardening (B5 branch protection, B12 SBOM-OIDC). Backlog: branch protection (B5); bot #73.*
+*Next required action: **Mod purple-team remediation MP1** (shared chokepoint type-guards). Then MP2 (mod precision/totality/leak-safety). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
