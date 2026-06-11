@@ -4773,7 +4773,42 @@ all 13 mods complete. L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#151 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **mod-build scope SEALED at #151 (`9200a456`; L1)** -- 9 scaffolds designed as deterministic emission-stream heuristics; 4 build cycles queued (M1-M4). 4 of 13 mods complete; deep-audit remediation COMPLETE (#146-#150). **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #150 shared-lows, #149 mcp_registry/github.*
-*The platform is end-to-end + deep-audit-hardened for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Mod Cycle M1** (adapter_contract + source_trust_calibration). Then M2-M4. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #152: SESSION SEAL -- mods M1: adapter_contract + source_trust_calibration (6 of 13)
+
+**Entry ID**: `modsm1152seal`
+**Timestamp**: 2026-06-12T17:00:00-04:00
+**Phase**: SUBSTANTIATE (mod build)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(mods/adapter_contract/connector.py)
+= d10fda7754d0cd4a91b752d7d87c5c30e61e7b818b6b697e0b4a36990ea2de15
+```
+
+**Previous Hash**: 9200a45667aa95f8d8ab2feba75a72d9a14ad19664847a7a92037a377ebf47c2
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 304d85741348cbe3b52d0318a4a1babd9501f67248b22395c3f7022e0f9bec39
+```
+
+**Decision**: Built the first two scaffolded mods (M1: emission structure/provenance). **adapter_contract**
+(`adapter-contract`) flags evidence-shape/contract-preservation defects from the emission's OWN structure:
+lost provider pointer (evidence with neither `source_ref.ref` nor `url` → routes `connectors`), zero
+evidence, blank excerpt (annotate-only nit). **source_trust_calibration** (`source-trust-calibration`)
+weighs provenance: missing actor identity on an attributable kind, unknown/blank `kind`, public/no-auth
+source (mcp_registry), advisory `emission_type` → keep-advisory routing. Both are pure, deterministic,
+stdlib-only `evaluate` over `AdapterEmission` (dependency_risk pattern); both floor to NO output on a
+well-formed emission (silence default). Wired into `runner_registry._MODS` (now 6); `__init__` exports +
+behavior tests added (invoke via `run_mod`, assert artifact + EM-safe secret-reject). **Measured:** full
+suite **604 passed**, ruff clean, mypy clean, governance-gate #1..#152 OK. **6 of 13 mods complete.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#152 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **mods M1 SEALED at #152 (`304d8574`; L1)** -- adapter_contract + source_trust_calibration wired. **6 of 13 mods complete**; 7 scaffolds remain (M2-M4). **12 of 26 connectors flip-ready**. Prior: #151 mod scope, #150 shared-lows.*
+*The platform is end-to-end + deep-audit-hardened for 12 flip-ready connectors + 6 mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **Mod Cycle M2** (webhook_risk + connector_freshness). Then M3 (code_review_risk + authority_boundary + test_adequacy), M4 (ownership_routing + decision_drift). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

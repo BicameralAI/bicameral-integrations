@@ -20,11 +20,13 @@ from connectors.granola.connector import GranolaConnector
 from connectors.mcp_registry.connector import McpRegistryConnector
 from connectors.openai_admin.connector import OpenAIAdminConnector
 from connectors.servicenow.connector import ServiceNowConnector
+from mods.adapter_contract import AdapterContractMod
 from mods.contract import Manifest, Mod, load_manifest
 from mods.data_classification import DataClassificationMod
 from mods.dependency_risk import DependencyRiskMod
 from mods.noisy_source_gate import NoisySourceGateMod
 from mods.security_mentions import SecurityMentionsMod
+from mods.source_trust_calibration import SourceTrustCalibrationMod
 
 from .doc_fetch import fetch_document
 from .graphql_poll import poll_graphql
@@ -96,6 +98,8 @@ _MODS: dict[str, tuple[Callable[[], Mod], Path]] = {
     "data_classification": (DataClassificationMod, _MODS_DIR / "data_classification" / "manifest.yaml"),
     "noisy_source_gate": (NoisySourceGateMod, _MODS_DIR / "noisy_source_gate" / "manifest.yaml"),
     "security_mentions": (SecurityMentionsMod, _MODS_DIR / "security_mentions" / "manifest.yaml"),
+    "adapter_contract": (AdapterContractMod, _MODS_DIR / "adapter_contract" / "manifest.yaml"),
+    "source_trust_calibration": (SourceTrustCalibrationMod, _MODS_DIR / "source_trust_calibration" / "manifest.yaml"),
 }
 
 
