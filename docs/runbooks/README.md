@@ -34,6 +34,16 @@ These hold on every connector's live path (META_LEDGER #133; locked by `tests/re
 - **Credentialed endpoints host-pinned**; operator `runtime` keys allowlisted to the descriptor.
 - **Aggregate item cap** (50k) across paginated pages; **GatewaySink** errors never reflect the gateway body or carry the token.
 
+## Mods — signal hygiene at go-live
+
+Mods process the emission stream after ingest (they cannot write canonical decisions). Enable them in your `config/bicameral.local.json` `mods` block (the gitignored example ships them on):
+
+```json
+"mods": { "dependency_risk": {"enabled": true}, "noisy_source_gate": {"enabled": true} }
+```
+
+**`noisy_source_gate` is recommended ON for the first live flip** — it gates low-value/noisy emissions before they reach the bot's decision queue, so the first real evidence stream is quality-filtered. Run a connector through its mods with `python -m runtime.cli run-mods <id> --mods noisy_source_gate`. Set `"enabled": false` to opt out.
+
 ## Accepted residual risk (operator-acknowledged)
 
 - **Within-field `order_id: <PAN>` suppression** is deliberately retained: a digit run immediately preceded by an ID label in the **same** field is treated as an identifier, not cardholder data, to avoid false-positives on legitimate order IDs. Cross-field suppression is closed (per-leaf). A real PAN that is *itself* an `order_id` value in one field would be suppressed — accepted as low-likelihood; revisit if a connector surfaces payment-card data.

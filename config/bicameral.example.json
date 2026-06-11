@@ -23,7 +23,8 @@
     }
   },
   "mods": {
-    "dependency_risk": {"enabled": true}
+    "dependency_risk": {"enabled": true},
+    "noisy_source_gate": {"enabled": true}
   },
   "gateway": {
     "endpoint": "",
