@@ -32,6 +32,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reaches flip-ready (after its L2 PII correction). 7 connectors now carry descriptors.
 - `noisy_source_gate` mod enabled in the example config (signal hygiene for the
   first live flip; operator opt-out knob documented in `docs/runbooks/`).
+- **data_classification** mod (4 of 13 built): cross-cutting advisory analyzer that flags
+  confidentiality markers + redaction-placeholders for restricted review (EM-safe; emit-on-signal).
 - **GitHub** connector flip-ready (webhook): FX-CFG-001 descriptor (X-Hub-Signature-256
   verify + dedup); PR title/body now redact-and-passed (aligned with the platform standard).
 - **MCP Registry** connector flip-ready (public, no-auth): runner-wired + FX-CFG-001
