@@ -455,3 +455,25 @@ consumes a long run before failing), NOT from intra-match backtracking. So the i
 **Meta-rule (reinforces SG-2026-06-05-O's "prove by running"): MEASURE a ReDoS fix on the adversarial
 input; never trust the regex-shape reasoning.** Independent verification empirically confirmed the
 bounded fix (200 KB: ~20 ms) — the audit's possessive reasoning would have shipped a still-broken fix.
+
+---
+
+## SG-2026-06-12-G — pin a file-import source's line schema against a REAL captured artifact, not the vendor doc
+
+`/qor-research` for the **claude_code** flip verified the per-line transcript schema against a real
+6,008-line session transcript (keys-only). The vendor docs (`code.claude.com/docs`) document file paths +
+30-day retention but are **DOC-SILENT on the per-line field schema**. The real file showed the connector's
+documented `summary` evidence type is **absent** from the current format, and new types exist (`ai-title`
+carries the session summary now; `pr-link`, `system`, `queue-operation`). The connector's skip-unknown
+discipline (SG-2026-06-04-I) means no crash, but it parses a now-dead type and misses new evidence.
+**Rule:** for a local/desktop file-import connector, re-pin the line schema against a CURRENT real artifact
+every flip cycle — a vendor doc that covers paths/retention does not pin the record shape.
+
+## SG-2026-06-12-H — injecting a structured real-name field violates "real names dropped" even with `author` dropped
+
+The **fathom** connector drops `recorded_by.name` from `author` (#150) but `_flatten_transcript` still
+**prefixes every transcript line with `speaker.display_name`** (a structured real name). Redact-and-pass
+scrubs email/phone/secret/PHI/PAN but NOT a deliberately-injected display name, so the platform's
+now-public "human real names are dropped" guarantee (README / capability matrix) is contradicted on the
+transcript path. **Rule:** identity minimization must cover every structured name a connector INJECTS into
+emitted text, not just the `author` slot — drop or pseudonymize injected speaker/owner/actor names too.
