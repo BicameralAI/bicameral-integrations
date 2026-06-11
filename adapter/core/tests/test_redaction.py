@@ -39,6 +39,25 @@ def test_redact_scrubs_international_phone():
         assert detect_sensitive(out) == []  # invariant holds for the broadened branch
 
 
+def test_redact_scrubs_00_prefix_and_keyword_anchored_phone():
+    # purple-team SG-2026-06-12-I: non-`+` international (00-prefix) + keyword-anchored national.
+    for raw, leaked in [
+        ("ring me on 0049 30 1234 5678", "0049 30 1234 5678"),   # 00 international prefix
+        ("00 44 7911 123456 is the line", "00 44 7911 123456"),
+        ("phone: 020 7946 0958", "020 7946 0958"),               # keyword-anchored UK national
+        ("call 06 12 34 56 78 today", "06 12 34 56 78"),         # keyword-anchored FR national
+        ("mobile 020 7946 0958", "020 7946 0958"),
+    ]:
+        out = redact(raw)
+        assert "[redacted:phone]" in out and leaked not in out, f"leaked: {out!r}"
+        assert detect_sensitive(out) == []
+
+
+def test_redact_keyword_anchor_does_not_over_redact_non_phone():
+    # the keyword anchor must not scrub a bare id digit run, nor a keyword with no number after it.
+    assert "1234567" in redact("order id 1234567 shipped")  # 7-digit id, no phone keyword -> kept
+    assert redact("the phone book has shelves") == "the phone book has shelves"  # keyword, no number
+
 def test_redact_scrubs_catalog_values():
     out = redact(f"key {_AKIA} ssn: 123-45-6789 card {_VALID_PAN}")
     assert _AKIA not in out

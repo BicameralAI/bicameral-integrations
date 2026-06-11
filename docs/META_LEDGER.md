@@ -5202,7 +5202,45 @@ L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#162 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **fathom+claude_code purple-team recon SEALED at #162 (`3a75c1a5`; L1)** -- both approved-with-fixes, 7 low/med findings, 0 blocked. **14 of 26 connectors flip-ready** + 13 mods. Prior: #161 claude_code flip, #160 fathom flip.*
+### Entry #163: SESSION SEAL -- PT1: shared phone-redaction completeness (00-prefix + keyword-anchored national)
+
+**Entry ID**: `pt1phone163seal`
+**Timestamp**: 2026-06-13T09:45:00-04:00
+**Phase**: SUBSTANTIATE (shared redaction hardening)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(adapter/core/redaction.py)
+= de9c41383a92de7f22d82c4194507455c20bb020e581b0d71e0f67e2b2312da5
+```
+
+**Previous Hash**: 3a75c1a5b9a52def50cb32a026eccc82e8bb4b4c0fd512051cd7e1b9ee05bbb1
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c769dc32d7e59d9e649ad6f802f492ea219e6b372fa7ff079c63bc44a99ef6ab
+```
+
+**Decision**: Closed the purple-team phone-redaction gap (SG-2026-06-12-I) at the shared boundary --
+covers BOTH the fathom + claude_code pii findings + every redact-and-pass connector. `adapter/core/
+redaction.py`: the international `_PHONE_RE` branch now accepts a **`+` OR `00` dialing prefix** (with an
+optional separator after it, so `00 44 7911 123456` and `0049 30 1234 5678` scrub); a new
+`_PHONE_CONTEXT_RE` scrubs a **keyword-anchored national run** (a `tel`/`phone`/`call`/`ring`/`mobile`/
+`cell`/`fax`/`whatsapp` token immediately before a 7-14 digit grouped run -- the keyword is PRESERVED via a
+capture group, only the number replaced) so bare UK/FR national numbers scrub when phone-labelled, WITHOUT
+over-redacting a bare uuid/order-id run (no keyword -> no match). All bounded/O(n) (no ReDoS). The
+over-claiming docstring + DATA_CLASSIFICATION doc corrected to state EXACT coverage (NANP; +/00 international;
+keyword-anchored national; a bare prefix-less national number is a documented residual). **Tests:** 00-prefix
++ keyword-anchored corpus (scrubbed + invariant holds) + a no-over-redaction guard (bare id kept, keyword
+without an adjacent number kept). **Measured:** full suite **659 passed**, ruff clean, whole-tree mypy (210
+files) clean, governance-gate #1..#163 OK. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#163 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PT1 phone-redaction SEALED at #163 (`c769dc32`; L2)** -- +/00 international + keyword-anchored national; shared (all redact-and-pass connectors). **14 of 26 connectors flip-ready** + 13 mods. Prior: #162 purple-team recon, #161 claude_code flip.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 14 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **PT1** (shared phone-redaction completeness), then **PT2** (fathom parse-robustness + claude_code _HOME_RE/floor/descriptor). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+*Next required action: **PT2** (fathom parse-robustness: default_summary guard + normalize_event dict-guard; claude_code: _HOME_RE UNC/WSL/export + _safe_ref floor + descriptor scope). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
