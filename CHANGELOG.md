@@ -21,6 +21,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Flip-ready FX-CFG-001 descriptors for **Cursor**, **GitHub Copilot**, and
+  **ServiceNow** (config.json + generated SETUP.md + index.json) — the L1 go-live
+  batch (Cursor + Copilot PII-free; ServiceNow redact-and-pass). Cursor's contract
+  was re-verified live 2026-06-11 (pagination resolved = POST-body). 6 connectors
+  now carry descriptors.
+- `noisy_source_gate` mod enabled in the example config (signal hygiene for the
+  first live flip; operator opt-out knob documented in `docs/runbooks/`).
 - Operator go-live runbooks (`docs/runbooks/`) — per-connector live-flip
   walkthroughs (Linear, Google Drive, Devin): credentials, config, dry-run →
   gateway live test, wire-gate confirmation, promote/rollback.
