@@ -4283,7 +4283,43 @@ governance-gate #1..#138 OK. **8 of 26 connectors flip-ready.** L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#138 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **mcp_registry flip-ready SEALED at #138 (`774bda61`; L1)**. **8 of 26 connectors flip-ready** (+ mcp_registry, public no-auth). Sequence in progress: mcp_registry [done] -> github -> data_classification mod -> jira -> slack -> notion. Prior: #137 granola L2, #136 L1 batch.*
-*The platform is end-to-end + hardened for 8 flip-ready connectors. 26 Beta; secrets never committed nor printed.*
-*Next required action: continue the cycle sequence (github next); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #139: SESSION SEAL -- github flip-ready (webhook) + PR-body redact-and-pass
+
+**Entry ID**: `github139seal`
+**Timestamp**: 2026-06-12T00:00:00-04:00
+**Phase**: SUBSTANTIATE (parse/PII + webhook descriptor)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/github/config.json)
+= 8bec5205054c57fd4ea4826812d987c466f308f4ab9706148de78f25375111bc
+```
+
+**Previous Hash**: 774bda615f01a1f86bfb38037f2bf9f588c7ea263a38e4581bed876912a7feb1
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fd10b5eee20f3ce42dc01bc2892294928175b1d666fc8b1cd7087a631ffff390
+```
+
+**Decision**: github -> flip-ready (cycle 2 of 6). **PII hardening (L2):** PR title + body are now
+**redact-and-passed** (`adapter.core.redaction.redact`) -- github was the free-text outlier that didn't
+redact; this aligns it with devin/servicenow/cursor/granola (SG-2026-06-11-D). The PUBLIC PR-author login
+is kept (artifact author, like the pr_url precedent), not redacted. **Descriptor:** authored
+`connectors/github/config.json` -- **modes ["webhook"]** (the built + verified path; the ACTIVE REST fetch
+is in capabilities but NOT wired this cycle -- documented in wire_gates), `github_webhook` credential
+(X-Hub-Signature-256 sha256= hex HMAC), webhook block (pull_request events). Webhook RECEIPT stays
+operator-runtime. Regenerated index.json (9) + SETUP.md; readiness lift. New redaction test (email in PR
+body -> scrubbed); existing tests unchanged (PII-free fixture -> redact is a no-op). **Measured:** full
+suite **556 passed**, ruff/mypy(168) clean, validator OK, governance-gate #1..#139 OK. **9 of 26
+connectors flip-ready.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#139 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **github flip-ready SEALED at #139 (`fd10b5ee`; L2)**. **9 of 26 connectors flip-ready** (+ github, webhook). Sequence: mcp_registry [done] -> github [done] -> data_classification mod -> jira -> slack -> notion. Prior: #138 mcp_registry, #137 granola L2.*
+*The platform is end-to-end + hardened for 9 flip-ready connectors. 26 Beta; secrets never committed nor printed.*
+*Next required action: continue the sequence (data_classification mod next); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

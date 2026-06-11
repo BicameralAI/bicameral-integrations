@@ -22,6 +22,7 @@ from urllib.parse import urlsplit
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -39,13 +40,16 @@ def _d(value: object) -> dict:
 def parse_pull_request(payload: dict) -> Observation:
     """Map a GitHub pull-request object into a provider-neutral Observation.
 
-    The excerpt is the PR body, falling back to the title when the body is
-    empty. Provider-specific field knowledge stays here; normalization into an
-    AdapterEmission is the universal adapter's job (ADR-0004).
+    The excerpt is the PR body, falling back to the title when the body is empty.
+    PR body + title are free-text -> passed through ``redact`` (redact-and-pass: scrubs
+    secret/PHI/PAN + email/phone, which FX-SEC-001 alone does not catch in free text), matching
+    the platform standard (devin/servicenow/cursor/granola). ``author`` is the PUBLIC PR-author
+    login (the artifact author, like the kept pr_url precedent), not redacted. Provider-specific
+    field knowledge stays here; normalization is the universal adapter's job (ADR-0004).
     """
     repo = _d(_d(payload.get("base")).get("repo")).get("full_name", "")
     number = payload.get("number", "")
-    title = payload.get("title", "")
+    title = redact(payload.get("title", "") or "")
     body = payload.get("body", "") or ""
     return Observation(
         source_ref=SourceRef(
@@ -54,7 +58,7 @@ def parse_pull_request(payload: dict) -> Observation:
             url=payload.get("html_url", ""),
             kind="pull_request",
         ),
-        excerpt=body or title,
+        excerpt=redact(body) or title,
         mode=SourceMode.ACTIVE,
         title=title,
         author=_d(payload.get("user")).get("login", ""),

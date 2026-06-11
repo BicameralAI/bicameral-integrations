@@ -40,6 +40,15 @@ def test_parse_uses_body_as_excerpt():
     assert obs.author == payload["user"]["login"]
 
 
+def test_parse_redacts_pii_in_body():
+    # PR body free-text is redact-and-passed: an embedded email is scrubbed, non-PII text survives.
+    payload = _payload()
+    payload["body"] = "Ping reviewer at alice@example.com before merge."
+    obs = parse_pull_request(payload)
+    assert "alice@example.com" not in obs.excerpt
+    assert "before merge" in obs.excerpt
+
+
 def test_parse_falls_back_to_title_when_body_empty():
     payload = _payload()
     payload["body"] = ""
