@@ -199,6 +199,34 @@ def test_gdrive_pan_documentid_not_used_as_ref():
     assert obs.source_ref.ref != _LUHN_PAN  # malformed id dropped; ref falls back to title
 
 
+# --- DOS-1 (#101): aggregate item cap across paginated pages -------------------------
+
+class _StubConn:
+    source_id = "x"
+
+    def observations(self, payload):  # noqa: ANN001 (not reached; cap raises first)
+        return []
+
+
+def test_pollclient_aggregate_item_cap(monkeypatch):
+    monkeypatch.setattr(poll_client, "_MAX_TOTAL_ITEMS", 3)
+    spec = PollSpec(base_url="https://api.example/x", auth=NoAuth(), items=lambda p: p)
+    transport = _StubTransport(200, b"[{},{},{},{}]")  # 4 items > cap of 3
+    with pytest.raises(PollError):
+        poll_client.poll(_StubConn(), spec, transport=transport, sink=sinks.CollectingSink())
+
+
+def test_graphql_aggregate_item_cap(monkeypatch):
+    monkeypatch.setattr(graphql_poll, "_MAX_TOTAL_ITEMS", 3)
+    spec = graphql_poll.GraphQLPollSpec(
+        endpoint="https://api.linear.app/graphql", auth=NoAuth(), query="q",
+        nodes_path="data.x.nodes", page_info_path="data.x.pageInfo", parse=lambda n: n,
+    )
+    body = b'{"data":{"x":{"nodes":[{},{},{},{}],"pageInfo":{"hasNextPage":false}}}}'
+    with pytest.raises(PollError):
+        graphql_poll.poll_graphql(spec, _StubTransport(200, body), sinks.CollectingSink())
+
+
 # --- redaction invariant (the backstop's core contract) ------------------------------
 
 @pytest.mark.parametrize("sample", [

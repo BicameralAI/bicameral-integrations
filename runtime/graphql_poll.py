@@ -34,6 +34,7 @@ from .sinks import EmissionSink
 
 _MAX_RESPONSE = 8 * 1024 * 1024  # cap a hostile/huge provider body before parse (local; not poll_client's)
 _MAX_PAGES = 100  # bound a runaway/cyclic pager (fail-safe)
+_MAX_TOTAL_ITEMS = 50_000  # aggregate cap across all pages (purple-team DOS-1, 2026-06-11)
 
 
 def _dig(obj: object, dotted: str) -> object:
@@ -136,7 +137,10 @@ def poll_graphql(
         nodes = _dig(page, spec.nodes_path)
         if not isinstance(nodes, list):
             raise PollError(0, "nodes_not_a_list")
-        observations.extend(spec.parse(n) for n in nodes if isinstance(n, dict))
+        new = [spec.parse(n) for n in nodes if isinstance(n, dict)]
+        if len(observations) + len(new) > _MAX_TOTAL_ITEMS:  # aggregate cap (DOS-1)
+            raise PollError(0, "aggregate_items_exceeded")
+        observations.extend(new)
         cursor = _next_cursor(page, spec.page_info_path)
         if cursor is None:
             break

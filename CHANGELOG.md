@@ -15,11 +15,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   on deeply-nested JSON (`RecursionError`) and non-string provider scalars;
   ServiceNow URL host/query injection guard; GatewaySink no longer reflects the
   untrusted gateway response body into errors; runtime-key allowlist + credentialed
-  endpoint host-pinning. Locked by 28 Red Team regression gates
+  endpoint host-pinning; aggregate item cap (50k) across paginated pages
+  (`poll_client` + `graphql_poll`, DOS-1). Locked by 30 Red Team regression gates
   (`tests/redteam/` + the new blocking `red-team.yml` workflow).
 
 ### Added
 
+- Operator go-live runbooks (`docs/runbooks/`) — per-connector live-flip
+  walkthroughs (Linear, Google Drive, Devin): credentials, config, dry-run →
+  gateway live test, wire-gate confirmation, promote/rollback.
 - **Devin** connector flip-ready FX-CFG-001 descriptor (`config.json` +
   generated `SETUP.md` + `index.json`) — the third config-descriptor exemplar
   (poll-only; Bearer `cog_` Service-User; operator-templated `base_url`).
