@@ -21,6 +21,29 @@ pytest -v tests/
 pre-commit run --all-files
 ```
 
+## Pull Request Titles
+
+CI (`pr-hygiene / conventional-title`) requires every PR title to match
+[Conventional Commits](https://www.conventionalcommits.org/). The check is a hard
+gate — a non-conforming title fails the PR. The exact pattern enforced is:
+
+```
+^(feat|fix|docs|chore|refactor|test|ci|build|perf|style|revert)(\([\w./-]+\))?!?: .+
+```
+
+- **Allowed types** (the only ones that pass): `feat`, `fix`, `docs`, `chore`,
+  `refactor`, `test`, `ci`, `build`, `perf`, `style`, `revert`. Anything else
+  (e.g. `research:`, `seal:`) is rejected.
+- **Scope** is optional and, when present, may contain only word characters,
+  `.`, `/`, and `-`. **A comma or a space inside the scope fails the check** —
+  `fix(fathom,claude_code):` and `fix(a b):` are both rejected.
+  - To cover several connectors in one title, use a single parent scope
+    (`fix(connectors): ...`) or drop the scope (`fix: ...`).
+- A `!` before the colon (`feat(api)!: ...`) marks a breaking change and passes.
+
+Examples that pass: `feat(fathom): add webhook verify`, `fix: floor non-dict
+payload`, `docs(connectors): mark Linear flip-ready`.
+
 ## Bring your own tools — the sibling registry
 
 You are **not** required to adopt the maintainer's process tooling. The only thing your
