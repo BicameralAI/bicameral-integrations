@@ -4961,7 +4961,44 @@ evaluate guards + source_id sanitization across the 9 mods). L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#156 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **mod purple-team recon SEALED at #156 (`a39a7243`; L1)** -- all 13 mods built (#152-#155); the 9 new ones now purple-teamed (approved-with-fixes, 40 low/med findings, 0 blocked). **12 of 26 connectors flip-ready** + 13 advisory mods. Prior: #155 mods M4, #154 mods M3.*
+### Entry #157: SESSION SEAL -- mod purple-team MP1: shared chokepoint type-guards (crash_dos class closed)
+
+**Entry ID**: `modmp1157seal`
+**Timestamp**: 2026-06-12T20:30:00-04:00
+**Phase**: SUBSTANTIATE (shared boundary hardening)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(adapter/core/pipeline.py)
+= b7a5d8de7ce952c780c7fcca0223e444b22274eb908ffb8515ac61735a016bbc
+```
+
+**Previous Hash**: a39a72433ae177360b8380b95ac3b56dccf862eebd2a1b50c442f3214a6597b3
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f26860eff01d679bbcd788ef051dc57309ed4ab05a598b415329c253954171f3
+```
+
+**Decision**: Closed the deep mod-purple-team **crash_dos** class (14 findings) at the SHARED boundary
+(SG-2026-06-12-F: enforce the pure-total-function contract at the chokepoint, don't assume it).
+`adapter/core/pipeline.py` `validate_emissions` now calls `_assert_emission_types` FIRST: a `_require_str`
+guard on every wire-bound str field (`source_id`/`emission_type`/`adapter_version`/`title`/`body` +
+per-evidence `excerpt`/`author`/`timestamp`/`source_ref.url`/`ref`/`source_id`) and structural guards
+(`evidence` is a list/tuple; each item is a `SourceEvidence`; each `source_ref` is a `SourceRef`) — so a
+hand-built emission with a non-str `source_id`, unhashable `emission_type`, None/dict `source_ref`, or
+non-iterable evidence raises the contract's `EmissionContractError` instead of a raw `TypeError`/
+`AttributeError`. Uniformly fail-closed for every consumer (all 9 mods via `run_mod`'s input re-screen,
+the gateway bridge, and `normalize`). **Red-team gates:** 9-case parametrized
+`test_validate_emissions_fail_closed_on_malformed`. **Measured:** full suite **643 passed**, ruff clean,
+whole-tree mypy (208 files) clean, governance-gate #1..#157 OK. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#157 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **mod purple-team MP1 SEALED at #157 (`f26860ef`; L2)** -- crash_dos class closed at the shared chokepoint (validate_emissions uniformly fail-closed). **12 of 26 connectors flip-ready** + 13 advisory mods. Prior: #156 mod purple-team recon, #155 mods M4.*
 *The platform is end-to-end + deep-audit-hardened: 12 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Mod purple-team remediation MP1** (shared chokepoint type-guards). Then MP2 (mod precision/totality/leak-safety). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+*Next required action: **Mod purple-team MP2** (mod precision/totality/leak-safety: word-boundary matcher + vocab + evaluate guards + source_id sanitization across the 9 mods). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

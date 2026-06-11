@@ -6,7 +6,7 @@ import re
 import unicodedata
 from collections.abc import Iterable
 
-from .emissions import AdapterEmission, SourceEvidence
+from .emissions import AdapterEmission, SourceEvidence, SourceRef
 from .observations import Observation
 from .sensitive import detect_sensitive
 
@@ -26,6 +26,42 @@ def _is_blank(text: str) -> bool:
     return not any(not c.isspace() and unicodedata.category(c) != "Cf" for c in text)
 
 
+def _require_str(value: object, label: str) -> str:
+    """A wire-bound field must be a ``str`` — fail CLOSED with the contract error rather than
+    let a hand-built non-str field raise a raw ``TypeError``/``AttributeError`` deeper in the
+    validator (mod purple-team SG-2026-06-12-F: enforce the contract at the shared boundary,
+    don't assume it). The boundary is uniformly ``EmissionContractError`` for every consumer."""
+    if not isinstance(value, str):
+        raise EmissionContractError(f"{label}_not_str: {type(value).__name__}")
+    return value
+
+
+def _assert_emission_types(emission: AdapterEmission) -> None:
+    """Type-guard every field the validator/screen will dereference, fail-closed. A frozen
+    dataclass does not enforce its annotations at runtime, so a hand-built emission can carry a
+    non-str ``source_id``/``emission_type``, a non-iterable ``evidence``, or a ``None``/dict
+    ``source_ref`` — each would otherwise raise a RAW exception (re.match TypeError, unhashable
+    membership, ``.url`` AttributeError) instead of the contract's ``EmissionContractError``."""
+    _require_str(emission.source_id, "source_id")
+    _require_str(emission.emission_type, "emission_type")
+    _require_str(emission.adapter_version, "adapter_version")
+    _require_str(emission.title, "title")
+    _require_str(emission.body, "body")
+    if not isinstance(emission.evidence, (list, tuple)):
+        raise EmissionContractError(f"evidence_not_sequence: {type(emission.evidence).__name__}")
+    for ev in emission.evidence:
+        if not isinstance(ev, SourceEvidence):
+            raise EmissionContractError(f"evidence_item_invalid: {type(ev).__name__}")
+        if not isinstance(ev.source_ref, SourceRef):
+            raise EmissionContractError(f"source_ref_invalid: {type(ev.source_ref).__name__}")
+        _require_str(ev.excerpt, "excerpt")
+        _require_str(ev.author, "author")
+        _require_str(ev.timestamp, "timestamp")
+        _require_str(ev.source_ref.url, "source_ref.url")
+        _require_str(ev.source_ref.ref, "source_ref.ref")
+        _require_str(ev.source_ref.source_id, "source_ref.source_id")
+
+
 def validate_emissions(emissions: Iterable[AdapterEmission]) -> list[AdapterEmission]:
     """Enforce the ADR-0005 emission contract before mods or the bot-gateway
     bridge consume the emissions.
@@ -41,6 +77,7 @@ def validate_emissions(emissions: Iterable[AdapterEmission]) -> list[AdapterEmis
     """
     validated = list(emissions)
     for emission in validated:
+        _assert_emission_types(emission)  # uniform fail-closed boundary (SG-2026-06-12-F)
         if not _SOURCE_ID_RE.match(emission.source_id):
             raise EmissionContractError(f"source_id_invalid: {emission.source_id!r}")
         if len(emission.source_id) > _MAX_SOURCE_ID:
