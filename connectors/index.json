@@ -271,6 +271,123 @@
         "This connector targets the v3 ENTERPRISE API (docs.devinenterprise.com). The parallel v1 API (docs.devin.ai: GET /v1/sessions, `sessions` envelope, singular `pull_request`, limit/offset, apk_ keys) is the 2026-06-08-corrected drift shape — do NOT cite or wire it (SG-2026-06-11-A)."
       ]
     },
+    "fathom": {
+      "available": true,
+      "category": "meetings",
+      "credentials": [
+        {
+          "header": "X-Api-Key: <key>",
+          "key": "fathom",
+          "label": "Fathom API key",
+          "modes": [
+            "passive"
+          ],
+          "obtain": {
+            "steps": [
+              "Generate an API key in your Fathom settings area.",
+              "Bicameral sends it as the X-Api-Key header on each GET /external/v1/meetings request (verified 2026-06-12)."
+            ],
+            "url": "https://developers.fathom.ai/"
+          },
+          "required": true,
+          "type": "api_key"
+        },
+        {
+          "header": "webhook-signature (Svix-style HMAC-SHA256 over {webhook-id}.{webhook-timestamp}.{body}, signed with the base64-decoded whsec_ secret)",
+          "key": "fathom_webhook",
+          "label": "Webhook signing secret (whsec_)",
+          "modes": [
+            "webhook"
+          ],
+          "obtain": {
+            "steps": [
+              "Create a webhook subscription in Fathom; capture the whsec_-prefixed signing secret.",
+              "Bicameral verifies webhook-signature (HMAC-SHA256, base64, constant-time) over {id}.{timestamp}.{body} with a 5-minute replay window."
+            ],
+            "url": "https://developers.fathom.ai/webhooks"
+          },
+          "required": true,
+          "type": "webhook_secret"
+        }
+      ],
+      "data": {
+        "emits": [
+          "meeting"
+        ],
+        "pii_posture": "Transcript + summary + title are PII-dense free text -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed). The speaker (transcript[].speaker.display_name) and recorder (recorded_by.name) REAL NAMES are DROPPED, not surfaced (identity minimization; SG-2026-06-12-H) -- honoring the 'human real names are dropped' guarantee. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+        "redaction": "redact-and-pass (transcript, summary, title); speaker + recorder real names dropped; FX-SEC-001 rejects secret/PHI/PAN"
+      },
+      "description": "Fathom meeting transcripts + summaries as redact-and-pass governed evidence (speaker + recorder real names dropped).",
+      "id": "fathom",
+      "instructions": [
+        {
+          "action": "open_url",
+          "link": "https://developers.fathom.ai/",
+          "ref": "connectors/fathom/auth.md (REST)",
+          "text": "Generate a Fathom API key in your settings area (sent as the X-Api-Key header for the passive poll)."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the Fathom API key."
+        },
+        {
+          "action": "register_webhook",
+          "link": "https://developers.fathom.ai/webhooks",
+          "ref": "connectors/fathom/auth.md (Webhook)",
+          "text": "Add a Fathom new-meeting-content-ready webhook subscription pointing at your Bicameral receiver; capture the whsec_ signing secret."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the whsec_ webhook signing secret."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: a signed new-meeting-content-ready delivery should produce one emission (transcript redact-and-passed; speaker names dropped)."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Parse + Svix-style verify + dedup are built and harness-proven; transcript/summary/title redact-and-passed, speaker + recorder real names dropped. Gated on operator review + a live signed delivery (webhook) and/or a live poll with a real X-Api-Key. To flip: add the webhook subscription + whsec_ secret + receiver (and/or the API key); wire GatewaySink; send a signed test delivery; review before promoting.",
+      "modes": [
+        "passive",
+        "webhook"
+      ],
+      "name": "Fathom",
+      "references": [
+        {
+          "kind": "api",
+          "url": "https://developers.fathom.ai/"
+        },
+        {
+          "kind": "webhooks",
+          "url": "https://developers.fathom.ai/webhooks"
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T1",
+      "webhook": {
+        "events": [
+          "new-meeting-content-ready"
+        ],
+        "header": "webhook-signature",
+        "receiver": {
+          "label": "Bicameral webhook receiver URL (operator-provisioned)",
+          "provisioned_by": "operator",
+          "required": true
+        },
+        "setup": {
+          "steps": [
+            "Add a Fathom webhook subscription for new-meeting-content-ready and capture the whsec_ signing secret.",
+            "Set the subscription URL to your Bicameral webhook receiver (see receiver below)."
+          ],
+          "url": "https://developers.fathom.ai/webhooks"
+        },
+        "signature_scheme": "HMAC-SHA256(base64decode(whsec_ secret), '{webhook-id}.{webhook-timestamp}.{body}'), base64, constant-time; Fathom-documented 5-minute replay window"
+      },
+      "wire_gates": [
+        "Contract re-verified live 2026-06-12 (developers.fathom.ai): meeting fields recording_id/meeting_title/title/transcript[].text/transcript[].speaker.display_name/default_summary.markdown_formatted/share_url/recorded_by.name/recording_end_time all match; webhook headers webhook-id/webhook-timestamp/webhook-signature + whsec_ + {id}.{timestamp}.{body} HMAC-SHA256 match; REST header X-Api-Key; 5-minute replay window now Fathom-documented.",
+        "PII: transcript/summary/title redact-and-passed; speaker (transcript[].speaker.display_name) + recorder (recorded_by.name) real names DROPPED (SG-2026-06-12-H).",
+        "Webhook RECEIPT + REST poll are operator-runtime; live network deferred. Live flip gated on operator review + a signed live delivery / live poll with a real API key (ADR-0012)."
+      ]
+    },
     "github": {
       "available": true,
       "category": "source-control",

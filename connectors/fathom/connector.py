@@ -17,6 +17,7 @@ from collections.abc import Callable
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -25,48 +26,54 @@ from adapter.core.webhook_security import (
 )
 
 
-def _flatten_transcript(segments: list | None) -> str:
-    """Join transcript segments into ``"<speaker>: <text>"`` lines.
+def _s(value: object) -> str:
+    """A string for str inputs, else '' (provider fields may drift non-str — parse-robustness)."""
+    return value if isinstance(value, str) else ""
 
-    The speaker name is nested at ``segment.speaker.display_name`` (Fathom
-    shape); a segment with no speaker contributes its bare text. ``None`` or an
-    empty list yields ``""`` so the caller can fall back to summary/title.
+
+def _flatten_transcript(segments: list | None) -> str:
+    """Join transcript segments into bare spoken-text lines.
+
+    The Fathom ``segment.speaker.display_name`` is a REAL name; it is **dropped**, not surfaced —
+    identity minimization covers a name a connector would INJECT into emitted text, not just the
+    ``author`` slot (SG-2026-06-12-H; honors the "real names dropped" guarantee). Spoken ``text``
+    is still PII-dense and is redact-and-passed by the caller. ``None``/empty yields ``""``.
     """
     lines: list[str] = []
     for seg in segments or []:
-        speaker = seg.get("speaker")
-        name = speaker.get("display_name", "") if isinstance(speaker, dict) else (speaker or "")
-        text = seg.get("text") or ""
-        if not text:
+        if not isinstance(seg, dict):
             continue
-        lines.append(f"{name}: {text}" if name else text)
+        text = _s(seg.get("text"))
+        if text:
+            lines.append(text)
     return "\n".join(lines)
 
 
 def parse_meeting(meeting: dict) -> Observation:
     """Map a Fathom meeting object into a provider-neutral Observation.
 
-    The excerpt is the flattened transcript, falling back to the default
-    summary's markdown and then the title so the contract's non-empty-excerpt
-    rule always holds.
+    Transcript + summary + title are PII-dense free text -> **redact-and-pass** (scrubs
+    secret/PHI/PAN + email/phone; FX-SEC-001 is the un-bypassable backstop), matching the
+    granola/devin standard. Speaker + recorder real names are dropped (not surfaced). The excerpt
+    is the redacted transcript, falling back to the redacted summary then the redacted title so the
+    non-empty-excerpt rule always holds.
     """
     recording_id = meeting.get("recording_id", "")
-    title = meeting.get("meeting_title") or meeting.get("title") or str(recording_id)
-    summary = (meeting.get("default_summary") or {}).get("markdown_formatted") or ""
-    excerpt = _flatten_transcript(meeting.get("transcript")) or summary or title
+    title = redact(_s(meeting.get("meeting_title")) or _s(meeting.get("title")) or str(recording_id))
+    summary = _s((meeting.get("default_summary") or {}).get("markdown_formatted"))
+    excerpt = redact(_flatten_transcript(meeting.get("transcript")) or summary) or title
     return Observation(
         source_ref=SourceRef(
             source_id="fathom",
             ref=str(recording_id),
-            url=meeting.get("share_url") or meeting.get("url") or "",
+            url=_s(meeting.get("share_url")) or _s(meeting.get("url")),
             kind="meeting",
         ),
         excerpt=excerpt,
         mode=SourceMode.PASSIVE,
         title=title,
-        author="",  # was recorded_by.name (real-name PII reaching the mod chokepoint) — dropped
-        # per SG-2026-06-11-D (jira/granola precedent); FX-SEC-001 does not screen a generic name.
-        timestamp=meeting.get("recording_end_time") or meeting.get("created_at") or "",
+        author="",  # recorded_by.name (real-name PII) dropped (SG-2026-06-11-D); speaker names too (-H)
+        timestamp=_s(meeting.get("recording_end_time")) or _s(meeting.get("created_at")),
     )
 
 
