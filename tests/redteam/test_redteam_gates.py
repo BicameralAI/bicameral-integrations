@@ -17,10 +17,17 @@ from adapter.core.pipeline import EmissionContractError, validate_emissions
 from adapter.core.redaction import redact
 from adapter.core.sensitive import detect_sensitive
 
-from connectors.devin.connector import parse_session
-from connectors.google_drive.connector import extract_document_text, parse_document
+from adapter.core.capabilities import SourceMode
+from adapter.core.observations import Observation
 
-from runtime import doc_fetch, graphql_poll, poll_client, sinks
+from connectors.copilot.connector import parse_metrics_day
+from connectors.cursor.connector import parse_usage_day
+from connectors.devin.connector import parse_session
+from connectors.github.connector import parse_pull_request
+from connectors.google_drive.connector import extract_document_text, parse_document
+from connectors.slack.connector import parse_message
+
+from runtime import delivery, doc_fetch, graphql_poll, poll_client, sinks
 from runtime.local_config import ConfigError, LocalConfig, assert_runnable
 from runtime.poll_auth import NoAuth, PollError
 from runtime.poll_client import HttpResponse, PollSpec
@@ -235,6 +242,45 @@ def test_devin_parse_session_non_string_scalars():
     obs = parse_session({"session_id": 12345, "status": ["x"], "title": 1})
     assert obs.source_ref.source_id == "devin"
     assert obs.excerpt  # floored, no crash
+
+
+# --- PARSE (deep-audit Cycle 2): non-string scalar fields must not crash the batch ----
+
+@pytest.mark.parametrize("parse, payload", [
+    (parse_usage_day, {"day": 12345, "userId": 7}),                       # cursor .strip() crash
+    (parse_usage_day, {"day": ["x"], "mostUsedModel": 9}),
+    (parse_metrics_day, {"date": 12345}),                                 # copilot .strip() crash
+    (parse_metrics_day, {"date": {"k": "v"}}),
+    (parse_pull_request, {"title": 123, "body": 456,                      # github redact() crash
+                          "base": {"repo": {"full_name": "a/b"}}, "number": 1}),
+    (parse_message, {"event": {"text": 999, "channel": ["c"], "ts": 1.5, "user": 7}}),  # slack .strip()
+])
+def test_connector_parse_tolerates_non_string_scalars(parse, payload):
+    # A truthy non-string scalar in a malformed/hostile provider row must floor to a valid
+    # Observation, never raise AttributeError/TypeError (which would abort the whole batch).
+    obs = parse(payload)
+    assert obs.excerpt  # non-empty floor, no crash
+    assert isinstance(obs.source_ref.ref, str)
+
+
+class _CrashOnBadRow:
+    """Connector whose parse raises on a flagged row (simulates a residual field-type defect)."""
+
+    source_id = "stub"
+
+    def observations(self, payload):  # noqa: ANN001
+        if payload.get("bad"):
+            raise TypeError("simulated non-string parse crash")
+        return [Observation(source_ref=SourceRef(source_id="stub", ref="r", kind="k"),
+                            excerpt="ok", mode=SourceMode.ACTIVE, title="t")]
+
+
+def test_deliver_poll_skips_malformed_row_not_whole_batch():
+    # deliver_poll wraps each connector.observations() call: one crashing row is logged-and-
+    # skipped; the good rows in the same batch still emit (deep-audit Cycle 2 backstop).
+    sink = sinks.CollectingSink()
+    n = delivery.deliver_poll(_CrashOnBadRow(), [{"bad": True}, {}, {"bad": True}], sink=sink)
+    assert n == 1  # the one good row emitted; two bad rows skipped, batch not aborted
 
 
 # --- PARSE-3 (#98) + PII-3 (#95): gdrive body walk + documentId guard ----------------

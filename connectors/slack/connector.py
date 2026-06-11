@@ -30,6 +30,16 @@ from adapter.core.webhook_security import (
 )
 
 
+def _first_str(*candidates: object) -> str:
+    """First non-empty STRING among the candidates (``''`` if none). Preserves the
+    ``a or b or ''`` fallback while guarding a truthy non-string ``text``/``channel``/``ts``/
+    ``user`` that would crash ``.strip()`` or mis-shape ref/author (deep-audit PARSE)."""
+    for candidate in candidates:
+        if isinstance(candidate, str) and candidate:
+            return candidate
+    return ""
+
+
 def parse_message(payload: dict) -> Observation:
     """Map a Slack message (or event_callback envelope) into an Observation.
 
@@ -43,18 +53,18 @@ def parse_message(payload: dict) -> Observation:
     msg = event if isinstance(event, dict) else payload
     nested = msg.get("message")
     inner = nested if isinstance(nested, dict) else {}
-    channel = msg.get("channel") or inner.get("channel") or ""
-    ts = msg.get("ts") or inner.get("ts") or ""
+    channel = _first_str(msg.get("channel"), inner.get("channel"))
+    ts = _first_str(msg.get("ts"), inner.get("ts"))
     # Message text is PII-dense human communication -> redact-and-pass (FX-SEC-001 alone does not
     # catch generic email/phone). The fallback locating string carries no PII. author is the OPAQUE
     # Slack user id (e.g. U0123ABC) -- pseudonymous, kept (SG-2026-06-05-D), like cursor's userId.
-    text = (msg.get("text") or inner.get("text") or "").strip()
+    text = _first_str(msg.get("text"), inner.get("text")).strip()  # _first_str guards .strip()
     excerpt = redact(text) or f"(no text) {channel}:{ts}"
     return Observation(
         source_ref=SourceRef(source_id="slack", ref=f"{channel}:{ts}", kind="message"),
         excerpt=excerpt,
         mode=SourceMode.WEBHOOK,
-        author=msg.get("user") or inner.get("user") or "",
+        author=_first_str(msg.get("user"), inner.get("user")),
         timestamp=ts,
         metadata={"channel": channel, "type": msg.get("type") or ""},
     )

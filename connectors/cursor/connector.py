@@ -41,6 +41,16 @@ def _uid(row: dict) -> str:
     return str(uid) if isinstance(uid, int) else ""
 
 
+def _day(row: dict) -> str:
+    """Free-text ``day`` as a string (``''`` when absent/non-string).
+
+    A truthy non-string ``day`` (provider drift / hostile row) must not crash ``.strip()`` and
+    abort the whole batch — mirrors the ``_int``/``_uid``/``model`` guards (deep-audit PARSE).
+    """
+    value = row.get("day")
+    return value.strip() if isinstance(value, str) else ""
+
+
 def _usage_summary(row: dict) -> str:
     """PII-free evidence excerpt from a daily-usage row's aggregate metrics ONLY.
 
@@ -49,7 +59,7 @@ def _usage_summary(row: dict) -> str:
     ``day``/``mostUsedModel`` are passed through ``redact()`` (#58) — they could carry an
     email/phone, which FX-SEC-001 does not screen; the opaque ``userId`` is unaffected.
     """
-    day = (row.get("day") or "").strip() or "usage"
+    day = _day(row) or "usage"
     uid = _uid(row)
     who = f" user {uid}" if uid else ""
     summary = (
@@ -70,7 +80,7 @@ def parse_usage_day(row: dict) -> Observation:
     ``email`` / ``name`` are NEVER read (FX-SEC-001 does not screen generic email).
     Per-developer attribution uses the OPAQUE ``userId`` (pseudonymous; SG-2026-06-05-D).
     """
-    day = redact((row.get("day") or "").strip())  # #58: day is free-text (could carry PII)
+    day = redact(_day(row))  # #58: day is free-text (could carry PII); _day str-guards (deep-audit)
     base = f"cursor:usage:{day}" if day else "cursor-usage"
     uid = _uid(row)
     return Observation(

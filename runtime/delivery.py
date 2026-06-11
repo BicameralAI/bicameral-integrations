@@ -11,6 +11,7 @@ propagates out of ``normalize`` to the operator — it is never silently swallow
 
 from __future__ import annotations
 
+import logging
 from typing import Protocol
 
 from adapter.core.observations import Observation
@@ -19,6 +20,13 @@ from adapter.core.pipeline import normalize
 from .sinks import EmissionSink
 
 _MAX_BODY = 1_048_576  # 1 MiB — reject an oversized webhook body before parse/regex (#55)
+_log = logging.getLogger(__name__)
+
+# Data-shape confusion a malformed/hostile provider row can trigger inside a connector's
+# parse (e.g. `(row.get(k) or "").strip()` on a non-string, `redact(non_str)`): skip that
+# one row instead of aborting the whole batch (deep-audit Cycle 2). A genuine emission-
+# contract breach is raised by `normalize`, NOT here, so it still propagates uncaught.
+_PARSE_SKIP = (AttributeError, TypeError, ValueError, LookupError)
 
 
 class WebhookConnector(Protocol):
@@ -72,7 +80,13 @@ def deliver_poll(
     """Parse+normalize a batch of polled payloads and emit; return the count."""
     observations: list[Observation] = []
     for payload in payloads:
-        observations.extend(connector.observations(payload))
+        try:
+            observations.extend(connector.observations(payload))
+        except _PARSE_SKIP as exc:  # one bad row must not abort the batch (deep-audit Cycle 2)
+            # Log the connector + exception type only — never the payload (PII/secret hygiene).
+            _log.warning("deliver_poll: skipped a malformed %s row (%s)",
+                         connector.source_id, type(exc).__name__)
+            continue
     if not observations:
         return 0
     emissions = normalize(observations, adapter_version=adapter_version)

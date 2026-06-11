@@ -25,6 +25,16 @@ def _count(value: object) -> str:
     return "?"
 
 
+def _date(day: dict) -> str:
+    """The ``date`` field as a string (``''`` when absent/non-string).
+
+    A truthy non-string ``date`` (provider drift / hostile row) must not crash ``.strip()`` and
+    abort the whole poll batch — mirrors the ``_count``/``_engaged`` guards (deep-audit PARSE).
+    """
+    value = day.get("date")
+    return value.strip() if isinstance(value, str) else ""
+
+
 def _engaged(obj: object) -> str:
     """``total_engaged_users`` of a breakdown object as text, ``''`` when absent."""
     if not isinstance(obj, dict):
@@ -37,7 +47,7 @@ def _engaged(obj: object) -> str:
 
 def _summary(day: dict) -> str:
     """Concise PII-free evidence excerpt from one day's aggregate counts."""
-    date = (day.get("date") or "").strip() or "metrics"
+    date = _date(day) or "metrics"
     segments = [
         f"Copilot {date}: {_count(day.get('total_active_users'))} active / "
         f"{_count(day.get('total_engaged_users'))} engaged users"
@@ -57,7 +67,7 @@ def _summary(day: dict) -> str:
 
 def parse_metrics_day(day: dict) -> Observation:
     """Map one Copilot aggregate-metrics day into a provider-neutral Observation."""
-    date = (day.get("date") or "").strip()
+    date = _date(day)
     return Observation(
         source_ref=SourceRef(
             source_id="copilot",
