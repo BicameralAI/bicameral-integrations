@@ -31,10 +31,21 @@ def test_parse_uses_meeting_title_and_recording_id():
     assert obs.title == "Adopt feature-flag rollout for the connector cutover"
 
 
-def test_parse_flattens_transcript_into_excerpt():
+def test_parse_drops_speaker_names_keeps_text():
+    # SG-2026-06-12-H: speaker.display_name (real name) is dropped; spoken text is kept.
     obs = parse_meeting(_meeting())
-    assert "Dana Lee: We will gate the connector cutover" in obs.excerpt
-    assert "Sam Rivera: Agreed." in obs.excerpt
+    assert "We will gate the connector cutover" in obs.excerpt
+    assert "Agreed." in obs.excerpt
+    assert "Dana Lee" not in obs.excerpt
+    assert "Sam Rivera" not in obs.excerpt
+
+
+def test_transcript_redact_and_pass_scrubs_email():
+    meeting = _meeting()
+    meeting["transcript"] = [{"speaker": {"display_name": "Dana"}, "text": "ping me at dana@corp.com"}]
+    obs = parse_meeting(meeting)
+    assert "dana@corp.com" not in obs.excerpt  # redact-and-pass
+    assert "Dana" not in obs.excerpt           # speaker name dropped
 
 
 def test_parse_falls_back_to_summary_then_title():
@@ -47,12 +58,13 @@ def test_parse_falls_back_to_summary_then_title():
     assert obs2.excerpt == meeting["meeting_title"]
 
 
-def test_flatten_tolerates_string_speaker():
-    # Malformed provider payload: speaker is a bare string, not a dict.
+def test_flatten_drops_speaker_emits_bare_text():
+    # speaker (dict or bare string) is dropped; only spoken text is emitted.
     meeting = _meeting()
     meeting["transcript"] = [{"speaker": "Casey", "text": "Ship it."}]
     obs = parse_meeting(meeting)
-    assert obs.excerpt == "Casey: Ship it."
+    assert obs.excerpt == "Ship it."
+    assert "Casey" not in obs.excerpt
 
 
 def test_parse_drops_author_keeps_timestamp():

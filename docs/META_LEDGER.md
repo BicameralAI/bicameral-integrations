@@ -5081,7 +5081,47 @@ dropped" even with `author` dropped). L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#159 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **fathom+claude_code research SEALED at #159 (`74c3782d`; L2)** -- both source contracts verified live; 2 flip cycles scoped (fathom P1, claude_code P0). **12 of 26 connectors flip-ready** + 13 mods. Prior: #158 mod purple-team MP2, #157 MP1.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 12 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1 fathom flip** (redact-and-pass + drop speaker real names + descriptor + doc refresh + purple-team), then **claude_code flip** (redact-and-pass + cwd-username scrub + schema re-pin + descriptor). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #160: SESSION SEAL -- fathom flip-ready (redact-and-pass + speaker names dropped + FX-CFG-001 descriptor)
+
+**Entry ID**: `fathomflip160seal`
+**Timestamp**: 2026-06-12T22:45:00-04:00
+**Phase**: SUBSTANTIATE (connector flip-ready)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/fathom/connector.py)
+= 3a13db051b337c0362b5e6b6d2cfcac397118e9bf1ca598854195a73b3047d39
+```
+
+**Previous Hash**: 74c3782d5d8b640687e6d81ad0d412feb9079c97f7b3120b7cacd48637a7b1a7
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a496aca9c36395e39408d2a69892da6b5cdb754f6b77c1d15fb23907e6684932
+```
+
+**Decision**: fathom -> **flip-ready** (cycle 1 of the #159 queue; built ON the verified contract).
+**PII + identity hardening (L2, the #159 HIGH gaps):** the transcript/summary/title are now
+**redact-and-passed** (`redact()` like granola/devin -- secret/PHI/PAN + email/phone scrubbed; FX-SEC-001
+the un-bypassable backstop), and `_flatten_transcript` **drops the injected `speaker.display_name` real
+names** (emits bare spoken text) -- closing SG-2026-06-12-H so fathom honors the now-public "real names
+dropped" guarantee (recorder `recorded_by.name` was already dropped, #150). Parse-robustness `_s` guards
+added. **Descriptor:** `connectors/fathom/config.json` -- modes ["passive","webhook"], credentials
+`fathom` (api_key, `X-Api-Key`) + `fathom_webhook` (whsec_), webhook block (`new-meeting-content-ready`,
+Svix-style sig, 5-min replay), data block (redact-and-pass + names dropped); instruction refs resolve to
+auth.md (REST/Webhook). Generated SETUP.md + index.json (13). **Doc refresh (exceeds minimum):** auth.md +
+references.md re-verified live 2026-06-12 (`X-Api-Key` named; 5-min window now Fathom-documented; PII
+posture); README + capability-matrix moved fathom Future-Dev -> flip-ready (**now 13 of 26 flip-ready**).
+**Tests:** speaker-name-dropped + transcript redact-and-pass (email scrubbed) regressions. **Measured:**
+full suite **655 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate
+#1..#160 OK. Purple-team pass deferred to a follow (parse-robustness / PII-on-wire / replay classes). L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#160 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **fathom flip SEALED at #160 (`a496aca9`; L2)** -- redact-and-pass + speaker real names dropped + FX-CFG-001 descriptor. **13 of 26 connectors flip-ready** + 13 mods. Prior: #159 research, #158 mod purple-team MP2.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 13 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **fathom purple-team** (parse-robustness/PII-on-wire/replay), then **claude_code flip** (redact-and-pass + cwd-username scrub + schema re-pin to the verified shape + FX-CFG-001 descriptor) + its purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
