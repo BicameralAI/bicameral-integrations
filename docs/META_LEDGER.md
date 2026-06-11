@@ -4250,7 +4250,40 @@ Realizes SG-2026-06-11-D. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#137 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **granola L2 correction + descriptor SEALED at Entry #137 (`1e235e24`; L2)** on `feat/granola-l2-correction`. **7 of 26 connectors flip-ready** (linear, google_drive, devin, cursor, copilot, servicenow, granola). granola's owner-vs-attendees drift + transcript-PII gap are fixed; identity dropped, transcript redact-and-passed. Prior: #136 L1 batch, #135 research, #134 runbooks+DOS-1.*
-*The platform is end-to-end + hardened for 7 flip-ready connectors. 26 Beta connectors; secrets never committed nor printed.*
-*Next required action: (1) **@jinhongkuan** live-flips the flip-ready connectors per `docs/runbooks/`; (2) connector descriptor fan-out continues (19 remaining, demand-driven). Backlog: branch protection (B5); bot #73 (release signing).*
+### Entry #138: SESSION SEAL -- mcp_registry flip-ready (public no-auth) + runner wiring
+
+**Entry ID**: `mcpRegistry138seal`
+**Timestamp**: 2026-06-11T23:00:00-04:00
+**Phase**: SUBSTANTIATE (connector wiring + descriptor)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/mcp_registry/config.json)
+= 81651ad474bfcae1ea9ec6afaa2fd264de065254ca730851a906d9bbc7ebcb42
+```
+
+**Previous Hash**: 1e235e24f3338c1537b05ad1ebc749f946b6b8ccdf180bcf8be1c547f710678e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 774bda615f01a1f86bfb38037f2bf9f588c7ea263a38e4581bed876912a7feb1
+```
+
+**Decision**: mcp_registry -> flip-ready (cycle 1 of the 6-connector sequence). Wired the **public,
+no-auth** connector into the headless runner via a dedicated `_run_mcp_registry` (its
+`build_mcp_registry_spec` takes no resolver, so `_rest_runner` can't carry it), and authored
+`connectors/mcp_registry/config.json` (**credentials: []** -- no secret; modes ["active"]; runtime
+`base_url`; emits `mcp_server`; PII-free). Regenerated index.json (8 connectors) + SETUP.md; lifted
+references.md readiness. New `run_connector("mcp_registry", ...)` test proves the no-auth runner emits
+with NO secret. **Measured:** full suite **555 passed**, ruff/mypy(168) clean, validator OK,
+governance-gate #1..#138 OK. **8 of 26 connectors flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#138 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **mcp_registry flip-ready SEALED at #138 (`774bda61`; L1)**. **8 of 26 connectors flip-ready** (+ mcp_registry, public no-auth). Sequence in progress: mcp_registry [done] -> github -> data_classification mod -> jira -> slack -> notion. Prior: #137 granola L2, #136 L1 batch.*
+*The platform is end-to-end + hardened for 8 flip-ready connectors. 26 Beta; secrets never committed nor printed.*
+*Next required action: continue the cycle sequence (github next); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

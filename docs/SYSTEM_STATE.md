@@ -8,7 +8,7 @@
 | **Updated By** | Judge (qor-substantiate) |
 | **Phase** | `main` + **security red-team COMPLETE (Cycles A/B/C, GH #50-#61 all closed)** — Cycle C: id-less webhook replays deduped by body hash for the 4 windowless providers (#60; bounded-cache eviction/TTL residual documented); emission contract rejects zero-width-only excerpt + bounds `source_id` (#61). Cores were sound; the 12 edge findings (guarantee-violations A, DoS/robustness B, replay/nits C) are all fixed. 26 Beta connectors; parse surfaces hardened — the before-Live DoS gate is cleared |
 | **Iteration** | 30 governed cycles (… redaction retrofit; references.md parity; security red-team **Cycle A** (#52/#53/#54), **Cycle B** (#50/#51/#55-#59 DoS), **Cycle C** (#60 replay / #61 nits) — all 12 red-team issues closed) |
-| **Session Seal** | `1e235e24` — Entry #137 (granola L2 connector-correction + flip-ready descriptor, L2; branch `feat/granola-l2-correction`). Prior: #136 L1 batch (`24b356fa`), #135 research, #134 (`fe07ea16`) |
+| **Session Seal** | `774bda61` — Entry #138 (mcp_registry flip-ready, public no-auth + runner wiring, L1; branch `feat/mcp-registry-golive`). Prior: #137 granola L2 (`1e235e24`), #136 L1 batch (`24b356fa`) |
 
 ---
 
@@ -20,8 +20,8 @@ bicameral-integrations/
 |   `-- core/  (emissions, observations, contracts, capabilities, pipeline,
 |              sensitive, webhook_security, filters, fixtures, __init__ + tests/)
 |-- connectors/  (each: connector.py, __init__, README, auth.md, references.md, fixtures/, tests/;
-|                 + config.json = the FX-CFG-001 mcp-UI descriptor [7 done: linear, google_drive, devin,
-|                 cursor, copilot, servicenow, granola; 19 to fan out]; _schema/connector-config.schema.json + index.json [generated];
+|                 + config.json = the FX-CFG-001 mcp-UI descriptor [8 done: linear, google_drive, devin,
+|                 cursor, copilot, servicenow, granola, mcp_registry; 18 to fan out]; _schema/connector-config.schema.json + index.json [generated];
 |                 SETUP.md = generated backend how-to runbook [from config.json; docs/CONNECTOR_BACKEND_SETUP.md
 |                 = the hand-authored framework])
 |   |-- github/         (PR -> Observation; ACTIVE+WEBHOOK)
