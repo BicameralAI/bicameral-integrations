@@ -5121,7 +5121,49 @@ full suite **655 passed**, ruff clean, whole-tree mypy (210 files) clean, valida
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#160 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **fathom flip SEALED at #160 (`a496aca9`; L2)** -- redact-and-pass + speaker real names dropped + FX-CFG-001 descriptor. **13 of 26 connectors flip-ready** + 13 mods. Prior: #159 research, #158 mod purple-team MP2.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 13 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **fathom purple-team** (parse-robustness/PII-on-wire/replay), then **claude_code flip** (redact-and-pass + cwd-username scrub + schema re-pin to the verified shape + FX-CFG-001 descriptor) + its purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #161: SESSION SEAL -- claude_code flip-ready (redact-and-pass + cwd-username scrub + schema re-pin + source_id align + descriptor)
+
+**Entry ID**: `claudecodeflip161seal`
+**Timestamp**: 2026-06-12T23:30:00-04:00
+**Phase**: SUBSTANTIATE (connector flip-ready)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/claude_code/connector.py)
+= 616a9acbebcd681a5cd23c2cae6bbd2f3ea7feda83c4448b83834906a154dbfb
+```
+
+**Previous Hash**: a496aca9c36395e39408d2a69892da6b5cdb754f6b77c1d15fb23907e6684932
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 3b6659b337f6a39fe765e58b50ec9444e51c0ce9383037dbf57e3b7d41c0980e
+```
+
+**Decision**: claude_code -> **flip-ready** (cycle 2 of the #159 queue; built ON the verified schema).
+**source_id aligned** `claude-code` -> **`claude_code`** (operator decision) so folder == source_id ==
+descriptor id -- the descriptor validator requires all three equal (claude_code is not Live, no consumer
+keyed on the old id; the wire source_type changes to claude_code). **PII hardening (the #159 HIGH gaps):**
+the excerpt CONTENT is now **redact-and-passed** inside `_line_excerpt` (secret/PHI/PAN + email/phone
+scrubbed; the `[claude_code:kind] <uuid>` floor is left un-redacted so an opaque uuid is not mis-scrubbed
+as a phone -- caught in test); `cwd` is **home-prefix-scrubbed** (`C:\Users\<name>` / `/Users/<name>` /
+`/home/<name>` -> `~/`) so the OS username never reaches the wire. **Schema re-pin (SG-2026-06-12-G):** docs
+re-pinned to the real-transcript shape -- `summary` kept legacy-tolerant (absent in the current format);
+`ai-title`/`pr-link`/`system`/`queue-operation` documented as known-but-not-emitted (user/assistant turns
+are the evidence surface). **Descriptor:** `connectors/claude_code/config.json` -- modes ["passive"],
+credentials [] (local file, no auth), data block (redact-and-pass + cwd scrub); SETUP.md + index.json
+regenerated (14). **Doc refresh (exceeds minimum):** auth.md + references.md re-pinned + PII posture +
+source_id note. **Tests:** content-redact (email scrubbed), cwd home-prefix scrub (Win/POSIX), source_id
+rename. **Measured:** full suite **657 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK,
+governance-gate #1..#161 OK. **14 of 26 flip-ready.** Purple-team (both fathom + claude_code) deferred to a
+follow. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#161 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **claude_code flip SEALED at #161 (`3b6659b3`; L2)** -- redact-and-pass + cwd-username scrub + schema re-pin + source_id align + FX-CFG-001 descriptor. **14 of 26 connectors flip-ready** + 13 mods. Prior: #160 fathom flip, #159 research.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 14 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-document** -- update README + capability matrix to reflect claude_code flip-ready (14). Then **fathom + claude_code purple-team** (the deferred validation). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

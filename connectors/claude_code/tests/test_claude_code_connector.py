@@ -26,7 +26,7 @@ def test_user_line_maps_prompt():
     assert obs is not None
     assert obs.excerpt == "add a health-check endpoint to the api"
     assert obs.author == "user"
-    assert obs.source_ref.source_id == "claude-code"
+    assert obs.source_ref.source_id == "claude_code"
     assert obs.source_ref.ref == "11111111-1111-1111-1111-111111111111"
     assert obs.source_ref.kind == "user"
     assert obs.timestamp == "2026-06-04T00:00:01.000Z"
@@ -53,7 +53,7 @@ def test_meta_line_returns_none():
 def test_empty_content_assistant_floors_excerpt():
     obs = parse_session_line(_lines()[4])
     assert obs is not None
-    assert obs.excerpt == "[claude-code:assistant] 33333333-3333-3333-3333-333333333333"
+    assert obs.excerpt == "[claude_code:assistant] 33333333-3333-3333-3333-333333333333"
 
 
 def test_unknown_type_and_non_dict_return_none():
@@ -64,9 +64,9 @@ def test_unknown_type_and_non_dict_return_none():
 
 def test_wrong_typed_fields_do_not_crash():
     # message non-dict, blocks non-dict / non-str text, int timestamp -> floor, no leak.
-    assert parse_session_line({"type": "user", "message": 123, "uuid": "u1"}).excerpt == "[claude-code:user] u1"
+    assert parse_session_line({"type": "user", "message": 123, "uuid": "u1"}).excerpt == "[claude_code:user] u1"
     weird = {"type": "assistant", "uuid": "u2", "message": {"content": [{"type": "text", "text": 7}, "notablock"]}}
-    assert parse_session_line(weird).excerpt == "[claude-code:assistant] u2"
+    assert parse_session_line(weird).excerpt == "[claude_code:assistant] u2"
     int_ts = parse_session_line({"type": "user", "uuid": "u3", "timestamp": 1759035772297})
     assert int_ts.timestamp == ""  # epoch-ms int never leaks into the str timestamp
 
@@ -78,20 +78,39 @@ def test_deeply_nested_content_does_not_recurse_to_crash():
         inner = [inner]
     line = {"type": "user", "uuid": "deep", "message": {"content": [{"type": "tool_result", "content": inner}]}}
     obs = parse_session_line(line)
-    assert obs is not None and obs.excerpt == "[claude-code:user] deep"
+    assert obs is not None and obs.excerpt == "[claude_code:user] deep"
 
 
 def test_observations_batch_drops_none_and_normalizes():
     out = normalize(
         ClaudeCodeConnector().observations({"lines": _lines()}),
-        adapter_version="claude-code/0.1.0",
+        adapter_version="claude_code/0.1.0",
     )
     # 5 lines in, the "mode" meta line dropped -> 4 evidence emissions
     assert len(out) == 4
-    assert all(isinstance(e, AdapterEmission) and e.source_id == "claude-code" for e in out)
+    assert all(isinstance(e, AdapterEmission) and e.source_id == "claude_code" for e in out)
     assert all(e.evidence[0].excerpt.strip() for e in out)
 
 
 def test_single_line_payload():
     out = ClaudeCodeConnector().observations(_lines()[0])
     assert len(out) == 1 and out[0].source_ref.kind == "user"
+
+
+def test_excerpt_is_redact_and_passed():
+    # arbitrary transcript text is redact-and-passed (email/phone scrubbed before emit).
+    line = {"type": "user", "uuid": "u9", "message": {"content": "ping me at dev@corp.com"}}
+    obs = parse_session_line(line)
+    assert obs is not None and "dev@corp.com" not in obs.excerpt
+
+
+def test_cwd_home_prefix_scrubbed():
+    # the OS username must not leak through cwd; the home prefix collapses to ~/.
+    for raw, expect in [
+        ("C:\\Users\\krkna\\proj", "~/proj"),
+        ("/Users/alice/work/app", "~/work/app"),
+        ("/home/bob/x", "~/x"),
+        ("G:\\MythologIQ\\repo", "G:\\MythologIQ\\repo"),  # no Users segment -> unchanged
+    ]:
+        obs = parse_session_line({"type": "user", "uuid": "c1", "cwd": raw})
+        assert obs is not None and obs.metadata["cwd"] == expect
