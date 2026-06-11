@@ -4617,7 +4617,48 @@ governance-gate #1..#147 OK. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#147 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **Cycle 2 parse-robustness SEALED at #147 (`384d37e6`; L2)** -- batch-abort crash closed across cursor/copilot/github/slack + a deliver_poll backstop for all 26. copilot + granola UNBLOCKED (#146); notion remains BLOCKED pending Cycle 3. **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #146 host-pin, #145 deep-audit recon.*
+### Entry #148: SESSION SEAL -- notion webhook contract fix (deep-audit Cycle 3; notion HIGH cleared)
+
+**Entry ID**: `notionwebhook148seal`
+**Timestamp**: 2026-06-12T13:00:00-04:00
+**Phase**: SUBSTANTIATE (webhook contract correctness)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/notion/connector.py)
+= d4cd70d0965b43e222b6cbd54fcad74f63bdc50df6112eecf34669b228e35ce2
+```
+
+**Previous Hash**: 384d37e631a4c12acd6158f4e2ad07901674c9d72fa3496a2a19c55a4575d4b9
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 58d28ea886d7c06889fcfae4ed8eb2916ded243fb7983002cb83e3b19e4e7e64
+```
+
+**Decision**: Cleared the notion HIGH blocker (SG-2026-06-12-C: fixture-proven != contract-correct).
+`normalize_event` parsed the RAW webhook envelope through `parse_page`, so `source_ref.ref` captured the
+ephemeral EVENT UUID instead of the page `entity.id` -- every live delivery yielded a degenerate, mislabeled
+Observation, masked by a fabricated full-page fixture (`webhook_page.json`). **Fix:** new `parse_event(envelope)`
+maps the real delivery envelope (`{id, type, entity:{id,type}, timestamp}`) to a page-changed POINTER keyed by
+the page `entity.id` (NOT the event id), title `Notion <event_type>`, no fabricated content; `parse_page` is
+retained for the deferred active fetch with a `str()`-coerced id (closes the non-string-id crash). Dedup now
+keys on the event id with a `sha256(body)` fallback (a signed id-less body can no longer bypass dedup). **Fixture
+replaced** with the real envelope (`webhook_event.json`); `webhook_page.json` deleted. **Descriptor corrected:**
+removed the future-dated/false "verified live 2026-06-12" wire_gate (-> "DOC-verified 2026-06-08, NOT
+live-verified"), added a wire_gate documenting the page-id pointer (title/url/body need the deferred fetch),
+corrected data.pii_posture + README + references.md (webhook = pointer, redact-and-pass is the deferred path).
+**Tests:** ref==entity.id != event id, two-events-one-page subject correlation, id-less body-hash replay dedup,
+non-string-id no-crash; runtime harness re-pointed to the envelope fixture. **Measured:** full suite **586
+passed**, ruff clean, mypy clean, validator OK, governance-gate #1..#148 OK. **All 3 deep-audit BLOCKERs now
+CLEARED.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#148 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **Cycle 3 notion-webhook SEALED at #148 (`58d28ea8`; L2)** -- notion HIGH CLEARED. **All 3 deep-audit BLOCKERs cleared** (copilot/granola #146, notion #148). **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #147 parse-robustness, #146 host-pin.*
 *The platform is end-to-end for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Cycle 3** (notion webhook HIGH: ref=entity.id + real-envelope parse). Then Cycle 4 (mcp_registry PII + github dedup), Cycle 5 (shared lows). **@jinhongkuan** live-flips per `docs/runbooks/` once notion clears. Backlog: branch protection (B5); bot #73.*
+*Next required action: **Cycle 4** (mcp_registry PII descriptor + str-coercion; github empty-delivery-id dedup). Then Cycle 5 (shared lows). **@jinhongkuan** live-flips per `docs/runbooks/` (notion: webhook now emits a page-id pointer; confirm the X-Notion-Signature prefix live). Backlog: branch protection (B5); bot #73.*

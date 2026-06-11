@@ -282,7 +282,7 @@ def test_deliver_webhook_slack_bad_sig_emits_nothing():
 
 
 def _signed_notion() -> tuple[NotionConnector, dict, bytes]:
-    body = _fixture_body("notion", "webhook_page.json")
+    body = _fixture_body("notion", "webhook_event.json")
     headers = {"X-Notion-Signature": "sha256=" + _hex_hmac("notion-token", body)}
     return NotionConnector(secret="notion-token"), headers, body
 

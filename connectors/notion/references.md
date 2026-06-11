@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P0 |
 | Default trust tier | T1/T3 |
 | Integration role | evidence + event |
-| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (parse + `X-Notion-Signature` verify; page title redact-and-passed, opaque created_by.id surfaced; FX-CFG-001 webhook descriptor shipped, contract re-verified live 2026-06-12). Open wire_gate: the `sha256=` prefix on X-Notion-Signature is UNVERIFIED (confirm live before Live; SG-2026-06-12-A). Webhook receipt operator-runtime; active fetch deferred. |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (webhook `parse_event` → page-changed pointer keyed by `entity.id`; `X-Notion-Signature` verify + body-hash dedup; FX-CFG-001 webhook descriptor shipped; contract DOC-verified 2026-06-08, re-confirmed brief #143 — NOT live-verified). Open wire_gate: the `sha256=` prefix on X-Notion-Signature is UNVERIFIED (confirm live before Live; SG-2026-06-12-A). Webhook delivery is a page-id POINTER (no content); page-title redact-and-pass + active fetch deferred; receipt operator-runtime. |
 
 ## Provider documentation (verify on refresh)
 
@@ -24,11 +24,12 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 
 ## Verified API/webhook contract (as built, 2026-06-05)
 
-- **Page payload (parsed)**: `parse_page` reads `{id, url, properties, created_by.id, last_edited_time, created_time}`; title extracted via `_page_title` — walks `properties` values for the one whose `type == "title"`, joining `plain_text` of its rich-text array. Excerpt is title (page body/blocks are a separate fetch, deferred).
-- **Verification (built)**: `X-Notion-Signature: sha256=<hex HMAC-SHA256(verification_token, raw_body)>`; `verify()` REQUIRES the `sha256=` prefix (bare hex rejected), strips it, calls `verify_hmac_hex` (fail-closed, constant-time). Dedup on `payload.id` then `payload.entity.id`.
+- **Webhook envelope (parsed, live mode)**: `parse_event` reads the delivery envelope `{id (event id), type, entity:{id,type}, timestamp}` — which carries NO page content — and emits a page-changed POINTER keyed by the page `entity.id` (the stable subject, NOT the ephemeral event id), title `Notion <event_type>`. Corrected 2026-06-12 (deep-audit HIGH): the prior `parse_page(payload)` on the raw envelope captured the event UUID as ref and was masked by a fabricated full-page fixture (SG-2026-06-12-C, fixture-proven != contract-correct).
+- **Page payload (parsed, deferred active fetch)**: `parse_page` reads a full page object `{id, url, properties, created_by.id, last_edited_time, created_time}`; title via `_page_title` (walks `properties` for `type == "title"`, joins `plain_text`); `id` is `str`-coerced. Fed by the deferred `pages.retrieve` keyed by `entity.id`.
+- **Verification (built)**: `X-Notion-Signature: sha256=<hex HMAC-SHA256(verification_token, raw_body)>`; `verify()` REQUIRES the `sha256=` prefix (bare hex rejected), strips it, calls `verify_hmac_hex` (fail-closed, constant-time). Dedup on the event `id` with a `sha256(body)` fallback (a signed id-less body cannot bypass dedup).
 - **Auth (deferred)**: Notion integration token or OAuth; `verification_token` for webhook subscription injected by operator runtime. No live network this cycle.
-- **Modes**: active (Notion API page fetch) + webhook; both share `parse_page`.
-- **PII handling**: page title emitted; `created_by.id` (user UUID, not display name) as author. Block content deferred. Producer sensitive screen (`FX-SEC-001`) is the guard.
+- **Modes**: webhook (`parse_event`, live) + active Notion API page fetch (`parse_page`, deferred); the two surfaces parse DIFFERENT shapes (envelope vs full page).
+- **PII handling**: webhook pointer carries only the opaque `entity.id` (no free-text). Deferred active fetch: page title redact-and-passed; `created_by.id` (user UUID, not display name) as author. Producer sensitive screen (`FX-SEC-001`) is the un-bypassable guard.
 
 ## Canonical governance references
 

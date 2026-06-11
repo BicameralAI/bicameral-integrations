@@ -1,0 +1,8 @@
+{
+  "id": "evt-7c2a-delivery-0001",
+  "type": "page.content_updated",
+  "timestamp": "2026-06-03T09:30:00.000Z",
+  "workspace_id": "ws-abc-123",
+  "entity": {"id": "page-abc-123", "type": "page"},
+  "data": {"updated_blocks": [{"id": "blk-1", "type": "block"}]}
+}

@@ -1,18 +1,30 @@
 # SPDX-License-Identifier: MIT
-"""Notion connector: page objects into neutral Observations.
+"""Notion connector: page events + page objects into neutral Observations.
 
-A Notion page object (trust tier T1) maps to one provider-neutral Observation.
-The page title is read from the property whose ``type == "title"``. Page body
-(blocks) is a separate fetch and is deferred; the excerpt is the title. Notion
-signs webhook deliveries ``X-Notion-Signature: sha256=<hex HMAC-SHA256(
-verification_token, raw_body)>``; ``verify()`` REQUIRES the documented
-``sha256=`` prefix (rejecting a bare-hex value), strips it, and reuses
-``verify_hmac_hex`` (fail-closed, constant-time). The live API fetch, OAuth, and
-HTTP receipt stay in the operator runtime (see ``auth.md``).
+Two surfaces with DIFFERENT input shapes (deep-audit 2026-06-12):
+
+- **Webhook** (the live mode): the delivery body is a thin EVENT envelope --
+  ``{id (event id), type, entity:{id,type}, timestamp, ...}`` -- that does NOT
+  carry the changed page content (Notion docs: "the events do not contain the
+  full content that changed"). ``parse_event`` maps it to a page-changed POINTER
+  Observation keyed by the page ``entity.id`` (the stable subject), NOT the
+  ephemeral event ``id``. The page title/url/body require the deferred
+  ``pages.retrieve`` fetch.
+- **Active fetch** (deferred): a full Notion page object flows through
+  ``parse_page`` (title from the ``type == "title"`` property; block body is a
+  further deferred fetch).
+
+Notion signs deliveries ``X-Notion-Signature: sha256=<hex HMAC-SHA256(
+verification_token, raw_body)>``; ``verify()`` REQUIRES the documented ``sha256=``
+prefix (rejecting a bare-hex value), strips it, and reuses ``verify_hmac_hex``
+(fail-closed, constant-time). Dedup is by event id with a body-hash fallback so a
+signed id-less body cannot bypass it. The live API fetch, OAuth, and HTTP receipt
+stay in the operator runtime (see ``auth.md``).
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 from collections.abc import Callable
@@ -38,9 +50,37 @@ def _page_title(properties: dict) -> str:
     return ""
 
 
+def parse_event(envelope: dict) -> Observation:
+    """Map a Notion webhook delivery envelope into a page-changed POINTER Observation.
+
+    The envelope (``{id, type, entity:{id,type}, timestamp, ...}``) carries no page content, so
+    the Observation is keyed by the page ``entity.id`` (the stable subject identity — NOT the
+    ephemeral event ``id``), enabling dedup-by-subject and the deferred ``pages.retrieve`` fetch.
+    ``entity.id`` is an opaque Notion UUID (pseudonymous, kept; SG-2026-06-05-D); the event type
+    is an enum. No free-text → no redact needed. Title/url/body come from the deferred fetch.
+    """
+    entity = envelope.get("entity")
+    entity = entity if isinstance(entity, dict) else {}
+    page_id = str(entity.get("id") or "")
+    event_type = str(envelope.get("type") or "")
+    label = f"Notion {event_type}".strip() if event_type else "Notion page change"
+    return Observation(
+        source_ref=SourceRef(
+            source_id="notion",
+            ref=page_id or "notion-page",  # subject = page entity.id, never the event id
+            kind="page",
+        ),
+        excerpt=f"{label} ({page_id})" if page_id else label,
+        mode=SourceMode.WEBHOOK,
+        title=label,
+        author="",  # webhook envelope carries no author; the deferred fetch would supply it
+        timestamp=str(envelope.get("timestamp") or ""),
+    )
+
+
 def parse_page(page: dict) -> Observation:
-    """Map a Notion page object into a provider-neutral Observation."""
-    page_id = page.get("id") or ""
+    """Map a full Notion page object (the deferred active-fetch shape) into an Observation."""
+    page_id = str(page.get("id") or "")  # str-guard: a non-string id must not crash _is_blank
     # The page title is free-text -> redact-and-pass (FX-SEC-001 alone does not catch a generic
     # email/name in a title). Terminal non-empty floor: an untitled page without a usable id
     # (partial objects / webhook envelopes) falls through to a literal (SARIF/MCP-Registry pattern).
@@ -107,13 +147,15 @@ class NotionConnector:
             return False
 
     def _delivery_id(self, payload: dict) -> str:
-        """Best-effort delivery id ('' when none derivable; entity guarded)."""
-        entity = payload.get("entity")
-        entity_id = entity.get("id") if isinstance(entity, dict) else None
-        return str(payload.get("id") or entity_id or "")
+        """The webhook EVENT id (top-level ``id``) for replay dedup; '' when absent.
+
+        Dedup keys on the event id (a replay re-sends the same event id), NOT the page
+        ``entity.id`` — two distinct changes to one page are distinct events, not duplicates.
+        """
+        return str(payload.get("id") or "")
 
     def normalize_event(self, *, headers: dict[str, str], body: bytes) -> list[Observation]:
-        """Self-guard (re-verify), dedup, then parse. ``[]`` on reject."""
+        """Self-guard (re-verify), dedup (body-hash fallback), then parse the envelope. ``[]`` on reject."""
         if not self.verify(headers=headers, body=body):
             return []
         try:
@@ -123,8 +165,9 @@ class NotionConnector:
         if not isinstance(payload, dict):
             return []
         if self._dedup is not None:
-            delivery_id = self._delivery_id(payload)
-            if delivery_id and self._dedup.is_duplicate("notion", delivery_id):
+            # body-hash fallback: a signed id-less body cannot bypass dedup (deep-audit; #60 pattern).
+            delivery_id = self._delivery_id(payload) or hashlib.sha256(body).hexdigest()
+            if self._dedup.is_duplicate("notion", delivery_id):
                 return []
             self._dedup.mark_seen("notion", delivery_id)
-        return [parse_page(payload)]
+        return [parse_event(payload)]  # webhook body is the EVENT envelope, not a full page object
