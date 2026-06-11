@@ -6,17 +6,22 @@ priority P0, default trust tier T1/T3). A Phase-1 foundation candidate from the
 
 ## Modes
 
-- **Active** — a Notion page object maps to one neutral `Observation`
-  (`parse_page`). No canonical-state writes — this is an evidence adapter, not a
-  state authority (ADR-0008).
-- **Webhook** — page-change events carry a page object of the same shape and
-  parse through the same surface.
+- **Webhook** (live mode) — a page-change delivery is a thin EVENT envelope
+  (`{id, type, entity:{id,type}, timestamp}`) that carries **no** page content.
+  `parse_event` maps it to a page-changed **pointer** `Observation` keyed by the
+  page `entity.id` (the stable subject — never the ephemeral event id), with
+  title `Notion <event_type>`. No canonical-state writes — evidence adapter, not
+  a state authority (ADR-0008).
+- **Active** (deferred) — the deferred `pages.retrieve` fetch returns a full
+  Notion page object, which maps through `parse_page` (title from the
+  `type == "title"` property). The webhook pointer's `entity.id` is the fetch key.
 
 `X-Notion-Signature` (hex HMAC-SHA256 over the raw body with the subscription
 verification token, `sha256=`-prefixed — the prefix is required) verification and
-best-effort dedup are implemented in `verify()` / `normalize_event()`. The live
-Notion API fetch, block-content retrieval, OAuth, and HTTP receipt stay in the
-operator runtime (see [`auth.md`](auth.md)).
+dedup (by event id, with a body-hash fallback so a signed id-less body cannot
+bypass it) are implemented in `verify()` / `normalize_event()`. The live Notion
+API fetch, block-content retrieval, OAuth, and HTTP receipt stay in the operator
+runtime (see [`auth.md`](auth.md)).
 
 ## Readiness: Beta (ADR-0012)
 
@@ -26,10 +31,13 @@ cross-repo dependency**. Live (gateway emission) is now operator-actionable — 
 
 ## Surface
 
-- `parse_page(page)` — Notion page → `Observation` (title read from the property
-  whose `type == "title"`, joining its `plain_text` runs, with `id` then a
-  `notion-page` literal as terminal fallback; title → excerpt; `url` → ref url;
-  `created_by.id` → author; `last_edited_time`/`created_time` → timestamp).
+- `parse_event(envelope)` — Notion webhook delivery envelope → page-changed
+  pointer `Observation` (`entity.id` → ref subject; `Notion <type>` → title;
+  `timestamp` → timestamp; no page content). This is the live webhook surface.
+- `parse_page(page)` — full Notion page object (deferred active fetch) →
+  `Observation` (title read from the property whose `type == "title"`, with a
+  `str`-coerced `id` then a `notion-page` literal as terminal fallback; title →
+  excerpt; `url` → ref url; `created_by.id` → author; timestamp).
 - `NotionConnector` — connector identity and capabilities (`ACTIVE`, `WEBHOOK`).
 
 ## References

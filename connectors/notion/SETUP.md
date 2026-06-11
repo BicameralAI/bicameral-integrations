@@ -1,7 +1,7 @@
 <!-- GENERATED from config.json — do not edit; run scripts/build_connector_setup.py -->
 # Notion — backend setup
 
-Notion page webhook events as redact-and-pass governed evidence.
+Notion page-change webhook events as governed page-pointer evidence (keyed by the page entity.id).
 
 - **id** `notion` · **category** docs · **trust tier** T1
 - **status** live-ready · **available** True · **modes** webhook
@@ -57,13 +57,14 @@ python -m runtime.cli run notion --sink gateway   # real POST (go-live; default-
 ## Data & permissions
 
 - Emits: page
-- PII posture: The page title (read from the type=='title' property) is free-text -> passed through adapter.core.redaction.redact (redact-and-pass: scrubs secret/PHI/PAN + email/phone). Block/body content is a separate fetch and is deferred. author is the OPAQUE created_by.id (a Notion user UUID) -- pseudonymous (SG-2026-06-05-D), not a name/email. FX-SEC-001 is the un-bypassable backstop.
+- PII posture: WEBHOOK path (live): the delivery is a thin event envelope carrying NO page content, so the Observation is a page-changed POINTER keyed by the opaque page entity.id (a Notion UUID -- pseudonymous, SG-2026-06-05-D) with title 'Notion <event_type>'. No free-text on this path -> nothing to redact. DEFERRED active-fetch path: the full page object's title (type=='title' property) is free-text -> redact-and-passed (scrubs secret/PHI/PAN + email/phone); author is the opaque created_by.id; block body is a further deferred fetch. FX-SEC-001 is the un-bypassable backstop on both.
 
 ## Go-live
 
-Readiness: Flip-ready, NOT yet Live. Parse + X-Notion-Signature verify + dedup are built and harness-proven; page title redact-and-passed, opaque created_by.id surfaced. Gated on operator review + a live signed delivery with a real verification_token + a provisioned receiver, AND on confirming the X-Notion-Signature prefix format (the one open wire_gate). To flip: add the subscription + verification_token + receiver; wire GatewaySink; send a signed test delivery; confirm the signature format; review before promoting.
+Readiness: Flip-ready, NOT yet Live. Webhook verify + body-hash dedup + the page-changed pointer parse (keyed by entity.id) are built and harness-proven against a real delivery-envelope fixture. The webhook path emits a page-id pointer (no content); page-title redact-and-pass + active fetch are deferred. Gated on operator review + a live signed delivery with a real verification_token + a provisioned receiver, AND on confirming the X-Notion-Signature prefix format (open wire_gate). To flip: add the subscription + verification_token + receiver; wire GatewaySink; send a signed test delivery; confirm the signature format; review before promoting.
 
-- Gate: Contract verified live 2026-06-12 (developers.notion.com): X-Notion-Signature = HMAC-SHA256 over the (minified-JSON) body signed with the verification_token; events page.content_updated/comment.created/database.schema_updated/page.locked. Page title redact-and-passed; opaque created_by.id surfaced.
+- Gate: Contract DOC-verified (developers.notion.com; auth.md 2026-06-08, re-confirmed research brief #143), NOT live-verified (no signed live delivery yet; ADR-0012): X-Notion-Signature = HMAC-SHA256 over the (minified-JSON) body signed with the verification_token; events page.content_updated/comment.created/database.schema_updated/page.locked.
+- Gate: Webhook deliveries yield a page-changed POINTER Observation keyed by the page entity.id (NOT the ephemeral event id), title 'Notion <event_type>', with NO page content. Title/url/body require the deferred pages.retrieve active fetch (keyed by entity.id); the page-title redact-and-pass applies ONLY to that deferred path.
 - Gate: UNVERIFIED (verify-before-cite, must confirm before Live): the connector's verify() REQUIRES a `sha256=` PREFIX on X-Notion-Signature and rejects a bare-hex value, but the live docs describe a bare HMAC-SHA256 hash and do NOT confirm a prefix. If Notion sends bare hex, verify() rejects EVERY real delivery (ingest zero) -- confirm the exact header format against a live delivery and relax the prefix requirement if needed (SG-2026-06-12-A). Also: verify() hashes the raw received bytes, which match only if the receiver forwards Notion's exact minified body without re-serializing.
 - Gate: Webhook RECEIPT is operator-runtime; the active Notion API fetch + block-content retrieval + OAuth are deferred. Live flip gated on operator review + a signed live delivery (ADR-0012).
 

@@ -52,6 +52,13 @@ def test_parse_floors_excerpt_when_no_id_and_untitled():
     assert out[0].evidence[0].excerpt.strip()
 
 
+def test_parse_page_non_string_id_does_not_crash():
+    # deep-audit medium: a non-string id must str-coerce, not crash _is_blank/detect_sensitive.
+    obs = parse_page({"id": 999})
+    assert obs.source_ref.ref == "999"
+    assert normalize([obs], adapter_version="notion/0.1.0")[0].source_id == "notion"
+
+
 def test_parse_sets_ref_url_timestamp():
     obs = parse_page(_page())
     assert obs.source_ref.source_id == "notion"
