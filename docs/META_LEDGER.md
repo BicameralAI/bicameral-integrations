@@ -4497,7 +4497,47 @@ is COMPLETE.** L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#144 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **notion flip-ready SEALED at #144 (`9d6070af`; L2)**; **6-cycle go-live sequence COMPLETE**. **12 of 26 connectors flip-ready** (linear, google_drive, devin, cursor, copilot, servicenow, granola, mcp_registry, github, jira, slack, notion) + 4 advisory mods. Verify-before-cite recovery (#143) validated the 4 mid-sequence connectors against live docs. Prior: #143 research, #142 slack.*
-*The platform is end-to-end + hardened for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (notion also needs the X-Notion-Signature prefix confirmed). 14 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
+### Entry #145: RESEARCH BRIEF -- deep-audit full purple-team pass (9 connectors + 4 mods)
+
+**Entry ID**: `deepaudit145research`
+**Timestamp**: 2026-06-12T09:00:00-04:00
+**Phase**: RESEARCH (deep-audit recon)
+**Author**: Analyst (qor-deep-audit; multi-agent purple-team)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-deep-audit-purpleteam-2026-06-12.md)
+= 4bf2d8293301e98b005d3db074e6017b5ffc46299b8161668a7ab260d7b94204
+```
+
+**Previous Hash**: 9d6070afd807d685b13ef2ac98a1a817efd8179f3a2c39ed58a1fe0bb47cdf6c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 851cb484f6fe95f32b41fa95d8aff98b770caa7c987e42d6b41dfbf7aa60bf3f
+```
+
+**Decision**: Full purple-team pass (`w53y58tat`, 44 agents, 8 attack classes, blue-verified) over the 9
+connectors NOT covered by the 2026-06-11 pass + the 4 mods. **26 findings, 24 confirmed real** (2 refuted).
+**3 BLOCKED (before-Live):** **copilot** + **granola** (HIGH) -- `build_copilot_spec`/`build_granola_spec`
+omit `_require_https_endpoint`, so the credentialed Bearer (read:org PAT / grn_ + transcripts) egresses to
+ANY operator-config host incl. http cleartext + `169.254.169.254` metadata, upstream of every defense;
+**notion** (HIGH) -- `parse_page` reads the raw webhook envelope so `source_ref.ref` = the ephemeral event
+UUID not the page `entity.id`, masked by a fabricated full-page fixture (fixture-proven != contract-correct,
+SG-2026-06-12-C). **6 approved-with-fixes:** a recurring non-string-scalar `.strip()/redact()` crash that
+aborts the whole batch (medium, 6 connectors), mcp_registry's false "PII-free" descriptor (no redact on
+attacker free-text), github empty-delivery-id dedup bypass, + shared lows (NANP-only phone redaction,
+presence-only ref validator, mod join-not-per-leaf output screen). **Cores sound** -- no forged ingest,
+broken HMAC, or fail-open. **Remediation: 5 sequenced governed fix cycles** (Cycle 1 host-pin sweep closes
+both SSRF blockers + 4 sibling lows). SG-2026-06-12-B (sweep ALL credentialed builders, not connector-by-
+connector) + SG-2026-06-12-C (re-confirm webhook contracts against the real provider envelope, not a
+fixture). No Live flip without operator secrets + live network (ADR-0012). L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#145 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **deep-audit recon SEALED at #145 (`851cb484`; L2)** -- 24 confirmed gaps, 3 BLOCKED targets, 5 remediation cycles queued. **12 of 26 connectors flip-ready** (linear, google_drive, devin, cursor, copilot, servicenow, granola, mcp_registry, github, jira, slack, notion) + 4 advisory mods -- but copilot/granola/notion are now BLOCKED-before-Live pending Cycle 1/3. Prior: #144 notion seal, #143 research.*
+*The platform is end-to-end for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **Cycle 1 host-pin** (closes copilot+granola HIGH blockers). Then Cycles 2-5. **@jinhongkuan** live-flips per `docs/runbooks/` once the 3 blockers clear. 14 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
