@@ -4736,7 +4736,44 @@ confirmed deep-audit gaps now remediated.** L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#150 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **Cycle 5 SEALED at #150 (`97ea72f0`; L2)** -- shared lows closed. **DEEP-AUDIT REMEDIATION COMPLETE: all 24 confirmed gaps fixed across 5 cycles (#146-#150); all 3 BLOCKERs + 9 mediums + lows cleared.** **12 of 26 connectors flip-ready** + 4 advisory mods, now purple-team-hardened. Prior: #149 mcp_registry/github, #148 notion-webhook.*
+### Entry #151: RESEARCH BRIEF -- design + prioritize the 9 scaffolded mods
+
+**Entry ID**: `mods9scope151research`
+**Timestamp**: 2026-06-12T16:30:00-04:00
+**Phase**: RESEARCH (mod build scoping)
+**Author**: Analyst (qor-research)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-mods-9-2026-06-12.md)
+= 164926a8676733ce8c3b314c9fb24d23c244e967fa3724e1399e1e113978cde4
+```
+
+**Previous Hash**: 97ea72f0e928a16eca29718f2bade15779106aaef5c005d6648da6bbb8fcfd00
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 9200a45667aa95f8d8ab2feba75a72d9a14ad19664847a7a92037a377ebf47c2
+```
+
+**Decision**: Scoped the 9 scaffolded mods (adapter_contract, source_trust_calibration, webhook_risk,
+connector_freshness, code_review_risk, authority_boundary, test_adequacy, ownership_routing,
+decision_drift) into working EM-safe advisory mods on the `dependency_risk` pattern. **Binding
+constraint:** a mod is a PURE function over `AdapterEmission` (no repo/file/network access; `run_mod`
+re-screens input + validates outputs + per-leaf FX-SEC-001 screen), so every detector keys off the
+emission stream only (source_id/title/body/evidence source_ref kind+ref+url/excerpt/author/timestamp/
+metadata) — honest-confidence discipline: route only on a strong signal, annotate otherwise, never a
+score-like metadata key. Per-mod detection table + EM-safe boundary in
+`docs/research-brief-mods-9-2026-06-12.md`. **Build = 4 governed cycles:** M1 adapter_contract +
+source_trust_calibration (structure/provenance), M2 webhook_risk + connector_freshness, M3
+code_review_risk + authority_boundary + test_adequacy, M4 ownership_routing + decision_drift ->
+all 13 mods complete. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#151 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **mod-build scope SEALED at #151 (`9200a456`; L1)** -- 9 scaffolds designed as deterministic emission-stream heuristics; 4 build cycles queued (M1-M4). 4 of 13 mods complete; deep-audit remediation COMPLETE (#146-#150). **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #150 shared-lows, #149 mcp_registry/github.*
 *The platform is end-to-end + deep-audit-hardened for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (notion webhook now emits a page-id pointer; confirm the X-Notion-Signature prefix live). 14 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
+*Next required action: **Mod Cycle M1** (adapter_contract + source_trust_calibration). Then M2-M4. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
