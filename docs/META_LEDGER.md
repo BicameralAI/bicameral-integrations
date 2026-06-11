@@ -4319,7 +4319,43 @@ connectors flip-ready.** L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#139 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **github flip-ready SEALED at #139 (`fd10b5ee`; L2)**. **9 of 26 connectors flip-ready** (+ github, webhook). Sequence: mcp_registry [done] -> github [done] -> data_classification mod -> jira -> slack -> notion. Prior: #138 mcp_registry, #137 granola L2.*
-*The platform is end-to-end + hardened for 9 flip-ready connectors. 26 Beta; secrets never committed nor printed.*
-*Next required action: continue the sequence (data_classification mod next); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #140: SESSION SEAL -- data_classification mod built (4 of 13)
+
+**Entry ID**: `dataClassMod140seal`
+**Timestamp**: 2026-06-12T01:00:00-04:00
+**Phase**: SUBSTANTIATE (mod build)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(mods/data_classification/connector.py)
+= c528f44064b1e159c0e34b54f3a75eafa5c0192b3b1ef96da90a28607a84ce61
+```
+
+**Previous Hash**: fd10b5eee20f3ce42dc01bc2892294928175b1d666fc8b1cd7087a631ffff390
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= bcbe6e2b2e374e2107f370dfd692f08bb48f3db688686d3d1592e903a5a4ddf4
+```
+
+**Decision**: Built the **data_classification** mod (cycle 3 of 6; the first of the 10 scoped mods to
+land). Cross-cutting EM-safe advisory analyzer: flags an emission's residual DATA sensitivity AFTER the
+FX-SEC-001 screen + connector redact-and-pass have run -- confidentiality markers (confidential /
+internal-only / proprietary / nda / …) + redaction placeholders (`[redacted:...]`, proof the source
+carried scrubbed PII) -> a `source_evidence_annotation` (classification=restricted) + a `routing_hint`
+(role restricted-review) + an `advisory_governance_result`. Emit-on-signal (general evidence -> nothing);
+deterministic; stdlib-only. Wired into `runtime/runner_registry._MODS` (runnable via
+`python -m runtime.cli run-mods <connector> --mods data_classification`). Manifest⟷code mirror + EM-safe
+forbidden baseline verified by `validate_manifest`; outputs pass `run_mod` (outputs-allowlist,
+no-opaque-score, FX-SEC-001 output re-screen). 4 mod tests. **Measured:** full suite **560 passed**,
+ruff/mypy(172) clean, governance-gate #1..#140 OK. **4 of 13 mods built** (+ data_classification). L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#140 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **data_classification mod built, SEALED at #140 (`bcbe6e2b`; L1)**. **4 of 13 mods built** (dependency_risk, noisy_source_gate, security_mentions, data_classification); 9 of 26 connectors flip-ready. Sequence: mcp_registry [done] -> github [done] -> data_classification [done] -> jira -> slack -> notion. Prior: #139 github, #138 mcp_registry.*
+*The platform is end-to-end + hardened for 9 flip-ready connectors + 4 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: continue the sequence (jira next); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
