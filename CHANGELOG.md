@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Security
 
+- **Granola** connector PII correction (L2): the verbatim transcript + title are now
+  redact-and-passed and the meeting owner's identity is dropped (never surfaced as
+  author); identity re-pointed off the non-existent `attendees` field to the verified
+  `owner` shape. FX-SEC-001 alone did not catch generic names/emails in meeting speech.
 - Purple-team go-live hardening for Linear, Google Drive, and Devin (issues
   #94–#102): disabled provider-redirect following in `UrllibTransport` +
   `GatewaySink` (no-follow opener) so an untrusted 3xx can no longer re-send the
@@ -24,8 +28,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Flip-ready FX-CFG-001 descriptors for **Cursor**, **GitHub Copilot**, and
   **ServiceNow** (config.json + generated SETUP.md + index.json) — the L1 go-live
   batch (Cursor + Copilot PII-free; ServiceNow redact-and-pass). Cursor's contract
-  was re-verified live 2026-06-11 (pagination resolved = POST-body). 6 connectors
-  now carry descriptors.
+  was re-verified live 2026-06-11 (pagination resolved = POST-body). Granola also
+  reaches flip-ready (after its L2 PII correction). 7 connectors now carry descriptors.
 - `noisy_source_gate` mod enabled in the example config (signal hygiene for the
   first live flip; operator opt-out knob documented in `docs/runbooks/`).
 - Operator go-live runbooks (`docs/runbooks/`) — per-connector live-flip

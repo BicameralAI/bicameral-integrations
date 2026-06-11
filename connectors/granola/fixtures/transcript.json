@@ -1,13 +1,11 @@
 {
   "id": "not_5521abcdEFGijk",
   "title": "Design review: source-trust gating",
+  "summary": "Decision on advisory vs blocking source-trust gating.",
   "created_at": "2026-06-01T21:14:00Z",
+  "owner": {"name": "Priya Anand", "email": "priya.anand@example.com"},
   "transcript": [
-    {"speaker": {"diarization_label": "spk_1"}, "text": "We decided source-trust gating stays advisory in v1:"},
-    {"speaker": {"diarization_label": "spk_2"}, "text": "low-trust sources route to review, never auto-block."}
-  ],
-  "attendees": [
-    {"name": "Priya Anand", "email": "priya.anand@example.com"},
-    {"name": "Marco Diaz", "email": "marco.diaz@example.com"}
+    {"speaker": {"source": "microphone", "diarization_label": "Speaker A"}, "text": "We decided source-trust gating stays advisory in v1:"},
+    {"speaker": {"source": "speaker", "diarization_label": "Speaker B"}, "text": "low-trust sources route to review, never auto-block. follow up with marco.diaz@example.com"}
   ]
 }

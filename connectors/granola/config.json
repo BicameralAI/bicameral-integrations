@@ -1,0 +1,66 @@
+{
+  "id": "granola",
+  "name": "Granola",
+  "description": "Granola meeting notes + transcript (redact-and-pass) as governed evidence.",
+  "category": "meetings",
+  "trust_tier": "T1",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["passive"],
+  "credentials": [
+    {
+      "key": "granola",
+      "type": "api_key",
+      "label": "Granola API key (grn_)",
+      "required": true,
+      "header": "Authorization: Bearer grn_<key>",
+      "validation": "^grn_[A-Za-z0-9]+$",
+      "obtain": {
+        "url": "https://docs.granola.ai",
+        "steps": [
+          "Create a Granola API key (grn_ prefix) in your Granola workspace settings.",
+          "Sent as Authorization: Bearer grn_<key>."
+        ]
+      }
+    }
+  ],
+  "runtime_config": [
+    {
+      "key": "base_url",
+      "label": "Notes endpoint",
+      "required": false,
+      "default": "https://public-api.granola.ai/v1/notes?include=transcript",
+      "description": "The notes-with-transcript endpoint (verified 2026-06-11). The incremental created_after watermark + two-phase commit are operator-runtime."
+    }
+  ],
+  "data": {
+    "emits": ["transcript"],
+    "pii_posture": "Meeting content is PII-dense and the provider gives no redaction guidance. The transcript + title are passed through adapter.core.redaction.redact (redact-and-pass: scrubs secret/PHI/PAN + email/phone). The meeting OWNER's identity (owner.name/email) is NEVER surfaced (author dropped, PII-safe). speaker is an anonymized object (source/diarization label), never read. FX-SEC-001 is the un-bypassable backstop.",
+    "redaction": "redact-and-pass (transcript + title); owner identity dropped"
+  },
+  "instructions": [
+    {
+      "action": "open_url",
+      "text": "Create a Granola API key (grn_) in your Granola workspace settings.",
+      "link": "https://docs.granola.ai",
+      "ref": "connectors/granola/auth.md (Live path — reference poll client)"
+    },
+    {
+      "action": "paste_secret",
+      "text": "Paste the Granola API key (sent as Authorization: Bearer grn_<key>)."
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: an active poll returns recent notes; the transcript is redact-and-passed and the owner's identity is never surfaced."
+    }
+  ],
+  "references": [
+    {"kind": "api", "url": "https://docs.granola.ai"}
+  ],
+  "wire_gates": [
+    "Contract re-verified live 2026-06-11 (public-api.granola.ai): GET /v1/notes?include=transcript, Bearer grn_; `notes` envelope; cursor `cursor`/`hasMore` pagination; note carries owner{name,email}, title, summary, transcript[{speaker:{source,diarization_label},text}], created_at.",
+    "PII (SG-2026-06-11-D, fixed this cycle): identity is `owner` (NOT `attendees`); transcript + title are redact-and-passed; owner identity is dropped (FX-SEC-001 does not catch a generic name/email).",
+    "Live flip gated on operator human review + a live poll with a real grn_ key (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Redacted transcript parse surface + the live fetch-half (build_granola_spec) are built and harness-proven against a recorded fixture; contract re-verified live 2026-06-11; the owner-vs-attendees drift + transcript-PII gap are fixed (L2). Gated on operator review + a live poll with a real grn_ key. To flip: provide the key; wire GatewaySink; run the live poll; review before promoting."
+}

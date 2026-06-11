@@ -306,7 +306,7 @@ def test_granola_notes_envelope() -> None:
     e = sink.emissions[0]
     assert "architecture sync" in e.title
     assert "poll-client fan-out" in e.body  # joined transcript[].text, not transcript_text
-    assert e.evidence[0].author == "Reviewer A"  # first attendees[].name
+    assert e.evidence[0].author == ""  # owner identity dropped, PII-safe (L2, SG-2026-06-11-D)
     assert detect_sensitive(e.body) == []
 
 

@@ -4212,7 +4212,45 @@ connectors now flip-ready. Carries the uncommitted #135 research (folded per ope
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#136 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: go-live **L1 descriptor batch SEALED at Entry #136 (`24b356fa`; L1)** on `feat/golive-batch-l1-descriptors`. **6 of 26 connectors flip-ready** (linear, google_drive, devin, cursor, copilot, servicenow); `noisy_source_gate` enabled for the live stream. granola remains the L2 connector-correction follow-on. Prior: #135 research, #134 runbooks+DOS-1, #133 purple-team hardening.*
-*The platform is end-to-end + hardened for 6 flip-ready connectors. 26 Beta connectors; secrets never committed nor printed.*
-*Next required action: (1) operator reviews/stages this cycle (commit/push/PR commands in the handoff) -- builds on the open PR #104 chain; (2) **@jinhongkuan** live-flips Linear/GDrive/Devin; (3) the **granola L2 sub-cycle** (re-point to `owner`, redact-and-pass transcript, drop raw attendee identity, then descriptor). Backlog: branch protection (B5); bot #73 (release signing).*
+### Entry #137: SESSION SEAL -- granola L2 connector-correction + flip-ready descriptor
+
+**Entry ID**: `granolaL2137seal`
+**Timestamp**: 2026-06-11T22:00:00-04:00
+**Phase**: SUBSTANTIATE (parse/PII correction + descriptor)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/granola/connector.py)
+= 5bd808bfde1e29aa2036c46f9c7b18bbd08742057596c711bcaf4fcaae0e3717
+```
+
+**Previous Hash**: 24b356fae4613a4b38ce775aa96f1475bcd1f7a71cf05c059edb47b6de57c753
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1e235e24f3338c1537b05ad1ebc749f946b6b8ccdf180bcf8be1c547f710678e
+```
+
+**Decision**: Acted on research #135's granola DRIFT + PII findings (L2). **Connector correction:**
+re-pointed identity off the non-existent `attendees` field (the live note carries `owner`); the meeting
+owner's identity is now **DROPPED** (author="", PII-safe -- FX-SEC-001 doesn't catch a generic name and
+redact() doesn't scrub a bare name); the **transcript + title are redact-and-passed** (`adapter.core.
+redaction.redact`) so spoken emails/phones are scrubbed (the provider gives no PII guidance). Fixture
+updated to the verified live shape (`owner` not `attendees`; speaker as `{source,diarization_label}`
+object; an in-transcript email proves redaction). **Descriptor:** authored `connectors/granola/config.json`
+(modes ["passive"]; Bearer `grn_`; redact-and-pass posture documented) -> granola flip-ready; regenerated
+index.json + 7 SETUP.md; lifted references.md readiness. **Audit (inline, L2): PASS** -- 6 granola tests +
+the runtime envelope test assert author dropped + raw owner/transcript emails absent from every wire field
++ `detect_sensitive(body)==[]`; `validate_connector_config.py` green. **Measured:** full suite **554
+passed**, ruff/mypy(168)/bandit clean, governance-gate #1..#137 OK. **7 of 26 connectors flip-ready.**
+Realizes SG-2026-06-11-D. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#137 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **granola L2 correction + descriptor SEALED at Entry #137 (`1e235e24`; L2)** on `feat/granola-l2-correction`. **7 of 26 connectors flip-ready** (linear, google_drive, devin, cursor, copilot, servicenow, granola). granola's owner-vs-attendees drift + transcript-PII gap are fixed; identity dropped, transcript redact-and-passed. Prior: #136 L1 batch, #135 research, #134 runbooks+DOS-1.*
+*The platform is end-to-end + hardened for 7 flip-ready connectors. 26 Beta connectors; secrets never committed nor printed.*
+*Next required action: (1) **@jinhongkuan** live-flips the flip-ready connectors per `docs/runbooks/`; (2) connector descriptor fan-out continues (19 remaining, demand-driven). Backlog: branch protection (B5); bot #73 (release signing).*
