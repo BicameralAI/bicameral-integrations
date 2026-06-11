@@ -5163,7 +5163,46 @@ follow. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#161 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **claude_code flip SEALED at #161 (`3b6659b3`; L2)** -- redact-and-pass + cwd-username scrub + schema re-pin + source_id align + FX-CFG-001 descriptor. **14 of 26 connectors flip-ready** + 13 mods. Prior: #160 fathom flip, #159 research.*
+### Entry #162: RESEARCH BRIEF -- fathom + claude_code purple-team
+
+**Entry ID**: `fathomclaudepurple162research`
+**Timestamp**: 2026-06-13T09:00:00-04:00
+**Phase**: RESEARCH (purple-team recon)
+**Author**: Analyst (purple-team workflow, 10 agents)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-fathom-claudecode-purpleteam-2026-06-12.md)
+= eb1d7788766a75ffa1af1eba2ea68fe84bfa5958416197de70ada0d9ab358d89
+```
+
+**Previous Hash**: 3b6659b337f6a39fe765e58b50ec9444e51c0ce9383037dbf57e3b7d41c0980e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 3a75c1a5b9a52def50cb32a026eccc82e8bb4b4c0fd512051cd7e1b9ee05bbb1
+```
+
+**Decision**: The deferred adversarial pass over the 2 newly-flip-ready connectors (`wo48b3pak`, 10 agents,
+6 attack classes, blue-verified). **Both = approved-with-fixes, ZERO blocked.** 7 confirmed (fathom 3,
+claude_code 4), **3 medium + 4 low, none high.** Cores held: Svix webhook verify sound (constant-time HMAC,
+5-min window, fail-closed), redact-and-pass + name-drop + cwd-scrub work for common cases, read-only (no
+em_safe breach). **3 roots:** (1) **phone-redaction completeness** (shared, fathom+claude_code) -- `_PHONE_RE`
+requires a literal `+` for international, so `00`-prefix + bare national groupings (UK/FR/DE) bypass, and the
+docstring/descriptors over-claim coverage; (2) **fathom parse-robustness** -- truthy non-dict `default_summary`
+(`(x or {}).get`) + non-dict signed JSON body in `normalize_event` (lacks the `observations()` dict-guard)
+raise AttributeError; (3) **claude_code identity** -- `_HOME_RE` misses UNC/WSL/export-home cwd (username
+leaks), the floor-literal uuid can carry an email, and config.json over-claims "username never reaches the
+wire." SG-2026-06-12-I (a `+`-only international phone broadening still misses `00`/bare-national; state exact
+coverage) + SG-2026-06-12-J (a home-prefix scrub must enumerate UNC/WSL/network/export-home, or emit only the
+basename). **Remediation: 2 cycles** -- PT1 shared phone redaction, PT2 fathom + claude_code connector fixes.
+L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#162 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **fathom+claude_code purple-team recon SEALED at #162 (`3a75c1a5`; L1)** -- both approved-with-fixes, 7 low/med findings, 0 blocked. **14 of 26 connectors flip-ready** + 13 mods. Prior: #161 claude_code flip, #160 fathom flip.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 14 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-document** -- update README + capability matrix to reflect claude_code flip-ready (14). Then **fathom + claude_code purple-team** (the deferred validation). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+*Next required action: **PT1** (shared phone-redaction completeness), then **PT2** (fathom parse-robustness + claude_code _HOME_RE/floor/descriptor). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
