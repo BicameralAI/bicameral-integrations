@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P0 |
 | Default trust tier | T1/T3 |
 | Integration role | evidence + event |
-| Readiness (lifecycle) | Beta (parse + `X-Hub-Signature-256` HMAC verify, proven end-to-end through the `runtime/` harness; ADR-0012) |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (parse + `X-Hub-Signature-256` HMAC verify + dedup; PR body/title now redact-and-passed; FX-CFG-001 webhook descriptor shipped). Webhook receipt is operator-runtime; active REST fetch deferred. Live flip gated on operator review + a signed live delivery. |
 
 ## Provider documentation (verify on refresh)
 
