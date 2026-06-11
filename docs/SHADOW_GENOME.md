@@ -5,6 +5,17 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-11-A — A provider with two API versions is a re-drift trap; pin the doc HOST + version per connector
+
+**Discovered**: 2026-06-11 (`/qor-research`, Devin v3 contract re-verification for the flip-ready cycle).
+**Prevents**: re-introducing the 2026-06-08-corrected Devin drift by reading the wrong API version's docs.
+
+Devin ships TWO parallel APIs with DIFFERENT response shapes:
+- **v1** (`docs.devin.ai/api-reference/sessions/list-sessions`): `GET /v1/sessions`, list under `sessions`, singular `pull_request` object, `limit`/`offset` pagination, `apk_` keys.
+- **v3 enterprise** (`docs.devinenterprise.com/api-reference/v3/sessions/organizations-sessions`): `GET /v3/organizations/{org}/sessions`, list under `items`, `pull_requests[]` array of `{pr_url, pr_state}`, cursor (`end_cursor`/`has_next_page` re-sent as `after`), `cog_` Service-User keys.
+
+The connector targets **v3 by design** (`runtime/poll_specs.py:build_devin_spec`; `connectors/devin/auth.md`). The drift corrected on 2026-06-08 (`sessions`/singular-`pull_request.url`/deferred-pagination) was nothing other than the **v1 shape recorded against the v3 connector** — someone read the wrong version's docs. Re-verification on 2026-06-11 confirmed v3 is a full MATCH; the trap is still live because the v1 page is the more discoverable one. **Rule: when a provider versions its API, pin the exact doc HOST + version path in `references.md` and re-verify against THAT host only — a verify-before-cite against the wrong version silently re-introduces the corrected drift.** Reinforces the API_ASSUMPTION_DRIFT lineage (Shadow Genome Entry #2) and SG-2026-06-04-N (verify cross-source citations at write time).
+
 ## SG-2026-06-04-O — A reusable workflow's `permissions:` must stay within the caller's grant; verify CI fixes by RUNNING, not by reasoning
 
 **Discovered**: 2026-06-04 (Scorecard gate `startup_failure`, two-iteration fix).

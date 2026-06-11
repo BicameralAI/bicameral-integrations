@@ -8,7 +8,7 @@
 | **Updated By** | Judge (qor-substantiate) |
 | **Phase** | `main` + **security red-team COMPLETE (Cycles A/B/C, GH #50-#61 all closed)** — Cycle C: id-less webhook replays deduped by body hash for the 4 windowless providers (#60; bounded-cache eviction/TTL residual documented); emission contract rejects zero-width-only excerpt + bounds `source_id` (#61). Cores were sound; the 12 edge findings (guarantee-violations A, DoS/robustness B, replay/nits C) are all fixed. 26 Beta connectors; parse surfaces hardened — the before-Live DoS gate is cleared |
 | **Iteration** | 30 governed cycles (… redaction retrofit; references.md parity; security red-team **Cycle A** (#52/#53/#54), **Cycle B** (#50/#51/#55-#59 DoS), **Cycle C** (#60 replay / #61 nits) — all 12 red-team issues closed) |
-| **Session Seal** | `<pending Entry #128>` (prior tip `fcfb03f8` — Entry #127) |
+| **Session Seal** | `e5c46942` — Entry #131 (Devin flip-ready descriptor, L1; branch `feat/devin-flip-ready-descriptor`, Review Boundary held). Prior tip `caf5beaf` — Entry #128 |
 
 ---
 
@@ -20,8 +20,8 @@ bicameral-integrations/
 |   `-- core/  (emissions, observations, contracts, capabilities, pipeline,
 |              sensitive, webhook_security, filters, fixtures, __init__ + tests/)
 |-- connectors/  (each: connector.py, __init__, README, auth.md, references.md, fixtures/, tests/;
-|                 + config.json = the FX-CFG-001 mcp-UI descriptor [linear + google_drive exemplars,
-|                 24 to fan out]; _schema/connector-config.schema.json + index.json [generated];
+|                 + config.json = the FX-CFG-001 mcp-UI descriptor [linear + google_drive + devin exemplars,
+|                 23 to fan out]; _schema/connector-config.schema.json + index.json [generated];
 |                 SETUP.md = generated backend how-to runbook [from config.json; docs/CONNECTOR_BACKEND_SETUP.md
 |                 = the hand-authored framework])
 |   |-- github/         (PR -> Observation; ACTIVE+WEBHOOK)
@@ -210,6 +210,7 @@ bicameral-integrations/
 - [ ] **Live operator-actionable (next)**: an operator configures `GatewaySink(endpoint, token)` against a real gateway to promote a connector to **Live** (the repo delivers the verified seam; the deployment earns Live).
 - [x] **Linear + Google Drive → flip-ready, NOT yet Live (2026-06-08, Entry #128)**: each descriptor's `live_readiness` + a closing `wire_gates` entry + `references.md` readiness record the explicit pre-Live gate — code-complete and harness-proven against a reference sink, but unverified against the live API with real secrets. `status` stays `live-ready` (no `live` enum; Live = operator wires real secrets + verifies). The flip is operator-gated (PR #90).
 - [x] **mcp UI handoff opened**: BicameralAI/bicameral-mcp#572 — build the Linear/GDrive connector config UI against the FX-CFG-001 descriptor contract; `docs/UI_RENDERING_SPEC.md` back-references it (PR #89).
+- [x] **Devin → flip-ready, NOT yet Live (2026-06-11, Entry #131)**: authored `connectors/devin/config.json` (poll-only; Bearer `cog_` Service-User; required `base_url` runtime_config) + regenerated index/SETUP; v3 enterprise contract re-verified live (MATCH; SG-2026-06-11-A guards the v1/v3 trap). The THIRD FX-CFG-001 exemplar; no runtime code changed. Live flip operator-gated. Review Boundary held (staged, not pushed).
 - [x] **qor-logic corpus distribution verified in-sync** (host=claude, repo scope, v0.103.1 — idempotent install, zero diff to `.claude/`). `docs/WHATS_NEXT.md` session handoff added; README Design Principles now name the config-descriptor contract + the headless `runtime.cli` runner.
 
 ---
