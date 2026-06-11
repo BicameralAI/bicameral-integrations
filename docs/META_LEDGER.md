@@ -4093,7 +4093,44 @@ for legitimate payloads. **User-authorized commit/push/PR this cycle.** L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#133 clean; bare-hex Previous Hash + `sha256(content+previous)` is the repo's canonical format -- SG-2026-06-11-C).*
-*Status: `feat/devin-flip-ready-descriptor` -- **purple-team go-live hardening SEALED at Entry #133 (`623c907c`; L2).** Linear + Google Drive + Devin are **machine-side go-live APPROVED (purple-team)**: the SSRF blocker + all needs-fix gaps (#94-#100 + cheap #101) are fixed and locked by 28 Red Team regression gates (`red-team.yml`); only documented accepted-risk (#101 DOS-1/within-field PAN) remains. Devin flip-ready descriptor (#131) + Linear/GDrive (#128) stand. The actual Live flip is operator-gated (real secrets + live network test + review; ADR-0012).*
-*The platform is end-to-end for all 3 connectors (parse -> screen -> live fetch -> GatewaySink -> gateway; config.json -> mcp UI). 26 Beta connectors; secrets never committed nor printed.*
-*Next required action: review the PR (this cycle: Devin descriptor commit + purple-team hardening commit); then per-connector operator live flip per each `SETUP.md` go-live + `wire_gates`. Backlog: accepted-risk #101 (aggregate cap); branch protection (B5); bot #73 (release signing).*
+### Entry #134: SESSION SEAL -- accepted-risk hardening (DOS-1) + operator go-live runbooks
+
+**Entry ID**: `golive134seal`
+**Timestamp**: 2026-06-11T19:00:00-04:00
+**Phase**: SUBSTANTIATE (hardening + docs)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/runbooks/README.md)
+= dbcba4cb0119f407dbeb90049626d6ee3ce75bbef3a453afb3316e39ff4e7f69
+```
+
+**Previous Hash**: 623c907c3765b153e4d573509b280c83c60c0bfb4c9d2528c382854c28c4716a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fe07ea16b9ab31816fdb9b536798ccfe523a867d531690fe1c8c0c0b8c0f5a9b
+```
+
+**Decision**: Closed the remaining accepted-risk hardening (#101) and authored the operator go-live runbooks.
+**(1) DOS-1 (aggregate cap):** `poll_client.poll` + `graphql_poll.poll_graphql` now raise
+`PollError(aggregate_items_exceeded)` once cumulative items across pages exceed `_MAX_TOTAL_ITEMS` (50k),
+closing the per-page x `_MAX_PAGES` resident-memory multiplier (linear GraphQL + devin REST poll;
+google_drive's single GET is not paginated). 2 new Red Team regression gates (`tests/redteam`, now **30**).
+**(2) within-field `order_id: <PAN>`:** deliberately RETAINED as accepted-risk (tightening false-positives on
+legitimate order IDs); documented in `docs/runbooks/README.md`, not changed. **(3) /qor-document operator
+live-flip runbooks:** `docs/runbooks/{README,golive-linear,golive-google_drive,golive-devin}.md` -- per-connector
+credentials, the gitignored config stanza, dry-run -> `--sink gateway` live test, the wire_gates to confirm
+(incl. the devin v1-vs-v3 trap), promote/rollback, and the #133 security posture. **Measured:** full suite
+**553 passed** (+2), ruff/mypy(168)/bandit(0 high/med) clean, governance-gate #1..#134 OK, connector-config OK.
+NO connector parse contract changed. Runbook PR tags **@jinhongkuan** for review + the live test. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#134 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: `feat/golive-hardening-runbooks` -- **go-live hardening + runbooks SEALED at Entry #134 (`fe07ea16`; L1).** Linear + Google Drive + Devin are **machine-side go-live APPROVED**: SSRF blocker + all needs-fix gaps + DOS-1 fixed, locked by **30** Red Team regression gates; only the deliberately-retained within-field-PAN policy remains (documented accepted-risk). Operator live-flip runbooks shipped (`docs/runbooks/`). Prior seals: purple-team hardening (#133), Devin descriptor (#131), Linear/GDrive flip-ready (#128).*
+*The platform is end-to-end + hardened for all 3 connectors. 26 Beta connectors; secrets never committed nor printed.*
+*Next required action: **@jinhongkuan** reviews the runbook PR + runs the per-connector live flip (real secrets + `--sink gateway` + verify wire_gates + promote). Backlog: branch protection (B5); bot #73 (release signing).*

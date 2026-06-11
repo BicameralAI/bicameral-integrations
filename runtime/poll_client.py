@@ -31,6 +31,8 @@ from .sinks import EmissionSink
 
 _MAX_RESPONSE = 8 * 1024 * 1024  # cap a hostile/huge provider body before parse
 _MAX_PAGES = 100  # cap a runaway/cyclic pager (fail-safe)
+_MAX_TOTAL_ITEMS = 50_000  # aggregate cap across all pages: closes the per-page x _MAX_PAGES
+#                            resident-memory multiplier (purple-team DOS-1, 2026-06-11)
 _OK_STATUS = 200
 
 
@@ -255,6 +257,8 @@ def poll(
             raise PollError(0, "max_pages_exceeded")
         page = _fetch_page(transport, spec, url)
         items = _items_of(spec, page)
+        if len(payloads) + len(items) > _MAX_TOTAL_ITEMS:  # aggregate cap (DOS-1)
+            raise PollError(0, "aggregate_items_exceeded")
         payloads.extend(items)
         url = spec.pagination.next_url(url, page, len(items)) if spec.pagination else None
     return deliver_poll(connector, payloads, sink=sink, adapter_version=adapter_version)
