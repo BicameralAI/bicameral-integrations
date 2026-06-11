@@ -4883,7 +4883,44 @@ governance-gate #1..#154 OK. **11 of 13 mods complete.** L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#154 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **mods M3 SEALED at #154 (`ec1948bd`; L1)** -- code_review_risk + authority_boundary + test_adequacy wired. **11 of 13 mods complete**; 2 scaffolds remain (M4). **12 of 26 connectors flip-ready**. Prior: #153 mods M2, #152 mods M1.*
-*The platform is end-to-end + deep-audit-hardened for 12 flip-ready connectors + 11 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Mod Cycle M4** (ownership_routing + decision_drift) -> all 13 mods complete. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #155: SESSION SEAL -- mods M4: ownership_routing + decision_drift (13 of 13 — ALL MODS COMPLETE)
+
+**Entry ID**: `modsm4155seal`
+**Timestamp**: 2026-06-12T19:15:00-04:00
+**Phase**: SUBSTANTIATE (mod build — final)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(mods/ownership_routing/connector.py)
+= 9abb17f938e10fbe6d3c04f2cd16d2f3509be323f7bba9e6f9aecd8c02639088
+```
+
+**Previous Hash**: ec1948bd6f8f388abec1107d00495862d709d582569aa6d2ef0121ffc416eadf
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b2758054ee634043e86d93804c16b696c8ed5cf0c92f47ce29c8559bf9911f9b
+```
+
+**Decision**: Built the final two mods — **ALL 13 MODS NOW COMPLETE**. **ownership_routing**
+(`ownership-routing`): gated on change evidence, maps domain hints in the change text to a reviewer lens
+(security/connectors/governance/ci/docs), emitting one `owner_lens_hint` + one `routing_hint` per matched
+domain (multi-domain → multiple lenses) + an annotation — no advisory/question outputs (per its manifest).
+**decision_drift** (`decision-drift`): NOT gated to change evidence (a ticket/meeting note can imply a
+conflicting decision per its scope), fires only when BOTH a decision anchor (ADR / decision record /
+trust tier) AND a conflict cue (supersede/contradict/overrides/no-longer-matches/deviates-from) co-occur →
+routes GOVERNANCE + asks whether the decision record needs a superseding ADR. Both pure, deterministic,
+stdlib-only; silent the default. Wired into `_MODS` (now **13**) + `__init__` exports + behavior tests
+(anchor-without-cue silent, multi-domain lenses, not-gated-to-change for drift). **Measured:** full suite
+**634 passed**, ruff clean, whole-tree mypy (208 files) clean, governance-gate #1..#155 OK. **13 of 13 mods
+complete — the mod fleet is built (4-cycle M1-M4 build, ledger #152-#155, on the #151 scope).** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#155 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **mods M4 SEALED at #155 (`b2758054`; L1)** -- ownership_routing + decision_drift wired. **ALL 13 MODS COMPLETE** (4 prior + 9 built this session across M1-M4, #152-#155). **12 of 26 connectors flip-ready** + 13 advisory mods. Prior: #154 mods M3, #153 mods M2.*
+*The platform is end-to-end + deep-audit-hardened: 12 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). Open tracks: descriptor fan-out (14 connectors), go-live enablement (notion sha256 wire-gate + google_drive OAuth), release hardening (B5 branch protection, B12 SBOM-OIDC). Backlog: branch protection (B5); bot #73.*

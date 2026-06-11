@@ -26,8 +26,10 @@ from mods.code_review_risk import CodeReviewRiskMod
 from mods.connector_freshness import ConnectorFreshnessMod
 from mods.contract import Manifest, Mod, load_manifest
 from mods.data_classification import DataClassificationMod
+from mods.decision_drift import DecisionDriftMod
 from mods.dependency_risk import DependencyRiskMod
 from mods.noisy_source_gate import NoisySourceGateMod
+from mods.ownership_routing import OwnershipRoutingMod
 from mods.security_mentions import SecurityMentionsMod
 from mods.source_trust_calibration import SourceTrustCalibrationMod
 from mods.test_adequacy import TestAdequacyMod
@@ -110,6 +112,8 @@ _MODS: dict[str, tuple[Callable[[], Mod], Path]] = {
     "code_review_risk": (CodeReviewRiskMod, _MODS_DIR / "code_review_risk" / "manifest.yaml"),
     "authority_boundary": (AuthorityBoundaryMod, _MODS_DIR / "authority_boundary" / "manifest.yaml"),
     "test_adequacy": (TestAdequacyMod, _MODS_DIR / "test_adequacy" / "manifest.yaml"),
+    "ownership_routing": (OwnershipRoutingMod, _MODS_DIR / "ownership_routing" / "manifest.yaml"),
+    "decision_drift": (DecisionDriftMod, _MODS_DIR / "decision_drift" / "manifest.yaml"),
 }
 
 
