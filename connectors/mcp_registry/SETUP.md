@@ -1,7 +1,7 @@
 <!-- GENERATED from config.json — do not edit; run scripts/build_connector_setup.py -->
 # MCP Registry — backend setup
 
-Public MCP Registry server entries as PII-free, no-auth governed evidence.
+Public MCP Registry server entries as redact-and-pass, no-auth governed evidence.
 
 - **id** `mcp_registry` · **category** agent-ecosystem · **trust tier** T1
 - **status** live-ready · **available** True · **modes** active
@@ -48,7 +48,7 @@ python -m runtime.cli run mcp_registry --sink gateway   # real POST (go-live; de
 ## Data & permissions
 
 - Emits: mcp_server
-- PII posture: Public registry metadata only (server name/title/description, repository/website URL, version). PII-free; no credential; no per-person data.
+- PII posture: Public registry metadata (server name/title/description, repository/website URL, version) — but the registry is PUBLIC and fully attacker-publishable, so the free-text leaves are third-party-controlled and could embed a generic email/phone. They are redact-and-passed at parse (the only downstream backstop, FX-SEC-001, catches secret/PHI/PAN but not generic email/phone). No credential; no intended per-person data.
 
 ## Go-live
 

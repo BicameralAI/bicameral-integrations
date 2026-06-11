@@ -14,6 +14,7 @@ secret resolution stay in the operator runtime (see ``auth.md``).
 
 from __future__ import annotations
 
+import hashlib
 import json
 import time
 from collections.abc import Callable
@@ -142,8 +143,10 @@ class GitHubConnector:
         if not isinstance(payload, dict):
             return []
         if self._dedup is not None:
-            delivery_id = self._delivery_id(headers)
-            if delivery_id and self._dedup.is_duplicate("github", delivery_id):
+            # body-hash fallback: an empty/absent X-GitHub-Delivery header can no longer bypass
+            # dedup (the bare `if delivery_id` guard let id-less replays through) (deep-audit #60).
+            delivery_id = self._delivery_id(headers) or hashlib.sha256(body).hexdigest()
+            if self._dedup.is_duplicate("github", delivery_id):
                 return []
             self._dedup.mark_seen("github", delivery_id)
         pull_request = payload.get("pull_request")

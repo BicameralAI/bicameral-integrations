@@ -17,14 +17,20 @@ from adapter.core.pipeline import EmissionContractError, validate_emissions
 from adapter.core.redaction import redact
 from adapter.core.sensitive import detect_sensitive
 
+import hashlib
+import hmac
+import json
+
 from adapter.core.capabilities import SourceMode
 from adapter.core.observations import Observation
+from adapter.core.webhook_security import DeliveryDedupCache
 
 from connectors.copilot.connector import parse_metrics_day
 from connectors.cursor.connector import parse_usage_day
 from connectors.devin.connector import parse_session
-from connectors.github.connector import parse_pull_request
+from connectors.github.connector import GitHubConnector, parse_pull_request
 from connectors.google_drive.connector import extract_document_text, parse_document
+from connectors.mcp_registry.connector import parse_server
 from connectors.slack.connector import parse_message
 
 from runtime import delivery, doc_fetch, graphql_poll, poll_client, sinks
@@ -326,6 +332,35 @@ def test_graphql_aggregate_item_cap(monkeypatch):
     body = b'{"data":{"x":{"nodes":[{},{},{},{}],"pageInfo":{"hasNextPage":false}}}}'
     with pytest.raises(PollError):
         graphql_poll.poll_graphql(spec, _StubTransport(200, body), sinks.CollectingSink())
+
+
+# --- WEBHOOK dedup (deep-audit Cycle 4): empty delivery id cannot bypass dedup --------
+
+def test_github_empty_delivery_id_replay_deduped():
+    # An empty/absent X-GitHub-Delivery header previously skipped dedup (bare `if delivery_id`),
+    # so a byte-identical id-less replay re-emitted. Body-hash fallback collapses it.
+    secret = "gh-secret"
+    envelope = {"number": 1, "pull_request": {"title": "t", "body": "b",
+                "base": {"repo": {"full_name": "a/b"}}, "html_url": "https://x/1"}}
+    body = json.dumps(envelope).encode()
+    sig = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    headers = {"X-Hub-Signature-256": sig}  # NO X-GitHub-Delivery
+    conn = GitHubConnector(secret=secret, dedup=DeliveryDedupCache())
+    assert len(conn.normalize_event(headers=headers, body=body)) == 1
+    assert conn.normalize_event(headers=headers, body=body) == []  # replay collapsed
+
+
+# --- PII (deep-audit Cycle 4): mcp_registry redact-and-passes attacker public free text
+
+def test_mcp_registry_redacts_public_free_text():
+    obs = parse_server({"name": "io.x/srv", "description": "ping me at alice@personal.com",
+                        "websiteUrl": "https://x.example"})
+    assert "alice@personal.com" not in obs.excerpt  # generic email scrubbed before the wire
+
+
+def test_mcp_registry_non_string_fields_no_crash():
+    obs = parse_server({"name": ["a"], "title": 1, "description": 9999, "version": []})
+    assert obs.excerpt and isinstance(obs.source_ref.ref, str)  # floored, no TypeError
 
 
 # --- redaction invariant (the backstop's core contract) ------------------------------
