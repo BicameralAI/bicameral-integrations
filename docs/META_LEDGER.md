@@ -4390,7 +4390,41 @@ operator-runtime. Regenerated index.json (10) + SETUP.md; readiness lift; redact
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#141 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **jira flip-ready SEALED at #141 (`b68bd69d`; L2)**. **10 of 26 connectors flip-ready** (+ jira, webhook) + 4 advisory mods. Sequence: mcp_registry, github, data_classification, jira [done] -> slack -> notion. Prior: #140 data_classification mod, #139 github.*
-*The platform is end-to-end + hardened for 10 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: continue the sequence (slack next); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #142: SESSION SEAL -- slack flip-ready (webhook) + message redact-and-pass
+
+**Entry ID**: `slack142seal`
+**Timestamp**: 2026-06-12T03:00:00-04:00
+**Phase**: SUBSTANTIATE (parse/PII + webhook descriptor)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/slack/config.json)
+= 322798dac43a20714b374465dc61585b5dcc96dccca5c48f3909648a671355ab
+```
+
+**Previous Hash**: b68bd69d779d8158e090f22279800dc8638216fbd7d3412dfc487a283834abef
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= bc63f56a7979bbbb2fe822ec3214d45dbc1f47e3a4a4c2ccd4666b824692921e
+```
+
+**Decision**: slack -> flip-ready (cycle 5 of 6). **PII hardening (L2):** the message text (PII-dense
+human communication) is now **redact-and-passed**; `author` is the OPAQUE Slack user id (pseudonymous --
+the operator holds the id->identity mapping, SG-2026-06-05-D), KEPT like cursor's userId / github's login.
+**Descriptor:** `connectors/slack/config.json` -- T2 read/ingest, modes ["webhook"], `slack_webhook`
+credential (X-Slack-Signature v0= over 'v0:{ts}:{body}', 5-min replay), webhook block (message events);
+url_verification handshake + replays normalize to []. Notify/write (T3+) deferred. Webhook RECEIPT
+operator-runtime. Regenerated index.json (11) + SETUP.md; readiness lift; redaction test added.
+**Measured:** full suite **562 passed**, ruff/mypy(172) clean, validator OK, governance-gate #1..#142 OK.
+**11 of 26 connectors flip-ready.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#142 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **slack flip-ready SEALED at #142 (`bc63f56a`; L2)**. **11 of 26 connectors flip-ready** (+ slack, webhook) + 4 advisory mods. Sequence: mcp_registry, github, data_classification, jira, slack [done] -> notion (last). Prior: #141 jira, #140 data_classification mod.*
+*The platform is end-to-end + hardened for 11 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: final sequence cycle (notion); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
