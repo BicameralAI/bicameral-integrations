@@ -386,7 +386,7 @@ def test_deliver_poll_claude_code_beta():
     # 5 lines -> the meta `mode` line drops and the empty assistant line floors
     # (it emits rather than vanishing, else the count would be 3) -> 4 emissions.
     assert n == 4
-    assert all(e.source_id == "claude-code" for e in sink.emissions)
+    assert all(e.source_id == "claude_code" for e in sink.emissions)
 
 
 def _signed_jira() -> tuple[JiraConnector, dict, bytes]:

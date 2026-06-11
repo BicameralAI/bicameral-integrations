@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P0 |
 | Default trust tier | T0 (local file import) |
 | Integration role | developer-AI session evidence + provenance |
-| Readiness (lifecycle) | Beta (proven end-to-end through the `runtime/` harness against a reference sink; ADR-0012) |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (parse surface redact-and-pass + cwd-username scrub; FX-CFG-001 descriptor shipped; line schema re-pinned against a real transcript 2026-06-12; `source_id` aligned to `claude_code`). Live file-watch deferred; local-file import, no credential (ADR-0012). |
 
 ## Provider documentation (verify on refresh)
 
@@ -24,13 +24,14 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | None (local file) |
 | Changelog/notes | https://code.claude.com/docs |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+## Verified source contract (re-pinned against a real transcript 2026-06-12)
 
-- **Session-line record (parsed)**: `parse_session_line` reads one JSONL line dict; only `type` values in `{"user", "assistant", "summary"}` produce an Observation — all other types (e.g. `mode`, `attachment`, `file-history-snapshot`, `last-prompt`, unknown future kinds) return `None` (skipped, not errored). Key fields: `uuid`/`sessionId` (ref), `timestamp` (ISO string), `message.content` (text or block list), `message.model`, `cwd`.
-- **Verification**: no verify — passive file import; no network delivery, no signature.
-- **Auth (deferred)**: none (T0 local file import); reads `~/.claude/projects/<slug>/<session-id>.jsonl` the operator already has on disk. Live file-watch and `history.jsonl` paths deferred.
+- **Session-line record (parsed)**: `parse_session_line` reads one JSONL line dict; only `type` values in `{"user", "assistant", "summary"}` produce an Observation — all other types return `None` (skipped, not errored, SG-2026-06-04-I). Key fields (verified against a real 6,008-line transcript): `uuid`/`sessionId` (ref), `timestamp` (ISO string), `message.content` (text or `text`/`thinking`/`tool_use`/`tool_result` block list), `message.model`, `cwd`.
+- **Schema drift (SG-2026-06-12-G)**: the documented `summary` type is **absent in the current format** (kept legacy-tolerant); new types `ai-title` (the session summary now), `pr-link`, `system`, `queue-operation` exist and are **intentionally not emitted** this cycle — the user/assistant turns are the evidence surface.
+- **Verification**: no verify — passive file import; no network delivery, no signature. `source_id` is `claude_code` (renamed from `claude-code`).
+- **Auth (deferred)**: none (T0 local file import); reads `~/.claude/projects/<slug>/<session-id>.jsonl` the operator already has on disk. Live file-watch + `history.jsonl` (epoch-ms ts) deferred.
 - **Modes**: passive only; no webhooks.
-- **PII handling**: transcripts are plaintext and may contain file contents, command stdout/stderr, and pasted text (potential secrets/PII). This connector performs no redaction; the producer sensitive screen (`FX-SEC-001`) is the in-pipeline guard.
+- **PII handling**: the excerpt content is **redact-and-passed** (secret/PHI/PAN + email/phone scrubbed; the `[claude_code:kind] <uuid>` floor is left un-redacted); `cwd` is **home-prefix-scrubbed** (no OS username); `FX-SEC-001` hard-rejects residual secret/PHI/PAN.
 
 ## Canonical governance references
 
