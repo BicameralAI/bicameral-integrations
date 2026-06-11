@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint
 
+from .._signals import matched_terms, safe_id
 from ..contract import ModEmission
 
 _OUTPUTS = frozenset({
@@ -23,27 +24,35 @@ _OUTPUTS = frozenset({
     "source_evidence_annotation", "suggested_review_question",
 })
 
-# A decision anchor must co-occur with a conflict verb for a drift signal (both required).
-_DECISION_ANCHORS = ("adr", "decision record", "recorded decision", "trust tier", "governance decision")
+# A decision anchor must co-occur with a conflict cue for a drift signal (both required). 'adr' is
+# word-boundary-matched (SG-2026-06-12-E: no longer fires inside 'quadratic'/'cadre'); the cues are
+# DECISION-SPECIFIC phrasings (mod purple-team false_positive: bare 'overrides'/'reverses'/'out of
+# date' collide with ordinary engineering prose) + expanded vocab (false_negative).
+_DECISION_ANCHORS = (
+    "adr", "decision record", "recorded decision", "trust tier", "governance decision",
+    "architecture decision", "design decision",
+)
 _CONFLICT_CUES = (
-    "supersede", "contradict", "overrides", "no longer matches", "conflicts with",
-    "out of date", "stale decision", "unrecorded decision", "reverses", "deviates from",
+    "supersede", "supersedes", "superseded", "contradicts the decision", "no longer matches",
+    "conflicts with the decision", "stale decision", "unrecorded decision", "deviates from the decision",
+    "reverses the decision", "overrides the decision", "obsolete", "rescinded", "revoked",
+    "no longer follow", "no longer following", "changed direction", "should not follow",
 )
 
 
 def _text(emission: AdapterEmission) -> str:
     parts = [emission.title, emission.body]
-    parts.extend(ev.excerpt for ev in emission.evidence)
+    parts.extend(ev.excerpt for ev in (emission.evidence or ()))  # totality: tolerate None evidence
     return " ".join(p for p in parts if isinstance(p, str)).lower()
 
 
 def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
     text = _text(emission)
-    anchors = [a for a in _DECISION_ANCHORS if a in text]
-    cues = [c for c in _CONFLICT_CUES if c in text]
+    anchors = matched_terms(text, _DECISION_ANCHORS)
+    cues = matched_terms(text, _CONFLICT_CUES)
     if not (anchors and cues):  # need BOTH a decision anchor and a conflict cue
         return []
-    src = (emission.source_id or "unknown").strip() or "unknown"
+    src = safe_id(emission.source_id)
     joined = ", ".join(cues)
     return [
         ModEmission("source_evidence_annotation", advisory=AdvisoryResult(
@@ -52,7 +61,7 @@ def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
         ModEmission("advisory_governance_result", advisory=AdvisoryResult(
             kind="advisory_governance_result",
             message=f"evidence may conflict with a recorded decision ({joined}) — review the decision record",
-            metadata={"anchors": ", ".join(anchors), "cues": joined, "source": emission.source_id})),
+            metadata={"anchors": ", ".join(anchors), "cues": joined, "source": src})),
         ModEmission("routing_hint", routing_hint=RoutingHint(
             role="governance", reason=f"decision drift in {src}: {joined}", priority="normal")),
         ModEmission("suggested_review_question", advisory=AdvisoryResult(

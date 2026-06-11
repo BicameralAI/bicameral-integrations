@@ -17,6 +17,7 @@ from __future__ import annotations
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint
 
+from .._signals import any_match, is_change_evidence, safe_id
 from ..contract import ModEmission
 
 _OUTPUTS = frozenset({
@@ -24,37 +25,34 @@ _OUTPUTS = frozenset({
     "source_evidence_annotation", "suggested_review_question",
 })
 
-_CHANGE_KINDS = frozenset({"pull_request", "issue", "merge_request"})
-
-# Risky areas, grouped so the review question can name the category that tripped.
+# Risky areas, grouped so the review question can name the category that tripped. Alphanumeric terms
+# are word-boundary-matched (SG-2026-06-12-E: 'auth' no longer fires on 'author'); phrase/path terms
+# match as substrings. Full-word inflections + security vocab (mod purple-team false_negative).
 _RISK_AREAS = {
-    "schema/migration": ("migration", "alter table", "drop table", "schema change", " ddl"),
-    "auth": ("auth", "login", "token", "credential", "oauth", "session", "password"),
-    "ci/workflow": (".github/workflows", "workflow", "ci pipeline", "release pipeline"),
+    "schema/migration": ("migration", "migrations", "alter table", "drop table", "schema change", "ddl"),
+    "auth": ("auth", "authentication", "authorization", "login", "token", "credential", "credentials",
+             "oauth", "session", "password", "cve", "xss", "csrf", "injection", "rce", "sqli", "exploit"),
+    "ci/workflow": (".github/workflows", "workflow", "workflows", "ci pipeline", "release pipeline"),
     "container/infra": ("dockerfile", "kubernetes", "terraform", "helm chart"),
-    "secrets": ("secret", "api key", "private key", "signing key"),
-    "breaking": ("breaking change", "backward incompat", "remove endpoint", "drop support"),
+    "secrets": ("secret", "secrets", "api key", "private key", "signing key"),
+    "breaking": ("breaking change", "breaking changes", "backward incompat", "remove endpoint", "drop support"),
 }
-
-
-def _is_change(emission: AdapterEmission) -> bool:
-    return any(ev.source_ref.kind in _CHANGE_KINDS for ev in emission.evidence)
 
 
 def _text(emission: AdapterEmission) -> str:
     parts = [emission.title, emission.body]
-    parts.extend(ev.excerpt for ev in emission.evidence)
+    parts.extend(ev.excerpt for ev in (emission.evidence or ()))  # totality: tolerate None evidence
     return " ".join(p for p in parts if isinstance(p, str)).lower()
 
 
 def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
-    if not _is_change(emission):
+    if not is_change_evidence(emission):
         return []
     text = _text(emission)
-    areas = [name for name, terms in _RISK_AREAS.items() if any(t in text for t in terms)]
+    areas = [name for name, terms in _RISK_AREAS.items() if any_match(text, terms)]
     if not areas:
         return []
-    src = (emission.source_id or "unknown").strip() or "unknown"
+    src = safe_id(emission.source_id)
     joined = ", ".join(areas)
     return [
         ModEmission("source_evidence_annotation", advisory=AdvisoryResult(
@@ -63,7 +61,7 @@ def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
         ModEmission("advisory_governance_result", advisory=AdvisoryResult(
             kind="advisory_governance_result",
             message=f"PR-level review risk ({joined}) — review blast radius before merge",
-            metadata={"areas": joined, "source": emission.source_id})),
+            metadata={"areas": joined, "source": src})),
         ModEmission("routing_hint", routing_hint=RoutingHint(
             role="review", reason=f"high-risk change area(s) in {src}: {joined}", priority="high")),
         ModEmission("suggested_review_question", advisory=AdvisoryResult(

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint
 
+from .._signals import any_match, is_change_evidence, matched_terms, safe_id
 from ..contract import ModEmission
 
 _OUTPUTS = frozenset({
@@ -22,35 +23,36 @@ _OUTPUTS = frozenset({
     "source_evidence_annotation", "suggested_review_question",
 })
 
-_CHANGE_KINDS = frozenset({"pull_request", "issue", "merge_request"})
-
-# Markers that the change alters behavior (so a test should accompany it).
+# Markers that the change alters behavior (so a test should accompany it). Full-word inflections,
+# word-boundary-matched (SG-2026-06-12-E: 'fix' no longer fires on 'prefix'); vocab expanded
+# (mod purple-team false_negative). _TEST_TERMS likewise — critically 'test' must NOT fire on
+# 'latest'/'contest' (the medium that was suppressing real test-gap signals).
 _BEHAVIOR_TERMS = (
-    "fix", "bug", "feature", "refactor", "migration", "endpoint", "parser",
-    "handler", "validation", "logic", "regression", "behavior",
+    "fix", "fixes", "fixed", "bug", "bugs", "feature", "refactor", "refactored", "migration",
+    "migrations", "endpoint", "parser", "handler", "validation", "logic", "regression", "behavior",
+    "patch", "patched", "rewrite", "rewrote", "optimize", "optimized", "implement", "hotfix",
 )
 # Any of these implies tests were considered -> not a gap.
-_TEST_TERMS = ("test", "spec", "fixture", "coverage", "assert", "pytest", "unit test")
-
-
-def _is_change(emission: AdapterEmission) -> bool:
-    return any(ev.source_ref.kind in _CHANGE_KINDS for ev in emission.evidence)
+_TEST_TERMS = (
+    "test", "tests", "tested", "testing", "spec", "specs", "fixture", "fixtures",
+    "coverage", "assert", "asserts", "pytest", "unit test",
+)
 
 
 def _text(emission: AdapterEmission) -> str:
     parts = [emission.title, emission.body]
-    parts.extend(ev.excerpt for ev in emission.evidence)
+    parts.extend(ev.excerpt for ev in (emission.evidence or ()))  # totality: tolerate None evidence
     return " ".join(p for p in parts if isinstance(p, str)).lower()
 
 
 def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
-    if not _is_change(emission):
+    if not is_change_evidence(emission):
         return []
     text = _text(emission)
-    behavior = [t for t in _BEHAVIOR_TERMS if t in text]
-    if not behavior or any(t in text for t in _TEST_TERMS):
+    behavior = matched_terms(text, _BEHAVIOR_TERMS)
+    if not behavior or any_match(text, _TEST_TERMS):
         return []  # not a behavior change, or tests already referenced
-    src = (emission.source_id or "unknown").strip() or "unknown"
+    src = safe_id(emission.source_id)
     joined = ", ".join(behavior)
     return [
         ModEmission("source_evidence_annotation", advisory=AdvisoryResult(
@@ -59,7 +61,7 @@ def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
         ModEmission("advisory_governance_result", advisory=AdvisoryResult(
             kind="advisory_governance_result",
             message=f"possible test gap — behavior change ({joined}) names no test/fixture",
-            metadata={"behavior": joined, "source": emission.source_id})),
+            metadata={"behavior": joined, "source": src})),
         ModEmission("routing_hint", routing_hint=RoutingHint(
             role="review", reason=f"test-adequacy review for {src}: {joined}", priority="normal")),
         ModEmission("suggested_review_question", advisory=AdvisoryResult(

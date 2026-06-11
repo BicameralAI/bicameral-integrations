@@ -41,3 +41,14 @@ def test_behavior_change_without_tests_routes_and_asks():
     kinds = [e.output_type for e in out]
     assert "routing_hint" in kinds and "suggested_review_question" in kinds
     assert any("test gap" in e.advisory.message for e in out if e.advisory)
+
+
+def test_latest_does_not_suppress_test_gap():
+    # the medium: 'test' must NOT match inside 'latest', which used to suppress the real gap.
+    out = run_mod(TestAdequacyMod(), [_pr("Fix a regression in the latest validation logic")], _manifest())
+    assert any("test gap" in e.advisory.message for e in out if e.advisory)
+
+
+def test_prefix_does_not_fire_behavior():
+    # 'fix' must NOT match inside 'prefix' (SG-2026-06-12-E).
+    assert TestAdequacyMod().evaluate([_pr("Document the prefix naming convention")]) == []

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint
 
+from .._signals import any_match, matched_terms, safe_id
 from ..contract import ModEmission
 
 _OUTPUTS = frozenset({"advisory_governance_result", "routing_hint", "source_evidence_annotation"})
@@ -31,21 +32,23 @@ _WEBHOOK_TERMS = (
 _RISK_TERMS = (
     "replay", "spoof", "unverified", "bypass signature", "missing signature",
     "no signature", "no dedup", "without verification", "skip verification", "forged",
+    # vocab expansion (mod purple-team false_negative), boundary-safe via matched_terms:
+    "no replay", "without dedup", "no verification", "tampered", "signature not checked",
 )
 
 
 def _text(emission: AdapterEmission) -> str:
     parts = [emission.title, emission.body]
-    parts.extend(ev.excerpt for ev in emission.evidence)
+    parts.extend(ev.excerpt for ev in (emission.evidence or ()))  # totality: tolerate None evidence
     return " ".join(p for p in parts if isinstance(p, str)).lower()
 
 
 def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
     text = _text(emission)
-    if not any(t in text for t in _WEBHOOK_TERMS):
+    if not any_match(text, _WEBHOOK_TERMS):  # word-boundary for alnum terms (SG-2026-06-12-E)
         return []
-    src = (emission.source_id or "unknown").strip() or "unknown"
-    risks = [t for t in _RISK_TERMS if t in text]
+    src = safe_id(emission.source_id)
+    risks = matched_terms(text, _RISK_TERMS)
     out: list[ModEmission] = [
         ModEmission("source_evidence_annotation", advisory=AdvisoryResult(
             kind="source_evidence_annotation",
@@ -56,7 +59,7 @@ def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
         out.append(ModEmission("advisory_governance_result", advisory=AdvisoryResult(
             kind="advisory_governance_result",
             message=f"webhook risk named ({joined}) — verify signature + replay protection",
-            metadata={"risks": joined, "source": emission.source_id})))
+            metadata={"risks": joined, "source": src})))
         out.append(ModEmission("routing_hint", routing_hint=RoutingHint(
             role="security",
             reason=f"webhook risk in {src}: {joined}", priority="high")))

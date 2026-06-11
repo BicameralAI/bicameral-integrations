@@ -4998,7 +4998,49 @@ whole-tree mypy (208 files) clean, governance-gate #1..#157 OK. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#157 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **mod purple-team MP1 SEALED at #157 (`f26860ef`; L2)** -- crash_dos class closed at the shared chokepoint (validate_emissions uniformly fail-closed). **12 of 26 connectors flip-ready** + 13 advisory mods. Prior: #156 mod purple-team recon, #155 mods M4.*
-*The platform is end-to-end + deep-audit-hardened: 12 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Mod purple-team MP2** (mod precision/totality/leak-safety: word-boundary matcher + vocab + evaluate guards + source_id sanitization across the 9 mods). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #158: SESSION SEAL -- mod purple-team MP2: precision + totality + leak-safety across the 9 mods (remediation COMPLETE)
+
+**Entry ID**: `modmp2158seal`
+**Timestamp**: 2026-06-12T21:15:00-04:00
+**Phase**: SUBSTANTIATE (mod hardening)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(mods/_signals.py)
+= e7071817724a4257389552ec9b6cd00d9c6b4991982b38058c58ba1367b4251b
+```
+
+**Previous Hash**: f26860eff01d679bbcd788ef051dc57309ed4ab05a598b415329c253954171f3
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= d81312aa8d29b6d5948734e6d8fa23c58e05b5b171bfa88eabcd3e8161dc03a6
+```
+
+**Decision**: Closed the remaining mod-purple-team classes across the 9 mods -- **mod purple-team
+remediation COMPLETE**. New shared `mods/_signals.py`: `matched_terms`/`any_match` (word-boundary for
+alphanumeric terms, substring for path/phrase terms -- SG-2026-06-12-E, closes the 12
+**false_positive_substring**: auth∈author, adr∈quadratic, retire∈retired, policy∈policyholder,
+crypto∈cryptocurrency, test∈latest, fix∈prefix), `safe_id` (echo only a contract-clean id -- closes the 2
+**pii_secret_output**), and `is_change_evidence` (totality-safe change gate tolerating None/unhashable
+kind). Applied across webhook_risk/connector_freshness/code_review_risk/authority_boundary/test_adequacy/
+ownership_routing/decision_drift (matching+vocab), adapter_contract + source_trust_calibration
+(totality + safe_id + attributable-kind catalog: commit/merge_request/ticket/document/transcript/session/
+incident/finding). **false_negative (12)** closed by spelling stems as full-word inflections +
+security/deprecation/decision vocab (boundary-safe). `decision_drift` cues made decision-specific (drop
+bare overrides/reverses/out-of-date that collided with engineering prose). Per-mod `evaluate` is now total
+(direct-call smoke: None evidence / None source_ref / unhashable kind no longer crash). **Tests:**
+`test_signals` + per-mod false-positive regressions (author/policyholder/cryptocurrency/quadratic/retirement/
+latest/prefix do NOT fire; retired/auth/adr DO). **Measured:** full suite **654 passed**, ruff clean,
+whole-tree mypy (210 files) clean, governance-gate #1..#158 OK. **All 40 purple-team findings remediated
+(MP1 crash_dos + MP2 the rest).** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#158 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **mod purple-team MP2 SEALED at #158 (`d81312aa`; L2)** -- **MOD PURPLE-TEAM REMEDIATION COMPLETE: all 40 findings fixed (MP1 #157 + MP2 #158) on the #156 recon.** The 9 new mods are now purple-team-hardened. **13 advisory mods + 12 flip-ready connectors**, all twice-validated. Prior: #157 MP1 chokepoint, #156 recon.*
+*The platform is end-to-end + deep-audit-hardened + mod-purple-team-hardened: 12 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). Open tracks: descriptor fan-out (14 connectors), go-live enablement (notion sha256 wire-gate + google_drive OAuth), release hardening (B5 branch protection, B12 SBOM-OIDC). Backlog: branch protection (B5); bot #73.*

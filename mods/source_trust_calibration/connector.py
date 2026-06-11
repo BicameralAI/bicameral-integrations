@@ -22,12 +22,19 @@ from __future__ import annotations
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint
 
+from .._signals import safe_id
 from ..contract import ModEmission
 
 _OUTPUTS = frozenset({"advisory_governance_result", "routing_hint", "source_evidence_annotation"})
 
-# Kinds where a human actor is normally attributable — a blank author is then a real gap.
-_ATTRIBUTABLE_KINDS = frozenset({"pull_request", "issue", "message", "page", "comment", "meeting"})
+# Kinds where a human actor is normally attributable — a blank author is then a real gap. Covers the
+# kinds the connectors actually emit (mod purple-team false_negative: commit/merge_request/ticket/
+# document/transcript/session/incident/finding were missing). Machine-emitted kinds (usage_metrics,
+# audit_event, vulnerability, mcp_server) are deliberately EXCLUDED — a blank author there is expected.
+_ATTRIBUTABLE_KINDS = frozenset({
+    "pull_request", "merge_request", "issue", "message", "page", "comment", "meeting",
+    "commit", "ticket", "document", "transcript", "session", "incident", "finding",
+})
 # Sources whose payloads are public / attacker-publishable (no credential gates the content).
 _PUBLIC_SOURCES = frozenset({"mcp_registry"})
 _LOW_TRUST_TYPES = frozenset({"hint", "advisory"})
@@ -39,17 +46,19 @@ def _s(value: object) -> str:
 
 
 def _trust_signals(emission: AdapterEmission) -> list[str]:
-    """Provenance-weakening signals for one emission (empty list = well-provenanced)."""
+    """Provenance-weakening signals for one emission (empty list = well-provenanced). Totality-safe:
+    a None/odd evidence, source_ref, or non-str kind never crashes (mod purple-team crash_dos)."""
     signals: list[str] = []
     if _s(emission.source_id) in _PUBLIC_SOURCES:
         signals.append(f"{_s(emission.source_id)} is a public/no-auth source (attacker-publishable content)")
     if emission.emission_type in _LOW_TRUST_TYPES:
         signals.append(f"emission_type '{emission.emission_type}' is advisory by construction")
-    for ev in emission.evidence:
-        sr = ev.source_ref
-        if sr.kind in _ATTRIBUTABLE_KINDS and not _s(ev.author):
-            signals.append(f"no actor identity on {sr.kind} evidence")
-        if not _s(sr.kind):
+    for ev in (emission.evidence or ()):
+        kind = getattr(getattr(ev, "source_ref", None), "kind", None)
+        kind = kind if isinstance(kind, str) else ""
+        if kind in _ATTRIBUTABLE_KINDS and not _s(getattr(ev, "author", "")):
+            signals.append(f"no actor identity on {kind} evidence")
+        if not kind:
             signals.append("evidence has no declared kind (unknown schema)")
     return signals
 
@@ -59,7 +68,7 @@ def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
     if not signals:
         return []
     joined = "; ".join(signals)
-    src = _s(emission.source_id) or "unknown"
+    src = safe_id(emission.source_id)
     return [
         ModEmission("source_evidence_annotation", advisory=AdvisoryResult(
             kind="source_evidence_annotation",
@@ -67,7 +76,7 @@ def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
         ModEmission("advisory_governance_result", advisory=AdvisoryResult(
             kind="advisory_governance_result",
             message=f"weak provenance on {src} — keep advisory / manual review: {joined}",
-            metadata={"signals": joined, "source": _s(emission.source_id)})),
+            metadata={"signals": joined, "source": src})),
         ModEmission("routing_hint", routing_hint=RoutingHint(
             role="review",
             reason=f"calibrate source trust for {src} (weak provenance): {joined}",
