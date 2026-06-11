@@ -34,6 +34,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   first live flip; operator opt-out knob documented in `docs/runbooks/`).
 - **data_classification** mod (4 of 13 built): cross-cutting advisory analyzer that flags
   confidentiality markers + redaction-placeholders for restricted review (EM-safe; emit-on-signal).
+- **Notion** connector flip-ready (webhook): FX-CFG-001 descriptor (X-Notion-Signature
+  HMAC-SHA256 w/ verification_token); page title redact-and-passed, opaque created_by.id
+  surfaced. Open wire-gate: the X-Notion-Signature `sha256=` prefix is unverified (confirm
+  live before Live). Preceded by a verify-before-cite re-verification of the go-live sequence.
 - **Slack** connector flip-ready (webhook): FX-CFG-001 descriptor (X-Slack-Signature v0 +
   5-min replay); message text redact-and-passed, opaque user id surfaced (T2 read/ingest).
 - **Jira** connector flip-ready (webhook): FX-CFG-001 descriptor (X-Hub-Signature verify +
