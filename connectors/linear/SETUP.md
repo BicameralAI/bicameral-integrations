@@ -76,7 +76,7 @@ python -m runtime.cli run linear --sink gateway   # real POST (go-live; default-
 ## Data & permissions
 
 - Emits: issue
-- PII posture: Webhook: issue identifier/title/description/url + actor.name. GraphQL active fetch: PII-safe (no assignee/creator identity surfaced). FX-SEC-001 producer screen is the backstop.
+- PII posture: Webhook: issue identifier/title/description/url; the actor display NAME is dropped (author='') — FX-SEC-001 does not screen a generic name, so it is not surfaced rather than relied on (SG-2026-06-11-D, deep-audit). GraphQL active fetch: PII-safe (no assignee/creator identity surfaced). FX-SEC-001 producer screen remains the un-bypassable secret/PHI/PAN backstop.
 
 ## Go-live
 

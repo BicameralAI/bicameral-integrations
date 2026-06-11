@@ -49,7 +49,7 @@
       "action": "open_url",
       "text": "A team admin mints a Cursor Admin API key (team settings).",
       "link": "https://cursor.com/docs/account/teams/admin-api",
-      "ref": "connectors/cursor/auth.md (Active fetch auth)"
+      "ref": "connectors/cursor/auth.md (Expected secret keys)"
     },
     {
       "action": "paste_secret",

@@ -43,7 +43,7 @@
       "action": "open_url",
       "text": "Create a Service-User API key (cog_) in your Devin organization settings.",
       "link": "https://docs.devin.ai/api-reference/authentication",
-      "ref": "connectors/devin/auth.md (Active fetch auth)"
+      "ref": "connectors/devin/auth.md (Expected secret keys)"
     },
     {
       "action": "paste_secret",

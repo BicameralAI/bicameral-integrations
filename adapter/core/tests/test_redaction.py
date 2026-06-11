@@ -21,6 +21,24 @@ def test_redact_scrubs_email_and_phone():
     assert "555-0132" not in out
 
 
+def test_redact_scrubs_international_phone():
+    # deep-audit low: NANP-only _PHONE_RE leaked international numbers. The E.164 branch
+    # scrubs +CC formats (UK/FR/DE/CN/AU/IN) and the keystone invariant still holds.
+    samples = [
+        ("UK", "+44 20 7946 0958"),
+        ("FR", "+33 6 12 34 56 78"),
+        ("DE", "+49 30 12345678"),
+        ("CN", "+86 138 0013 8000"),
+        ("AU", "+61 2 1234 5678"),
+        ("IN", "+91 98765 43210"),
+    ]
+    for label, number in samples:
+        out = redact(f"call {label} on {number} please")
+        assert "[redacted:phone]" in out, f"{label} not scrubbed: {out!r}"
+        assert number not in out, f"{label} number leaked: {out!r}"
+        assert detect_sensitive(out) == []  # invariant holds for the broadened branch
+
+
 def test_redact_scrubs_catalog_values():
     out = redact(f"key {_AKIA} ssn: 123-45-6789 card {_VALID_PAN}")
     assert _AKIA not in out

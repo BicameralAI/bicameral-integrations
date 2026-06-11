@@ -4695,7 +4695,48 @@ governance-gate #1..#149 OK. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#149 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **Cycle 4 SEALED at #149 (`d9754c43`; L2)** -- mcp_registry redact-and-pass + github replay-dedup closed. All 3 deep-audit BLOCKERs cleared (#146/#148); 8 of 9 mediums closed (mcp_registry/github/cursor/copilot/slack/notion). **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #148 notion-webhook, #147 parse-robustness.*
-*The platform is end-to-end for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Cycle 5** (shared lows: NANP->international phone redaction; resolution-checked instructions[].ref + Verification headings; mod per-leaf output screen; linear/fathom author drop). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #150: SESSION SEAL -- shared lows: phone redaction + ref validator + mod per-leaf + author drop (deep-audit Cycle 5)
+
+**Entry ID**: `sharedlows150seal`
+**Timestamp**: 2026-06-12T15:30:00-04:00
+**Phase**: SUBSTANTIATE (defense-in-depth + provenance)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(adapter/core/redaction.py)
+= aa8a3baaa5c66d582bdf4f6c021da955e82bb20d46ab7f50b4478815efed4e1f
+```
+
+**Previous Hash**: d9754c43e88e55cbe821e2c56294bfb0d0ff81e135927d6730a084623ffa091d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 97ea72f0e928a16eca29718f2bade15779106aaef5c005d6648da6bbb8fcfd00
+```
+
+**Decision**: Closed the four shared deep-audit lows (the last open findings). **(1) Phone redaction:**
+`adapter/core/redaction.py` `_PHONE_RE` was NANP-3-3-4-only -> international phone leaked past redact()
+and the catalog screen; added a bounded E.164/international `+CC` branch (capped quantifiers, O(n), no
+ReDoS) + a UK/FR/DE/CN/AU/IN corpus test; docstring + DATA_CLASSIFICATION_AND_REDACTION.md corrected to
+state exact coverage. **(2) instructions[].ref:** `scripts/validate_connector_config.py` upgraded from
+presence-only to **resolution-checked** (path must exist under repo; a `(Section)` label must match an
+existing markdown heading, fail-closed) -> surfaced 9 fabricated section refs; corrected
+copilot/cursor/devin/servicenow `(Active fetch auth)` -> `(Expected secret keys)`, linear -> existing
+auth.md heading, and ADDED `## Verification` sections to github/jira/notion/slack auth.md (refreshed
+slack's stale "Candidate" note); 3 validator unit tests added. **(3) Mod output screen:** `mods/contract.py`
+now scans each wire leaf independently instead of `" ".join` (mirrors the input PII-1 hardening — a join
+could fabricate cross-field PAN suppression); regression test added. **(4) Author drop:** linear
+`actor.name` + fathom `recorded_by.name` (real-name PII reaching the mod chokepoint) dropped to `author=""`
+(SG-2026-06-11-D); linear descriptor's false "FX-SEC-001 is the backstop" claim corrected. **Measured:**
+full suite **594 passed**, ruff clean, mypy clean, validator OK, governance-gate #1..#150 OK. **All 24
+confirmed deep-audit gaps now remediated.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#150 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **Cycle 5 SEALED at #150 (`97ea72f0`; L2)** -- shared lows closed. **DEEP-AUDIT REMEDIATION COMPLETE: all 24 confirmed gaps fixed across 5 cycles (#146-#150); all 3 BLOCKERs + 9 mediums + lows cleared.** **12 of 26 connectors flip-ready** + 4 advisory mods, now purple-team-hardened. Prior: #149 mcp_registry/github, #148 notion-webhook.*
+*The platform is end-to-end + deep-audit-hardened for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (notion webhook now emits a page-id pointer; confirm the X-Notion-Signature prefix live). 14 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*

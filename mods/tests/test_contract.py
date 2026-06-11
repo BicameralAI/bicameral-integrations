@@ -186,6 +186,18 @@ def test_sensitive_data_rejected_in_evidence_ids_and_nested_metadata():
             run_mod(mod, [_emission()], _manifest({"dependency_signal"}))
 
 
+def test_output_screen_per_leaf_no_cross_field_pan_suppression():
+    # deep-audit: the output screen scans each wire leaf independently (not a " ".join), so an
+    # id-label ending `message` cannot suppress a Luhn PAN that starts an adjacent leaf the way a
+    # join would (mirrors the input screen's PII-1 hardening, pipeline.py).
+    results = [ModEmission("dependency_signal",
+                           advisory=AdvisoryResult(kind="dependency_signal", message="see order_id:",
+                                                   evidence_ids=("4111111111111111",)))]
+    mod = _FakeMod(outputs={"dependency_signal"}, results=results)
+    with pytest.raises(ModContractError):
+        run_mod(mod, [_emission()], _manifest({"dependency_signal"}))
+
+
 def test_load_manifest_parses_real_dependency_risk():
     m = load_manifest(_MODS_DIR / "dependency_risk" / "manifest.yaml")
     assert m.id == "dependency-risk"

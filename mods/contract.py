@@ -224,11 +224,15 @@ def run_mod(
                 f"{mod.id}: undeclared output_type {emission.output_type!r}"
             )
         _reject_opaque_score(emission)
-        hits = detect_sensitive(" ".join(_wire_text(emission)))
-        if hits:
-            raise ModContractError(
-                f"{mod.id}: mod output carries sensitive data ({hits[0].cls}) — refused"
-            )
+        # Per-leaf scan (mirror the input screen's PII-1 hardening, pipeline.py): a `" ".join`
+        # could fabricate cross-field PAN suppression — an id label ending one field suppressing
+        # a Luhn run starting the next. Scan each wire-bound leaf independently (deep-audit).
+        for unit in _wire_text(emission):
+            hits = detect_sensitive(unit)
+            if hits:
+                raise ModContractError(
+                    f"{mod.id}: mod output carries sensitive data ({hits[0].cls}) — refused"
+                )
     return results
 
 

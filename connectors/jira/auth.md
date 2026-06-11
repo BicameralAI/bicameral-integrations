@@ -17,6 +17,14 @@ verify surface** (live HTTP receipt + REST fetch deferred).
     and Automation-for-Jira webhooks use their own platform auth, not
     `X-Hub-Signature` — not implemented this cycle.
 
+## Verification
+
+`JiraConnector.verify()` checks `X-Hub-Signature: sha256=<hex HMAC-SHA256(webhook_secret,
+raw_body)>` (WebSub `method=signature`): strips the `sha256=` prefix and reuses
+`adapter.core.webhook_security.verify_hmac_hex` — fail-closed + constant-time, over the **raw
+received bytes** (verify before parse). No Atlassian-documented anti-replay window, so best-effort
+dedup (on `X-Atlassian-Webhook-Identifier`, then `issue.id`) is the only replay guard (see above).
+
 ## Expected secret keys (operator runtime)
 
 - `webhook_secret` — the configured webhook signing secret (`verify()`).

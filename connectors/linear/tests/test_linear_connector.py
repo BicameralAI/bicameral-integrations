@@ -48,7 +48,7 @@ def test_parse_sets_source_ref_and_kind():
     assert obs.source_ref.ref == "PLAT-204"
     assert obs.source_ref.kind == "issue"
     assert obs.source_ref.url == "https://linear.app/acme/issue/PLAT-204"
-    assert obs.author == "Jordan Park"
+    assert obs.author == ""  # actor.name (real-name PII) dropped — SG-2026-06-11-D (deep-audit)
 
 
 def test_parse_preserves_action_and_type_in_metadata():

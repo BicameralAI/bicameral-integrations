@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import importlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -40,6 +41,31 @@ _INDEX = _CONNECTORS / "index.json"
 
 _REF_REQUIRED_ACTIONS = frozenset({"open_url", "register_webhook", "configure"})
 _PY_TYPE = {"object": dict, "array": list, "string": str, "boolean": bool}
+_REF_RE = re.compile(r"^(?P<path>[^()]+?)(?:\s*\((?P<section>[^()]+)\))?$")
+_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(?P<text>.+?)\s*$")
+
+
+def _resolve_ref(folder: str, ref: str) -> str | None:
+    """Resolution-check an instructions[].ref (anti-fabrication, deep-audit): the cited file must
+    exist under the repo, and a ``(Section)`` label — when present — must match an existing markdown
+    heading (fail-closed). Hardens the gate from presence-only; returns an error string or None."""
+    match = _REF_RE.match(ref.strip())
+    if not match:
+        return f"{folder}: instructions ref {ref!r} is malformed"
+    rel = (match.group("path") or "").strip()
+    target = _REPO / rel
+    if not target.is_file():
+        return f"{folder}: instructions ref path {rel!r} does not resolve to a repo file"
+    section = (match.group("section") or "").strip()
+    if section:
+        headings = [
+            m.group("text").lower()
+            for line in target.read_text(encoding="utf-8").splitlines()
+            if (m := _HEADING_RE.match(line))
+        ]
+        if not any(section.lower() in h for h in headings):
+            return f"{folder}: instructions ref cites section {section!r} but no matching heading in {rel}"
+    return None
 
 
 def _type_ok(value: object, kind: str) -> bool:
@@ -113,8 +139,12 @@ def _semantic(descriptor: dict, folder: str) -> list[str]:
     for i, step in enumerate(descriptor.get("instructions", [])):
         if not isinstance(step, dict):  # _check already flags the type; never throw here (return errors)
             continue
-        if step.get("action") in _REF_REQUIRED_ACTIONS and not step.get("ref"):
-            errs.append(f"{folder}: instructions[{i}] action {step['action']!r} requires a 'ref' (anti-fabrication)")
+        if step.get("action") in _REF_REQUIRED_ACTIONS:
+            ref = step.get("ref")
+            if not ref:
+                errs.append(f"{folder}: instructions[{i}] action {step['action']!r} requires a 'ref' (anti-fabrication)")
+            elif (err := _resolve_ref(folder, ref)) is not None:
+                errs.append(err)
     return errs
 
 

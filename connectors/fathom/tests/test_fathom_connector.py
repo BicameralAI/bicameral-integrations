@@ -55,9 +55,9 @@ def test_flatten_tolerates_string_speaker():
     assert obs.excerpt == "Casey: Ship it."
 
 
-def test_parse_sets_author_and_timestamp():
+def test_parse_drops_author_keeps_timestamp():
     obs = parse_meeting(_meeting())
-    assert obs.author == "Dana Lee"
+    assert obs.author == ""  # recorded_by.name (real-name PII) dropped — SG-2026-06-11-D (deep-audit)
     assert obs.timestamp == "2026-06-02T15:28:42Z"
 
 
