@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P3 |
 | Default trust tier | T1/T5 |
 | Integration role | evidence |
-| Readiness (lifecycle) | Beta (proven end-to-end through the `runtime/` harness against a reference sink; ADR-0012) |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (redacted transcript parse + live fetch-half `build_granola_spec`; contract re-verified live 2026-06-11; owner-vs-attendees drift + transcript-PII gap fixed L2; FX-CFG-001 descriptor shipped). Live flip gated on operator review + a live poll with a real `grn_` key. |
 
 ## Provider documentation (verify on refresh)
 

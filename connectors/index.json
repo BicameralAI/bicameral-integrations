@@ -361,6 +361,79 @@
         "Live flip GATED on human review + live testing: code-complete and harness-proven through runtime/ against a reference sink, but UNVERIFIED against the live Google Docs API with a real OAuth credential — no machine has minted a real token and fetched a real document yet. The operator must run the live test (durable path = the refresh resolver) and review the result before promoting; until then this connector is flip-ready, NOT Live (ADR-0012)."
       ]
     },
+    "granola": {
+      "available": true,
+      "category": "meetings",
+      "credentials": [
+        {
+          "header": "Authorization: Bearer grn_<key>",
+          "key": "granola",
+          "label": "Granola API key (grn_)",
+          "obtain": {
+            "steps": [
+              "Create a Granola API key (grn_ prefix) in your Granola workspace settings.",
+              "Sent as Authorization: Bearer grn_<key>."
+            ],
+            "url": "https://docs.granola.ai"
+          },
+          "required": true,
+          "type": "api_key",
+          "validation": "^grn_[A-Za-z0-9]+$"
+        }
+      ],
+      "data": {
+        "emits": [
+          "transcript"
+        ],
+        "pii_posture": "Meeting content is PII-dense and the provider gives no redaction guidance. The transcript + title are passed through adapter.core.redaction.redact (redact-and-pass: scrubs secret/PHI/PAN + email/phone). The meeting OWNER's identity (owner.name/email) is NEVER surfaced (author dropped, PII-safe). speaker is an anonymized object (source/diarization label), never read. FX-SEC-001 is the un-bypassable backstop.",
+        "redaction": "redact-and-pass (transcript + title); owner identity dropped"
+      },
+      "description": "Granola meeting notes + transcript (redact-and-pass) as governed evidence.",
+      "id": "granola",
+      "instructions": [
+        {
+          "action": "open_url",
+          "link": "https://docs.granola.ai",
+          "ref": "connectors/granola/auth.md (Live path — reference poll client)",
+          "text": "Create a Granola API key (grn_) in your Granola workspace settings."
+        },
+        {
+          "action": "paste_secret",
+          "text": "Paste the Granola API key (sent as Authorization: Bearer grn_<key>)."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: an active poll returns recent notes; the transcript is redact-and-passed and the owner's identity is never surfaced."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Redacted transcript parse surface + the live fetch-half (build_granola_spec) are built and harness-proven against a recorded fixture; contract re-verified live 2026-06-11; the owner-vs-attendees drift + transcript-PII gap are fixed (L2). Gated on operator review + a live poll with a real grn_ key. To flip: provide the key; wire GatewaySink; run the live poll; review before promoting.",
+      "modes": [
+        "passive"
+      ],
+      "name": "Granola",
+      "references": [
+        {
+          "kind": "api",
+          "url": "https://docs.granola.ai"
+        }
+      ],
+      "runtime_config": [
+        {
+          "default": "https://public-api.granola.ai/v1/notes?include=transcript",
+          "description": "The notes-with-transcript endpoint (verified 2026-06-11). The incremental created_after watermark + two-phase commit are operator-runtime.",
+          "key": "base_url",
+          "label": "Notes endpoint",
+          "required": false
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T1",
+      "wire_gates": [
+        "Contract re-verified live 2026-06-11 (public-api.granola.ai): GET /v1/notes?include=transcript, Bearer grn_; `notes` envelope; cursor `cursor`/`hasMore` pagination; note carries owner{name,email}, title, summary, transcript[{speaker:{source,diarization_label},text}], created_at.",
+        "PII (SG-2026-06-11-D, fixed this cycle): identity is `owner` (NOT `attendees`); transcript + title are redact-and-passed; owner identity is dropped (FX-SEC-001 does not catch a generic name/email).",
+        "Live flip gated on operator human review + a live poll with a real grn_ key (ADR-0012)."
+      ]
+    },
     "linear": {
       "available": true,
       "category": "project-management",
