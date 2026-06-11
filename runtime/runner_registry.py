@@ -21,6 +21,8 @@ from connectors.mcp_registry.connector import McpRegistryConnector
 from connectors.openai_admin.connector import OpenAIAdminConnector
 from connectors.servicenow.connector import ServiceNowConnector
 from mods.adapter_contract import AdapterContractMod
+from mods.authority_boundary import AuthorityBoundaryMod
+from mods.code_review_risk import CodeReviewRiskMod
 from mods.connector_freshness import ConnectorFreshnessMod
 from mods.contract import Manifest, Mod, load_manifest
 from mods.data_classification import DataClassificationMod
@@ -28,6 +30,7 @@ from mods.dependency_risk import DependencyRiskMod
 from mods.noisy_source_gate import NoisySourceGateMod
 from mods.security_mentions import SecurityMentionsMod
 from mods.source_trust_calibration import SourceTrustCalibrationMod
+from mods.test_adequacy import TestAdequacyMod
 from mods.webhook_risk import WebhookRiskMod
 
 from .doc_fetch import fetch_document
@@ -104,6 +107,9 @@ _MODS: dict[str, tuple[Callable[[], Mod], Path]] = {
     "source_trust_calibration": (SourceTrustCalibrationMod, _MODS_DIR / "source_trust_calibration" / "manifest.yaml"),
     "webhook_risk": (WebhookRiskMod, _MODS_DIR / "webhook_risk" / "manifest.yaml"),
     "connector_freshness": (ConnectorFreshnessMod, _MODS_DIR / "connector_freshness" / "manifest.yaml"),
+    "code_review_risk": (CodeReviewRiskMod, _MODS_DIR / "code_review_risk" / "manifest.yaml"),
+    "authority_boundary": (AuthorityBoundaryMod, _MODS_DIR / "authority_boundary" / "manifest.yaml"),
+    "test_adequacy": (TestAdequacyMod, _MODS_DIR / "test_adequacy" / "manifest.yaml"),
 }
 
 

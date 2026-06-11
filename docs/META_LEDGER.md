@@ -4845,7 +4845,45 @@ CI-exact invocation) before sealing. **Measured:** full suite **612 passed**, ru
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#153 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **mods M2 SEALED at #153 (`ab959e90`; L1)** -- webhook_risk + connector_freshness wired. **8 of 13 mods complete**; 5 scaffolds remain (M3-M4). **12 of 26 connectors flip-ready**. Prior: #152 mods M1, #151 mod scope.*
-*The platform is end-to-end + deep-audit-hardened for 12 flip-ready connectors + 8 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Mod Cycle M3** (code_review_risk + authority_boundary + test_adequacy). Then M4 (ownership_routing + decision_drift) -> all 13. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #154: SESSION SEAL -- mods M3: code_review_risk + authority_boundary + test_adequacy (11 of 13)
+
+**Entry ID**: `modsm3154seal`
+**Timestamp**: 2026-06-12T18:30:00-04:00
+**Phase**: SUBSTANTIATE (mod build)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(mods/code_review_risk/connector.py)
+= f69c1bf9e49b284a77c49d10ca7ea72f773065052ab33ca50ee1acc144bffb24
+```
+
+**Previous Hash**: ab959e90f7bafe42e6622aeb885503b381c17b26d95c7f91c373a6d3098520aa
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ec1948bd6f8f388abec1107d00495862d709d582569aa6d2ef0121ffc416eadf
+```
+
+**Decision**: Built M3 (the PR change-review family — the Bicameral Review Bot direction). All three
+**gate on change evidence** (fire only when an emission has pull_request/issue/merge_request evidence —
+no firing on meeting notes / pages), then key off the change text, and each adds a grounded
+`suggested_review_question`. **code_review_risk** (`code-review-risk`): routes REVIEW (high) when a change
+names a high-blast-radius area (schema/migration, auth, CI workflow, container/infra, secrets, breaking).
+**authority_boundary** (`authority-boundary`): routes GOVERNANCE (high) when a change names an
+authority-crossing action (auto-merge/signoff, write-canonical, bypass-policy, skip-review,
+deploy-to-production, credential-scope, shell). **test_adequacy** (`test-adequacy`): routes REVIEW when a
+behavior change (fix/bug/feature/refactor/migration/parser/handler/validation) references NO test signal;
+silent when tests are already mentioned. All pure, deterministic, stdlib-only; silent the default. Wired
+into `_MODS` (now 11) + `__init__` exports + behavior tests (non-change silent, low-risk silent,
+risk→route+ask). **Measured:** full suite **624 passed**, ruff clean, whole-tree mypy (200 files) clean,
+governance-gate #1..#154 OK. **11 of 13 mods complete.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#154 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **mods M3 SEALED at #154 (`ec1948bd`; L1)** -- code_review_risk + authority_boundary + test_adequacy wired. **11 of 13 mods complete**; 2 scaffolds remain (M4). **12 of 26 connectors flip-ready**. Prior: #153 mods M2, #152 mods M1.*
+*The platform is end-to-end + deep-audit-hardened for 12 flip-ready connectors + 11 mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **Mod Cycle M4** (ownership_routing + decision_drift) -> all 13 mods complete. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
