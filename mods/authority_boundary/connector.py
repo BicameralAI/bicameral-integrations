@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint
 
+from .._signals import is_change_evidence, matched_terms, safe_id
 from ..contract import ModEmission
 
 _OUTPUTS = frozenset({
@@ -23,35 +24,32 @@ _OUTPUTS = frozenset({
     "source_evidence_annotation", "suggested_review_question",
 })
 
-_CHANGE_KINDS = frozenset({"pull_request", "issue", "merge_request"})
-
+# Mostly phrase/hyphenated terms (substring-matched); 'signoff' is the one bare token (word-boundary).
+# Vocab expanded for the missed authority phrasings (mod purple-team false_negative).
 _AUTHORITY_TERMS = (
     "auto-approve", "auto approve", "auto-merge", "auto merge", "signoff", "sign-off",
+    "self-approve", "self-merge", "auto-deploy", "auto deploy",
     "write canonical", "canonical decision", "resolve compliance", "bypass governance",
-    "bypass policy", "skip review", "without review", "force merge", "force push",
-    "deploy to production", "prod deploy", "delete production", "credential scope",
-    "expand scope", "shell execution", "run shell", "rm -rf", "grant admin",
+    "bypass policy", "bypass review", "skip review", "without review", "force merge", "force push",
+    "deploy to production", "prod deploy", "delete production", "drop production", "credential scope",
+    "expand scope", "broaden scope", "shell execution", "run shell", "rm -rf", "grant admin", "sudo",
 )
-
-
-def _is_change(emission: AdapterEmission) -> bool:
-    return any(ev.source_ref.kind in _CHANGE_KINDS for ev in emission.evidence)
 
 
 def _text(emission: AdapterEmission) -> str:
     parts = [emission.title, emission.body]
-    parts.extend(ev.excerpt for ev in emission.evidence)
+    parts.extend(ev.excerpt for ev in (emission.evidence or ()))  # totality: tolerate None evidence
     return " ".join(p for p in parts if isinstance(p, str)).lower()
 
 
 def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
-    if not _is_change(emission):
+    if not is_change_evidence(emission):
         return []
     text = _text(emission)
-    hits = [t for t in _AUTHORITY_TERMS if t in text]
+    hits = matched_terms(text, _AUTHORITY_TERMS)
     if not hits:
         return []
-    src = (emission.source_id or "unknown").strip() or "unknown"
+    src = safe_id(emission.source_id)
     joined = ", ".join(hits)
     return [
         ModEmission("source_evidence_annotation", advisory=AdvisoryResult(
@@ -60,7 +58,7 @@ def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
         ModEmission("advisory_governance_result", advisory=AdvisoryResult(
             kind="advisory_governance_result",
             message=f"possible authority-boundary crossing ({joined}) — confirm human review + policy gate",
-            metadata={"terms": joined, "source": emission.source_id})),
+            metadata={"terms": joined, "source": src})),
         ModEmission("routing_hint", routing_hint=RoutingHint(
             role="governance", reason=f"authority-boundary risk in {src}: {joined}", priority="high")),
         ModEmission("suggested_review_question", advisory=AdvisoryResult(

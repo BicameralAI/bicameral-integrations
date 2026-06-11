@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint
 
+from .._signals import safe_id
 from ..contract import ModEmission
 
 _OUTPUTS = frozenset({"advisory_governance_result", "routing_hint", "source_evidence_annotation"})
@@ -34,18 +35,22 @@ def _s(value: object) -> str:
 def _contract_issues(emission: AdapterEmission) -> tuple[list[str], bool]:
     """Return (issue messages, routable) for one emission. ``routable`` is True when a load-bearing
     pointer is fully lost (no evidence, or evidence with neither ref nor url) — too weak to route
-    on a blank-excerpt nit alone."""
+    on a blank-excerpt nit alone. Totality-safe: a non-tuple ``evidence`` or a None ``source_ref``
+    is treated as a lost pointer, never a crash (mod purple-team crash_dos)."""
     issues: list[str] = []
     routable = False
-    if not emission.evidence:
+    evidence = emission.evidence if isinstance(emission.evidence, (list, tuple)) else ()
+    if not evidence:
         issues.append("emission carries zero SourceEvidence (no reviewable pointer)")
         routable = True
-    for ev in emission.evidence:
-        sr = ev.source_ref
-        if not (_s(sr.ref) or _s(sr.url)):
-            issues.append(f"evidence has no locatable ref or url (source {_s(sr.source_id) or '?'})")
+    for ev in evidence:
+        sr = getattr(ev, "source_ref", None)
+        if not (_s(getattr(sr, "ref", "")) or _s(getattr(sr, "url", ""))):
+            # echo only the contract-clean id (mod purple-team pii_secret_output): a raw evidence
+            # source_id could carry a generic name/email the FX-SEC-001 screen does not catch.
+            issues.append(f"evidence has no locatable ref or url (source {safe_id(getattr(sr, 'source_id', ''))})")
             routable = True
-        if not _s(ev.excerpt):
+        if not _s(getattr(ev, "excerpt", "")):
             issues.append("evidence excerpt is blank (no reviewable content)")
     return issues, routable
 
@@ -55,19 +60,19 @@ def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
     if not issues:
         return []
     joined = "; ".join(issues)
-    meta = {"issues": joined, "source": _s(emission.source_id)}
+    src = safe_id(emission.source_id)
     out: list[ModEmission] = [
         ModEmission("source_evidence_annotation", advisory=AdvisoryResult(
             kind="source_evidence_annotation",
-            message=f"evidence-contract risk on {_s(emission.source_id) or 'unknown'}: {joined}")),
+            message=f"evidence-contract risk on {src}: {joined}")),
         ModEmission("advisory_governance_result", advisory=AdvisoryResult(
             kind="advisory_governance_result",
-            message=f"adapter contract not fully preserved: {joined}", metadata=meta)),
+            message=f"adapter contract not fully preserved: {joined}", metadata={"issues": joined, "source": src})),
     ]
     if routable:
         out.append(ModEmission("routing_hint", routing_hint=RoutingHint(
             role="connectors",
-            reason=f"evidence pointer missing on {_s(emission.source_id) or 'unknown'} — review the connector parse surface",
+            reason=f"evidence pointer missing on {src} — review the connector parse surface",
             priority="normal")))
     return out
 

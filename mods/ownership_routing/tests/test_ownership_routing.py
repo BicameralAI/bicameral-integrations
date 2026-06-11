@@ -48,3 +48,11 @@ def test_multi_domain_emits_multiple_lenses():
     out = OwnershipRoutingMod().evaluate([_pr("Update the connector adapter and its docs/ readme")])
     roles = {e.routing_hint.role for e in out if e.output_type == "routing_hint" and e.routing_hint}
     assert {"connectors", "docs"} <= roles
+
+
+def test_substring_false_positives_do_not_fire():
+    # SG-2026-06-12-E: bare-substring superstrings must NOT route.
+    assert OwnershipRoutingMod().evaluate([_pr("Rename the author field on profiles")]) == []  # not 'auth'
+    assert OwnershipRoutingMod().evaluate([_pr("Rename policyholder model to member")]) == []   # not 'policy'
+    assert OwnershipRoutingMod().evaluate([_pr("Add a cryptocurrency price widget")]) == []      # not 'crypto'
+    assert OwnershipRoutingMod().evaluate([_pr("Optimize the quadratic sort")]) == []            # not 'adr'

@@ -19,32 +19,40 @@ from __future__ import annotations
 
 from adapter.core.emissions import AdapterEmission, AdvisoryResult, RoutingHint
 
+from .._signals import matched_terms, safe_id
 from ..contract import ModEmission
 
 _OUTPUTS = frozenset({"advisory_governance_result", "routing_hint", "source_evidence_annotation"})
 
-# Strong: a provider change that can break a connector's assumptions -> route.
+# Strong: a provider change that can break a connector's assumptions -> route. Full-word
+# inflections (token-matched, collision-free) + phrases — stems are spelled out so the
+# word-boundary matcher does not drop 'deprecated'/'retired', and 'retire' no longer fires on
+# 'retirement'/'tired' (mod purple-team false_positive + false_negative; SG-2026-06-12-E).
 _BREAK_TERMS = (
-    "deprecat", "sunset", "end of life", "end-of-life", "breaking change",
-    "no longer supported", "will be removed", "retire", "migrate to v", "upgrade to v",
+    "deprecated", "deprecation", "deprecate", "deprecating", "deprecates",
+    "sunsetting", "sunsetted", "decommission", "decommissioned", "decommissioning",
+    "discontinue", "discontinued", "discontinuing", "eol", "retire", "retired", "retiring",
+    "end of life", "end-of-life", "breaking change", "breaking changes",
+    "no longer supported", "will be removed", "being removed", "sunset the", "will sunset",
+    "migrate to v1", "migrate to v2", "migrate to v3", "upgrade to v1", "upgrade to v2", "upgrade to v3",
 )
 # Soft: an API-version mention with no break term -> annotate only.
-_VERSION_TERMS = ("api version", "v1 ", "v2 ", "v3 ", "/v1/", "/v2/", "/v3/")
+_VERSION_TERMS = ("api version", "v1", "v2", "v3")
 
 
 def _text(emission: AdapterEmission) -> str:
     parts = [emission.title, emission.body]
-    parts.extend(ev.excerpt for ev in emission.evidence)
+    parts.extend(ev.excerpt for ev in (emission.evidence or ()))  # totality: tolerate None evidence
     return " ".join(p for p in parts if isinstance(p, str)).lower()
 
 
 def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
     text = _text(emission)
-    breaks = [t for t in _BREAK_TERMS if t in text]
-    soft = [t for t in _VERSION_TERMS if t in text]
+    breaks = matched_terms(text, _BREAK_TERMS)
+    soft = matched_terms(text, _VERSION_TERMS)
     if not breaks and not soft:
         return []
-    src = (emission.source_id or "unknown").strip() or "unknown"
+    src = safe_id(emission.source_id)
     if breaks:
         joined = ", ".join(breaks)
         return [
@@ -54,7 +62,7 @@ def _emissions_for(emission: AdapterEmission) -> list[ModEmission]:
             ModEmission("advisory_governance_result", advisory=AdvisoryResult(
                 kind="advisory_governance_result",
                 message=f"provider change may stale a connector assumption ({joined}) — review references/auth",
-                metadata={"terms": joined, "source": emission.source_id})),
+                metadata={"terms": joined, "source": src})),
             ModEmission("routing_hint", routing_hint=RoutingHint(
                 role="connectors",
                 reason=f"freshness review for {src}: {joined}", priority="normal")),

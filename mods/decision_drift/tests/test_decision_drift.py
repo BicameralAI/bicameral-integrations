@@ -39,7 +39,7 @@ def test_cue_without_anchor_silent():
 
 def test_anchor_and_cue_routes_governance_and_asks():
     out = run_mod(DecisionDriftMod(),
-                  [_emission("This change contradicts ADR-0008 and the recorded trust tier")], _manifest())
+                  [_emission("This supersedes ADR-0008 and the recorded trust tier")], _manifest())
     kinds = [e.output_type for e in out]
     assert "routing_hint" in kinds and "suggested_review_question" in kinds
     route = next(e for e in out if e.output_type == "routing_hint")
@@ -49,5 +49,11 @@ def test_anchor_and_cue_routes_governance_and_asks():
 def test_not_gated_to_change_evidence():
     # decision drift can come from a meeting note (kind=meeting), unlike the PR-review family.
     out = DecisionDriftMod().evaluate(
-        [_emission("This deviates from the recorded decision", kind="meeting")])
+        [_emission("The recorded decision is now obsolete", kind="meeting")])
     assert any(e.output_type == "advisory_governance_result" for e in out)
+
+
+def test_adr_substring_does_not_fire():
+    # SG-2026-06-12-E: 'adr' must NOT match inside 'quadratic' (even with a real conflict cue).
+    assert DecisionDriftMod().evaluate(
+        [_emission("The quadratic model supersedes the prior estimate")]) == []

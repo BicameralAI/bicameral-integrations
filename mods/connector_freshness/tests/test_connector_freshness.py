@@ -44,3 +44,15 @@ def test_soft_version_annotates_only():
     out = ConnectorFreshnessMod().evaluate([_emission("Calls the /v2/ servers endpoint")])
     kinds = [e.output_type for e in out]
     assert kinds == ["source_evidence_annotation"]  # soft mention, no route
+
+
+def test_retire_substring_false_positive_does_not_fire():
+    # the medium: 'retire' must NOT fire on 'retirement'/'tired' (SG-2026-06-12-E).
+    assert ConnectorFreshnessMod().evaluate([_emission("Add an employee retirement plan page")]) == []
+    assert ConnectorFreshnessMod().evaluate([_emission("The team was tired after the launch")]) == []
+
+
+def test_retired_endpoint_still_fires():
+    out = run_mod(ConnectorFreshnessMod(),
+                  [_emission("The old endpoint was retired by the provider")], _manifest())
+    assert any(e.output_type == "routing_hint" for e in out)
