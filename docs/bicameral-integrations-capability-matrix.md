@@ -32,7 +32,7 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 
 ## Connector Capability Matrix
 
-**13 flip-ready connectors.**
+**14 flip-ready connectors.**
 
 | Connector | Category | Mode | Data in | Data out (neutral evidence) | Security & PII handling |
 |---|---|---|---|---|---|
@@ -49,6 +49,7 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 | **Slack** | Communication | Webhook | Slack messages | `message` — redact-and-passed text; opaque user-id | `X-Slack-Signature` v0 HMAC-SHA256 over `v0:{timestamp}:{body}` with a **5-minute replay window** |
 | **Notion** | Docs | Webhook | Page-change events | Page-changed **pointer** keyed by the stable page id (signals *what changed*) | `X-Notion-Signature` HMAC-SHA256 over the body; delivery de-dup with body-hash fallback |
 | **Fathom** | Meetings | Passive + Webhook | Meeting transcripts + summaries | `meeting` — redact-and-passed transcript/summary; **speaker + recorder real names dropped** | `whsec_` HMAC-SHA256 over `{id}.{timestamp}.{body}`, 5-min replay; `X-Api-Key` poll |
+| **Claude Code** | Developer-AI | Passive (local file) | Claude Code session transcripts (local JSONL) | `user`/`assistant`/`summary` turns — redact-and-passed content | **No credential** (local file import); transcript content redact-and-passed; `cwd` OS-username scrubbed; FX-SEC-001 hard-screen |
 
 ---
 
@@ -94,7 +95,7 @@ Bicameral Integrations treats every inbound payload as untrusted and every crede
 
 The following connectors are in **Beta** — their parse surfaces are in development and not yet flip-ready:
 
-Aider · Anthropic Admin (usage) · Claude Code · Confluence · Continue.dev · GitLab · Local Directory · OpenAI Admin (usage) · OSV (vulnerabilities) · PagerDuty · SARIF (scan results) · Sentry · Zendesk
+Aider · Anthropic Admin (usage) · Confluence · Continue.dev · GitLab · Local Directory · OpenAI Admin (usage) · OSV (vulnerabilities) · PagerDuty · SARIF (scan results) · Sentry · Zendesk
 
 ---
 
