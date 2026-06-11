@@ -8,7 +8,7 @@
 | **Updated By** | Judge (qor-substantiate) |
 | **Phase** | `main` + **security red-team COMPLETE (Cycles A/B/C, GH #50-#61 all closed)** — Cycle C: id-less webhook replays deduped by body hash for the 4 windowless providers (#60; bounded-cache eviction/TTL residual documented); emission contract rejects zero-width-only excerpt + bounds `source_id` (#61). Cores were sound; the 12 edge findings (guarantee-violations A, DoS/robustness B, replay/nits C) are all fixed. 26 Beta connectors; parse surfaces hardened — the before-Live DoS gate is cleared |
 | **Iteration** | 30 governed cycles (… redaction retrofit; references.md parity; security red-team **Cycle A** (#52/#53/#54), **Cycle B** (#50/#51/#55-#59 DoS), **Cycle C** (#60 replay / #61 nits) — all 12 red-team issues closed) |
-| **Session Seal** | `bcbe6e2b` — Entry #140 (data_classification mod built, 4 of 13, L1; branch `feat/data-classification-mod`). Prior: #139 github (`fd10b5ee`), #138 mcp_registry (`774bda61`) |
+| **Session Seal** | `b68bd69d` — Entry #141 (jira flip-ready webhook + summary redact + actor-identity drop, L2; branch `feat/jira-golive`). Prior: #140 data_classification mod (`bcbe6e2b`), #139 github (`fd10b5ee`) |
 
 ---
 
@@ -20,8 +20,8 @@ bicameral-integrations/
 |   `-- core/  (emissions, observations, contracts, capabilities, pipeline,
 |              sensitive, webhook_security, filters, fixtures, __init__ + tests/)
 |-- connectors/  (each: connector.py, __init__, README, auth.md, references.md, fixtures/, tests/;
-|                 + config.json = the FX-CFG-001 mcp-UI descriptor [9 done: linear, google_drive, devin,
-|                 cursor, copilot, servicenow, granola, mcp_registry, github; 17 to fan out]; _schema/connector-config.schema.json + index.json [generated];
+|                 + config.json = the FX-CFG-001 mcp-UI descriptor [10 done: linear, google_drive, devin,
+|                 cursor, copilot, servicenow, granola, mcp_registry, github, jira; 16 to fan out]; _schema/connector-config.schema.json + index.json [generated];
 |                 SETUP.md = generated backend how-to runbook [from config.json; docs/CONNECTOR_BACKEND_SETUP.md
 |                 = the hand-authored framework])
 |   |-- github/         (PR -> Observation; ACTIVE+WEBHOOK)

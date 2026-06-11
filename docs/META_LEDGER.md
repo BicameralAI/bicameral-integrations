@@ -4355,7 +4355,42 @@ ruff/mypy(172) clean, governance-gate #1..#140 OK. **4 of 13 mods built** (+ dat
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#140 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **data_classification mod built, SEALED at #140 (`bcbe6e2b`; L1)**. **4 of 13 mods built** (dependency_risk, noisy_source_gate, security_mentions, data_classification); 9 of 26 connectors flip-ready. Sequence: mcp_registry [done] -> github [done] -> data_classification [done] -> jira -> slack -> notion. Prior: #139 github, #138 mcp_registry.*
-*The platform is end-to-end + hardened for 9 flip-ready connectors + 4 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: continue the sequence (jira next); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #141: SESSION SEAL -- jira flip-ready (webhook) + summary redact-and-pass + actor identity dropped
+
+**Entry ID**: `jira141seal`
+**Timestamp**: 2026-06-12T02:00:00-04:00
+**Phase**: SUBSTANTIATE (parse/PII + webhook descriptor)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/jira/config.json)
+= cd8ae0c3c6eb057289a96da959f1097a2566e60c72bfda6e653b1b65b967af56
+```
+
+**Previous Hash**: bcbe6e2b2e374e2107f370dfd692f08bb48f3db688686d3d1592e903a5a4ddf4
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b68bd69d779d8158e090f22279800dc8638216fbd7d3412dfc487a283834abef
+```
+
+**Decision**: jira -> flip-ready (cycle 4 of 6). **PII hardening (L2):** the issue `summary` is now
+**redact-and-passed**; the issue actor's `displayName` (a REAL name, unlike github's public login) is
+**dropped** (author="", SG-2026-06-11-D); `fields.description` (an ADF object) remains never-read
+(SG-2026-06-04-M). **Descriptor:** `connectors/jira/config.json` -- modes ["webhook"] (built+verified
+path; active REST + Connect-JWT/Forge deferred), `jira_webhook` credential (X-Hub-Signature sha256= WebSub),
+webhook block (jira:issue_created/updated/deleted). No anti-replay window -> dedup
+(X-Atlassian-Webhook-Identifier -> issue.id -> body-hash) is the replay guard. Webhook RECEIPT
+operator-runtime. Regenerated index.json (10) + SETUP.md; readiness lift; redaction test added.
+**Measured:** full suite **561 passed**, ruff/mypy(172) clean, validator OK, governance-gate #1..#141 OK.
+**10 of 26 connectors flip-ready.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#141 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **jira flip-ready SEALED at #141 (`b68bd69d`; L2)**. **10 of 26 connectors flip-ready** (+ jira, webhook) + 4 advisory mods. Sequence: mcp_registry, github, data_classification, jira [done] -> slack -> notion. Prior: #140 data_classification mod, #139 github.*
+*The platform is end-to-end + hardened for 10 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: continue the sequence (slack next); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
