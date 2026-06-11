@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import re
+import urllib.parse
 
 from connectors.google_drive.connector import parse_document
 from connectors.linear.connector import parse_issue_node
@@ -35,6 +36,31 @@ def _require_secret(resolver: SecretResolver, source_id: str) -> str:
     if not secret:
         raise PollError(0, f"secret_unresolved:{source_id}")
     return secret
+
+
+_BARE_HOST_RE = re.compile(r"[A-Za-z0-9.-]{1,253}")
+
+
+def _require_bare_host(value: object, label: str) -> str:
+    """A raw operator-supplied hostname safe to splice into a URL: letters/digits/dot/hyphen
+    only — no ``@``/``/``/``?``/``#``/``:`` or control chars that would inject userinfo, a path,
+    sibling query params, or a port. Fail-closed, token-free (purple-team SSRF-4, 2026-06-11)."""
+    if not isinstance(value, str) or not _BARE_HOST_RE.fullmatch(value):
+        raise PollError(0, f"bad_host:{label}")
+    return value
+
+
+def _require_https_endpoint(url: str, *, allow: tuple[str, ...] | None = None) -> str:
+    """An operator-supplied endpoint must be ``https`` with a clean host (no userinfo); when
+    ``allow`` is given the host is pinned. Stops a fat-fingered/tampered config from sending the
+    credentialed request to an off-provider host (purple-team SSRF/CONFIG, 2026-06-11)."""
+    parts = urllib.parse.urlsplit(url)
+    host = parts.hostname or ""
+    if parts.scheme != "https" or not host or parts.username or parts.password:
+        raise PollError(0, "bad_endpoint")
+    if allow is not None and host not in allow:
+        raise PollError(0, "endpoint_host_not_allowed")
+    return url
 
 
 # --- anthropic_admin (usage; aggregate, PII-free) --------------------------------
@@ -89,6 +115,7 @@ def build_devin_spec(resolver: SecretResolver, *, base_url: str) -> PollSpec:
     ``org_id`` into ``/v3/organizations/{org}/sessions`` (auth.md). Envelope key + cursor
     pagination verified against docs.devin.ai (2026-06-08)."""
     secret = _require_secret(resolver, "devin")
+    _require_https_endpoint(base_url)  # https + clean host (enterprise host varies; not hard-pinned)
     return PollSpec(
         base_url=base_url,
         auth=BearerAuth(secret),
@@ -189,20 +216,19 @@ def build_servicenow_spec(
     non-secret operator config; the password is resolved by ``source_id``. ``sysparm_limit``
     rides in ``base_url``; OffsetPager advances only ``sysparm_offset``."""
     password = _require_secret(resolver, "servicenow")
-    base = f"https://{instance}/api/now/table/incident?sysparm_limit={limit}"
+    host = _require_bare_host(instance, "servicenow_instance")  # no host/path/query injection
+    query = {"sysparm_limit": str(limit)}
     if fields:
-        base = _with_fields(base, fields)
+        query["sysparm_fields"] = fields  # urlencode quotes '&'/'=' so no sibling-param injection
+    base = urllib.parse.urlunsplit(
+        ("https", host, "/api/now/table/incident", urllib.parse.urlencode(query), "")
+    )
     return PollSpec(
         base_url=base,
         auth=BasicAuth(username, password),
         items=lambda page: page.get("result", []),  # documented Table-API envelope
         pagination=OffsetPager(offset_param="sysparm_offset", limit=limit),
     )
-
-
-def _with_fields(base: str, fields: str) -> str:
-    """Append ``sysparm_fields`` to the base URL (string-built so no import churn)."""
-    return f"{base}&sysparm_fields={fields}"
 
 
 # --- mcp_registry (public registry server list; no auth) --------------------------
@@ -247,6 +273,7 @@ def build_linear_graphql_spec(
     """linear: ACTIVE GraphQL fetch of recently-updated issues. Personal API key in the raw
     `Authorization` header (no Bearer prefix — verified). Cursor pagination via `pageInfo`."""
     secret = _require_secret(resolver, "linear")
+    _require_https_endpoint(endpoint, allow=("api.linear.app",))  # pin the credentialed POST host
     return GraphQLPollSpec(
         endpoint=endpoint,
         auth=ApiKeyHeaderAuth("Authorization", secret),

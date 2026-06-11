@@ -120,6 +120,16 @@ def assert_runnable(config: LocalConfig, connector_id: str, *, mode: str = "acti
     unknown = set(block.get("secrets") or {}) - declared
     if unknown:
         raise ConfigError(f"{connector_id}: secret(s) under unknown credential key(s): {sorted(unknown)}")
+    # Runtime-key allowlist (purple-team CONFIG, 2026-06-11): an operator runtime sub-key not
+    # declared in the descriptor's runtime_config is rejected, so a credentialed builder kwarg
+    # (e.g. linear's `endpoint`) cannot be silently widened/overridden via local config.
+    declared_runtime = {rc["key"] for rc in desc.get("runtime_config", [])}
+    unknown_runtime = set(block.get("runtime") or {}) - declared_runtime
+    if unknown_runtime:
+        raise ConfigError(
+            f"{connector_id}: runtime key(s) not declared in descriptor runtime_config: "
+            f"{sorted(unknown_runtime)}"
+        )
     resolver = resolver_from(config)
     missing = [c["key"] for c in desc.get("credentials", [])
                if c.get("required") and mode in (c.get("modes") or [mode])

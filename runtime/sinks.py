@@ -28,6 +28,17 @@ from .gateway_mapping import emission_to_ingest_request
 _SUCCESS_STATUS = 201  # the gateway's only success code (v0.2 ingest contract)
 
 
+class _NoFollowRedirect(urllib.request.HTTPRedirectHandler):
+    """Never auto-follow a 3xx (defense-in-depth; SSRF-1). Even the operator-trusted gateway
+    endpoint must not silently redirect a Bearer-bearing POST to a second host."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):  # type: ignore[override]
+        return None
+
+
+_NO_FOLLOW_OPENER = urllib.request.build_opener(_NoFollowRedirect).open  # built once
+
+
 class GatewayEmissionGated(RuntimeError):
     """Raised when ``GatewaySink.emit`` is called with no endpoint configured."""
 
@@ -89,7 +100,7 @@ class GatewaySink:
         self.schema_version = schema_version
         self._token = token
         self._headers = dict(headers or {})
-        self._opener = opener or urllib.request.urlopen
+        self._opener = opener or _NO_FOLLOW_OPENER
         self._timeout = timeout
         # Reject a CR/LF-bearing token/header up front: http.client validates headers
         # during the request and raises a ValueError that embeds the full header value
@@ -121,25 +132,14 @@ class GatewaySink:
         try:
             with self._opener(request, timeout=self._timeout) as response:
                 status = getattr(response, "status", None) or response.getcode()
-        except urllib.error.HTTPError as exc:  # 4xx/5xx — body carries the reason
-            raise GatewayEmissionError(exc.code, _reason_from_body(exc)) from None
+        except urllib.error.HTTPError as exc:  # 4xx/5xx — status disambiguates; body is UNTRUSTED
+            # Do NOT reflect the response body into the error: a gateway that echoes the
+            # request (incl. the Authorization header) would leak the token, and the FX-SEC-001
+            # catalog does not match an opaque bearer (purple-team SECRET-LEAK-1, 2026-06-11).
+            raise GatewayEmissionError(exc.code, "gateway_rejected") from None
         except urllib.error.URLError as exc:  # transport fault — token-free detail
             raise GatewayEmissionError(0, f"transport_error:{type(exc.reason).__name__}") from None
         except Exception:  # belt-and-suspenders: never let an unexpected error carry the token
             raise GatewayEmissionError(0, "unexpected_error") from None
         if status != _SUCCESS_STATUS:
             raise GatewayEmissionError(status, "unexpected_status_expected_201")
-
-
-def _reason_from_body(exc: urllib.error.HTTPError) -> str:
-    """Parse the gateway ``IngestRejection`` reason (gateway-side, redacted). Never
-    touches request headers/body, so the auth token cannot leak into the error.
-    """
-    try:
-        body = json.loads(exc.read().decode("utf-8"))
-    except (ValueError, OSError):
-        return ""
-    if isinstance(body, dict):
-        reason = body.get("reason") or body.get("message") or ""
-        return str(reason)
-    return ""

@@ -86,15 +86,22 @@ def _screen_sensitive(emission: AdapterEmission) -> None:
     covers EVERY wire-bound field: ``title``/``body``/``excerpt`` plus ``source_id`` (→ wire
     ``source_type``) and each evidence ``source_ref.url``/``ref``/``source_id`` (a secret
     in a provider URL/ref/id is otherwise forwarded as the gateway ``source`` — #52), and
-    every ``metadata`` leaf+key (preserved in-process for mods — ADR-0014). Metadata is
-    scanned **per leaf** (not joined into the core blob): a single join could fabricate
-    ``_is_id_preceded`` PAN suppression across two independent leaves — a false negative.
-    The raised detail uses the redacted excerpt, so a raw value cannot leak (#53).
+    every ``metadata`` leaf+key (preserved in-process for mods — ADR-0014), plus each
+    evidence ``author``/``timestamp`` (untrusted provider data — purple-team CONFIG-3).
+    EVERY field is scanned **per leaf** (core fields included, not joined into one blob):
+    a single join could fabricate ``_is_id_preceded`` PAN suppression across two independent
+    leaves — a false negative (purple-team PII-1). The raised detail uses the redacted
+    excerpt, so a raw value cannot leak (#53).
     """
     core = [emission.title, emission.body, emission.source_id]
     for ev in emission.evidence:
-        core.extend([ev.excerpt, ev.source_ref.url, ev.source_ref.ref, ev.source_ref.source_id])
-    units = [" ".join(p for p in core if p)]
+        core.extend([ev.excerpt, ev.source_ref.url, ev.source_ref.ref, ev.source_ref.source_id,
+                     ev.author, ev.timestamp])
+    # Scan EACH wire-bound field as its own unit (NOT one joined blob): a trailing ID-label
+    # in one field (e.g. excerpt ending `ref=`) must not fabricate `_is_id_preceded` PAN
+    # suppression for a Luhn-valid PAN at the start of an adjacent field (purple-team PII-1,
+    # 2026-06-11). Within-field suppression (`order_id: <run>` in ONE field) is preserved.
+    units = [p for p in core if p]
     units.extend(_metadata_strings(emission.metadata))
     for unit in units:
         hits = detect_sensitive(unit)

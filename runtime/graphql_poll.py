@@ -77,7 +77,7 @@ def _parse_body(body: bytes) -> dict:
         raise PollError(0, "oversized_body")
     try:
         parsed = json.loads(body)
-    except (ValueError, UnicodeDecodeError):
+    except (ValueError, UnicodeDecodeError, RecursionError):  # deeply-nested body -> fail closed (PARSE-1)
         raise PollError(0, "unparseable_body") from None
     if not isinstance(parsed, dict):
         raise PollError(0, "non_object_body")

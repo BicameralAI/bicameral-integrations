@@ -25,6 +25,6 @@ jobs:
       - name: Mypy
         run: mypy adapter connectors runtime mods
       - name: Pytest
-        run: pytest adapter/core/tests connectors runtime mods scripts/tests -q
+        run: pytest adapter/core/tests connectors runtime mods scripts/tests tests/redteam -q
       - name: Connector config descriptors (validate + index freshness)
         run: python scripts/validate_connector_config.py

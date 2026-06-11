@@ -5,6 +5,24 @@ research. Each entry prevents a future drift. Newest first.
 
 ---
 
+## SG-2026-06-11-C — Two ledger verifiers with INCOMPATIBLE Previous-Hash markup; the repo CI gate is authoritative
+
+**Discovered**: 2026-06-11 (purple-team fix cycle; the #131 seal's own "fix" suggestion was wrong).
+**Prevents**: "fixing" the qor-logic canonical-markup finding by backticking Previous Hash, which silently breaks the repo's blocking CI gate.
+
+`scripts/governance_gate.py` (the repo's blocking `governance-gate.yml` CI gate) parses `**Previous Hash**:` with `_HEX64.match` anchored at string start, so it requires a **BARE hex** value and computes the chain as `sha256(content+previous)`. `qor-logic verify-ledger` (a separate, non-CI tool) requires the hash be **backtick-wrapped or `=`-prefixed** and flags entries #123+ as "missing canonical hash markup". **These two expectations are mutually exclusive on the same line.** Entry #131 recorded a "non-destructive fix = backtick the value" — that was itself drift: backticking #129-131 made `governance_gate.py` FAIL (the backtick was parsed into the hash, breaking the link + recompute). **Rule: the authoritative ledger verifier for this repo is `scripts/governance_gate.py` (bare-hex Previous Hash, `sha256(content+previous)`); author every new entry to satisfy IT.** The qor-logic "canonical markup" finding is a foreign-tool expectation incompatible with the repo format — it is NOT a drift to remediate, and #123-128 are correct as bare hex.
+
+## SG-2026-06-11-B — The provider response is untrusted at the TRANSPORT layer too (no-follow redirects); screen every wire field PER-LEAF
+
+**Discovered**: 2026-06-11 (purple-team go-live assessment, 17 confirmed gaps; issues #94-#102).
+**Prevents**: a credentialed request following an attacker-controlled 3xx (token exfil + SSRF), and a cross-field ID-label suppressing a PAN on the wire.
+
+Cores were sound; the gaps were edges, the SG-2026-06-05 family one layer deeper:
+- **Transport SSRF (the sole go-live blocker):** stdlib `urllib`'s default opener auto-follows 3xx. An untrusted provider response can redirect a credential-bearing request to an arbitrary host — re-sending the secret (Authorization / `x-api-key`) and driving a server-side fetch — BEFORE any 200-only/screen defense (which inspect only the final body). **Rule: disable redirect-following at the transport** (a no-follow `HTTPRedirectHandler` returning None); a 3xx must surface as a non-200 and fail closed. Applies to BOTH `UrllibTransport` and `GatewaySink`.
+- **Per-leaf screen:** joining wire fields into one blob before `detect_sensitive` lets a trailing ID-label in field A fabricate `_is_id_preceded` suppression for a Luhn-valid PAN at the start of field B — a false negative. **Rule: scan EACH wire-bound field (incl. author/timestamp) as its own unit** (the discipline metadata already used). Extends SG-2026-06-05-E.
+- **Don't reflect untrusted response bodies into errors:** the FX-SEC-001 catalog matches specific key shapes, not an opaque bearer — a gateway echoing the Authorization header would leak it. Return a fixed discriminator (SECRET-LEAK-1).
+- **Fail-closed parse covers `RecursionError`** (deeply-nested JSON) and **type-confusion** (`.strip()`/`.join()` on non-string provider scalars) — reinforces SG-2026-06-04-I skip-don't-crash. Every fix shipped with a regression gate in `tests/redteam/` + `red-team.yml`.
+
 ## SG-2026-06-11-A — A provider with two API versions is a re-drift trap; pin the doc HOST + version per connector
 
 **Discovered**: 2026-06-11 (`/qor-research`, Devin v3 contract re-verification for the flip-ready cycle).

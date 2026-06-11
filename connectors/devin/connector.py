@@ -18,14 +18,21 @@ from adapter.core.observations import Observation
 from adapter.core.redaction import redact
 
 
+def _text(value: object) -> str:
+    """Untrusted-scalar -> stripped str, or "" for any non-string. A provider field that is a
+    truthy non-string (e.g. ``session_id``: 12345, ``status``: ["x"]) must NOT reach ``.strip()``
+    and raise an AttributeError that aborts the normalize batch (purple-team PARSE-2, 2026-06-11)."""
+    return value.strip() if isinstance(value, str) else ""
+
+
 def _session_body(session: dict) -> str:
     """Join the session's free-text fields (status / title / structured output)."""
-    status = (session.get("status") or session.get("status_enum") or "").strip()
+    status = _text(session.get("status")) or _text(session.get("status_enum"))
     output = session.get("structured_output")
     parts: list[str] = []
     if status:
         parts.append(f"[{status}]")
-    title = (session.get("title") or "").strip()
+    title = _text(session.get("title"))
     if title:
         parts.append(title)
     if output:
@@ -50,7 +57,7 @@ def _first_pr_url(session: dict) -> str:
 
 def parse_session(session: dict) -> Observation:
     """Map a Devin v3 session object into a redacted, provider-neutral Observation."""
-    sid = (session.get("session_id") or "").strip()  # `devin_id` is not a list-object field
+    sid = _text(session.get("session_id"))  # `devin_id` is not a list-object field; non-str -> ""
     pr = _first_pr_url(session)
     return Observation(
         source_ref=SourceRef(
@@ -61,7 +68,7 @@ def parse_session(session: dict) -> Observation:
         ),
         excerpt=redact(_session_body(session)) or "devin-session",
         mode=SourceMode.ACTIVE,
-        title=redact((session.get("title") or "").strip()),
+        title=redact(_text(session.get("title"))),
     )
 
 
