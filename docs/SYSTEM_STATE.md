@@ -8,7 +8,7 @@
 | **Updated By** | Judge (qor-substantiate) |
 | **Phase** | `main` + **security red-team COMPLETE (Cycles A/B/C, GH #50-#61 all closed)** — Cycle C: id-less webhook replays deduped by body hash for the 4 windowless providers (#60; bounded-cache eviction/TTL residual documented); emission contract rejects zero-width-only excerpt + bounds `source_id` (#61). Cores were sound; the 12 edge findings (guarantee-violations A, DoS/robustness B, replay/nits C) are all fixed. 26 Beta connectors; parse surfaces hardened — the before-Live DoS gate is cleared |
 | **Iteration** | 30 governed cycles (… redaction retrofit; references.md parity; security red-team **Cycle A** (#52/#53/#54), **Cycle B** (#50/#51/#55-#59 DoS), **Cycle C** (#60 replay / #61 nits) — all 12 red-team issues closed) |
-| **Session Seal** | `bc63f56a` — Entry #142 (slack flip-ready webhook + message redact-and-pass, L2; branch `feat/slack-golive`). Prior: #141 jira (`b68bd69d`), #140 data_classification mod (`bcbe6e2b`) |
+| **Session Seal** | `9d6070af` — Entry #144 (notion flip-ready webhook + title redact + sig-prefix gate, L2; branch `feat/notion-golive`; preceded by #143 verify-before-cite recovery research). Prior: #142 slack (`bc63f56a`), #141 jira (`b68bd69d`) |
 
 ---
 
@@ -20,8 +20,8 @@ bicameral-integrations/
 |   `-- core/  (emissions, observations, contracts, capabilities, pipeline,
 |              sensitive, webhook_security, filters, fixtures, __init__ + tests/)
 |-- connectors/  (each: connector.py, __init__, README, auth.md, references.md, fixtures/, tests/;
-|                 + config.json = the FX-CFG-001 mcp-UI descriptor [11 done: linear, google_drive, devin,
-|                 cursor, copilot, servicenow, granola, mcp_registry, github, jira, slack; 15 to fan out]; _schema/connector-config.schema.json + index.json [generated];
+|                 + config.json = the FX-CFG-001 mcp-UI descriptor [12 done: linear, google_drive, devin,
+|                 cursor, copilot, servicenow, granola, mcp_registry, github, jira, slack, notion; 14 to fan out]; _schema/connector-config.schema.json + index.json [generated];
 |                 SETUP.md = generated backend how-to runbook [from config.json; docs/CONNECTOR_BACKEND_SETUP.md
 |                 = the hand-authored framework])
 |   |-- github/         (PR -> Observation; ACTIVE+WEBHOOK)

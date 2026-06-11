@@ -11,7 +11,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Priority | P0 |
 | Default trust tier | T1/T3 |
 | Integration role | evidence + event |
-| Readiness (lifecycle) | Beta (parse + signature verify, proven end-to-end through the `runtime/` harness; ADR-0012) |
+| Readiness (lifecycle) | Beta -> **flip-ready, NOT yet Live** (parse + `X-Notion-Signature` verify; page title redact-and-passed, opaque created_by.id surfaced; FX-CFG-001 webhook descriptor shipped, contract re-verified live 2026-06-12). Open wire_gate: the `sha256=` prefix on X-Notion-Signature is UNVERIFIED (confirm live before Live; SG-2026-06-12-A). Webhook receipt operator-runtime; active fetch deferred. |
 
 ## Provider documentation (verify on refresh)
 

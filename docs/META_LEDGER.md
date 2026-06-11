@@ -4424,7 +4424,80 @@ operator-runtime. Regenerated index.json (11) + SETUP.md; readiness lift; redact
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#142 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **slack flip-ready SEALED at #142 (`bc63f56a`; L2)**. **11 of 26 connectors flip-ready** (+ slack, webhook) + 4 advisory mods. Sequence: mcp_registry, github, data_classification, jira, slack [done] -> notion (last). Prior: #141 jira, #140 data_classification mod.*
-*The platform is end-to-end + hardened for 11 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: final sequence cycle (notion); **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #143: RESEARCH BRIEF -- go-live sequence live-contract verification (verify-before-cite recovery)
+
+**Entry ID**: `goliveVerify143research`
+**Timestamp**: 2026-06-12T04:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-research)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(research-brief-golive-sequence-verify-2026-06-12.md)
+= e294b8c53260bf8c84bd985f0267890ed2e37c1f170907971c58bc3fa8529eeb
+```
+
+**Previous Hash**: bc63f56a7979bbbb2fe822ec3214d45dbc1f47e3a4a4c2ccd4666b824692921e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= e4b69ebf143d368393eae3425f368cb19bcb060e87cc2bce8f0a5566894cd8f2
+```
+
+**Decision**: Verify-before-cite RECOVERY (operator caught the gap): the prerequisite `/qor-research` was
+run for cursor+granola (#135) but SKIPPED for mcp_registry/github/jira/slack -- those descriptors shipped
+on recorded "verified 2026-06-08" claims, contravening SG-2026-06-11-D. Re-fetched all five live:
+**slack** (X-Slack-Signature v0, `v0:{ts}:{body}`, 5-min), **github** (X-Hub-Signature-256 sha256= over
+body), **jira** (X-Hub-Signature sha256= WebSub `method=signature`, no replay, X-Atlassian-Webhook-Identifier),
+**mcp_registry** (GET /v0/servers public, `servers`->`server`, cursor/metadata.nextCursor) -- ALL **MATCH**
+(the 4 shipped descriptors retroactively VALIDATED; lucky, not safe). **notion** verified
+(X-Notion-Signature HMAC-SHA256 over minified body w/ verification_token; events
+page.content_updated/comment.created/database.schema_updated/page.locked) with ONE gap: the connector
+requires a `sha256=` prefix the live docs don't confirm -> would reject every delivery if Notion sends bare
+hex (granola-class) -> carried as a notion wire_gate. **Process lesson SG-2026-06-12-A:** verify-before-cite
+is per-connector AND per-cycle; a stale "verified" date does not transfer. Brief:
+`docs/research-brief-golive-sequence-verify-2026-06-12.md`. L2.
+
+---
+
+### Entry #144: SESSION SEAL -- notion flip-ready (webhook) + title redact-and-pass + signature-prefix gate
+
+**Entry ID**: `notion144seal`
+**Timestamp**: 2026-06-12T05:00:00-04:00
+**Phase**: SUBSTANTIATE (parse/PII + webhook descriptor)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/notion/config.json)
+= 46fe25add7b1045a817054ab3750e7ab1ee2b5b7b5ce86500a8254d8d67f73f9
+```
+
+**Previous Hash**: e4b69ebf143d368393eae3425f368cb19bcb060e87cc2bce8f0a5566894cd8f2
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 9d6070afd807d685b13ef2ac98a1a817efd8179f3a2c39ed58a1fe0bb47cdf6c
+```
+
+**Decision**: notion -> flip-ready (cycle 6 of 6; built ON the #143 verified contract, correct order
+restored). **PII hardening (L2):** the page title is now **redact-and-passed**; `author` is the OPAQUE
+created_by.id (a Notion user UUID, pseudonymous), KEPT. **Descriptor:** `connectors/notion/config.json` --
+modes ["webhook"] (active fetch deferred), `notion_webhook` credential (X-Notion-Signature HMAC-SHA256 w/
+verification_token), webhook block (page/comment/database events). **Open wire_gate (verify-before-cite):**
+the connector's required `sha256=` prefix on X-Notion-Signature is UNVERIFIED -- if Notion sends bare hex,
+verify() rejects all deliveries; confirm live before Live (SG-2026-06-12-A). Regenerated index.json (12) +
+SETUP.md; readiness lift; redaction test added. **Measured:** full suite **563 passed**, ruff/mypy(172)
+clean, validator OK, governance-gate #1..#144 OK. **12 of 26 connectors flip-ready; the 6-cycle sequence
+is COMPLETE.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#144 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **notion flip-ready SEALED at #144 (`9d6070af`; L2)**; **6-cycle go-live sequence COMPLETE**. **12 of 26 connectors flip-ready** (linear, google_drive, devin, cursor, copilot, servicenow, granola, mcp_registry, github, jira, slack, notion) + 4 advisory mods. Verify-before-cite recovery (#143) validated the 4 mid-sequence connectors against live docs. Prior: #143 research, #142 slack.*
+*The platform is end-to-end + hardened for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (notion also needs the X-Notion-Signature prefix confirmed). 14 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
