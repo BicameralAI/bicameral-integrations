@@ -4658,7 +4658,44 @@ CLEARED.** L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#148 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **Cycle 3 notion-webhook SEALED at #148 (`58d28ea8`; L2)** -- notion HIGH CLEARED. **All 3 deep-audit BLOCKERs cleared** (copilot/granola #146, notion #148). **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #147 parse-robustness, #146 host-pin.*
+### Entry #149: SESSION SEAL -- mcp_registry redact-and-pass + github empty-delivery-id dedup (deep-audit Cycle 4)
+
+**Entry ID**: `mcpgithub149seal`
+**Timestamp**: 2026-06-12T14:15:00-04:00
+**Phase**: SUBSTANTIATE (PII-on-wire + replay hardening)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/mcp_registry/connector.py)
+= 88cf46aacedb9d06fef88c4e146e60ea81b988f1f7ca72aa1b22e97c52b00459
+```
+
+**Previous Hash**: 58d28ea886d7c06889fcfae4ed8eb2916ded243fb7983002cb83e3b19e4e7e64
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= d9754c43e88e55cbe821e2c56294bfb0d0ff81e135927d6730a084623ffa091d
+```
+
+**Decision**: Closed two confirmed mediums. **mcp_registry:** the descriptor claimed "PII-free by
+construction" while `parse_server` passed attacker-publishable PUBLIC registry free-text
+(name/title/description/url) straight through with NO `redact()`, and the only downstream screen catches
+secret/PHI/PAN -- not a generic email/phone. Now redact-and-passes title/description/url + `_str`-coerces
+every scalar (also closes the non-string-name/desc batch crash deferred from Cycle 2); descriptor corrected
+(description/pii_posture/redaction state third-party free-text scrubbed via redact, `ref` re-redacted on the
+wire by gateway_mapping). **github:** an empty/absent `X-GitHub-Delivery` header bypassed dedup (the bare
+`if delivery_id` guard) -> byte-identical id-less replays re-emitted; now a `sha256(body)` fallback
+guarantees dedup always runs (Jira/#60 body-hash pattern). **Red-team gates:** github id-less replay
+collapses, mcp_registry redacts an embedded email + tolerates non-string fields. Index.json + SETUP.md
+regenerated. **Measured:** full suite **589 passed**, ruff clean, mypy clean, validator OK,
+governance-gate #1..#149 OK. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#149 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **Cycle 4 SEALED at #149 (`d9754c43`; L2)** -- mcp_registry redact-and-pass + github replay-dedup closed. All 3 deep-audit BLOCKERs cleared (#146/#148); 8 of 9 mediums closed (mcp_registry/github/cursor/copilot/slack/notion). **12 of 26 connectors flip-ready** + 4 advisory mods. Prior: #148 notion-webhook, #147 parse-robustness.*
 *The platform is end-to-end for 12 flip-ready connectors + 4 mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **Cycle 4** (mcp_registry PII descriptor + str-coercion; github empty-delivery-id dedup). Then Cycle 5 (shared lows). **@jinhongkuan** live-flips per `docs/runbooks/` (notion: webhook now emits a page-id pointer; confirm the X-Notion-Signature prefix live). Backlog: branch protection (B5); bot #73.*
+*Next required action: **Cycle 5** (shared lows: NANP->international phone redaction; resolution-checked instructions[].ref + Verification headings; mod per-leaf output screen; linear/fathom author drop). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

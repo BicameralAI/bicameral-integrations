@@ -1,7 +1,7 @@
 {
   "id": "mcp_registry",
   "name": "MCP Registry",
-  "description": "Public MCP Registry server entries as PII-free, no-auth governed evidence.",
+  "description": "Public MCP Registry server entries as redact-and-pass, no-auth governed evidence.",
   "category": "agent-ecosystem",
   "trust_tier": "T1",
   "status": "live-ready",
@@ -19,8 +19,8 @@
   ],
   "data": {
     "emits": ["mcp_server"],
-    "pii_posture": "Public registry metadata only (server name/title/description, repository/website URL, version). PII-free; no credential; no per-person data.",
-    "redaction": "none (public, PII-free by construction)"
+    "pii_posture": "Public registry metadata (server name/title/description, repository/website URL, version) — but the registry is PUBLIC and fully attacker-publishable, so the free-text leaves are third-party-controlled and could embed a generic email/phone. They are redact-and-passed at parse (the only downstream backstop, FX-SEC-001, catches secret/PHI/PAN but not generic email/phone). No credential; no intended per-person data.",
+    "redaction": "redact-and-pass (title, description, url — third-party public free text); ref keeps the server-name locator (re-redacted on the wire by gateway_mapping)"
   },
   "instructions": [
     {
