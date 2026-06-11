@@ -44,7 +44,7 @@ Runtime config:
 
 | key | required | default | description |
 |---|---|---|---|
-| `base_url` | True | — | GET .../orgs/<org>/copilot/metrics — template YOUR org in (default carries an ORG placeholder). |
+| `base_url` | True | — | GET .../orgs/<org>/copilot/metrics — template YOUR org in (host pinned api.github.com; default carries an ORG placeholder). |
 | `api_version` | False | 2022-11-28 | GitHub REST API version header (valid; EOL 2028-03-10). |
 | `per_page` | False | 100 | Results per page (max 100; page-number pagination, 100-day lookback). |
 

@@ -42,7 +42,7 @@ Runtime config:
 
 | key | required | default | description |
 |---|---|---|---|
-| `base_url` | True | — | The v3 sessions list endpoint with your org templated in: https://api.devin.ai/v3/organizations/<org_id>/sessions. Consumed by runtime build_devin_spec(base_url=...); there is no default (the operator supplies org_id). |
+| `base_url` | True | — | The v3 sessions list endpoint with your org templated in: https://api.devin.ai/v3/organizations/<org_id>/sessions (host pinned api.devin.ai; org_id goes in the path). Consumed by runtime build_devin_spec(base_url=...); there is no default (the operator supplies org_id). |
 
 ## Run it (headless — no UI)
 

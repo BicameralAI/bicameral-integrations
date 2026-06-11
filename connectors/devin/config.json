@@ -30,7 +30,7 @@
       "key": "base_url",
       "label": "Sessions endpoint base URL",
       "required": true,
-      "description": "The v3 sessions list endpoint with your org templated in: https://api.devin.ai/v3/organizations/<org_id>/sessions. Consumed by runtime build_devin_spec(base_url=...); there is no default (the operator supplies org_id)."
+      "description": "The v3 sessions list endpoint with your org templated in: https://api.devin.ai/v3/organizations/<org_id>/sessions (host pinned api.devin.ai; org_id goes in the path). Consumed by runtime build_devin_spec(base_url=...); there is no default (the operator supplies org_id)."
     }
   ],
   "data": {
