@@ -24,7 +24,9 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | Not applicable (git/file import) |
 | Changelog/notes | https://aider.chat/HISTORY.html · https://github.com/Aider-AI/aider |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+> **Doc-standard attestation (ledger #175, 2026-06-13):** this `references.md` (verified-contract section + provider-docs table + PII handling) + `auth.md` (git-attribution scheme + deferred live paths) + `config.json` (explicit `pii_posture` + `wire_gates` + `live_readiness`) assessed against the connector documentation standard — **EXCEEDS minimum**.
+
+## Verified API/webhook contract (as built, 2026-06-05; attribution re-verified live 2026-06-13)
 
 - **Commit record (parsed)**: `parse_commit` reads `{hash, message, author_name, committer_name, authored_at, trailers}`; attribution channel detected by `_attributed_by` — `"author"` when `"(aider)"` in `author_name`, `"committer"` when in `committer_name`, `"co-author"` when a `Co-authored-by:` trailer contains `"aider"`.
 - **Verification**: no verify — poll/passive (git import; no network delivery, no signature).
