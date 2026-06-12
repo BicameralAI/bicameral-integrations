@@ -1,0 +1,55 @@
+{
+  "id": "data_classification",
+  "manifest_id": "data-classification",
+  "name": "Data Classification",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags classifying sensitive evidence before it is routed, reviewed, or proposed for outbound notification.",
+  "family": "data-governance",
+  "advises_on": "Classifying sensitive evidence before it is routed, reviewed, or proposed for outbound notification.",
+  "consumes": [
+    "title + body",
+    "evidence excerpt"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "source_evidence_annotation"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Suggests a sensitivity classification; never gates or redacts canonical state."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/data_classification/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

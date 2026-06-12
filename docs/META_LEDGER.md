@@ -6510,7 +6510,42 @@ UI descriptor; fan-out next.** L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#195 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **FX-MOD-CFG-001 SEALED at #195 (`48ebf47b`; L2)** -- mod UI-descriptor contract (schema + build_mod_index/setup + validator tied to the enforced manifest + UI spec + CI) with 2 exemplars. **26/26 connectors + 2/13 mods now carry a UI descriptor.** + 13 mods. Prior: #194 PT-final4, #193 recon.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods. Secrets never committed nor printed.*
-*Next required action: **fan out** the remaining 11 mod descriptors (+ regen index/SETUPs), then **/qor-document** (README mods section: now UI-renderable) + **/qor-substantiate** + final merge (operator ask). **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+### Entry #196: SESSION SEAL -- FX-MOD-CFG-001 fan-out: all 13 mods now carry a UI descriptor
+
+**Entry ID**: `modcfg196fanout13`
+**Timestamp**: 2026-06-15T16:00:00-04:00
+**Phase**: SUBSTANTIATE (UI-completeness)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(mods/index.json)
+= a05dbf7a2ffe98bce7c2773bc6cb8f872db0c4feb4b87dd7e70508870fd5b5d2
+```
+
+**Previous Hash**: 48ebf47be61585c09d40bd208a0d9ff0a31121d664462ec71c7ddf4d6f459788
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 8834fa7cc93932172010bdc03b57a7f1c34e51928f3469ac33f69220eb513254
+```
+
+**Decision**: Fanned out the FX-MOD-CFG-001 mod descriptor to the remaining 11 mods -> **ALL 13 mods now carry a
+UI descriptor** (authority_boundary, code_review_risk, connector_freshness, data_classification, decision_drift,
+dependency_risk, ownership_routing, security_mentions, source_trust_calibration, test_adequacy, webhook_risk +
+the #195 exemplars adapter_contract + noisy_source_gate). Each descriptor's `advises_on`/`consumes` is grounded
+in the mod's README scope; `emits` == the enforced `manifest.yaml` outputs; `em_safe.forbidden_actions` == the
+enforced manifest (the validator rejects any drift). `code_review_risk` additionally references ADR-0011 (Review
+Bot). Regenerated `mods/index.json` (13 mods) + 13 per-mod `SETUP.md`. **Measured:** mod-validator OK (13
+descriptors valid + manifest-consistent + index/SETUP fresh), full suite **705 passed**, ruff clean, whole-tree
+mypy (210 files) clean, governance-gate #1..#196 OK. **The frontend now has a complete UI data contract for BOTH
+26 connectors AND 13 mods (descriptor + index + SETUP + schema + validator + UI spec).** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#196 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **FX-MOD-CFG-001 FANOUT SEALED at #196 (`8834fa7c`; L1)** -- ALL 13 mods carry a UI descriptor (manifest-consistent). **UI contract complete: 26/26 connectors + 13/13 mods.** Prior: #195 mod-contract, #194 PT-final4.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, ALL with UI descriptors. Secrets never committed nor printed.*
+*Next required action: **/qor-document** (README mods section: now UI-renderable, connector+mod UI parity) + **/qor-substantiate** + final merge (operator ask). **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*

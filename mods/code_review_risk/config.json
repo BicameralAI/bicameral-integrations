@@ -1,0 +1,61 @@
+{
+  "id": "code_review_risk",
+  "manifest_id": "code-review-risk",
+  "name": "Code Review Risk",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags pR-level review risk — the first mod family behind the Bicameral Review Bot (ADR-0011).",
+  "family": "review-risk",
+  "advises_on": "PR-level review risk — the first mod family behind the Bicameral Review Bot (ADR-0011).",
+  "consumes": [
+    "pull-request evidence (title + body)",
+    "changed file paths",
+    "source_ref"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "source_evidence_annotation",
+    "suggested_review_question"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Surfaces PR review-risk signals; advises a reviewer, never blocks CI."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/code_review_risk/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0011-bicameral-review-bot.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "source_trust_calibration",
+  "manifest_id": "source-trust-calibration",
+  "name": "Source Trust Calibration",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags calibrating source trust based on provenance, source type, historical noise, data sensitivity, and operation tier.",
+  "family": "trust",
+  "advises_on": "Calibrating source trust based on provenance, source type, historical noise, data sensitivity, and operation tier.",
+  "consumes": [
+    "source_id",
+    "source_ref (provenance)",
+    "source type / tier signals"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "source_evidence_annotation"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Suggests a source-trust calibration; advisory input to the operator, never an enforced tier."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/source_trust_calibration/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

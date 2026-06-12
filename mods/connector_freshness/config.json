@@ -1,0 +1,55 @@
+{
+  "id": "connector_freshness",
+  "manifest_id": "connector-freshness",
+  "name": "Connector Freshness",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags stale provider assumptions in connector docs, fixtures, auth notes, references, and parser scope.",
+  "family": "freshness",
+  "advises_on": "Stale provider assumptions in connector docs, fixtures, auth notes, references, and parser scope.",
+  "consumes": [
+    "evidence excerpt + title",
+    "source_ref (provider / kind)"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "source_evidence_annotation"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Flags possibly-stale connector assumptions; suggests a refresh, never edits."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/connector_freshness/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

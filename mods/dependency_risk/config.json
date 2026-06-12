@@ -1,0 +1,55 @@
+{
+  "id": "dependency_risk",
+  "manifest_id": "dependency-risk",
+  "name": "Dependency Risk",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags dependency-risk signals from connector evidence — known vulnerabilities and dependency-manifest changes.",
+  "family": "dependency",
+  "advises_on": "Dependency-risk signals from connector evidence — known vulnerabilities and dependency-manifest changes.",
+  "consumes": [
+    "evidence excerpt (dependency manifests, vuln mentions)",
+    "source_ref"
+  ],
+  "emits": [
+    "dependency_signal",
+    "routing_hint",
+    "source_evidence_annotation"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Annotates dependency-risk signals; routes to a reviewer, never blocks or approves."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/dependency_risk/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "test_adequacy",
+  "manifest_id": "test-adequacy",
+  "name": "Test Adequacy",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags missing or weak tests around changed behavior, connector parsing, fixtures, governance gates, and review workflows.",
+  "family": "testing",
+  "advises_on": "Missing or weak tests around changed behavior, connector parsing, fixtures, governance gates, and review workflows.",
+  "consumes": [
+    "changed file paths",
+    "evidence excerpt (tests/fixtures/gates)",
+    "source_ref"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "source_evidence_annotation",
+    "suggested_review_question"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Flags weak/missing test coverage; suggests review questions, never blocks CI."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/test_adequacy/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}
