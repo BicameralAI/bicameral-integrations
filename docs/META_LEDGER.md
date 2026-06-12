@@ -5397,7 +5397,44 @@ flip-ready.** L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#167 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **aider FLIP-READY, SEALED at #167 (`4b53b56f`; L1)** -- commit subject redact-and-pass (F3) + author name RETAINED as intentional T0 git provenance (F4 / SG-2026-06-13-B) + FX-CFG-001 descriptor. **16 of 26 connectors flip-ready** + 13 mods. Prior: #166 local_directory, #165 research.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 16 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** zendesk (descriptor-only; already redact-and-pass + HMAC verify + dedup), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #168: SESSION SEAL -- zendesk flip-ready (FX-CFG-001 descriptor; parse surface already hardened)
+
+**Entry ID**: `zendesk168flip`
+**Timestamp**: 2026-06-13T17:30:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/zendesk/config.json)
+= bb488ca7fb86e8beddd8d14483b7eee57044e3f4bef2bf9b7e51b68c8db3708f
+```
+
+**Previous Hash**: 4b53b56f8c28b5d06fe7acad28ac14f1ac5e85e884e1573ada138f62f1f9a641
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 9989fdea72d7d96315c5daa39b6b9244a1428305049e09a81da78163ad0414ab
+```
+
+**Decision**: zendesk flipped flip-ready (3 of 3 this lane) -- **descriptor-only**, as the research brief
+predicted: the parse surface was already correct (redact-and-pass on subject **and** body, Base64-HMAC verify,
+dedup with body-hash fallback, opaque `requester_id` -- no requester name/email). **No connector code change.**
+Authored `connectors/zendesk/config.json` (modes `["webhook","active"]`; credentials `zendesk_webhook`
+(`webhook_secret`, `modes:["webhook"]`, required) + `zendesk` (`api_key`, `modes:["active"]`, required:false,
+`wiring_oversight:true` -- the REST poll is honestly marked DEFERRED, webhook is the built+verified path);
+`webhook` block with the live-verified signature scheme `base64(HMAC-SHA256(secret, timestamp+body))`,
+header `X-Zendesk-Webhook-Signature`, operator-provisioned receiver; `register_webhook`+`paste_secret`+`open_url`
++`verify` instructions; `data.pii_posture` documents the redact-and-pass + opaque-requester + comments/attachments-
+excluded posture). Regenerated `SETUP.md` + `index.json`. **Measured:** full suite **669 passed** (no parse
+change), ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#168 OK. **17 of 26
+connectors flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#168 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **zendesk FLIP-READY, SEALED at #168 (`9989fdea`; L1)** -- FX-CFG-001 descriptor (webhook signature re-verified live); parse surface already redact-and-pass + HMAC verify + dedup + opaque requester_id. **ALL 3 lane connectors flip-ready: 17 of 26** + 13 mods. Prior: #167 aider, #166 local_directory.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 17 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-document** (README + capability matrix, 14->17 flip-ready) then **/qor-deep-audit** purple-team over local_directory + aider + zendesk. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
