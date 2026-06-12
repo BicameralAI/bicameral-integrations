@@ -66,6 +66,17 @@
     {"kind": "events-api", "url": "https://api.slack.com/apis/connections/events-api"},
     {"kind": "verify", "url": "https://api.slack.com/authentication/verifying-requests-from-slack"}
   ],
+  "ingestion_gate": {
+    "source_title_template": "Slack: {channel_name}",
+    "source_type_label": "Slack message",
+    "summary_fields": ["channel_name", "author_ref", "message_excerpt"],
+    "evidence_labels": {
+      "message": "Message",
+      "thread": "Thread",
+      "permalink": "Slack permalink"
+    },
+    "empty_state": "No Slack evidence has produced candidates yet."
+  },
   "wire_gates": [
     "Webhook path built + verified: X-Slack-Signature v0= HMAC-SHA256 over 'v0:{ts}:{body}' + 5-minute replay window (constant-time, fail-closed); url_verification handshake + unverified deliveries normalize to []. Message text redact-and-passed; opaque user id (pseudonymous) surfaced.",
     "Trust tier T2 (read/ingest). Notify/write (T3+) is deferred (ADR-0008, evidence-before-action).",

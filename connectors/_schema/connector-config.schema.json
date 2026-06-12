@@ -122,6 +122,19 @@
         "properties": {"kind": {"type": "string"}, "url": {"type": "string"}}
       }
     },
+    "ingestion_gate": {
+      "type": "object",
+      "description": "Optional display hints for the Ingestion Gate UI. Presentational only — no review commands, governance policy, or secret storage. Bot-owned governance still controls review actions.",
+      "additionalProperties": false,
+      "required": ["source_type_label", "summary_fields", "evidence_labels", "empty_state"],
+      "properties": {
+        "source_title_template": {"type": "string", "description": "Template for the source row title in the Ingestion Gate UI; placeholders like {channel_name} are filled by the rendering layer from adapter-emitted fields."},
+        "source_type_label": {"type": "string", "description": "Short noun for the evidence kind (e.g. 'Slack message', 'Devin session')."},
+        "summary_fields": {"type": "array", "items": {"type": "string"}, "description": "Ordered adapter-emitted field names shown in the evidence summary row."},
+        "evidence_labels": {"type": "object", "description": "Map of adapter evidence-kind keys to human display labels."},
+        "empty_state": {"type": "string", "description": "Message shown when no evidence has been ingested from this source."}
+      }
+    },
     "wire_gates": {"type": "array", "items": {"type": "string"}},
     "live_readiness": {"type": "string"}
   }

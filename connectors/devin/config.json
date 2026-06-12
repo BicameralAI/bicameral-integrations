@@ -64,6 +64,16 @@
     {"kind": "auth", "url": "https://docs.devin.ai/api-reference/authentication"},
     {"kind": "sessions-v3", "url": "https://docs.devinenterprise.com/api-reference/v3/sessions/organizations-sessions"}
   ],
+  "ingestion_gate": {
+    "source_title_template": "Devin: {session_title}",
+    "source_type_label": "Devin session",
+    "summary_fields": ["session_title", "session_status", "pr_url"],
+    "evidence_labels": {
+      "session": "Session",
+      "pr_url": "Pull request"
+    },
+    "empty_state": "No Devin evidence has produced candidates yet."
+  },
   "wire_gates": [
     "The operator templates org_id into the REQUIRED base_url (https://api.devin.ai/v3/organizations/<org_id>/sessions); build_devin_spec has no default base_url, so a missing value fails closed (ConfigError) before any request.",
     "v3 contract (items envelope; pull_requests[] of {pr_url, pr_state}; cursor end_cursor/has_next_page re-sent as ?after=; Bearer cog_ Service-User key) was doc-verified 2026-06-08 and re-verified live 2026-06-11 (docs.devinenterprise.com) — but UNVERIFIED against the live API with a real cog_ key. The operator must run the live poll and review the result before promoting to Live (ADR-0012).",
