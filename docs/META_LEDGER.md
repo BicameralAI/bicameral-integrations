@@ -6186,7 +6186,48 @@ purple-team -> completes 26/26. EM-safe + read-only + ADR-0012 hold. L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#187 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **RESEARCH SEALED at #187 (`759439f7`; L1)** -- the remainder (anthropic_admin/openai_admin/continue_dev/confluence) foundation; ZERO drift. 2 descriptor-only (PII-free / identity-dropped), 2 redact-and-pass (continue_dev, confluence); confluence offers verifiable poll only (SG-2026-06-14-B). Completing these reaches **26/26 flip-ready**. Currently **22 of 26** + 13 mods. Prior: #186 PT-sarif, #185 recon.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 22 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** per connector (anthropic_admin -> openai_admin -> continue_dev -> confluence, each with explicit doc-standard attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+### Entry #188: SESSION SEAL -- anthropic_admin flip-ready (FX-CFG-001 descriptor; PII-free aggregate by construction; doc-standard attestation)
+
+**Entry ID**: `anthropicadmin188flip`
+**Timestamp**: 2026-06-14T22:00:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/anthropic_admin/config.json)
+= 4f9e7903fa8a344e2b395e520c15e839f5df9ab4928715e7cf4bfb1f9e219623
+```
+
+**Previous Hash**: 759439f765a212f4a1dd78f0d3ff9e6cf515f1b48ad4711414820697387b5957
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 6f3fc059092216770eb0b517cca8ab3efb1e62f16058c7a1dd5ed8ad29e6588f
+```
+
+**Decision**: anthropic_admin flipped flip-ready (1 of 4 -- the remainder) -- **descriptor-only**, as the
+research brief predicted: `parse_usage` is **PII-free aggregate by construction** (synthesizes its own excerpt
+from numeric token totals -- input = uncached + cache_read + nested cache_creation.ephemeral_* -- plus distinct
+model names; the opaque workspace_id/api_key_id are NEVER surfaced; no author; no provider free text). **No
+connector code change.** Authored `connectors/anthropic_admin/config.json` (modes `["active"]`; credential
+`anthropic_admin` `api_key` x-api-key `validation: ^sk-ant-admin` + anthropic-version; runtime_config base_url +
+bucket_width; pii_posture states PII-free-by-construction; redaction n/a), regenerated `SETUP.md` + `index.json`.
+
+**Documentation standard -- EXCEEDS minimum (explicit attestation):** `references.md` -- verified-contract
+re-verified live 2026-06-13 (docs.anthropic.com, MATCH incl. nested cache_creation) + attestation marker;
+`auth.md` -- admin-key model + Privacy/PII section + deferred paths; `config.json` -- dated `wire_gates` +
+explicit `pii_posture` + `live_readiness` + resolving instruction `ref`. **EXCEEDS.**
+
+**Tests:** a PII-shaped value in a non-surfaced grouping dimension (workspace_id/api_key_id) does not leak +
+metrics still summarized + no author. **Measured:** full suite **690 passed** (no parse change), ruff clean,
+whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#188 OK. **23 of 26 connectors flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#188 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **anthropic_admin FLIP-READY, SEALED at #188 (`6f3fc059`; L1)** -- FX-CFG-001 descriptor; PII-free aggregate by construction (opaque ids never surfaced; no author); doc-standard EXCEEDS minimum (attested). **23 of 26 flip-ready** + 13 mods. Prior: #187 research, #186 PT-sarif.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 23 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-auto-dev-1** openai_admin (descriptor-only; identity-dropped), then continue_dev + confluence (redact-and-pass), then **/qor-document** + **/qor-deep-audit** -> 26/26. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
