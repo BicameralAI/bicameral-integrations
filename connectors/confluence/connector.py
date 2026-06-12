@@ -63,7 +63,11 @@ def parse_content(content: dict) -> Observation:
         source_ref=SourceRef(
             source_id="confluence",
             ref=str(content.get("id") or "confluence-page"),
-            url=_page_url(content),
+            # the _links.webui slug carries the page TITLE -> redact the url too, else title PII
+            # survives in source_ref.url even though the title field is redacted (purple-team
+            # CONF-PII-URL-01). Residual: a URL-encoded email in the slug (e.g. %40) is not regex-
+            # matchable -- the redacted title field is the canonical surface.
+            url=redact(_page_url(content)),
             kind="page",
         ),
         excerpt=redact(_strip_storage_html(storage)) or title or "confluence-page",

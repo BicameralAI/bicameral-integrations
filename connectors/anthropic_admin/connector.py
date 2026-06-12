@@ -54,7 +54,10 @@ def _sum_tokens(results: list) -> tuple[int, int, list[str]]:
 
 def parse_usage(bucket: dict) -> Observation:
     """Map an Anthropic usage bucket into a PII-free aggregate Observation."""
-    start = (bucket.get("starting_at") or "").strip()
+    # isinstance-guard: `or "".strip()` floors only falsy — a truthy non-str starting_at would
+    # crash `.strip()` at the parse boundary (purple-team ANTHROPIC-ADMIN-PARSE-1; the #59 invariant).
+    raw_start = bucket.get("starting_at")
+    start = raw_start.strip() if isinstance(raw_start, str) else ""
     raw = bucket.get("results")
     results = raw if isinstance(raw, list) else []
     in_tokens, out_tokens, models = _sum_tokens(results)

@@ -26,7 +26,9 @@ _log = logging.getLogger(__name__)
 # parse (e.g. `(row.get(k) or "").strip()` on a non-string, `redact(non_str)`): skip that
 # one row instead of aborting the whole batch (deep-audit Cycle 2). A genuine emission-
 # contract breach is raised by `normalize`, NOT here, so it still propagates uncaught.
-_PARSE_SKIP = (AttributeError, TypeError, ValueError, LookupError)
+# OverflowError/OSError cover an out-of-range epoch int reaching time.gmtime/strftime
+# (purple-team OPENAI-ADMIN-PARSE-1 / SG-2026-06-14-C) — a systemic per-row backstop.
+_PARSE_SKIP = (AttributeError, TypeError, ValueError, LookupError, OverflowError, OSError)
 
 
 class WebhookConnector(Protocol):

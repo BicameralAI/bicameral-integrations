@@ -45,6 +45,19 @@ def test_blank_body_floors_to_title_then_literal():
     assert obs.source_ref.ref == "confluence-page"
 
 
+def test_page_url_title_slug_redact_and_passed():
+    # purple-team CONF-PII-URL-01: the _links.webui slug carries the page title -> the url is redacted.
+    content = {
+        "id": "5",
+        "title": "x",
+        "body": {"storage": {"value": "<p>ok</p>"}},
+        "_links": {"base": "https://site.atlassian.net/wiki",
+                   "webui": "/spaces/HR/pages/5/Onboarding+for+jane.doe@corp.com"},
+    }
+    obs = parse_content(content)
+    assert "jane.doe@corp.com" not in obs.source_ref.url
+
+
 def test_page_body_and_title_redact_and_passed():
     # F1 (medium): a Confluence page title + body are redact-and-passed (PII-dense internal docs).
     content = {

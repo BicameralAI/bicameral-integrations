@@ -81,6 +81,12 @@ def test_userid_author_redact_and_passed():
     assert "dev@corp.com" not in parse_event({"eventName": "x", "userId": "dev@corp.com"}).author
 
 
+def test_free_form_model_metadata_redact_and_passed():
+    # purple-team CONTINUE-PII-1: modelTitle is a user-defined free-form string -> redact-and-passed.
+    obs = parse_event({"eventName": "x", "modelTitle": "my model (contact dev@corp.com)"})
+    assert "dev@corp.com" not in obs.metadata["model"]
+
+
 def test_end_to_end_normalizes():
     out = normalize(
         ContinueConnector().observations(_event()), adapter_version="continue/0.1.0"

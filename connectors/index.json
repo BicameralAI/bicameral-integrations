@@ -227,8 +227,8 @@
         "emits": [
           "page"
         ],
-        "pii_posture": "A Confluence page TITLE + flattened storage BODY are PII-dense free text (internal docs, names, emails) -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed; the jira/github standard, since FX-SEC-001 backstops only secret/PHI/PAN). The opaque page id ref + page URL are not redacted; _strip_storage_html is a lossy flattener (NOT a sanitizer) -- redact() + FX-SEC-001 are the security controls. No author is surfaced. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
-        "redaction": "redact-and-pass (page title + flattened storage body); opaque id ref + URL un-redacted; no author; FX-SEC-001 rejects secret/PHI/PAN"
+        "pii_posture": "A Confluence page TITLE + flattened storage BODY are PII-dense free text (internal docs, names, emails) -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed, since FX-SEC-001 backstops only secret/PHI/PAN). The page URL is ALSO redact-and-passed because the _links.webui slug carries the page title (purple-team CONF-PII-URL-01); the opaque page id ref is not redacted. RESIDUAL: a URL-encoded email in the title slug (e.g. %40) is not regex-matchable -- the redacted title field is the canonical surface. _strip_storage_html is a lossy flattener (NOT a sanitizer) -- redact() + FX-SEC-001 are the security controls. No author is surfaced. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+        "redaction": "redact-and-pass (page title + flattened storage body + page URL/webui-slug); opaque id ref un-redacted; URL-encoded slug PII is a disclosed residual; no author; FX-SEC-001 rejects secret/PHI/PAN"
       },
       "description": "Confluence Cloud page content as redact-and-pass governed evidence (title + body scrubbed); authenticated REST poll (the Connect-app-JWT webhook needs a Connect app, deferred).",
       "id": "confluence",
@@ -299,8 +299,8 @@
         "emits": [
           "development_data"
         ],
-        "pii_posture": "Continue dev-data events carry developer-AI interaction text (prompt/completion/content/message) that can contain code with secrets/emails -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed; SG-2026-06-13-A). The userId author is redact-and-passed too (an opaque id passes unchanged; an email-shaped userId is scrubbed); the 'continue {eventName}' floor + the technical metadata (name/schema/model) are not redacted. The operator's Continue level:noCode lever additionally strips text fields AT SOURCE. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
-        "redaction": "redact-and-pass (prompt/completion/content/message excerpt + userId author); event-kind floor + technical metadata kept; operator level:noCode strips at source; FX-SEC-001 rejects secret/PHI/PAN"
+        "pii_posture": "Continue dev-data events carry developer-AI interaction text (prompt/completion/content/message) that can contain code with secrets/emails -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed; SG-2026-06-13-A). The userId author is redact-and-passed too (an opaque id passes unchanged; an email-shaped userId is scrubbed), and the metadata 'model' (modelTitle is a USER-DEFINED free-form string) is ALSO redact-and-passed (purple-team CONTINUE-PII-1). The 'continue {eventName}' floor + the uniform-technical metadata (name/schema) are not redacted. The operator's Continue level:noCode lever additionally strips text fields AT SOURCE. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+        "redaction": "redact-and-pass (prompt/completion/content/message excerpt + userId author + free-form model metadata); event-kind floor + uniform-technical metadata (name/schema) kept; operator level:noCode strips at source; FX-SEC-001 rejects secret/PHI/PAN"
       },
       "description": "Continue (continue.dev) developer-AI dev-data events (local JSONL) as redact-and-pass governed evidence (prompt/completion text scrubbed; opaque userId).",
       "id": "continue_dev",

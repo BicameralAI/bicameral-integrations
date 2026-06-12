@@ -50,7 +50,7 @@ python -m runtime.cli run continue_dev --sink gateway   # real POST (go-live; de
 ## Data & permissions
 
 - Emits: development_data
-- PII posture: Continue dev-data events carry developer-AI interaction text (prompt/completion/content/message) that can contain code with secrets/emails -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed; SG-2026-06-13-A). The userId author is redact-and-passed too (an opaque id passes unchanged; an email-shaped userId is scrubbed); the 'continue {eventName}' floor + the technical metadata (name/schema/model) are not redacted. The operator's Continue level:noCode lever additionally strips text fields AT SOURCE. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.
+- PII posture: Continue dev-data events carry developer-AI interaction text (prompt/completion/content/message) that can contain code with secrets/emails -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed; SG-2026-06-13-A). The userId author is redact-and-passed too (an opaque id passes unchanged; an email-shaped userId is scrubbed), and the metadata 'model' (modelTitle is a USER-DEFINED free-form string) is ALSO redact-and-passed (purple-team CONTINUE-PII-1). The 'continue {eventName}' floor + the uniform-technical metadata (name/schema) are not redacted. The operator's Continue level:noCode lever additionally strips text fields AT SOURCE. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.
 
 ## Go-live
 

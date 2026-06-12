@@ -38,6 +38,12 @@ def test_blank_bucket_floors():
     assert obs.excerpt  # non-blank
 
 
+def test_truthy_non_str_starting_at_does_not_crash():
+    # purple-team ANTHROPIC-ADMIN-PARSE-1: a truthy non-str starting_at must normalize, not crash.
+    obs = parse_usage({"starting_at": 12345, "results": []})  # must not raise
+    assert obs.source_ref.ref == "anthropic-usage" and obs.excerpt
+
+
 def test_pii_free_by_construction_opaque_dimensions_never_surfaced():
     # Descriptor PII-free claim: even a PII-shaped value in a non-surfaced grouping dimension
     # cannot leak — the connector reads only token metrics + model, never workspace/key ids.
