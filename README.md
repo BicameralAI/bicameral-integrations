@@ -24,7 +24,7 @@
 
 | | |
 |---|---|
-| **Maturity** | Beta — 26 connectors harness-proven end-to-end, of which **17 are flip-ready** (config descriptor + adversarially hardened, ready for an operator to flip Live) and **13 EM-safe advisory mods** are built; a PII redaction-and-pass model lets PII-dense free-text be emitted safely; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/ingest`) and operator-actionable |
+| **Maturity** | Beta — 26 connectors harness-proven end-to-end, of which **20 are flip-ready** (config descriptor + adversarially hardened, ready for an operator to flip Live) and **13 EM-safe advisory mods** are built; a PII redaction-and-pass model lets PII-dense free-text be emitted safely; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/ingest`) and operator-actionable |
 | **Footprint** | Zero third-party **runtime** dependencies (Python stdlib only) |
 | **Safety model** | Read-only evidence adapters ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)); fail-closed webhook signature verification; a producer-side secret/PII hard-screen on every emission |
 | **Assurance** | Hash-chained governance ledger + machine-verified CI gate; SHA-pinned Actions; CodeQL, Bandit, OpenSSF Scorecard, SBOM |
@@ -96,7 +96,7 @@ Each connector is a provider-facing **parse surface** — `parse_*(payload) -> O
 
 ### Flip-ready — capability matrix
 
-**17 connectors** carry a machine-readable config descriptor, adversarial security hardening, and an operator runbook — ready to flip Live. Going Live is the operator's action: they supply their own credentials and wire `GatewaySink(endpoint, token)`; this repo holds no secret.
+**20 connectors** carry a machine-readable config descriptor, adversarial security hardening, and an operator runbook — ready to flip Live. Going Live is the operator's action: they supply their own credentials and wire `GatewaySink(endpoint, token)`; this repo holds no secret.
 
 ```mermaid
 flowchart LR
@@ -122,12 +122,15 @@ flowchart LR
 | [zendesk](connectors/zendesk/) | Support-ticket webhook events | `ticket` — redact-and-passed subject + body; requester an opaque id | Webhook (`X-Zendesk-Webhook-Signature` Base64 HMAC over `{ts}{body}`); body-hash dedup; active REST poll deferred |
 | [local_directory](connectors/local_directory/) | Files dropped in a watched directory | `planning` — redact-and-passed content + filename stem | Passive (local file import); no credential; path sha256-tokenized; FX-SEC-001 hard-screen |
 | [aider](connectors/aider/) | Aider-attributed git commits | `commit` — redact-and-passed subject; author name retained as provenance | Passive (local git import); no credential; opaque hash floor; FX-SEC-001 hard-screen |
+| [gitlab](connectors/gitlab/) | Merge-request / issue webhook events | `merge_request`/`issue` — redact body + title; public username | Webhook (`X-Gitlab-Token` plaintext shared secret, constant-time); event-UUID dedup; active REST poll deferred |
+| [sentry](connectors/sentry/) | Issue webhook events | `issue` — redact exception message + culprit; full stack trace never read | Webhook (`Sentry-Hook-Signature` hex HMAC over raw body); Request-ID/body-hash dedup |
+| [pagerduty](connectors/pagerduty/) | v3 incident webhook events | `incident` — redact title/summary; no actor surfaced | Webhook (`X-PagerDuty-Signature` `v1=` multi-sig HMAC membership); event-id dedup |
 
 ### Future Development (Beta — parse surface; descriptor / flip-readiness pending)
 
 These are harness-proven parse surfaces whose config descriptor and flip-readiness hardening are still to come:
 
-[anthropic_admin](connectors/anthropic_admin/) · [confluence](connectors/confluence/) · [continue_dev](connectors/continue_dev/) · [gitlab](connectors/gitlab/) · [openai_admin](connectors/openai_admin/) · [osv](connectors/osv/) · [pagerduty](connectors/pagerduty/) · [sarif](connectors/sarif/) · [sentry](connectors/sentry/)
+[anthropic_admin](connectors/anthropic_admin/) · [confluence](connectors/confluence/) · [continue_dev](connectors/continue_dev/) · [openai_admin](connectors/openai_admin/) · [osv](connectors/osv/) · [sarif](connectors/sarif/)
 
 Selection criteria and trust tiers: [Integration Candidate Catalog](docs/INTEGRATION_CANDIDATE_CATALOG.md) · [Trust Tier Model](docs/TRUST_TIER_MODEL.md). Provider-evidence vs. agent-action surface choice: the [interactivity-test triage](docs/INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING.md) (read-only evidence → this repo; interactive action → `bicameral-mcp`).
 
