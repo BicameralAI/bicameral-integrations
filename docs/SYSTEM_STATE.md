@@ -8,7 +8,7 @@
 | **Updated By** | Judge (qor-substantiate) |
 | **Phase** | `main` + **security red-team COMPLETE (Cycles A/B/C, GH #50-#61 all closed)** — Cycle C: id-less webhook replays deduped by body hash for the 4 windowless providers (#60; bounded-cache eviction/TTL residual documented); emission contract rejects zero-width-only excerpt + bounds `source_id` (#61). Cores were sound; the 12 edge findings (guarantee-violations A, DoS/robustness B, replay/nits C) are all fixed. 26 Beta connectors; parse surfaces hardened — the before-Live DoS gate is cleared |
 | **Iteration** | 30 governed cycles (… redaction retrofit; references.md parity; security red-team **Cycle A** (#52/#53/#54), **Cycle B** (#50/#51/#55-#59 DoS), **Cycle C** (#60 replay / #61 nits) — all 12 red-team issues closed) |
-| **Session Seal** | `9d6070af` — Entry #144 (notion flip-ready webhook + title redact + sig-prefix gate, L2; branch `feat/notion-golive`; preceded by #143 verify-before-cite recovery research). Prior: #142 slack (`bc63f56a`), #141 jira (`b68bd69d`) |
+| **Session Seal** | `8834fa7c` — Entry #196 (**FX-MOD-CFG-001 fan-out: ALL 13 mods carry a UI descriptor**; the UI data contract is now complete for 26/26 connectors + 13/13 mods). Recent arc: **ALL 26 connectors flip-ready + purple-team-validated + doc-standard-attested** (#166-#194), then the mod UI descriptor contract (#195-#196). Prior seal of note: #144 notion (`9d6070af`) |
 
 ---
 
@@ -20,8 +20,8 @@ bicameral-integrations/
 |   `-- core/  (emissions, observations, contracts, capabilities, pipeline,
 |              sensitive, webhook_security, filters, fixtures, __init__ + tests/)
 |-- connectors/  (each: connector.py, __init__, README, auth.md, references.md, fixtures/, tests/;
-|                 + config.json = the FX-CFG-001 mcp-UI descriptor [12 done: linear, google_drive, devin,
-|                 cursor, copilot, servicenow, granola, mcp_registry, github, jira, slack, notion; 14 to fan out]; _schema/connector-config.schema.json + index.json [generated];
+|                 + config.json = the FX-CFG-001 mcp-UI descriptor [ALL 26 done — the fan-out is COMPLETE];
+|                 _schema/connector-config.schema.json + index.json [generated];
 |                 SETUP.md = generated backend how-to runbook [from config.json; docs/CONNECTOR_BACKEND_SETUP.md
 |                 = the hand-authored framework])
 |   |-- github/         (PR -> Observation; ACTIVE+WEBHOOK)
@@ -63,12 +63,13 @@ bicameral-integrations/
 |             GITIGNORED via glob + !example negation — NEVER committed)
 |-- mods/  (EM-safe advisory mods, OWNED by this track since 2026-06-08; contract.py/_manifest.py =
 |           the ADR-0013 execution contract: Mod protocol + ModEmission + manifest-enforced run_mod
-|           (EM-safe + FX-SEC-001-screened, input+output). dependency_risk (FX-MOD-002, reference),
-|           noisy_source_gate (FX-MOD-003), security_mentions (FX-MOD-004) = built mod logic;
-|           4 of 13 mods built (+ data_classification), 9 still Scoped (fan-out); all wired into runtime/runner_registry._MODS)
+|           (EM-safe + FX-SEC-001-screened, input+output). ALL 13 mods BUILT + purple-teamed + wired
+|           into runtime/runner_registry._MODS. + config.json = the FX-MOD-CFG-001 mcp-UI descriptor
+|           [ALL 13 done]; _schema/mod-descriptor.schema.json + index.json [generated] + per-mod SETUP.md;
+|           the validator ties each descriptor's emits + em_safe.forbidden_actions to the enforced manifest.yaml)
 |-- scripts/  (governance_gate.py + check_license_headers.py + contributor_check.py +
-|              validate_connector_config.py + build_connector_index.py + build_connector_setup.py
-|              [FX-CFG-001] + tests/)
+|              validate_connector_config.py + build_connector_index.py + build_connector_setup.py [FX-CFG-001] +
+|              validate_mod_config.py + build_mod_index.py + build_mod_setup.py [FX-MOD-CFG-001] + tests/)
 |-- docs/  (CONCEPT, ARCHITECTURE_PLAN, META_LEDGER, SHADOW_GENOME, SYSTEM_STATE,
 |          GOVERNANCE_INDEX, BACKLOG, FEATURE_INDEX, adr/, compliance/, ecosystem/, research-brief-*)
 |-- .github/workflows/  (10 gate workflows: ci, governance-gate, codeql, dependency-review,
