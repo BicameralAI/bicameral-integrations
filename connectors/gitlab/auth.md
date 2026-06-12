@@ -14,8 +14,10 @@ verify surface** (live HTTP receipt + REST fetch deferred).
   constant-time (`hmac.compare_digest`). The error message never contains the
   token or secret value.
   - **No anti-replay timestamp window**: the token is a static shared secret with
-    no signed timestamp, so best-effort delivery dedup (on `X-Gitlab-Event-UUID`)
-    is the only replay guard; TLS + dedup-TTL are operator residual risks.
+    no signed timestamp, so best-effort delivery dedup (on `X-Gitlab-Event-UUID`,
+    falling back to a SHA-256 body hash when the UUID is absent so a stripped-UUID
+    replay cannot bypass dedup) is the only replay guard; TLS + dedup-TTL are
+    operator residual risks.
   - **Deferred — Standard-Webhooks signing token**: newer GitLab webhooks can be
     configured with a *signing token* that produces an HMAC-SHA256 signature over
     `webhook-id.webhook-timestamp.body` with `webhook-signature` headers (the same

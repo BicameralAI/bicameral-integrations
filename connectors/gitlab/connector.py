@@ -16,6 +16,7 @@ fetch + token resolution stay in the operator runtime.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from urllib.parse import urlsplit
 
@@ -43,8 +44,15 @@ def _event_observation(payload: dict, *, kind: str, sep: str) -> Observation:
     the emission contract's non-blank-excerpt rule is satisfied.
     """
     floor = f"gitlab-{kind.replace('_', '-')}"
-    attrs = payload.get("object_attributes") or {}
-    project = (payload.get("project") or {}).get("path_with_namespace", "") or ""
+    # isinstance-guard each nested container: `or {}` floors only FALSY — a truthy non-dict
+    # (provider drift / hostile signed body) would crash `.get()` (purple-team GITLAB-001; the
+    # fathom #164 class, jira's pattern).
+    attrs = payload.get("object_attributes")
+    attrs = attrs if isinstance(attrs, dict) else {}
+    project_obj = payload.get("project")
+    project = (project_obj.get("path_with_namespace", "") or "") if isinstance(project_obj, dict) else ""
+    user_obj = payload.get("user")
+    username = (user_obj.get("username", "") or "") if isinstance(user_obj, dict) else ""
     ref = f"{project}{sep}{attrs.get('iid', '')}".strip()
     title = redact((attrs.get("title") or "").strip())
     body = (attrs.get("description") or "").strip()
@@ -58,7 +66,7 @@ def _event_observation(payload: dict, *, kind: str, sep: str) -> Observation:
         excerpt=redact(body) or title or floor,
         mode=SourceMode.WEBHOOK,
         title=title or floor,
-        author=(payload.get("user") or {}).get("username", "") or "",
+        author=username,
     )
 
 
@@ -135,8 +143,10 @@ class GitLabConnector:
         if not isinstance(payload, dict):
             return []
         if self._dedup is not None:
-            delivery_id = self._delivery_id(headers)
-            if delivery_id and self._dedup.is_duplicate("gitlab", delivery_id):
+            # body-hash fallback dedups UUID-less replays (purple-team GITLAB-002; the sibling
+            # jira/sentry/pagerduty/zendesk pattern — a stripped X-Gitlab-Event-UUID must not bypass dedup #60)
+            delivery_id = self._delivery_id(headers) or hashlib.sha256(body).hexdigest()
+            if self._dedup.is_duplicate("gitlab", delivery_id):
                 return []
             self._dedup.mark_seen("gitlab", delivery_id)
         return self.observations(payload)

@@ -31,8 +31,9 @@ for the maintained provider-docs table and refresh cadence.
   identifies the project; `user.username` is the actor.
 - **Verification (built)**: a **plaintext shared-secret token** in the `X-Gitlab-Token` header — GitLab
   does **NOT** HMAC-sign the body. `verify()` constant-time-compares it to the configured secret
-  (`adapter.core.webhook_security.verify_shared_token`), fail-closed. Per-event dedup on `X-Gitlab-Event-UUID`.
-  Re-verified against [docs.gitlab.com webhooks](https://docs.gitlab.com/user/project/integrations/webhooks/)
+  (`adapter.core.webhook_security.verify_shared_token`), fail-closed. Per-event dedup on `X-Gitlab-Event-UUID`,
+  falling back to a SHA-256 body hash when the UUID is absent (a stripped-UUID replay cannot bypass dedup —
+  purple-team GITLAB-002). Re-verified against [docs.gitlab.com webhooks](https://docs.gitlab.com/user/project/integrations/webhooks/)
   on 2026-06-13: the `X-Gitlab-Token` plaintext secret is GitLab's documented (legacy) method — MATCH, no drift.
 - **Deferred (stronger path)**: a newer **Standard-Webhooks signing token** produces an HMAC-SHA256
   signature over `webhook-id.webhook-timestamp.body`, delivered as `webhook-signature: v1,{base64}` — the same

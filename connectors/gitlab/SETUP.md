@@ -46,7 +46,7 @@ Add to your **gitignored** `config/bicameral.local.json` (placeholders shown —
 ```
 ## Webhook setup
 
-- Signature scheme: plaintext shared-secret token in the X-Gitlab-Token header (GitLab does NOT HMAC-sign the body); constant-time compared, fail-closed; no replay-timestamp window -> best-effort dedup on X-Gitlab-Event-UUID. The newer Standard-Webhooks signing token (HMAC-SHA256 over webhook-id.webhook-timestamp.body, webhook-signature header) is GitLab's recommended method and the documented stronger next step, not wired this cycle. (header `X-Gitlab-Token`).
+- Signature scheme: plaintext shared-secret token in the X-Gitlab-Token header (GitLab does NOT HMAC-sign the body); constant-time compared, fail-closed; no replay-timestamp window -> best-effort dedup on X-Gitlab-Event-UUID, falling back to a SHA-256 body hash when the UUID is absent (so a stripped-UUID replay cannot bypass dedup). The newer Standard-Webhooks signing token (HMAC-SHA256 over webhook-id.webhook-timestamp.body, webhook-signature header) is GitLab's recommended method and the documented stronger next step, not wired this cycle. (header `X-Gitlab-Token`).
 - Events: `merge_request`, `issue`
 - Bicameral webhook receiver URL (operator-provisioned) — **you provision this inbound URL** (provisioned_by: operator) and register it at the provider.
   - In your GitLab project, add a webhook subscribed to Merge request events + Issue events and set a Secret token.
