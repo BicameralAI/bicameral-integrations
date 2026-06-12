@@ -572,6 +572,20 @@
       },
       "description": "Devin agentic-coding sessions (v3 enterprise API) as redacted, governed evidence.",
       "id": "devin",
+      "ingestion_gate": {
+        "empty_state": "No Devin evidence has produced candidates yet.",
+        "evidence_labels": {
+          "pr_url": "Pull request",
+          "session": "Session"
+        },
+        "source_title_template": "Devin: {session_title}",
+        "source_type_label": "Devin session",
+        "summary_fields": [
+          "session_title",
+          "session_status",
+          "pr_url"
+        ]
+      },
       "instructions": [
         {
           "action": "open_url",
@@ -2096,6 +2110,21 @@
       },
       "description": "Slack message events as redact-and-pass governed evidence (read/ingest).",
       "id": "slack",
+      "ingestion_gate": {
+        "empty_state": "No Slack evidence has produced candidates yet.",
+        "evidence_labels": {
+          "message": "Message",
+          "permalink": "Slack permalink",
+          "thread": "Thread"
+        },
+        "source_title_template": "Slack: {channel_name}",
+        "source_type_label": "Slack message",
+        "summary_fields": [
+          "channel_name",
+          "author_ref",
+          "message_excerpt"
+        ]
+      },
       "instructions": [
         {
           "action": "register_webhook",

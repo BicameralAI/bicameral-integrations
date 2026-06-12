@@ -56,10 +56,35 @@ One control per entry, by `type`: `api_key` → masked text (+ `header` hint, `v
 = `api_key` + `webhook_secret`); render all required ones. Heed `wire_gates[]` — if a credential's wiring
 is gated (e.g. the Linear two-secret resolver gap), surface the note to the operator.
 
-## Permissions / data disclosure (`data`)
+## Permissions / data disclosure (`data`) — trust-disclosure surface
 
 Show `data.emits`, `data.pii_posture`, OAuth `scopes`, and `trust_tier` as a "what this connector can see
 / emit" panel before the operator connects — the transparency surface.
+
+**`data.pii_posture`** is the canonical trust-disclosure surface for connectors: it tells the operator
+exactly what PII the connector can see and how it is handled. UI implementations should render
+`pii_posture` prominently (e.g. as an expandable "What this connector can see" panel) so operators make
+an informed decision before connecting. The mod analogue is `em_safe.forbidden_actions` (see Mods
+section below).
+
+## Ingestion Gate display hints (`ingestion_gate`)
+
+Optional per-connector object providing source-specific display metadata for the Ingestion Gate UI.
+These hints are **presentational only** — they let the dashboard render source evidence rows with
+connector-appropriate labels and empty states. **Bot-owned governance still controls all review
+actions** (accept, reject, promote); the `ingestion_gate` object contains no review commands, signoff
+states, compliance states, or Decision authority.
+
+| Field | Render |
+|---|---|
+| `source_title_template` | Title for the source row; `{field_name}` placeholders are filled from adapter-emitted fields. |
+| `source_type_label` | Short noun (e.g. "Slack message", "Devin session") for the evidence kind badge. |
+| `summary_fields` | Ordered list of adapter-emitted field names shown in the evidence summary row. |
+| `evidence_labels` | Map of evidence-kind keys (matching `data.emits` entries) to human display labels. |
+| `empty_state` | Message shown when no evidence from this source has been ingested yet. |
+
+Not every connector will declare `ingestion_gate` — the field is optional in the schema. When absent,
+the UI should fall back to generic evidence rendering.
 
 ## References & gates
 
