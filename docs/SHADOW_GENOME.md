@@ -573,3 +573,15 @@ though they were obviously-fake example values. **Rule:** any test/fixture that 
 the runtime value still matches your regex, but the scanner has nothing to flag. (The AWS-docs example `AKIA…`
 and `ghp_0123…`-style sequential fakes are commonly allowlisted; the prefix families added in #186 are not.)
 Pairs with the stealth-mode discipline: keep secret-shaped strings out of tracked literal source.
+
+## SG-2026-06-14-B — a connector with an UNVERIFIABLE capability mode must declare only the verifiable subset in its FX-CFG-001 descriptor
+
+`/qor-research` for the confluence flip found the connector's `capabilities` include WEBHOOK (the Data-Center
+`X-Hub-Signature` HMAC scheme), but **Confluence Cloud publishes no payload signature** (the HMAC scheme is
+Data-Center/Server only, confirmed across DC 7.18-10.2) and the connector ships no `verify()`. Declaring webhook
+in the flip-ready descriptor would invite an operator to wire an UNAUTHENTICATED inbound path. **Rule:** the
+FX-CFG-001 descriptor declares only the modes the connector can actually secure for the target deployment — here
+`["active","passive"]` (the authenticated REST poll) — and records the unverifiable mode as a disclosed
+`wire_gate`, NOT a webhook block. `capabilities ⊇ descriptor-modes` by design: a capability is what the parse
+surface CAN handle; a descriptor mode is what an operator may safely flip Live. Pairs with SG-2026-06-13-D
+(record what you could not verify) + ADR-0012 (flip-ready is an operator-safety claim, not a feature list).

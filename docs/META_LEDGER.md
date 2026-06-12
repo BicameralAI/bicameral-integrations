@@ -6145,7 +6145,48 @@ connectors purple-team-validated & remediated; 22 of 26 flip-ready, all purple-t
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#186 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PT-sarif SEALED at #186 (`a05cfde7`; L2)** -- **security-batch PURPLE-TEAM REMEDIATION COMPLETE (osv clean; sarif fixed: fleet-wide _SECRET_PATTERNS breadth + parse_sarif per-result resilience + honest SG-2026-06-13-E scoping, on the #185 recon).** Both purple-team-validated. **22 of 26 connectors flip-ready, ALL purple-teamed** + 13 mods. Prior: #185 recon, #184 doc-sync.*
+### Entry #187: RESEARCH BRIEF -- anthropic_admin + openai_admin + continue_dev + confluence flip-ready (the remainder; verify-before-cite)
+
+**Entry ID**: `research187finalfour`
+**Timestamp**: 2026-06-14T21:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-final-four-2026-06-13.md)
+= 3827736e49b7aed5f0bd5efcb4fbca67f416b0cc727aafee791b1532facf0705
+```
+
+**Previous Hash**: a05cfde782c3d93fc631c211d3f9010c43f98a4614bb9936bf4af5817640aece
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 759439f765a212f4a1dd78f0d3ff9e6cf515f1b48ad4711414820697387b5957
+```
+
+**Decision**: Research foundation for the remainder (anthropic_admin, openai_admin, continue_dev, confluence) ->
+**26 / 26 flip-ready**. **Verify-before-cite (SG-2026-06-12-A): zero contract drift.** Anthropic Usage & Cost
+Admin API re-verified live (docs.anthropic.com: /v1/organizations/usage_report/messages, x-api-key sk-ant-admin,
+nested cache_creation.ephemeral_* -- MATCHES parse_usage). OpenAI audit_logs re-verified
+(platform.openai.com: /v1/organization/audit_logs, Bearer admin -- MATCHES; actor identity never read).
+Confluence: the X-Hub-Signature HMAC webhook is **Data-Center/Server ONLY** (confirmed DC 7.18-10.2); **Cloud has
+no payload signature**, so the connector's webhook-verify deferral is honest. Continue.dev: the schema-versioned
+event-blob shape re-confirmed live, field detail (eventName/prompt/noCode) pinned 2026-06-08 + handled defensively
+(provenance recorded, SG-2026-06-13-D pattern). **Two descriptor-only:** anthropic_admin (PII-free aggregate by
+construction -- synthesized token-totals excerpt, opaque ids not surfaced, no author) + openai_admin
+(actor identity dropped + redacted). **Two need redact-and-pass:** continue_dev (F1 redact excerpt = raw
+prompt/completion dev-AI text; F2 redact userId) + confluence (F1 redact body+title = PII-dense pages; **F2 declare
+modes ["active","passive"] NOT webhook** -- Cloud unsignable). New lesson SG-2026-06-14-B (a connector whose
+capabilities include an UNVERIFIABLE mode must declare only the verifiable subset in its descriptor). One
+/qor-auto-dev-1 per connector (each with the explicit doc-standard attestation), then a /qor-deep-audit
+purple-team -> completes 26/26. EM-safe + read-only + ADR-0012 hold. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#187 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **RESEARCH SEALED at #187 (`759439f7`; L1)** -- the remainder (anthropic_admin/openai_admin/continue_dev/confluence) foundation; ZERO drift. 2 descriptor-only (PII-free / identity-dropped), 2 redact-and-pass (continue_dev, confluence); confluence offers verifiable poll only (SG-2026-06-14-B). Completing these reaches **26/26 flip-ready**. Currently **22 of 26** + 13 mods. Prior: #186 PT-sarif, #185 recon.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 22 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). 4 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
+*Next required action: **/qor-auto-dev-1** per connector (anthropic_admin -> openai_admin -> continue_dev -> confluence, each with explicit doc-standard attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
