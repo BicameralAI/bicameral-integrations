@@ -28,3 +28,5 @@ jobs:
         run: pytest adapter/core/tests connectors runtime mods scripts/tests tests/redteam -q
       - name: Connector config descriptors (validate + index freshness)
         run: python scripts/validate_connector_config.py
+      - name: Mod descriptors (validate + manifest-consistency + index freshness)
+        run: python scripts/validate_mod_config.py

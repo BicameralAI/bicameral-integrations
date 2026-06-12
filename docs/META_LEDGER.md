@@ -6467,7 +6467,50 @@ governance-gate #1..#194 OK. **26/26 connectors flip-ready, purple-team-validate
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#194 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PT-final4 SEALED at #194 (`1b88a4ac`; L2)** -- **FINAL-FOUR PURPLE-TEAM REMEDIATION COMPLETE; ALL 26 CONNECTORS FLIP-READY + PURPLE-TEAM-VALIDATED + DOC-STANDARD-ATTESTED.** + 13 mods (also purple-teamed). Prior: #193 recon, #192 doc-sync.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors (all purple-teamed) + 13 advisory mods. Secrets never committed nor printed.*
-*Next required action: operator-asked **/qor-document UI-completeness pass** -- ensure every connector + mod has equivalent setup docs / UI-exposure / requirements / nice-to-haves so the mcp frontend can build a cohesive UI/UX -- then **/qor-substantiate** + final merge. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+### Entry #195: SESSION SEAL -- FX-MOD-CFG-001: mod UI-descriptor contract (schema + tooling + validator + UI spec + 2 exemplars)
+
+**Entry ID**: `modcfg195contract`
+**Timestamp**: 2026-06-15T15:00:00-04:00
+**Phase**: SUBSTANTIATE (UI-completeness; operator ask)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(mods/_schema/mod-descriptor.schema.json)
+= f0876a9fa2ca6caf7ff5d1fb32be6a305c02666a221d10e4eda90aef5b3d6f2b
+```
+
+**Previous Hash**: 1b88a4ac07f44cfab95d64607f0a30e9dd694749d30b422326b6d2879e79ac23
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 48ebf47be61585c09d40bd208a0d9ff0a31121d664462ec71c7ddf4d6f459788
+```
+
+**Decision**: Closes the operator-flagged UI gap -- **mods had no UI-renderable descriptor** (only a 5-field
+`manifest.yaml` + a human README), while connectors have the full FX-CFG-001 contract, so the mcp frontend could
+render connectors but had nothing to render mods. Established **FX-MOD-CFG-001**, the EM-safe-mod parity of the
+connector contract: **`mods/_schema/mod-descriptor.schema.json`** (UI-renderable: id/manifest_id/name/version/
+description/family/advises_on/consumes/emits/em_safe.forbidden_actions/enablement{default_enabled,trust_gated,
+config}/requirements/ui.advisory_only/references -- no credentials/network, as mods are advisory post-processors);
+**`scripts/build_mod_index.py`** (-> `mods/index.json`) + **`scripts/build_mod_setup.py`** (-> per-mod `SETUP.md`)
+mirroring the connector tooling; **`scripts/validate_mod_config.py`** -- fail-closed, and crucially **ties the UI
+descriptor to the ENFORCED `manifest.yaml`** (`emits` == manifest `outputs`; `em_safe.forbidden_actions` ==
+manifest `forbidden_actions`) so the UI's trust-disclosure surface can never under/over-state the boundary the
+code contract enforces; extended **`docs/UI_RENDERING_SPEC.md`** with a full Mods section (mod card, the
+reads/advises disclosure, the "can NEVER do" trust boundary, enable/configure, requirements/references); wired the
+mod validator into CI (`ci.yml`). **2 exemplars** prove it end-to-end: `adapter_contract` (canonical
+evidence-contract mod) + `noisy_source_gate` (the trust-gated mod, exercising `enablement.trust_gated` + a config
+knob). **Tests:** descriptors valid + index fresh; advisory-only/non-authoritative consts; the validator rejects
+emits/forbidden_actions/id drift vs the manifest + unknown keys (fail-closed). **Measured:** full suite **705
+passed**, ruff clean, whole-tree mypy clean, mod-validator OK, governance-gate #1..#195 OK. **2 of 13 mods carry a
+UI descriptor; fan-out next.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#195 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **FX-MOD-CFG-001 SEALED at #195 (`48ebf47b`; L2)** -- mod UI-descriptor contract (schema + build_mod_index/setup + validator tied to the enforced manifest + UI spec + CI) with 2 exemplars. **26/26 connectors + 2/13 mods now carry a UI descriptor.** + 13 mods. Prior: #194 PT-final4, #193 recon.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods. Secrets never committed nor printed.*
+*Next required action: **fan out** the remaining 11 mod descriptors (+ regen index/SETUPs), then **/qor-document** (README mods section: now UI-renderable) + **/qor-substantiate** + final merge (operator ask). **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*

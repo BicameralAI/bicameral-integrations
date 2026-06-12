@@ -1,0 +1,51 @@
+{
+  "id": "noisy_source_gate",
+  "manifest_id": "noisy-source-gate",
+  "name": "Noisy Source Gate",
+  "version": "0.1.0",
+  "description": "Advisory mod that recommends manual review-gating for high-noise evidence sources unless the operator has raised the source's trust.",
+  "family": "trust",
+  "advises_on": "High-volume, low-signal channels (Slack chat, Granola/Fathom meeting transcripts) flooding the candidate store; recommends a manual gate unless the source's trust tier is operator-raised. A non-noisy source yields nothing.",
+  "consumes": [
+    "source_id",
+    "operator source-trust configuration (read-only)"
+  ],
+  "emits": ["routing_hint", "advisory_governance_result"],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": true,
+    "config": [
+      {
+        "key": "raised_trust_sources",
+        "label": "Sources with operator-raised trust (skip the gate)",
+        "required": false,
+        "description": "Source ids the operator has explicitly trusted, so the mod does NOT recommend a manual gate for them. The default high-noise set (slack/granola/fathom) is config-as-code in the mod."
+      }
+    ]
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network.",
+    "Optional: an operator source-trust map to suppress the gate for raised sources."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Suggests a manual gate for noisy sources; it suggests, never enforces."
+  },
+  "references": [
+    {"kind": "scope", "url": "mods/noisy_source_gate/README.md"},
+    {"kind": "mod-safety-contract", "url": "mods/README.md"},
+    {"kind": "adr", "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"}
+  ]
+}

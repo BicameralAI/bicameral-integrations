@@ -1,6 +1,14 @@
-# Connector Config — UI Rendering Spec (for the mcp repo)
+# Connector + Mod Config — UI Rendering Spec (for the mcp repo)
 
-**Status:** Reference spec (v1, 2026-06-08). **This is a contract for the mcp UI team, not code.**
+**Status:** Reference spec (v1 connectors 2026-06-08; **v1 mods 2026-06-13**). **This is a contract for the mcp UI team, not code.**
+
+> **Two descriptor families, one cohesive UI.** This repo ships a UI data contract for BOTH **connectors**
+> (`connectors/<id>/config.json` + `connectors/index.json`, schema `connectors/_schema/connector-config.schema.json`)
+> AND **mods** (`mods/<id>/config.json` + `mods/index.json`, schema `mods/_schema/mod-descriptor.schema.json`). The
+> connector sections below render the "connect a source" flow; the **Mods** section at the foot renders the
+> "enable advisory mods" flow. Together they give the frontend everything to build one cohesive
+> sources-and-mods UI. Both are kept schema-valid + code-consistent in CI
+> (`scripts/validate_connector_config.py`, `scripts/validate_mod_config.py`).
 
 **Tracked in:** [BicameralAI/bicameral-mcp#572](https://github.com/BicameralAI/bicameral-mcp/issues/572)
 — the mcp work item to render the **Linear + Google Drive** connector config UI against this spec.
@@ -63,3 +71,57 @@ the operator must clear (these are the "not yet confirmed against live" items).
 The schema's `$id` versions the contract. Breaking field changes bump it; the mcp repo pins a schema
 version. The validator (`scripts/validate_connector_config.py`) keeps every descriptor + the index in
 sync in CI, so what the UI imports is always schema-valid and code-consistent.
+
+---
+
+# Mods — UI Rendering Spec
+
+`bicameral-integrations` ships the **mod data contract** — a per-mod `mods/<id>/config.json`
+(schema: `mods/_schema/mod-descriptor.schema.json`) + an aggregated `mods/index.json` + a generated
+`mods/<id>/SETUP.md`. The **mcp repo renders it**. A mod has **no credentials and no live network** — it is
+an advisory post-processor over the neutral evidence stream (ADR-0008/0013), so the mod UI is an
+**enable/configure + disclose** surface, not a "connect with secrets" wizard.
+
+## Mod card
+
+Render from `mods/index.json`. Card: `name`, `description`, `icon?`, `family` (group/sort by it), the
+**`version`**, and — always — an **"Advisory only"** badge (`ui.advisory_only` is `const true`;
+`em_safe.non_authoritative` is `const true`). Optional `ui.card_blurb` is a one-line subtitle.
+
+## What it reads / what it advises (the disclosure panel)
+
+The mod parity of a connector's `data` panel — render BEFORE the operator enables it:
+
+| Field | Render |
+|---|---|
+| `advises_on` | The headline "what risk this mod surfaces" sentence. |
+| `consumes` | A bulleted "reads from the evidence stream" list (e.g. `source_ref`, changed paths, excerpt text). A mod never reads a raw secret. |
+| `emits` | The advisory artifact types it can produce (`routing_hint`, `source_evidence_annotation`, `advisory_governance_result`, `owner_lens_hint`, `suggested_review_question`, `dependency_signal`). |
+
+## The trust boundary (`em_safe.forbidden_actions`) — render prominently
+
+The mod analogue of a connector's `pii_posture` transparency surface. Render
+`em_safe.forbidden_actions` as a **"This mod can NEVER:"** list (write a canonical decision, approve signoff,
+resolve compliance, create a blocking CI result, bypass governance policy, mutate evidence, collapse a
+confidence score). This list is validated **equal to the mod's enforced `manifest.yaml`** in CI — so what the
+UI promises is exactly what the code contract guarantees. It is the operator's trust assurance: a mod suggests,
+it never decides.
+
+## Enable + configure (`enablement`)
+
+- Render an **enable/disable toggle**; seed it from `enablement.default_enabled`.
+- When `enablement.trust_gated` is true (e.g. **Noisy Source Gate**), surface that the mod's behavior depends on
+  an operator-raised **source-trust** setting, and link to that control.
+- Render `enablement.config[]` as typed inputs (label, default, required, description) — the optional operator
+  knobs / nice-to-haves. No secrets.
+
+## Requirements & references
+
+Render `requirements[]` as a short "needs" note (for an EM-safe mod: the neutral evidence stream + optional
+knobs — never a credential). Render `references[]` as doc links (scope spec, the mod safety contract, the ADR).
+
+## Versioning
+
+`mods/_schema/mod-descriptor.schema.json` `$id` versions the mod contract independently of the connector schema.
+`scripts/validate_mod_config.py` keeps every mod descriptor schema-valid, **manifest-consistent** (emits +
+forbidden_actions == the enforced `manifest.yaml`), and index/SETUP-fresh in CI.
