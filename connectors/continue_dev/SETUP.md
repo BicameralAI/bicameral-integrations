@@ -3,7 +3,7 @@
 
 Continue (continue.dev) developer-AI dev-data events (local JSONL) as redact-and-pass governed evidence (prompt/completion text scrubbed; opaque userId).
 
-- **id** `continue_dev` · **category** developer-AI / source-control · **trust tier** T0
+- **id** `continue_dev` · **version** 0.1.0 · **channel** beta · **category** developer-AI / source-control · **trust tier** T0
 - **status** live-ready · **available** True · **modes** passive
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

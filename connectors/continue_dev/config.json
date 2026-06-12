@@ -1,6 +1,8 @@
 {
   "id": "continue_dev",
   "name": "Continue",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Continue (continue.dev) developer-AI dev-data events (local JSONL) as redact-and-pass governed evidence (prompt/completion text scrubbed; opaque userId).",
   "category": "developer-AI / source-control",
   "trust_tier": "T0",

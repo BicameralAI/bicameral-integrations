@@ -2,6 +2,7 @@
   "mods": {
     "adapter_contract": {
       "advises_on": "Missing or unstable source_ref fields; lost provider-native ids/timestamps/URLs/excerpts/evidence pointers; output that bypasses the Observation -> AdapterEmission normalization; schema/SARIF fields that cannot be independently reviewed; connector behavior that starts owning canonical state.",
+      "channel": "beta",
       "consumes": [
         "source_ref fields (source_id, ref, url, kind)",
         "evidence excerpt + title",
@@ -58,6 +59,7 @@
     },
     "authority_boundary": {
       "advises_on": "Changes that may cross Bicameral's authority, trust-tier, or canonical-state boundaries.",
+      "channel": "beta",
       "consumes": [
         "evidence excerpt + title",
         "source_ref (source_id, kind)",
@@ -115,6 +117,7 @@
     },
     "code_review_risk": {
       "advises_on": "PR-level review risk — the first mod family behind the Bicameral Review Bot (ADR-0011).",
+      "channel": "beta",
       "consumes": [
         "pull-request evidence (title + body)",
         "changed file paths",
@@ -176,6 +179,7 @@
     },
     "connector_freshness": {
       "advises_on": "Stale provider assumptions in connector docs, fixtures, auth notes, references, and parser scope.",
+      "channel": "beta",
       "consumes": [
         "evidence excerpt + title",
         "source_ref (provider / kind)"
@@ -231,6 +235,7 @@
     },
     "data_classification": {
       "advises_on": "Classifying sensitive evidence before it is routed, reviewed, or proposed for outbound notification.",
+      "channel": "beta",
       "consumes": [
         "title + body",
         "evidence excerpt"
@@ -286,6 +291,7 @@
     },
     "decision_drift": {
       "advises_on": "New source evidence that appears to conflict with recorded decisions, ADRs, trust tiers, or governance docs.",
+      "channel": "beta",
       "consumes": [
         "evidence excerpt + title",
         "source_ref",
@@ -343,6 +349,7 @@
     },
     "dependency_risk": {
       "advises_on": "Dependency-risk signals from connector evidence — known vulnerabilities and dependency-manifest changes.",
+      "channel": "beta",
       "consumes": [
         "evidence excerpt (dependency manifests, vuln mentions)",
         "source_ref"
@@ -398,6 +405,7 @@
     },
     "noisy_source_gate": {
       "advises_on": "High-volume, low-signal channels (Slack chat, Granola/Fathom meeting transcripts) flooding the candidate store; recommends a manual gate unless the source's trust tier is operator-raised. A non-noisy source yields nothing.",
+      "channel": "beta",
       "consumes": [
         "source_id",
         "operator source-trust configuration (read-only)"
@@ -461,6 +469,7 @@
     },
     "ownership_routing": {
       "advises_on": "Reviewer lenses and domain ownership suggested from changed paths, source evidence, and recorded ownership hints.",
+      "channel": "beta",
       "consumes": [
         "changed file paths",
         "source evidence",
@@ -517,6 +526,7 @@
     },
     "security_mentions": {
       "advises_on": "Whole-word security keywords (auth/token/secret/credential/oauth/webhook/cve/...) in title + body + evidence excerpts.",
+      "channel": "beta",
       "consumes": [
         "title + body",
         "evidence excerpts"
@@ -572,6 +582,7 @@
     },
     "source_trust_calibration": {
       "advises_on": "Calibrating source trust based on provenance, source type, historical noise, data sensitivity, and operation tier.",
+      "channel": "beta",
       "consumes": [
         "source_id",
         "source_ref (provenance)",
@@ -628,6 +639,7 @@
     },
     "test_adequacy": {
       "advises_on": "Missing or weak tests around changed behavior, connector parsing, fixtures, governance gates, and review workflows.",
+      "channel": "beta",
       "consumes": [
         "changed file paths",
         "evidence excerpt (tests/fixtures/gates)",
@@ -685,6 +697,7 @@
     },
     "webhook_risk": {
       "advises_on": "Webhook safety signals across signature verification, replay protection, event schema handling, idempotency, and outbound side effects.",
+      "channel": "beta",
       "consumes": [
         "webhook evidence (signature/replay/schema signals)",
         "source_ref (kind=webhook)"

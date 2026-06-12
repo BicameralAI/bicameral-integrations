@@ -3,6 +3,7 @@
   "manifest_id": "noisy-source-gate",
   "name": "Noisy Source Gate",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that recommends manual review-gating for high-noise evidence sources unless the operator has raised the source's trust.",
   "family": "trust",
   "advises_on": "High-volume, low-signal channels (Slack chat, Granola/Fathom meeting transcripts) flooding the candidate store; recommends a manual gate unless the source's trust tier is operator-raised. A non-noisy source yields nothing.",

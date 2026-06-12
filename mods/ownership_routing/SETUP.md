@@ -3,7 +3,7 @@
 
 Advisory mod that flags reviewer lenses and domain ownership suggested from changed paths, source evidence, and recorded ownership hints.
 
-- **id** `ownership_routing` · **manifest** `ownership-routing` · **family** routing · **version** 0.1.0
+- **id** `ownership_routing` · **manifest** `ownership-routing` · **family** routing · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** False
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

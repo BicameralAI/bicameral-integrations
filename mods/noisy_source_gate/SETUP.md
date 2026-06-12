@@ -3,7 +3,7 @@
 
 Advisory mod that recommends manual review-gating for high-noise evidence sources unless the operator has raised the source's trust.
 
-- **id** `noisy_source_gate` · **manifest** `noisy-source-gate` · **family** trust · **version** 0.1.0
+- **id** `noisy_source_gate` · **manifest** `noisy-source-gate` · **family** trust · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** True
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

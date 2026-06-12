@@ -3,7 +3,7 @@
 
 GitLab merge-request + issue webhook events as redact-and-pass governed evidence (body + title scrubbed; public username retained as the artifact author).
 
-- **id** `gitlab` · **category** source-control · **trust tier** T1
+- **id** `gitlab` · **version** 0.1.0 · **channel** beta · **category** source-control · **trust tier** T1
 - **status** live-ready · **available** True · **modes** webhook, active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

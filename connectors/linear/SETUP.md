@@ -3,7 +3,7 @@
 
 Linear issues — webhook events + active GraphQL fetch — as governed evidence.
 
-- **id** `linear` · **category** project-management · **trust tier** T1
+- **id** `linear` · **version** 0.1.0 · **channel** beta · **category** project-management · **trust tier** T1
 - **status** live-ready · **available** True · **modes** webhook, active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

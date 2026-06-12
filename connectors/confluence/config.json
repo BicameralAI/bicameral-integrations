@@ -1,6 +1,8 @@
 {
   "id": "confluence",
   "name": "Confluence",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Confluence Cloud page content as redact-and-pass governed evidence (title + body scrubbed); authenticated REST poll (the Connect-app-JWT webhook needs a Connect app, deferred).",
   "category": "docs / knowledge-base",
   "trust_tier": "T1",

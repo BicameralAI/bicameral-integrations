@@ -3,7 +3,7 @@
 
 Zendesk support-ticket webhook events as redact-and-pass governed evidence (subject + body scrubbed; requester surfaced as an opaque id, never a name/email).
 
-- **id** `zendesk` · **category** support / customer-success · **trust tier** T1
+- **id** `zendesk` · **version** 0.1.0 · **channel** beta · **category** support / customer-success · **trust tier** T1
 - **status** live-ready · **available** True · **modes** webhook, active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

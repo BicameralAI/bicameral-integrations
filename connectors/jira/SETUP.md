@@ -3,7 +3,7 @@
 
 Jira Cloud issue webhook events as redact-and-pass governed evidence.
 
-- **id** `jira` · **category** project-management · **trust tier** T1
+- **id** `jira` · **version** 0.1.0 · **channel** beta · **category** project-management · **trust tier** T1
 - **status** live-ready · **available** True · **modes** webhook
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

@@ -3,6 +3,7 @@
   "manifest_id": "ownership-routing",
   "name": "Ownership Routing",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags reviewer lenses and domain ownership suggested from changed paths, source evidence, and recorded ownership hints.",
   "family": "routing",
   "advises_on": "Reviewer lenses and domain ownership suggested from changed paths, source evidence, and recorded ownership hints.",

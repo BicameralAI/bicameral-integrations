@@ -1,6 +1,8 @@
 {
   "id": "jira",
   "name": "Jira",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Jira Cloud issue webhook events as redact-and-pass governed evidence.",
   "category": "project-management",
   "trust_tier": "T1",

@@ -3,7 +3,7 @@
 
 Advisory mod that flags whole-word security keywords (auth/token/secret/credential/oauth/webhook/cve/...) in title + body + evidence excerpts.
 
-- **id** `security_mentions` · **manifest** `security-mentions` · **family** security · **version** 0.1.0
+- **id** `security_mentions` · **manifest** `security-mentions` · **family** security · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** False
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

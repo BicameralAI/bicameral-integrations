@@ -3,6 +3,7 @@
   "manifest_id": "webhook-risk",
   "name": "Webhook Risk",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags webhook safety signals across signature verification, replay protection, event schema handling, idempotency, and outbound side effects.",
   "family": "security",
   "advises_on": "Webhook safety signals across signature verification, replay protection, event schema handling, idempotency, and outbound side effects.",

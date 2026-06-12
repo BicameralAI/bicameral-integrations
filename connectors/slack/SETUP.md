@@ -3,7 +3,7 @@
 
 Slack message events as redact-and-pass governed evidence (read/ingest).
 
-- **id** `slack` · **category** communication · **trust tier** T2
+- **id** `slack` · **version** 0.1.0 · **channel** beta · **category** communication · **trust tier** T2
 - **status** live-ready · **available** True · **modes** webhook
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

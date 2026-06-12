@@ -3,7 +3,7 @@
 
 Public MCP Registry server entries as redact-and-pass, no-auth governed evidence.
 
-- **id** `mcp_registry` · **category** agent-ecosystem · **trust tier** T1
+- **id** `mcp_registry` · **version** 0.1.0 · **channel** beta · **category** agent-ecosystem · **trust tier** T1
 - **status** live-ready · **available** True · **modes** active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

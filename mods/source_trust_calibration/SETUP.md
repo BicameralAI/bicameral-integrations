@@ -3,7 +3,7 @@
 
 Advisory mod that flags calibrating source trust based on provenance, source type, historical noise, data sensitivity, and operation tier.
 
-- **id** `source_trust_calibration` · **manifest** `source-trust-calibration` · **family** trust · **version** 0.1.0
+- **id** `source_trust_calibration` · **manifest** `source-trust-calibration` · **family** trust · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** False
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

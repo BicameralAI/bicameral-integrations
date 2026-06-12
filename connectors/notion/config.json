@@ -1,6 +1,8 @@
 {
   "id": "notion",
   "name": "Notion",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Notion page-change webhook events as governed page-pointer evidence (keyed by the page entity.id).",
   "category": "docs",
   "trust_tier": "T1",

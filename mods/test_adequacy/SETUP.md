@@ -3,7 +3,7 @@
 
 Advisory mod that flags missing or weak tests around changed behavior, connector parsing, fixtures, governance gates, and review workflows.
 
-- **id** `test_adequacy` · **manifest** `test-adequacy` · **family** testing · **version** 0.1.0
+- **id** `test_adequacy` · **manifest** `test-adequacy` · **family** testing · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** False
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

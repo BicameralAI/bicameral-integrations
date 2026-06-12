@@ -5,10 +5,12 @@
   "description": "Machine-readable per-connector configuration contract consumed by the mcp UI. Holds requirements/permissions/instructions only — never secret values (secrets stay in the operator runtime via SecretResolver). Structural rules live here; the semantic rules (id==source_id, modes subset of capabilities, conditional instructions[].ref) are enforced by scripts/validate_connector_config.py.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id", "name", "description", "category", "trust_tier", "status", "available", "modes", "credentials", "data", "instructions", "references"],
+  "required": ["id", "name", "version", "channel", "description", "category", "trust_tier", "status", "available", "modes", "credentials", "data", "instructions", "references"],
   "properties": {
     "id": {"type": "string", "description": "Stable connector id; equals the folder name AND the connector's source_id."},
     "name": {"type": "string", "description": "Human display name."},
+    "version": {"type": "string", "description": "Per-connector semver (MAJOR.MINOR.PATCH). Baseline 0.1.0; bumps when the emission/contract shape changes. Distinct from the schema $id (which versions the descriptor contract) and from channel/status."},
+    "channel": {"type": "string", "enum": ["beta", "ga"], "description": "Product release channel — UNIFORM across all connectors + mods until GA. The whole product is Beta even though individual connectors are flip-ready; the validator enforces this equals the single product channel."},
     "description": {"type": "string", "description": "One-line summary for the UI connector card."},
     "icon": {"type": "string", "description": "Optional icon/logo slug for the UI."},
     "category": {"type": "string"},

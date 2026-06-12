@@ -1,6 +1,8 @@
 {
   "id": "servicenow",
   "name": "ServiceNow",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "ServiceNow ITSM incidents (Table API) as redact-and-pass governed evidence.",
   "category": "itsm",
   "trust_tier": "T1",

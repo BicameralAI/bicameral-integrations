@@ -3,7 +3,7 @@
 
 PagerDuty v3 incident webhook events as redact-and-pass governed evidence (incident title/summary scrubbed; no actor/assignee identity surfaced).
 
-- **id** `pagerduty` · **category** observability/incident-evidence · **trust tier** T1
+- **id** `pagerduty` · **version** 0.1.0 · **channel** beta · **category** observability/incident-evidence · **trust tier** T1
 - **status** live-ready · **available** True · **modes** webhook
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

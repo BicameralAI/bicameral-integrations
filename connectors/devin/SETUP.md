@@ -3,7 +3,7 @@
 
 Devin agentic-coding sessions (v3 enterprise API) as redacted, governed evidence.
 
-- **id** `devin` · **category** developer-ai · **trust tier** T1
+- **id** `devin` · **version** 0.1.0 · **channel** beta · **category** developer-ai · **trust tier** T1
 - **status** live-ready · **available** True · **modes** active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

@@ -1,6 +1,8 @@
 {
   "id": "local_directory",
   "name": "Local Directory",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Files dropped in a watched local directory as redact-and-pass governed evidence (no network credentials; host filesystem permissions are the access control).",
   "category": "file/static-import",
   "trust_tier": "T0",

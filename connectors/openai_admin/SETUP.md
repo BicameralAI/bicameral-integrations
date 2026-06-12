@@ -3,7 +3,7 @@
 
 OpenAI organization audit-log events as governed evidence with actor identity dropped (event type + project + time; actor email/id/IP never read).
 
-- **id** `openai_admin` · **category** security/compliance-evidence · **trust tier** T1
+- **id** `openai_admin` · **version** 0.1.0 · **channel** beta · **category** security/compliance-evidence · **trust tier** T1
 - **status** live-ready · **available** True · **modes** active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

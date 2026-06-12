@@ -1,6 +1,8 @@
 {
   "id": "granola",
   "name": "Granola",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Granola meeting notes + transcript (redact-and-pass) as governed evidence.",
   "category": "meetings",
   "trust_tier": "T1",

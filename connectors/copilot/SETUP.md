@@ -3,7 +3,7 @@
 
 GitHub Copilot org metrics (aggregate, PII-free) as governed evidence.
 
-- **id** `copilot` · **category** developer-ai · **trust tier** T1
+- **id** `copilot` · **version** 0.1.0 · **channel** beta · **category** developer-ai · **trust tier** T1
 - **status** live-ready · **available** True · **modes** active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

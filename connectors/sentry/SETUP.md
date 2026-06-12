@@ -3,7 +3,7 @@
 
 Sentry issue webhook events as redact-and-pass governed evidence (exception message + culprit scrubbed; full stack trace never read; no person attribution).
 
-- **id** `sentry` · **category** observability/incident-evidence · **trust tier** T1
+- **id** `sentry` · **version** 0.1.0 · **channel** beta · **category** observability/incident-evidence · **trust tier** T1
 - **status** live-ready · **available** True · **modes** webhook
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

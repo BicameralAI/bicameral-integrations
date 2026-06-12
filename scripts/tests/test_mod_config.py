@@ -67,3 +67,14 @@ def test_validator_rejects_unknown_key_fail_closed():
     d["sneaky"] = True
     errs = vmc._check(d, _SCHEMA, "adapter_contract")  # the shared schema-subset checker
     assert any("unknown key" in e for e in errs)
+
+
+def test_mod_version_and_channel_enforced():
+    # Every mod carries a version (== manifest) + channel == product channel (uniform Beta state).
+    import copy
+    from product_meta import PRODUCT_CHANNEL
+    d = _adapter_contract()
+    assert d["version"] == "0.1.0" and d["channel"] == PRODUCT_CHANNEL
+    bad = copy.deepcopy(d)
+    bad["channel"] = "ga"
+    assert any("channel" in e and "product channel" in e for e in vmc._semantic(bad, "adapter_contract"))

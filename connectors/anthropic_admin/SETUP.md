@@ -3,7 +3,7 @@
 
 Anthropic organization usage/cost metrics as PII-free aggregate governed evidence (token totals + models; opaque workspace/key ids never surfaced).
 
-- **id** `anthropic_admin` · **category** developer-AI / usage · **trust tier** T1
+- **id** `anthropic_admin` · **version** 0.1.0 · **channel** beta · **category** developer-AI / usage · **trust tier** T1
 - **status** live-ready · **available** True · **modes** active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

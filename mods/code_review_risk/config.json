@@ -3,6 +3,7 @@
   "manifest_id": "code-review-risk",
   "name": "Code Review Risk",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags pR-level review risk — the first mod family behind the Bicameral Review Bot (ADR-0011).",
   "family": "review-risk",
   "advises_on": "PR-level review risk — the first mod family behind the Bicameral Review Bot (ADR-0011).",

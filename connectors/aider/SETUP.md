@@ -3,7 +3,7 @@
 
 Aider-attributed git commits as read-only developer-AI provenance evidence (commit subject redact-and-passed; the human author name is retained as the provenance signal).
 
-- **id** `aider` · **category** source-control / developer-AI tooling · **trust tier** T0
+- **id** `aider` · **version** 0.1.0 · **channel** beta · **category** source-control / developer-AI tooling · **trust tier** T0
 - **status** live-ready · **available** True · **modes** passive
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

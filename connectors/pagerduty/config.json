@@ -1,6 +1,8 @@
 {
   "id": "pagerduty",
   "name": "PagerDuty",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "PagerDuty v3 incident webhook events as redact-and-pass governed evidence (incident title/summary scrubbed; no actor/assignee identity surfaced).",
   "category": "observability/incident-evidence",
   "trust_tier": "T1",

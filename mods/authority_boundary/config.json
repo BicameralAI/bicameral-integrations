@@ -3,6 +3,7 @@
   "manifest_id": "authority-boundary",
   "name": "Authority Boundary",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags changes that may cross Bicameral's authority, trust-tier, or canonical-state boundaries.",
   "family": "governance-boundary",
   "advises_on": "Changes that may cross Bicameral's authority, trust-tier, or canonical-state boundaries.",
