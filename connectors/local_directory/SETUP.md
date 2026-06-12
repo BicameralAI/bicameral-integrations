@@ -3,7 +3,7 @@
 
 Files dropped in a watched local directory as redact-and-pass governed evidence (no network credentials; host filesystem permissions are the access control).
 
-- **id** `local_directory` · **category** file/static-import · **trust tier** T0
+- **id** `local_directory` · **version** 0.1.0 · **channel** beta · **category** file/static-import · **trust tier** T0
 - **status** live-ready · **available** True · **modes** passive
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

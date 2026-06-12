@@ -3,7 +3,7 @@
 
 Advisory mod that flags evidence-shape and contract-preservation risks in connector/adapter output.
 
-- **id** `adapter_contract` · **manifest** `adapter-contract` · **family** evidence-contract · **version** 0.1.0
+- **id** `adapter_contract` · **manifest** `adapter-contract` · **family** evidence-contract · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** False
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

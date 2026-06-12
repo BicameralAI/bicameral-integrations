@@ -1,6 +1,8 @@
 {
   "id": "zendesk",
   "name": "Zendesk",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Zendesk support-ticket webhook events as redact-and-pass governed evidence (subject + body scrubbed; requester surfaced as an opaque id, never a name/email).",
   "category": "support / customer-success",
   "trust_tier": "T1",

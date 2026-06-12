@@ -1,6 +1,8 @@
 {
   "id": "openai_admin",
   "name": "OpenAI Admin",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "OpenAI organization audit-log events as governed evidence with actor identity dropped (event type + project + time; actor email/id/IP never read).",
   "category": "security/compliance-evidence",
   "trust_tier": "T1",

@@ -101,7 +101,8 @@ def build_setup(d: dict) -> str:
     lines = [
         "<!-- GENERATED from config.json — do not edit; run scripts/build_connector_setup.py -->",
         f"# {d['name']} — backend setup", "", d.get("description", ""), "",
-        f"- **id** `{d['id']}` · **category** {d['category']} · **trust tier** {d['trust_tier']}",
+        f"- **id** `{d['id']}` · **version** {d.get('version', '—')} · **channel** {d.get('channel', '—')} · "
+        f"**category** {d['category']} · **trust tier** {d['trust_tier']}",
         f"- **status** {d['status']} · **available** {d['available']} · **modes** {', '.join(d['modes'])}", "",
         "See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general "
         "backend model (config, secrets, the runner, go-live, troubleshooting).", "",

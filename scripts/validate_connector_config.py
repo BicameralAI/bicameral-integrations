@@ -31,6 +31,7 @@ from pathlib import Path
 
 from build_connector_index import build_index, render
 from build_connector_setup import build_setup
+from product_meta import PRODUCT_CHANNEL
 
 _REPO = Path(__file__).resolve().parents[1]
 if str(_REPO) not in sys.path:  # CLI: sys.path[0] is scripts/, not repo root — make `connectors` importable
@@ -42,6 +43,7 @@ _INDEX = _CONNECTORS / "index.json"
 _REF_REQUIRED_ACTIONS = frozenset({"open_url", "register_webhook", "configure"})
 _PY_TYPE = {"object": dict, "array": list, "string": str, "boolean": bool}
 _REF_RE = re.compile(r"^(?P<path>[^()]+?)(?:\s*\((?P<section>[^()]+)\))?$")
+_SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")  # per-component MAJOR.MINOR.PATCH
 _HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(?P<text>.+?)\s*$")
 
 
@@ -113,11 +115,15 @@ def _connector_class(connector_id: str):
 
 
 def _semantic(descriptor: dict, folder: str) -> list[str]:
-    """id/source_id/modes drift-guard + webhook-mode coherence + conditional instruction refs."""
+    """id/source_id/modes drift-guard + webhook-mode coherence + conditional instruction refs + version/channel."""
     errs: list[str] = []
     cid = descriptor.get("id")
     if cid != folder:
         errs.append(f"id {cid!r} != folder {folder!r}")
+    if descriptor.get("channel") != PRODUCT_CHANNEL:  # uniform product channel (single source)
+        errs.append(f"{folder}: channel {descriptor.get('channel')!r} != product channel {PRODUCT_CHANNEL!r}")
+    if not _SEMVER_RE.match(str(descriptor.get("version", ""))):  # per-component semver
+        errs.append(f"{folder}: version {descriptor.get('version')!r} is not MAJOR.MINOR.PATCH semver")
     try:
         cls = _connector_class(folder)
     except Exception as exc:  # fail-closed: a broken/side-effecting import is a hard failure

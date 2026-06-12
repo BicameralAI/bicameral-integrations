@@ -3,7 +3,7 @@
 
 Claude Code session-transcript JSONL turns as redact-and-pass governed evidence (local file import, no credential).
 
-- **id** `claude_code` · **category** developer-ai · **trust tier** T0
+- **id** `claude_code` · **version** 0.1.0 · **channel** beta · **category** developer-ai · **trust tier** T0
 - **status** live-ready · **available** True · **modes** passive
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

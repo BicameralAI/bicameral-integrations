@@ -3,7 +3,7 @@
 
 Notion page-change webhook events as governed page-pointer evidence (keyed by the page entity.id).
 
-- **id** `notion` · **category** docs · **trust tier** T1
+- **id** `notion` · **version** 0.1.0 · **channel** beta · **category** docs · **trust tier** T1
 - **status** live-ready · **available** True · **modes** webhook
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

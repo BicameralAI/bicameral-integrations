@@ -3,7 +3,7 @@
 
 Confluence Cloud page content as redact-and-pass governed evidence (title + body scrubbed); authenticated REST poll (the Connect-app-JWT webhook needs a Connect app, deferred).
 
-- **id** `confluence` · **category** docs / knowledge-base · **trust tier** T1
+- **id** `confluence` · **version** 0.1.0 · **channel** beta · **category** docs / knowledge-base · **trust tier** T1
 - **status** live-ready · **available** True · **modes** active, passive
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

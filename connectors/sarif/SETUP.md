@@ -3,7 +3,7 @@
 
 SARIF 2.1.0 static-analysis findings (file import) as redact-and-pass governed evidence — a secret-scanner finding's message is scrubbed but preserved, not dropped.
 
-- **id** `sarif` · **category** security/compliance-evidence · **trust tier** T0
+- **id** `sarif` · **version** 0.1.0 · **channel** beta · **category** security/compliance-evidence · **trust tier** T0
 - **status** live-ready · **available** True · **modes** passive
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

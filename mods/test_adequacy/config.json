@@ -3,6 +3,7 @@
   "manifest_id": "test-adequacy",
   "name": "Test Adequacy",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags missing or weak tests around changed behavior, connector parsing, fixtures, governance gates, and review workflows.",
   "family": "testing",
   "advises_on": "Missing or weak tests around changed behavior, connector parsing, fixtures, governance gates, and review workflows.",

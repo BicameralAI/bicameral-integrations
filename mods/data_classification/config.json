@@ -3,6 +3,7 @@
   "manifest_id": "data-classification",
   "name": "Data Classification",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags classifying sensitive evidence before it is routed, reviewed, or proposed for outbound notification.",
   "family": "data-governance",
   "advises_on": "Classifying sensitive evidence before it is routed, reviewed, or proposed for outbound notification.",

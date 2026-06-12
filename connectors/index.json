@@ -3,6 +3,7 @@
     "aider": {
       "available": true,
       "category": "source-control / developer-AI tooling",
+      "channel": "beta",
       "credentials": [],
       "data": {
         "emits": [
@@ -53,6 +54,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T0",
+      "version": "0.1.0",
       "wire_gates": [
         "Contract re-verified live 2026-06-13 (aider.chat/docs/git.html): '(aider)' appended to BOTH git author + committer name by default; committer-only for dirty-file commits; --attribute-co-authored-by opt-in Co-authored-by trailer. _attributed_by precedence (author -> committer -> co-author) matches.",
         "PII: commit subject redact-and-passed (secret/PHI/PAN + email/phone); author NAME retained as intentional T0 git provenance (SG-2026-06-13-B); author_email never read; opaque hash floor un-redacted. FX-SEC-001 backstops secret/PHI/PAN.",
@@ -62,6 +64,7 @@
     "anthropic_admin": {
       "available": true,
       "category": "developer-AI / usage",
+      "channel": "beta",
       "credentials": [
         {
           "header": "x-api-key: <admin key> (+ anthropic-version: 2023-06-01)",
@@ -144,6 +147,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "Usage API re-verified live 2026-06-13 (docs.anthropic.com/en/api/usage-cost-api): GET /v1/organizations/usage_report/messages, x-api-key Admin key (sk-ant-admin…) + anthropic-version; response uncached_input_tokens + cache_creation (NESTED ephemeral_1h/5m) + cache_read_input_tokens + output_tokens by model/workspace/service_tier. MATCHES parse_usage incl. the nested cache_creation summation.",
         "PII: PII-free aggregate by construction — synthesized token-totals excerpt; opaque workspace_id/api_key_id never surfaced; no author; no provider free text. FX-SEC-001 backstops secret/PHI/PAN.",
@@ -153,6 +157,7 @@
     "claude_code": {
       "available": true,
       "category": "developer-ai",
+      "channel": "beta",
       "credentials": [],
       "data": {
         "emits": [
@@ -194,6 +199,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T0",
+      "version": "0.1.0",
       "wire_gates": [
         "Source schema re-pinned against a REAL 6,008-line transcript 2026-06-12 (SG-2026-06-12-G): evidence types user/assistant carry message.content (text/thinking/tool_use/tool_result blocks); cwd/model/sessionId/uuid/timestamp(ISO) present. The documented `summary` type is ABSENT in the current format (kept legacy-tolerant); new types ai-title/pr-link/system/queue-operation exist and are intentionally NOT emitted this cycle (user/assistant turns are the evidence surface).",
         "PII: excerpt content redact-and-passed (secret/PHI/PAN + email/phone); cwd home-prefix scrubbed (no OS username); FX-SEC-001 is the un-bypassable backstop. source_id renamed claude-code -> claude_code (folder/descriptor alignment).",
@@ -203,6 +209,7 @@
     "confluence": {
       "available": true,
       "category": "docs / knowledge-base",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Authorization: Basic base64('<email>:<api_token>')",
@@ -285,6 +292,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "Cloud signature scheme re-verified 2026-06-13 (Atlassian docs): the Data-Center X-Hub-Signature HMAC does NOT transfer to Cloud; the Cloud webhook scheme is Connect-app JWT (Authorization: JWT, HS256 over the per-tenant install shared secret + qsh binding). It needs a registered Connect app + install-handshake shared-secret store, so verify() stays deferred and the descriptor offers only the authenticated poll (SG-2026-06-14-B).",
         "PII: page title + flattened storage body redact-and-passed (secret/PHI/PAN + email/phone); opaque id ref + URL un-redacted; no author. _strip_storage_html is a lossy flattener, not a sanitizer; redact() + FX-SEC-001 are the controls.",
@@ -294,6 +302,7 @@
     "continue_dev": {
       "available": true,
       "category": "developer-AI / source-control",
+      "channel": "beta",
       "credentials": [],
       "data": {
         "emits": [
@@ -351,6 +360,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T0",
+      "version": "0.1.0",
       "wire_gates": [
         "Dev-data shape re-confirmed live 2026-06-13 (docs.continue.dev development-data): schema-versioned event JSON blob + HTTP-sink. Field detail (eventName base field, no event-id, prompt/completion/content/message text fields, level:noCode lever) pinned 2026-06-08 against docs/source and handled defensively (eventName/name fallback, schema-version-tolerant, str-coerced); the doc defers the field list to source (SG-2026-06-13-D). No drift on the confirmed surface.",
         "PII: prompt/completion/content/message excerpt + userId author redact-and-passed (secret/PHI/PAN + email/phone); event-kind floor + technical metadata kept; operator level:noCode strips text at source. FX-SEC-001 backstops secret/PHI/PAN.",
@@ -360,6 +370,7 @@
     "copilot": {
       "available": true,
       "category": "developer-ai",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Authorization: Bearer <token>",
@@ -448,6 +459,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "Contract verified docs.github.com 2026-06-08: top-level JSON array of day objects (one emission/day); page/per_page pagination (max 100; 100-day lookback) via PageNumberPager (stop-on-short-page). X-GitHub-Api-Version 2022-11-28 is an argument, not baked.",
         "Operator templates their org into base_url (required; the default carries an ORG placeholder that will 404).",
@@ -457,6 +469,7 @@
     "cursor": {
       "available": true,
       "category": "developer-ai",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Authorization: Basic (API key as username, empty password)",
@@ -534,6 +547,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "Contract verified live 2026-06-11: POST https://api.cursor.com/teams/daily-usage-data, HTTP Basic (key as username), body {startDate,endDate} epoch-ms <= 30 days, `data` envelope; rows carry userId/email/metrics, no `name`.",
         "Pagination is POST-body `page`/`pageSize` with response `pagination.hasNextPage` (verified 2026-06-11). The reference client (build_cursor_spec) issues a SINGLE request and is NOT yet wired for multi-page — a team larger than one page truncates; widen `pageSize` or wire a body-page pager before relying on full coverage. (runtime/poll_specs.py build_cursor_spec carries stale 'inferred/unverified' comments to reconcile.)",
@@ -543,6 +557,7 @@
     "devin": {
       "available": true,
       "category": "developer-ai",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Authorization: Bearer <cog_ Service-User key>",
@@ -636,6 +651,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "The operator templates org_id into the REQUIRED base_url (https://api.devin.ai/v3/organizations/<org_id>/sessions); build_devin_spec has no default base_url, so a missing value fails closed (ConfigError) before any request.",
         "v3 contract (items envelope; pull_requests[] of {pr_url, pr_state}; cursor end_cursor/has_next_page re-sent as ?after=; Bearer cog_ Service-User key) was doc-verified 2026-06-08 and re-verified live 2026-06-11 (docs.devinenterprise.com) — but UNVERIFIED against the live API with a real cog_ key. The operator must run the live poll and review the result before promoting to Live (ADR-0012).",
@@ -645,6 +661,7 @@
     "fathom": {
       "available": true,
       "category": "meetings",
+      "channel": "beta",
       "credentials": [
         {
           "header": "X-Api-Key: <key>",
@@ -734,6 +751,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "new-meeting-content-ready"
@@ -762,6 +780,7 @@
     "github": {
       "available": true,
       "category": "source-control",
+      "channel": "beta",
       "credentials": [
         {
           "header": "X-Hub-Signature-256 (sha256= hex HMAC-SHA256 over the raw body)",
@@ -823,6 +842,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "pull_request"
@@ -851,6 +871,7 @@
     "gitlab": {
       "available": true,
       "category": "source-control",
+      "channel": "beta",
       "credentials": [
         {
           "header": "X-Gitlab-Token (plaintext shared secret, constant-time compared — GitLab does NOT HMAC-sign the body)",
@@ -946,6 +967,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "merge_request",
@@ -975,6 +997,7 @@
     "google_drive": {
       "available": true,
       "category": "docs",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Authorization: Bearer <access_token>",
@@ -1056,6 +1079,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1/T3",
+      "version": "0.1.0",
       "wire_gates": [
         "Bearer-header assumption + multi-tab docs confirmed against a live response before the Live flip. Multi-tab docs (content under tabs[].documentTab.body) emit title-only — extract_document_text walks the legacy body; includeTabsContent/tabs[] deferred.",
         "OAuth token refresh is now stdlib (runtime.RefreshTokenSecretResolver, FX-RUNTIME-006) — pasting a raw access token is a ~1h TEST only; the durable path is the refresh resolver (user OAuth) or a service-account JSON (operator-runtime, RS256/google-auth, not stdlib). Folder polling (Drive files.list) + push-notification webhooks remain deferred.",
@@ -1065,6 +1089,7 @@
     "granola": {
       "available": true,
       "category": "meetings",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Authorization: Bearer grn_<key>",
@@ -1129,6 +1154,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "Contract re-verified live 2026-06-11 (public-api.granola.ai): GET /v1/notes?include=transcript, Bearer grn_; `notes` envelope; cursor `cursor`/`hasMore` pagination; note carries owner{name,email}, title, summary, transcript[{speaker:{source,diarization_label},text}], created_at.",
         "PII (SG-2026-06-11-D, fixed this cycle): identity is `owner` (NOT `attendees`); transcript + title are redact-and-passed; owner identity is dropped (FX-SEC-001 does not catch a generic name/email).",
@@ -1138,6 +1164,7 @@
     "jira": {
       "available": true,
       "category": "project-management",
+      "channel": "beta",
       "credentials": [
         {
           "header": "X-Hub-Signature (sha256= hex HMAC-SHA256 over the raw body, WebSub)",
@@ -1199,6 +1226,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "jira:issue_created",
@@ -1229,6 +1257,7 @@
     "linear": {
       "available": true,
       "category": "project-management",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Authorization (raw key, NO Bearer prefix)",
@@ -1340,6 +1369,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "Issue"
@@ -1368,6 +1398,7 @@
     "local_directory": {
       "available": true,
       "category": "file/static-import",
+      "channel": "beta",
       "credentials": [],
       "data": {
         "emits": [
@@ -1432,6 +1463,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T0",
+      "version": "0.1.0",
       "wire_gates": [
         "No external provider contract — local filesystem source; nothing to re-verify against a vendor API. Parse shape {path, content, modified, source_type_label} ported from bicameral-mcp events/sources/local_directory.py.",
         "PII: file content + filename stem redact-and-passed (secret/PHI/PAN + email/phone); path sha256-tokenized into an opaque ref (no FS-layout leak). FX-SEC-001 backstops secret/PHI/PAN.",
@@ -1441,6 +1473,7 @@
     "mcp_registry": {
       "available": true,
       "category": "agent-ecosystem",
+      "channel": "beta",
       "credentials": [],
       "data": {
         "emits": [
@@ -1489,6 +1522,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "Verified contract (registry.modelcontextprotocol.io/openapi.yaml 2026-06-08): public no-auth GET /v0/servers; list under `servers`; each entry nests the server under `server`; cursor pagination via response `metadata.nextCursor` (no has-more — stop on absent).",
         "No credential (public). Live flip is gated only on the operator wiring GatewaySink + running the public poll + review (ADR-0012)."
@@ -1497,6 +1531,7 @@
     "notion": {
       "available": true,
       "category": "docs",
+      "channel": "beta",
       "credentials": [
         {
           "header": "X-Notion-Signature (HMAC-SHA256 over the request body, signed with the verification_token)",
@@ -1558,6 +1593,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "page.content_updated",
@@ -1590,6 +1626,7 @@
     "openai_admin": {
       "available": true,
       "category": "security/compliance-evidence",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Authorization: Bearer <admin key>",
@@ -1664,6 +1701,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "Audit-logs API re-verified live 2026-06-13 (platform.openai.com/docs/api-reference/audit-logs): GET /v1/organization/audit_logs, Authorization: Bearer Admin key; each event {id, type, effective_at, project, actor, <detail>}. MATCHES parse_audit_log; the connector reads only the non-PII type/project/actor.type/effective_at.",
         "PII: actor identity (email/id/IP) DROPPED at parse (never read) -- the SOLE control, since FX-SEC-001 does not screen generic email/IP and redact() has no IPv4 scrub. Only the non-PII actor.type is surfaced; excerpt redact()-ed defensively. FX-SEC-001 backstops secret/PHI/PAN.",
@@ -1673,6 +1711,7 @@
     "osv": {
       "available": true,
       "category": "security/compliance-evidence",
+      "channel": "beta",
       "credentials": [],
       "data": {
         "emits": [
@@ -1730,6 +1769,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "OSV schema re-verified live 2026-06-13 (ossf.github.io/osv-schema): id+modified required, all else optional; summary/details free-text, severity[{type,score}], affected[].package.name, references[].url, aliases[] -- every field parse_vuln reads MATCHES. No drift.",
         "PII: summary + details redact-and-passed (secret/PHI/PAN + email/phone); opaque vuln id floor un-redacted; technical metadata kept; no author. OSV is public data. FX-SEC-001 backstops secret/PHI/PAN.",
@@ -1739,6 +1779,7 @@
     "pagerduty": {
       "available": true,
       "category": "observability/incident-evidence",
+      "channel": "beta",
       "credentials": [
         {
           "header": "X-PagerDuty-Signature (comma-separated v1=<hex> HMAC-SHA256 set over the raw body; accept if ANY matches, for zero-downtime rotation)",
@@ -1804,6 +1845,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "incident"
@@ -1832,6 +1874,7 @@
     "sarif": {
       "available": true,
       "category": "security/compliance-evidence",
+      "channel": "beta",
       "credentials": [],
       "data": {
         "emits": [
@@ -1882,6 +1925,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T0",
+      "version": "0.1.0",
       "wire_gates": [
         "SARIF 2.1.0 is a FROZEN OASIS standard (no version drift): the result paths runs[].results[].{ruleId, level, message.text, locations[].physicalLocation.{artifactLocation.uri, region.startLine}} + runs[].tool.driver.name were verified against the OASIS schema 2026-06-08 and re-affirmed 2026-06-13.",
         "PII/SECRET: result message.text redact-and-passed (secret/PHI/PAN + email/phone) -- converts an FX-SEC-001 hard-reject of a secret-bearing finding into scrubbed-evidence so the security signal survives (SG-2026-06-13-E). The raw code snippet (region.snippet.text) is NEVER read. ruleId/ref floor un-redacted. FX-SEC-001 backstops secret/PHI/PAN.",
@@ -1891,6 +1935,7 @@
     "sentry": {
       "available": true,
       "category": "observability/incident-evidence",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Sentry-Hook-Signature (hex HMAC-SHA256 over the raw body, signed with the integration Client Secret)",
@@ -1956,6 +2001,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "issue"
@@ -1984,6 +2030,7 @@
     "servicenow": {
       "available": true,
       "category": "itsm",
+      "channel": "beta",
       "credentials": [
         {
           "header": "Authorization: Basic (integration username:password)",
@@ -2073,6 +2120,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "wire_gates": [
         "Table API documented shape: GET https://<instance>/api/now/table/incident, HTTP Basic, `{result:[...]}` envelope, sysparm_offset/sysparm_limit offset pagination (stop-on-short-page). instance is host-validated + the URL is urllib-built (SSRF-4 fix, #133) so instance/fields cannot inject host/path/query.",
         "OAuth 2.0 is a deferred alternative; Basic auth this cycle.",
@@ -2082,6 +2130,7 @@
     "slack": {
       "available": true,
       "category": "communication",
+      "channel": "beta",
       "credentials": [
         {
           "header": "X-Slack-Signature (v0= hex HMAC-SHA256 over 'v0:{timestamp}:{raw_body}') + X-Slack-Request-Timestamp",
@@ -2158,6 +2207,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T2",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "message"
@@ -2186,6 +2236,7 @@
     "zendesk": {
       "available": true,
       "category": "support / customer-success",
+      "channel": "beta",
       "credentials": [
         {
           "header": "X-Zendesk-Webhook-Signature (base64 HMAC-SHA256 over {timestamp}{body}, companion X-Zendesk-Webhook-Signature-Timestamp)",
@@ -2280,6 +2331,7 @@
       ],
       "status": "live-ready",
       "trust_tier": "T1",
+      "version": "0.1.0",
       "webhook": {
         "events": [
           "ticket"

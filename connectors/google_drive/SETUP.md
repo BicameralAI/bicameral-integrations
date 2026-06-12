@@ -3,7 +3,7 @@
 
 Google Docs documents fetched by id (documents.get) as governed evidence.
 
-- **id** `google_drive` · **category** docs · **trust tier** T1/T3
+- **id** `google_drive` · **version** 0.1.0 · **channel** beta · **category** docs · **trust tier** T1/T3
 - **status** live-ready · **available** True · **modes** active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

@@ -1,6 +1,8 @@
 {
   "id": "aider",
   "name": "Aider",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Aider-attributed git commits as read-only developer-AI provenance evidence (commit subject redact-and-passed; the human author name is retained as the provenance signal).",
   "category": "source-control / developer-AI tooling",
   "trust_tier": "T0",

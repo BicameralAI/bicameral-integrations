@@ -31,6 +31,7 @@ if str(_REPO) not in sys.path:
 
 from build_mod_index import build_index, render  # noqa: E402
 from build_mod_setup import build_setup  # noqa: E402
+from product_meta import PRODUCT_CHANNEL  # noqa: E402
 from validate_connector_config import _check  # noqa: E402 — reuse the schema-subset checker
 
 from mods._manifest import ModManifestError, load_manifest  # noqa: E402
@@ -45,6 +46,8 @@ def _semantic(descriptor: dict, folder: str) -> list[str]:
     errs: list[str] = []
     if descriptor.get("id") != folder:
         errs.append(f"id {descriptor.get('id')!r} != folder {folder!r}")
+    if descriptor.get("channel") != PRODUCT_CHANNEL:  # uniform product channel (single source)
+        errs.append(f"{folder}: channel {descriptor.get('channel')!r} != product channel {PRODUCT_CHANNEL!r}")
     manifest_path = _MODS / folder / "manifest.yaml"
     try:
         manifest = load_manifest(manifest_path)

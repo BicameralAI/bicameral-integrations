@@ -192,3 +192,26 @@ def test_credential_modes_must_be_in_connector_modes():
     d["credentials"][0]["modes"] = ["passive"]  # not a Linear mode
     errs = vcc._semantic(d, "linear")
     assert any("not in connector modes" in e for e in errs)
+
+
+def test_version_and_channel_present_and_enforced():
+    # Uniform Beta-state versioning: every connector carries a semver version + channel == product channel.
+    import copy
+    from product_meta import PRODUCT_CHANNEL
+    d = _linear()
+    assert "version" in d and "channel" in d
+    assert d["channel"] == PRODUCT_CHANNEL
+    # wrong channel is rejected (single-source enforcement)
+    bad = copy.deepcopy(d)
+    bad["channel"] = "ga"
+    assert any("channel" in e and "product channel" in e for e in vcc._semantic(bad, "linear"))
+    # non-semver version is rejected
+    badv = copy.deepcopy(d)
+    badv["version"] = "v1"
+    assert any("semver" in e for e in vcc._semantic(badv, "linear"))
+
+
+def test_index_carries_version_and_channel():
+    import build_connector_index as bci
+    idx = bci.build_index()["connectors"]
+    assert all("version" in c and c.get("channel") == "beta" for c in idx.values())

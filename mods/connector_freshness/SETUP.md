@@ -3,7 +3,7 @@
 
 Advisory mod that flags stale provider assumptions in connector docs, fixtures, auth notes, references, and parser scope.
 
-- **id** `connector_freshness` · **manifest** `connector-freshness` · **family** freshness · **version** 0.1.0
+- **id** `connector_freshness` · **manifest** `connector-freshness` · **family** freshness · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** False
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

@@ -1,6 +1,8 @@
 {
   "id": "linear",
   "name": "Linear",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Linear issues — webhook events + active GraphQL fetch — as governed evidence.",
   "category": "project-management",
   "trust_tier": "T1",

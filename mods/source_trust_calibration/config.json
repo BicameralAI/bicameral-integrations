@@ -3,6 +3,7 @@
   "manifest_id": "source-trust-calibration",
   "name": "Source Trust Calibration",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags calibrating source trust based on provenance, source type, historical noise, data sensitivity, and operation tier.",
   "family": "trust",
   "advises_on": "Calibrating source trust based on provenance, source type, historical noise, data sensitivity, and operation tier.",

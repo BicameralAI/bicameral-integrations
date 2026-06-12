@@ -6640,3 +6640,51 @@ contributor-reputation gate (bot author; `main` has no branch protection, so it 
 *Status: **SEALED at #198 (`02303dc1`; L1)** -- mod-artifact LF pin (cross-platform byte-exact validator fix, SG-2026-06-15-A); + the open-PR sweep merged #169 (ingestion_gate UI hints) + #92 (governance boundary). Prior: #197 substantiate, #196 mod-fanout.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, ALL with UI descriptors. Secrets never committed nor printed.*
 *Next required action: operator-asked **uniform Beta-state versioning** across connectors + mods (explicit per-component `version`, planned for a downstream consumer, anchored to the product beta). Then remaining issues triage (#40 ADR-0011 reframe, #42 boundary RFQ [partly addressed by #92], #93 Linear stress test, #101 accepted-risk hardening). Backlog: branch protection (B5); bot #73.*
+
+---
+
+### Entry #199: SESSION SEAL -- uniform Beta-state versioning: per-component `version` + `channel` across 26 connectors + 13 mods
+
+**Entry ID**: `versioning199betachannel`
+**Timestamp**: 2026-06-15T20:00:00-04:00
+**Phase**: SUBSTANTIATE (versioning contract; operator ask)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(scripts/product_meta.py)
+= fbce424d594694930777ff8ec8d8f3c0ef9232e1c98ead837b8eedccf9f440a2
+```
+
+**Previous Hash**: 02303dc18ade357576e7810b0123088517491acf18b8a2f2d6271109c6e087ad
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 9cc5f4b180e6eae07317bb14b538fa17d84ba4274226e8c739d84c8a7278977f
+```
+
+**Decision**: Established uniform Beta-state versioning (operator-chosen scheme: per-component semver `version`
++ a uniform explicit `channel` field; versions may diverge post-beta, the channel stays `beta` product-wide
+until GA). Planned for a downstream consumer of the explicit connector + mod versions. **Schema:** added required
+`version` (semver) + `channel` (enum beta/ga) to `connectors/_schema/connector-config.schema.json`; added required
+`channel` to `mods/_schema/mod-descriptor.schema.json` (mods already had `version`). **Single source:** new
+`scripts/product_meta.py` (`PRODUCT_CHANNEL = "beta"`) -- both validators enforce every descriptor's `channel`
+equals it (flip to "ga" + re-stamp at GA). **Stamped** `version: "0.1.0"` + `channel: "beta"` into all 26
+connector descriptors + `channel: "beta"` into all 13 mod descriptors (textual insertion, formatting preserved).
+**Validators:** connector + mod `_semantic` now reject a wrong channel + a non-semver version; build scripts
+surface version+channel in every SETUP header. Regenerated both `index.json` + all 39 `SETUP.md`. **UI spec:**
+added a "Versioning & channel" section -- render `version` as a label + a "Beta" `channel` badge ("flip-ready !=
+GA-stable"), distinct from per-connector `status`/`available`. **Tests:** version+channel present + enforced
+(wrong channel / non-semver rejected); index carries both. **Measured:** both validators OK, full suite **708
+passed**, ruff clean, whole-tree mypy (226 files w/ scripts) clean, governance-gate #1..#199 OK. Follow-up
+(separate cycle): single-source the emission `adapter_version` from the descriptor version (the scattered
+`<id>/0.1.0` strings still drift -- e.g. the stale `continue/0.1.0`). L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#199 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **VERSIONING SEALED at #199 (`9cc5f4b1`; L2)** -- per-component `version` + uniform `channel:beta` across 26 connectors + 13 mods, single-sourced (`product_meta.PRODUCT_CHANNEL`) + CI-enforced; UI-renderable. Prior: #198 gitattributes-fix, #197 substantiate.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, ALL with UI descriptors carrying version + channel. Secrets never committed nor printed.*
+*Next required action: **adapter_version reconciliation** (single-source the emission version from the descriptor; fix the `continue/0.1.0` drift), then remaining issues triage (#40/#42/#93/#101). **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*

@@ -1,6 +1,8 @@
 {
   "id": "anthropic_admin",
   "name": "Anthropic Admin",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Anthropic organization usage/cost metrics as PII-free aggregate governed evidence (token totals + models; opaque workspace/key ids never surfaced).",
   "category": "developer-AI / usage",
   "trust_tier": "T1",

@@ -3,7 +3,7 @@
 
 Advisory mod that flags pR-level review risk — the first mod family behind the Bicameral Review Bot (ADR-0011).
 
-- **id** `code_review_risk` · **manifest** `code-review-risk` · **family** review-risk · **version** 0.1.0
+- **id** `code_review_risk` · **manifest** `code-review-risk` · **family** review-risk · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** False
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

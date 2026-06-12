@@ -3,6 +3,7 @@
   "manifest_id": "decision-drift",
   "name": "Decision Drift",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags new source evidence that appears to conflict with recorded decisions, ADRs, trust tiers, or governance docs.",
   "family": "governance-boundary",
   "advises_on": "New source evidence that appears to conflict with recorded decisions, ADRs, trust tiers, or governance docs.",

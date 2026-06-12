@@ -3,6 +3,7 @@
   "manifest_id": "dependency-risk",
   "name": "Dependency Risk",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags dependency-risk signals from connector evidence — known vulnerabilities and dependency-manifest changes.",
   "family": "dependency",
   "advises_on": "Dependency-risk signals from connector evidence — known vulnerabilities and dependency-manifest changes.",

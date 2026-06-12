@@ -3,7 +3,7 @@
 
 OSV.dev open-source vulnerability records as redact-and-pass governed evidence (free unauthenticated query API; public technical vuln data).
 
-- **id** `osv` · **category** security/compliance-evidence · **trust tier** T1
+- **id** `osv` · **version** 0.1.0 · **channel** beta · **category** security/compliance-evidence · **trust tier** T1
 - **status** live-ready · **available** True · **modes** active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

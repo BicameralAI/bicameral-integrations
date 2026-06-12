@@ -3,7 +3,7 @@
 
 Cursor team daily-usage metrics (Admin API) as PII-free, governed evidence.
 
-- **id** `cursor` · **category** developer-ai · **trust tier** T1
+- **id** `cursor` · **version** 0.1.0 · **channel** beta · **category** developer-ai · **trust tier** T1
 - **status** live-ready · **available** True · **modes** active
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

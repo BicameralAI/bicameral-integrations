@@ -1,6 +1,8 @@
 {
   "id": "slack",
   "name": "Slack",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Slack message events as redact-and-pass governed evidence (read/ingest).",
   "category": "communication",
   "trust_tier": "T2",

@@ -3,7 +3,7 @@
 
 Fathom meeting transcripts + summaries as redact-and-pass governed evidence (speaker + recorder real names dropped).
 
-- **id** `fathom` · **category** meetings · **trust tier** T1
+- **id** `fathom` · **version** 0.1.0 · **channel** beta · **category** meetings · **trust tier** T1
 - **status** live-ready · **available** True · **modes** passive, webhook
 
 See [docs/CONNECTOR_BACKEND_SETUP.md](../../docs/CONNECTOR_BACKEND_SETUP.md) for the general backend model (config, secrets, the runner, go-live, troubleshooting).

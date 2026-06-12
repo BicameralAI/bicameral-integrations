@@ -3,7 +3,7 @@
 
 Advisory mod that flags dependency-risk signals from connector evidence — known vulnerabilities and dependency-manifest changes.
 
-- **id** `dependency_risk` · **manifest** `dependency-risk` · **family** dependency · **version** 0.1.0
+- **id** `dependency_risk` · **manifest** `dependency-risk` · **family** dependency · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** False
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

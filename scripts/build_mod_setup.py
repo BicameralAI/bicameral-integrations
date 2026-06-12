@@ -35,7 +35,8 @@ def build_setup(d: dict) -> str:
     lines = [
         "<!-- GENERATED from config.json — do not edit; run scripts/build_mod_setup.py -->",
         f"# {d['name']} — mod setup", "", d.get("description", ""), "",
-        f"- **id** `{d['id']}` · **manifest** `{d['manifest_id']}` · **family** {d['family']} · **version** {d['version']}",
+        f"- **id** `{d['id']}` · **manifest** `{d['manifest_id']}` · **family** {d['family']} · "
+        f"**version** {d['version']} · **channel** {d.get('channel', '—')}",
         f"- **advisory only** (non-authoritative; ADR-0008) · **default enabled** {en.get('default_enabled')} "
         f"· **trust-gated** {en.get('trust_gated')}", "",
         "See [mods/README.md](README.md) for the general mod model + the mod safety contract.", "",

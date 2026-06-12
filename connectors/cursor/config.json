@@ -1,6 +1,8 @@
 {
   "id": "cursor",
   "name": "Cursor",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "Cursor team daily-usage metrics (Admin API) as PII-free, governed evidence.",
   "category": "developer-ai",
   "trust_tier": "T1",

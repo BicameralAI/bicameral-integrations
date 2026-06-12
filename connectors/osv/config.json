@@ -1,6 +1,8 @@
 {
   "id": "osv",
   "name": "OSV",
+  "version": "0.1.0",
+  "channel": "beta",
   "description": "OSV.dev open-source vulnerability records as redact-and-pass governed evidence (free unauthenticated query API; public technical vuln data).",
   "category": "security/compliance-evidence",
   "trust_tier": "T1",

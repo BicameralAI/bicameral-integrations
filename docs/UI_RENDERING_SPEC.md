@@ -33,7 +33,22 @@ The integrations repo **never** sees a secret value — secrets resolve at the o
 
 Render from `index.json`. Use **`available`** (boolean) as the canonical "show as available vs
 coming-soon" flag — NOT `status`/`live_readiness` (those can disagree; `available` is the single source).
-Card: `name`, `description`, `icon?`, `category`, `trust_tier`, a `status` chip.
+Card: `name`, `description`, `icon?`, `category`, `trust_tier`, a `status` chip, the **`version`**, and a
+**`channel` badge** (see Versioning & channel below).
+
+## Versioning & channel (`version`, `channel`)
+
+Every connector **and** mod descriptor carries a per-component **`version`** (semver `MAJOR.MINOR.PATCH`;
+baseline `0.1.0`, may diverge per component as a connector's emission/contract shape changes) plus a uniform
+**`channel`** (`beta` | `ga`). The whole product is **Beta** even though individual connectors are flip-ready
+and mods are built — so `channel` is the same value across all 26 connectors + 13 mods, single-sourced +
+CI-enforced (`scripts/product_meta.py:PRODUCT_CHANNEL`; the validators fail if any descriptor disagrees).
+
+Render `version` as a small version label and `channel` as a **product-state badge** — show a clear **"Beta"**
+badge while `channel == "beta"` so operators understand "flip-ready ≠ GA-stable." `version` is the field a
+downstream consumer pins/compares per component; `channel` is the product-wide release-state signal. Do NOT
+conflate `channel` (product release state) with `status`/`available` (per-connector readiness) — they answer
+different questions.
 
 ## The config-on-rails wizard (`instructions[]`)
 

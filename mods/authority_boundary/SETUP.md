@@ -3,7 +3,7 @@
 
 Advisory mod that flags changes that may cross Bicameral's authority, trust-tier, or canonical-state boundaries.
 
-- **id** `authority_boundary` · **manifest** `authority-boundary` · **family** governance-boundary · **version** 0.1.0
+- **id** `authority_boundary` · **manifest** `authority-boundary` · **family** governance-boundary · **version** 0.1.0 · **channel** beta
 - **advisory only** (non-authoritative; ADR-0008) · **default enabled** True · **trust-gated** False
 
 See [mods/README.md](README.md) for the general mod model + the mod safety contract.

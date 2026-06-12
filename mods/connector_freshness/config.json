@@ -3,6 +3,7 @@
   "manifest_id": "connector-freshness",
   "name": "Connector Freshness",
   "version": "0.1.0",
+  "channel": "beta",
   "description": "Advisory mod that flags stale provider assumptions in connector docs, fixtures, auth notes, references, and parser scope.",
   "family": "freshness",
   "advises_on": "Stale provider assumptions in connector docs, fixtures, auth notes, references, and parser scope.",
