@@ -5872,7 +5872,46 @@ UUID-less double-delivery collapses to one). EM-safe + read-only + ADR-0012 hold
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#179 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PURPLE-TEAM RECON SEALED at #179 (`6393f9ba`; L2)** -- webhook trio approved-with-fixes, 0 blocked; 2 findings BOTH on gitlab (parse-robustness + dedup parity it predates); sentry + pagerduty CLEAN. **20 of 26 flip-ready** + 13 mods. Prior: #178 doc-sync, #177 pagerduty.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 20 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **PT-gitlab** (isinstance-guard nested containers + body-hash dedup fallback + disclosure fix); modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
+### Entry #180: SESSION SEAL -- PT-gitlab: parse-robustness + dedup parity (webhook-trio purple-team remediation COMPLETE)
+
+**Entry ID**: `ptgitlab180robustdedup`
+**Timestamp**: 2026-06-14T14:00:00-04:00
+**Phase**: SUBSTANTIATE (purple-team remediation)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/gitlab/connector.py)
+= 3bff3944b5daa9551dc8115bb4d2733cf3895e2a81689703db2f80c54e7e1c47
+```
+
+**Previous Hash**: 6393f9ba37c676be703d80bb8c4c3ef4642cb9b841a0379ed5cac2869634fe6a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 6619fd7ca214d83bdec4e42fa4911f202c39d9da61d74a2c839b60b2dc832df1
+```
+
+**Decision**: Closed both webhook-trio purple-team findings (gitlab only) -- **webhook-trio purple-team
+remediation COMPLETE** (sentry + pagerduty were clean). **GITLAB-001 (medium):** `_event_observation` now
+isinstance-guards `object_attributes`/`project`/`user` (the `or {}` floored only falsy, so a truthy non-dict --
+provider drift / a validly-token'd hostile body -- crashed `.get()` out of the webhook path; the fathom #164
+class, jira's pattern). **GITLAB-002 (medium):** `normalize_event` dedup now falls back to a SHA-256 body hash
+when `X-Gitlab-Event-UUID` is absent (`delivery_id = self._delivery_id(headers) or hashlib.sha256(body).hexdigest()`,
+dropping the `if delivery_id and` guard) -- a stripped-UUID replay was bypassing dedup and emitting a duplicate
+evidence record to the gateway; every sibling (jira/sentry/pagerduty/zendesk) had the fallback, gitlab was the
+lone omission. Corrected the dedup disclosure in config.json + auth.md + references.md to state the body-hash
+fallback. Brought gitlab to the sibling-webhook standard. **Tests:** truthy-non-dict
+object_attributes/project/user normalizes (no raise, full path); a UUID-less double-delivery collapses to one
+emission. **Measured:** full suite **682 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK,
+governance-gate #1..#180 OK. **All 3 webhook-trio connectors purple-team-validated & remediated; 20 of 26
+flip-ready, all purple-teamed.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#180 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PT-gitlab SEALED at #180 (`6619fd7c`; L2)** -- **webhook-trio PURPLE-TEAM REMEDIATION COMPLETE (both gitlab findings fixed: parse-robustness isinstance-guards + body-hash dedup fallback, on the #179 recon; sentry + pagerduty were clean).** All 3 purple-team-validated. **20 of 26 connectors flip-ready, ALL purple-teamed** + 13 mods. Prior: #179 recon, #178 doc-sync.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 20 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). 6 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*

@@ -131,3 +131,24 @@ def test_normalize_event_dedup_drops_replay():
     body = _body("merge_request_event.json")
     assert len(conn.normalize_event(headers=headers, body=body)) == 1
     assert conn.normalize_event(headers=headers, body=body) == []  # replay dropped
+
+
+def test_normalize_event_dedup_uuid_less_replay_collapses():
+    # purple-team GITLAB-002: a UUID-less replay must still dedup via the body-hash fallback.
+    dedup = DeliveryDedupCache()
+    conn = GitLabConnector(secret=_TOKEN, dedup=dedup)
+    headers = {"X-Gitlab-Token": _TOKEN}  # no X-Gitlab-Event-UUID
+    body = _body("issue_event.json")
+    assert len(conn.normalize_event(headers=headers, body=body)) == 1
+    assert conn.normalize_event(headers=headers, body=body) == []  # id-less replay collapses to one
+
+
+def test_parse_truthy_non_dict_nested_containers_do_not_crash():
+    # purple-team GITLAB-001: a truthy non-dict object_attributes/project/user normalizes, not crashes.
+    payload = {"object_kind": "issue", "object_attributes": "oops", "project": "nope", "user": 7}
+    obs = parse_issue(payload)  # must not raise
+    assert obs.excerpt == "gitlab-issue" and obs.author == ""
+    conn = GitLabConnector(secret=_TOKEN)
+    body = json.dumps(payload).encode("utf-8")
+    out = conn.normalize_event(headers={"X-Gitlab-Token": _TOKEN}, body=body)  # full path
+    assert len(out) == 1 and out[0].source_ref.source_id == "gitlab"
