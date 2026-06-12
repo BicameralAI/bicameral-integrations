@@ -5758,7 +5758,50 @@ instruction `ref`s. **EXCEEDS.**
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#176 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **sentry FLIP-READY, SEALED at #176 (`5fc3606e`; L1)** -- redact-and-pass title+culprit (full stack trace never read; no author) + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested). **19 of 26 flip-ready** + 13 mods. Prior: #175 doc-attestation, #174 gitlab.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 19 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** pagerduty (last of the trio, with attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #177: SESSION SEAL -- pagerduty flip-ready (redact-and-pass incident detail + FX-CFG-001 descriptor + doc-standard attestation)
+
+**Entry ID**: `pagerduty177flip`
+**Timestamp**: 2026-06-14T11:00:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/pagerduty/connector.py)
+= 0d6ef28585dbf3bdc978479d00ec060cc9dfa8326ad9af4c5ba8601b89cf90d4
+```
+
+**Previous Hash**: 5fc3606e00a1ea7f079dd36720ff64371cdaf0ba446d635c9b315cb617d43a81
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c2062cac8d3cb3077e9de189b028e9bd8b9309af914e9a3524ab3e9e64fb0b56
+```
+
+**Decision**: pagerduty flipped flip-ready (3 of 3 -- **webhook trio COMPLETE**). **F1 (medium):** `parse_event`
+now redact-and-passes the incident `title`/`summary` -- previously raw, with only FX-SEC-001 (secret/PHI/PAN)
+backstop, and an incident title can carry customer PII ("High latency for jane@acme.com"). The opaque incident
+`id` floor stays un-redacted; **no actor/assignee identity is surfaced** (only status/urgency/event_type in
+metadata). Authored `connectors/pagerduty/config.json` (modes `["webhook"]`; `pagerduty_webhook` signing secret;
+webhook block with the `X-PagerDuty-Signature` `v1=` multi-signature membership scheme), regenerated `SETUP.md` +
+`index.json`.
+
+**Documentation standard -- EXCEEDS minimum (explicit attestation):** `references.md` -- verified-contract
+re-dated 2026-06-13 with the **SG-2026-06-13-D provenance note** (V3 header confirmed live via
+support.pagerduty.com; the `v1=` format page is a JS-SPA that fetched empty -> substantiated from the
+harness-proven contract + `verify_hmac_hex_multi`, fetch limitation recorded), PII bullet -> redact-and-pass,
+attestation marker; `auth.md` -- signature scheme + deferred paths; `config.json` -- dated `wire_gates` (with the
+SPA-fetch provenance) + explicit `pii_posture` + `live_readiness` + resolving instruction `ref`s. **EXCEEDS.**
+
+**Tests:** incident-title customer-PII scrub + non-sensitive text preserved; opaque id floor un-redacted.
+**Measured:** full suite **680 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK,
+governance-gate #1..#177 OK. **20 of 26 connectors flip-ready; webhook trio (gitlab+sentry+pagerduty) complete.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#177 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **pagerduty FLIP-READY, SEALED at #177 (`c2062cac`; L1)** -- redact-and-pass incident title/summary (no actor surfaced) + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested, with SG-2026-06-13-D provenance). **WEBHOOK TRIO COMPLETE: 20 of 26 flip-ready** + 13 mods. Prior: #176 sentry, #175 doc-attestation.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 20 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-document** (README + capability matrix, 17->20 flip-ready) then **/qor-deep-audit** purple-team over gitlab + sentry + pagerduty. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

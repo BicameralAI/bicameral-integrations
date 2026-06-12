@@ -57,6 +57,21 @@ def test_excerpt_falls_back_summary_then_id():
 def test_floors_excerpt_when_empty():
     obs = parse_event({})
     assert obs.excerpt == "pagerduty-incident" and obs.source_ref.ref == "pagerduty-incident"
+
+
+def test_incident_title_redact_and_passed():
+    # F1 (medium): an incident title carrying customer PII is redact-and-passed.
+    env = {"event": {"data": {"id": "PINC1", "title": "High latency for jane@acme.com"}}}
+    obs = parse_event(env)
+    assert "jane@acme.com" not in obs.excerpt
+    assert "jane@acme.com" not in obs.title
+    assert "High latency" in obs.excerpt  # non-sensitive text preserved
+
+
+def test_opaque_incident_id_floor_not_redacted():
+    # The incident id floor is opaque — survives when title+summary are empty.
+    obs = parse_event({"event": {"data": {"id": "PINC123"}}})
+    assert obs.excerpt == "PINC123" and obs.source_ref.ref == "PINC123"
     out = normalize([obs], adapter_version="pagerduty/0.1.0")
     assert out[0].evidence[0].excerpt.strip()
 
