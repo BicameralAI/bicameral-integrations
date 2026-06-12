@@ -46,6 +46,15 @@ def test_floors_excerpt_when_empty():
     assert out[0].evidence[0].excerpt.strip()
 
 
+def test_summary_details_redact_and_passed():
+    # F1 (low): free-text summary/details are redact-and-passed (parity); the id floor is opaque.
+    rec = {"id": "OSV-9", "summary": "reported by ana@corp.com", "details": "leaked AKIAIOSFODNN7EXAMPLE"}
+    obs = parse_vuln(rec)
+    assert "ana@corp.com" not in obs.title
+    assert "AKIAIOSFODNN7EXAMPLE" not in obs.excerpt
+    assert parse_vuln({"id": "OSV-9"}).source_ref.ref == "OSV-9"  # opaque id floor un-redacted
+
+
 def test_optional_fields_wrong_type_or_empty_do_not_crash():
     # SG-2026-06-04-I: optional/wrong-typed schema must normalize, not crash.
     assert parse_vuln({"id": "A", "references": []}).source_ref.url == ""

@@ -14,6 +14,7 @@ from __future__ import annotations
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 
 
 def _text(value: object) -> str:
@@ -57,10 +58,16 @@ def _packages(record: dict) -> str:
 
 
 def parse_vuln(record: dict) -> Observation:
-    """Map an OSV vulnerability record into a provider-neutral Observation."""
+    """Map an OSV vulnerability record into a provider-neutral Observation.
+
+    ``summary`` + ``details`` are free text -> **redact-and-pass** (secret/PHI/PAN + email/phone
+    scrubbed; SG-2026-06-13-A). OSV is public technical vuln text (low PII risk), but a description
+    can embed a contributor email or a tokened URL, and redaction is non-destructive. The opaque
+    ``id`` floor is NOT redacted.
+    """
     vid = str(record.get("id") or "osv-vuln")
-    summary = _text(record.get("summary"))
-    details = _text(record.get("details"))
+    summary = redact(_text(record.get("summary")))
+    details = redact(_text(record.get("details")))
     return Observation(
         source_ref=SourceRef(
             source_id="osv", ref=vid, url=_first_ref_url(record), kind="vulnerability"

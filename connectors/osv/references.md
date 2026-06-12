@@ -23,13 +23,15 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | None (free, unauthenticated) |
 | Changelog/notes | https://github.com/google/osv.dev |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+> **Doc-standard attestation (ledger #182, 2026-06-13):** this `references.md` (verified-contract section + provider-docs table + PII handling) + `auth.md` (no-credential query model + deferred paths) + `config.json` (explicit `pii_posture` + `wire_gates` + `live_readiness`) assessed against the connector documentation standard — **EXCEEDS minimum**.
 
-- **Vulnerability record (parsed)**: `parse_vuln` reads the OSV schema — `{id, summary, details, modified, severity[{type, score}], references[{url}], affected[{package.{name}}], aliases[]}`; excerpt is `summary` falling back to `details` then `id`; metadata carries joined `severity`, `packages`, and `aliases` strings.
+## Verified API/webhook contract (as built, 2026-06-05; schema re-verified live 2026-06-13)
+
+- **Vulnerability record (parsed)**: `parse_vuln` reads the OSV schema — `{id, summary, details, modified, severity[{type, score}], references[{url}], affected[{package.{name}}], aliases[]}`; excerpt is `summary` falling back to `details` then `id`; metadata carries joined `severity`, `packages`, and `aliases` strings. Re-verified against [ossf.github.io/osv-schema](https://ossf.github.io/osv-schema/) on 2026-06-13: `id`+`modified` required, all else optional; every field the connector reads MATCHES — no drift.
 - **Verification**: no verify — read-only query API; no webhook delivery, no signature.
 - **Auth (deferred)**: none (OSV.dev is free and unauthenticated); live query client (`POST /v1/query`, `/v1/querybatch`, `GET /v1/vulns/{id}`) deferred. No live network this cycle.
 - **Modes**: active only (query API); no webhooks.
-- **PII handling**: vulnerability metadata only (CVE ids, package names, severity scores); no user PII in the OSV schema.
+- **PII handling**: `summary` + `details` (free-text vuln descriptions) are emitted via **redact-and-pass** — `adapter.core.redaction.redact` scrubs secret/PHI/PAN + email/phone (OSV is public technical text, low PII risk, but a description can embed a contributor email or a tokened URL; redaction is non-destructive parity). The opaque `id` floor is NOT redacted; metadata is technical (severity/packages/aliases). No `author` field. Producer sensitive screen (`FX-SEC-001`) remains the fail-closed backstop for secret/PHI/PAN.
 
 ## Canonical governance references
 
