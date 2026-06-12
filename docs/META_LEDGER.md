@@ -5801,7 +5801,40 @@ governance-gate #1..#177 OK. **20 of 26 connectors flip-ready; webhook trio (git
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#177 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **pagerduty FLIP-READY, SEALED at #177 (`c2062cac`; L1)** -- redact-and-pass incident title/summary (no actor surfaced) + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested, with SG-2026-06-13-D provenance). **WEBHOOK TRIO COMPLETE: 20 of 26 flip-ready** + 13 mods. Prior: #176 sentry, #175 doc-attestation.*
+### Entry #178: DELIVER -- doc sync: README + capability matrix to 20 flip-ready
+
+**Entry ID**: `docsync178matrix20`
+**Timestamp**: 2026-06-14T12:00:00-04:00
+**Phase**: DELIVER (documentation)
+**Author**: Technical Writer (qor-document)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/bicameral-integrations-capability-matrix.md)
+= 77242715024a4f7e58aee4f08602d7d28d01c646a281b60afea04dcd54f0bafe
+```
+
+**Previous Hash**: c2062cac8d3cb3077e9de189b028e9bd8b9309af914e9a3524ab3e9e64fb0b56
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a9f7c2db8b61bd7df9f19332f79833ec88775704558b04f4904c08548e6845aa
+```
+
+**Decision**: Synced the public docs to the 17->20 flip-ready milestone (webhook trio). **README.md**: maturity
+line + flip-ready section intro 17->20; **+3 rows** to the flip-ready capability matrix (gitlab, sentry,
+pagerduty) with their exact data-out + webhook security posture; **-3** from Future Development (now 6).
+**docs/bicameral-integrations-capability-matrix.md**: header count 17->20; **+3 rows** (GitLab plaintext
+X-Gitlab-Token + redact title/description + public username; Sentry hex-HMAC + redact exception message/culprit +
+full-trace-never-read; PagerDuty v1= multi-sig membership + redact title/summary + no-actor); **-3** from Future
+Development (now 6). Both matrices verified at exactly 20 flip-ready rows; 6 Future Development; no stale `17`
+references. Docs-only; no code. governance-gate #1..#178 OK. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#178 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **DOC SYNC SEALED at #178 (`a9f7c2db`; L1)** -- README + capability matrix now state 20 flip-ready (+3 rows gitlab/sentry/pagerduty; Future Development 6). **20 of 26 connectors flip-ready** + 13 mods. Prior: #177 pagerduty, #176 sentry.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 20 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-document** (README + capability matrix, 17->20 flip-ready) then **/qor-deep-audit** purple-team over gitlab + sentry + pagerduty. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+*Next required action: **/qor-deep-audit** purple-team over gitlab + sentry + pagerduty (verify impact vs the real gateway serializer, SG-2026-06-13-C), then remediate + tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*

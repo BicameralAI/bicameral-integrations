@@ -32,7 +32,7 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 
 ## Connector Capability Matrix
 
-**17 flip-ready connectors.**
+**20 flip-ready connectors.**
 
 | Connector | Category | Mode | Data in | Data out (neutral evidence) | Security & PII handling |
 |---|---|---|---|---|---|
@@ -53,6 +53,9 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 | **Zendesk** | Support / CS | Webhook (+ Active) | Support-ticket webhook events | `ticket` — redact-and-passed subject + body; requester surfaced as an **opaque id** (no name/email) | `X-Zendesk-Webhook-Signature` Base64 HMAC-SHA256 over `{timestamp}{body}`, constant-time; delivery de-dup with body-hash fallback; comments + attachments excluded; active REST poll deferred |
 | **Local Directory** | File import | Passive (local file) | Files dropped in a watched directory | `planning` — redact-and-passed file content + filename stem | **No credential** (host filesystem permissions); file content + filename redact-and-passed; path **sha256-tokenized** (filesystem layout never stored); FX-SEC-001 hard-screen |
 | **Aider** | Developer-AI | Passive (local git) | Aider-attributed git commits | `commit` — redact-and-passed subject; **author name retained as provenance** | **No credential** (local git import); commit subject redact-and-passed; the human author name is retained as the attribution signal (only the name, never the email); opaque hash floor; FX-SEC-001 hard-screen |
+| **GitLab** | Source control | Webhook (+ Active) | Merge-request + issue webhook events | `merge_request`/`issue` — redact-and-passed title + description; public username retained as the artifact author | `X-Gitlab-Token` plaintext shared secret, constant-time compared (GitLab does not HMAC-sign the body); delivery de-dup on the event UUID; the Standard-Webhooks signing token is the documented stronger next step; active REST poll deferred |
+| **Sentry** | Observability | Webhook | Issue webhook events | `issue` — redact-and-passed exception message + culprit; **full stack trace never read** | `Sentry-Hook-Signature` hex HMAC-SHA256 over the raw body (Client Secret), constant-time; Request-ID/body-hash de-dup; no person attribution |
+| **PagerDuty** | Observability | Webhook | v3 incident webhook events | `incident` — redact-and-passed title/summary; **no actor/assignee surfaced** | `X-PagerDuty-Signature` multi-signature `v1=` HMAC-SHA256 membership over the raw body (accept-any for zero-downtime rotation), constant-time; event-id/body-hash de-dup |
 
 ---
 
@@ -98,7 +101,7 @@ Bicameral Integrations treats every inbound payload as untrusted and every crede
 
 The following connectors are in **Beta** — their parse surfaces are in development and not yet flip-ready:
 
-Anthropic Admin (usage) · Confluence · Continue.dev · GitLab · OpenAI Admin (usage) · OSV (vulnerabilities) · PagerDuty · SARIF (scan results) · Sentry
+Anthropic Admin (usage) · Confluence · Continue.dev · OpenAI Admin (usage) · OSV (vulnerabilities) · SARIF (scan results)
 
 ---
 
