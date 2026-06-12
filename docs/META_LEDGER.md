@@ -6227,7 +6227,49 @@ whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#188 OK. **
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#188 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **anthropic_admin FLIP-READY, SEALED at #188 (`6f3fc059`; L1)** -- FX-CFG-001 descriptor; PII-free aggregate by construction (opaque ids never surfaced; no author); doc-standard EXCEEDS minimum (attested). **23 of 26 flip-ready** + 13 mods. Prior: #187 research, #186 PT-sarif.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 23 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** openai_admin (descriptor-only; identity-dropped), then continue_dev + confluence (redact-and-pass), then **/qor-document** + **/qor-deep-audit** -> 26/26. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+### Entry #189: SESSION SEAL -- openai_admin flip-ready (FX-CFG-001 descriptor; actor identity dropped; doc-standard attestation)
+
+**Entry ID**: `openaiadmin189flip`
+**Timestamp**: 2026-06-14T23:00:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/openai_admin/config.json)
+= 5f716d853e027a70cf6a6245ffacb073f2a8c166881911931eff09d5ff3c222a
+```
+
+**Previous Hash**: 6f3fc059092216770eb0b517cca8ab3efb1e62f16058c7a1dd5ed8ad29e6588f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 950d714d77c3c63d7606030f43b6dd198f6f3caed380f970fd8b7b4bc7810584
+```
+
+**Decision**: openai_admin flipped flip-ready (2 of 4 -- the remainder) -- **descriptor-only**. `parse_audit_log`
+**drops actor identity** (actor.*.user.email, actor.session.ip_address, user ids are NEVER read -- the SOLE
+control, since FX-SEC-001 does not screen generic email/IP and redact() has no IPv4 scrub); only the non-PII
+`actor.type` (session/api_key, allowlisted) is surfaced + the excerpt redact()-ed defensively. **No connector code
+change.** Authored `connectors/openai_admin/config.json` (modes `["active"]`; credential `openai_admin` `api_key`
+`Authorization: Bearer`; runtime_config base_url; pii_posture states the identity-drop sole-control), regenerated
+`SETUP.md` + `index.json`.
+
+**Documentation standard -- EXCEEDS minimum (explicit attestation):** `references.md` -- verified-contract
+re-verified live 2026-06-13 (platform.openai.com, MATCH) + attestation marker; `auth.md` -- Bearer admin-key
+model + Privacy/PII section + deferred paths; `config.json` -- dated `wire_gates` + explicit `pii_posture` +
+`live_readiness` + resolving instruction `ref`. **EXCEEDS.**
+
+**Tests:** the existing `test_actor_identity_dropped` (fixture carries actor email + ip_address; both must appear
+NOWHERE in the output) is the regression guard for the descriptor's claim. **Measured:** full suite **690 passed**
+(no parse change), ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#189 OK.
+**24 of 26 connectors flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#189 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **openai_admin FLIP-READY, SEALED at #189 (`950d714d`; L1)** -- FX-CFG-001 descriptor; actor identity dropped at parse (the sole control); doc-standard EXCEEDS minimum (attested). **24 of 26 flip-ready** + 13 mods. Prior: #188 anthropic_admin, #187 research.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 24 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-auto-dev-1** continue_dev (redact excerpt + userId), then confluence (redact body+title; active+passive only), then **/qor-document** + **/qor-deep-audit** -> 26/26. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*

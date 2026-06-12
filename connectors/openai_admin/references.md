@@ -23,7 +23,9 @@ maintained provider-docs table and refresh cadence.
 | Admin/audit help | https://help.openai.com/en/articles/9687866-admin-and-audit-logs-api-for-the-api-platform |
 | Auth (admin key) | https://platform.openai.com/docs/api-reference/administration |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+> **Doc-standard attestation (ledger #189, 2026-06-13):** this `references.md` (verified-contract section + provider-docs table + PII handling) + `auth.md` (Bearer admin-key model + Privacy/PII section + deferred paths) + `config.json` (explicit `pii_posture` + `wire_gates` + `live_readiness`) assessed against the connector documentation standard — **EXCEEDS minimum**.
+
+## Verified API/webhook contract (as built, 2026-06-05; audit_logs API re-verified live 2026-06-13)
 
 - **Endpoint (parsed)**: `GET /v1/organization/audit_logs`. Returns `{data: [event]}`; each event:
   `id`, `effective_at` (unix s), `type` (57 values: `api_key.*`, `login.*`, `logout.*`, `project.*`,
