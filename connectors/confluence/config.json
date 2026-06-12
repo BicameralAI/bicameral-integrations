@@ -1,0 +1,77 @@
+{
+  "id": "confluence",
+  "name": "Confluence",
+  "description": "Confluence Cloud page content as redact-and-pass governed evidence (title + body scrubbed); authenticated REST poll (the Connect-app-JWT webhook needs a Connect app, deferred).",
+  "category": "docs / knowledge-base",
+  "trust_tier": "T1",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["active", "passive"],
+  "credentials": [
+    {
+      "key": "confluence",
+      "type": "api_key",
+      "label": "API token (Basic: email + token)",
+      "required": true,
+      "modes": ["active", "passive"],
+      "header": "Authorization: Basic base64('<email>:<api_token>')",
+      "obtain": {
+        "url": "https://developer.atlassian.com/cloud/confluence/rest/v1/intro/",
+        "steps": [
+          "Create an Atlassian API token (id.atlassian.com -> Security -> API tokens) for the account that reads the spaces.",
+          "Bicameral fetches GET /wiki/rest/api/content/{id}?expand=body.storage with HTTP Basic (email:token), host-pinned to your <site>.atlassian.net (verified 2026-06-13). OAuth 2.0 (3LO) is the alternative."
+        ]
+      }
+    }
+  ],
+  "runtime_config": [
+    {
+      "key": "base_url",
+      "label": "Confluence site base URL",
+      "required": true,
+      "description": "Your Atlassian Cloud site, e.g. https://<site>.atlassian.net/wiki. The poll client pins to *.atlassian.net (anti-SSRF; the connector's can_handle_ref matches the host)."
+    },
+    {
+      "key": "space",
+      "label": "Space / content filter",
+      "required": false,
+      "description": "Which spaces/pages the operator runtime polls. Operator-runtime knob."
+    }
+  ],
+  "data": {
+    "emits": ["page"],
+    "pii_posture": "A Confluence page TITLE + flattened storage BODY are PII-dense free text (internal docs, names, emails) -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed; the jira/github standard, since FX-SEC-001 backstops only secret/PHI/PAN). The opaque page id ref + page URL are not redacted; _strip_storage_html is a lossy flattener (NOT a sanitizer) -- redact() + FX-SEC-001 are the security controls. No author is surfaced. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+    "redaction": "redact-and-pass (page title + flattened storage body); opaque id ref + URL un-redacted; no author; FX-SEC-001 rejects secret/PHI/PAN"
+  },
+  "instructions": [
+    {
+      "action": "open_url",
+      "text": "Create an Atlassian API token for the account that reads the target spaces.",
+      "link": "https://developer.atlassian.com/cloud/confluence/rest/v1/intro/",
+      "ref": "connectors/confluence/auth.md (Confluence Auth)"
+    },
+    {
+      "action": "paste_secret",
+      "text": "Paste the API token (used with the account email as HTTP Basic)."
+    },
+    {
+      "action": "configure",
+      "text": "Set the Confluence site base URL (https://<site>.atlassian.net/wiki) and optional space filter. The poll is host-pinned to *.atlassian.net.",
+      "ref": "connectors/confluence/auth.md (Confluence Auth)"
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: fetching a page (expand=body.storage) should produce one emission (title + body redact-and-passed; opaque page id ref)."
+    }
+  ],
+  "references": [
+    {"kind": "rest-api", "url": "https://developer.atlassian.com/cloud/confluence/rest/v1/intro/"},
+    {"kind": "auth", "url": "connectors/confluence/auth.md"}
+  ],
+  "wire_gates": [
+    "Cloud signature scheme re-verified 2026-06-13 (Atlassian docs): the Data-Center X-Hub-Signature HMAC does NOT transfer to Cloud; the Cloud webhook scheme is Connect-app JWT (Authorization: JWT, HS256 over the per-tenant install shared secret + qsh binding). It needs a registered Connect app + install-handshake shared-secret store, so verify() stays deferred and the descriptor offers only the authenticated poll (SG-2026-06-14-B).",
+    "PII: page title + flattened storage body redact-and-passed (secret/PHI/PAN + email/phone); opaque id ref + URL un-redacted; no author. _strip_storage_html is a lossy flattener, not a sanitizer; redact() + FX-SEC-001 are the controls.",
+    "The live REST fetch (OAuth 2.0 3LO or API-token Basic), host-pinned to *.atlassian.net, is operator-runtime; no live network this cycle. Live flip gated on operator review + a real authenticated page fetch (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Parse + redact-and-pass are built and harness-proven; title + body redact-and-passed, host pinned to *.atlassian.net. Gated on operator review + wiring the live authenticated REST poll (API-token Basic or OAuth) to a GatewaySink. To flip: create the API token + set the site base URL; wire the runtime poll; fetch a real page; review before promoting. The Connect-app-JWT webhook is a future path (needs a registered Connect app)."
+}

@@ -23,7 +23,9 @@ maintained provider-docs table and refresh cadence.
 | Auth | https://developer.atlassian.com/cloud/confluence/security-overview/ |
 | Data Center webhooks (HMAC) | https://confluence.atlassian.com/doc/managing-webhooks-1021225606.html |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+> **Doc-standard attestation (ledger #191, 2026-06-13):** this `references.md` (verified-contract section + provider-docs table + PII handling) + `auth.md` (auth model + webhook-JWT deferral rationale + deferred paths) + `config.json` (explicit `pii_posture` + `wire_gates` + `live_readiness`) assessed against the connector documentation standard — **EXCEEDS minimum**.
+
+## Verified API/webhook contract (as built, 2026-06-05; Cloud signature scheme re-verified 2026-06-13)
 
 - **Content shape (parsed)**: REST content object `{id, type, title, body: {storage: {value,
   representation}}, _links: {base, webui}}`. `parse_content` flattens the XHTML `body.storage.value`
@@ -40,6 +42,8 @@ maintained provider-docs table and refresh cadence.
 - **Active fetch (deferred)**: `GET /wiki/rest/api/content/{id}?expand=body.storage`; OAuth 2.0 (3LO)
   or API-token Basic; Connect-app JWT (`qsh`). No live network this cycle.
 - **Events** (when webhook lands): `page_created` / `page_updated` / `page_deleted`.
+- **PII handling**: a Confluence page `title` + flattened storage `body` are PII-dense free text (internal docs, names, emails) emitted via **redact-and-pass** — `adapter.core.redaction.redact` scrubs secret/PHI/PAN + email/phone (the jira/github standard; FX-SEC-001 backstops only secret/PHI/PAN). The opaque `id` ref + page URL are not redacted; `_strip_storage_html` is a lossy flattener, NOT a sanitizer (redact + FX-SEC-001 are the security controls). No `author` surfaced.
+- **Flip-ready surface (SG-2026-06-14-B)**: the FX-CFG-001 descriptor declares **`["active","passive"]`** (the authenticated REST poll — OAuth 2.0 3LO or API-token Basic), NOT `webhook`: the Cloud webhook's Connect-app JWT path needs a registered Connect app + install-handshake shared-secret store (operator infrastructure beyond a pasted secret), so it is not flip-ready via a descriptor. The WEBHOOK capability remains for a future Connect-app deployment.
 
 ## Canonical governance references
 

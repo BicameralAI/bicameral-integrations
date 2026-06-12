@@ -18,6 +18,7 @@ from urllib.parse import urlsplit
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 
 # `[^<>]` (excludes `<` too) makes this linear: an unclosed `<` run can't be consumed by
 # the inner class, so each anchor fails in O(1) instead of re-scanning to EOF — O(n) total (#50).
@@ -50,21 +51,24 @@ def _page_url(content: dict) -> str:
 def parse_content(content: dict) -> Observation:
     """Map a Confluence Cloud REST content object into a provider-neutral Observation.
 
-    The excerpt is the flattened storage text, falling back to the title and then
-    a ``confluence-page`` terminal floor (so the non-blank-excerpt contract holds).
+    A Confluence page title + body are PII-dense free text (internal docs, names, emails) ->
+    **redact-and-pass** (secret/PHI/PAN + email/phone scrubbed; the jira/github standard, since
+    FX-SEC-001 backstops only secret/PHI/PAN). The excerpt is the redacted flattened storage text,
+    falling back to the redacted title then a ``confluence-page`` terminal floor (so the
+    non-blank-excerpt contract holds). The ``id`` ref + page URL are not redacted.
     """
-    title = (content.get("title") or "").strip()
+    title = redact((content.get("title") or "").strip())
     storage = ((content.get("body") or {}).get("storage") or {}).get("value") or ""
     return Observation(
         source_ref=SourceRef(
             source_id="confluence",
-            ref=str(content.get("id") or title or "confluence-page"),
+            ref=str(content.get("id") or "confluence-page"),
             url=_page_url(content),
             kind="page",
         ),
-        excerpt=_strip_storage_html(storage) or title or "confluence-page",
+        excerpt=redact(_strip_storage_html(storage)) or title or "confluence-page",
         mode=SourceMode.ACTIVE,
-        title=title,
+        title=title or "confluence-page",
     )
 
 
