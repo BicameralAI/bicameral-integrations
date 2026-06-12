@@ -48,7 +48,7 @@ python -m runtime.cli run aider --sink gateway   # real POST (go-live; default-g
 ## Data & permissions
 
 - Emits: commit
-- PII posture: The commit SUBJECT is redact-and-passed (secret/PHI/PAN + email/phone scrubbed; F3 / SG-2026-06-13-A — a developer may paste a token/email into a commit message). The git AUTHOR NAME is RETAINED (e.g. 'Dev Example (aider)'): this connector exists to attribute developer-AI work, so *which human ran the AI pair-programmer* is the evidence at trust tier T0 — the deliberate opposite of the fathom/claude_code name-drop (F4 / SG-2026-06-13-B). Only author_name is read, never author_email, so no contact handle leaks. The commit hash / 'aider-commit' floor is an opaque id and is NOT redacted. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.
+- PII posture: The commit SUBJECT is redact-and-passed (secret/PHI/PAN + email/phone scrubbed; F3 / SG-2026-06-13-A — a developer may paste a token/email into a commit message). The git AUTHOR NAME is RETAINED (e.g. 'Dev Example (aider)'): this connector exists to attribute developer-AI work, so *which human ran the AI pair-programmer* is the evidence at trust tier T0 — the deliberate opposite of the fathom/claude_code name-drop (F4 / SG-2026-06-13-B). Only author_name is read, never author_email; the author name is itself redact-and-passed so an email/phone-shaped name (e.g. a CI bot 'deploy-bot@corp.com (aider)') is scrubbed while a real name survives untouched (purple-team #170). The commit hash / 'aider-commit' floor is an opaque id and is NOT redacted. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.
 
 ## Go-live
 

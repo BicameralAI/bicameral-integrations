@@ -59,8 +59,8 @@
   },
   "data": {
     "emits": ["ticket"],
-    "pii_posture": "Ticket SUBJECT + BODY (detail.description) are PII-dense free text -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed to placeholders). The requester is surfaced only as detail.requester_id, an OPAQUE numeric id -- never a requester name or email (a deliberate identity-minimization choice). Comment threads and attachments are excluded (first description only). FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
-    "redaction": "redact-and-pass (subject + body); requester surfaced as opaque requester_id (no name/email); comments + attachments excluded; FX-SEC-001 rejects secret/PHI/PAN"
+    "pii_posture": "Ticket SUBJECT + BODY (detail.description) are PII-dense free text -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed to placeholders). The requester is surfaced only as detail.requester_id, an OPAQUE numeric id -- never a requester name or email (a deliberate identity-minimization choice); requester_id is itself redact-and-passed so a numeric id passes unchanged while a stray email/phone is scrubbed -- the opacity guarantee is enforced, not merely trusted (purple-team #170). Comment threads and attachments are excluded (first description only). FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+    "redaction": "redact-and-pass (subject + body + requester_id); requester surfaced as opaque id (numeric passes unchanged, email/phone scrubbed); comments + attachments excluded; FX-SEC-001 rejects secret/PHI/PAN"
   },
   "instructions": [
     {

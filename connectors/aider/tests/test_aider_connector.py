@@ -106,7 +106,15 @@ def test_subject_redact_and_passes_secret_and_email():
 def test_author_name_retained_as_provenance():
     # F4 (design call): the human author name IS the evidence — retained, not dropped (SG-2026-06-13-B).
     obs = parse_commit(_commit())
-    assert obs.author == "Dev Example (aider)"
+    assert obs.author == "Dev Example (aider)"  # a real name survives redact-and-pass untouched
+
+
+def test_email_shaped_author_name_is_redacted():
+    # purple-team #170: an email/phone-shaped author_name (e.g. a CI bot) is scrubbed, attribution kept.
+    rec = {"hash": "abc", "message": "ci: bump", "author_name": "deploy-bot@corp.com (aider)"}
+    obs = parse_commit(rec)
+    assert "deploy-bot@corp.com" not in obs.author
+    assert "(aider)" in obs.author  # the attribution token is preserved
 
 
 def test_opaque_hash_floor_not_mangled_by_redaction():

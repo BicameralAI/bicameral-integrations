@@ -80,7 +80,7 @@ def parse_ticket(event: dict) -> Observation:
         excerpt=excerpt,
         mode=SourceMode.WEBHOOK,
         title=subject or tid,
-        author=_text(detail.get("requester_id")),
+        author=redact(_text(detail.get("requester_id"))),  # opaque numeric id passes unchanged; an email/phone is scrubbed (purple-team #170)
         timestamp=_text(detail.get("updated_at")) or _text(event.get("time")),
         metadata={
             "event_type": _text(event.get("type")) or _nested(event, "event", "type"),

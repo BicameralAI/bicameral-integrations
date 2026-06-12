@@ -5546,7 +5546,46 @@ connector), ruff clean, whole-tree mypy (210 files) clean, validator OK, governa
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#171 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PT-A SEALED at #171 (`085e70e0`; L2)** -- source_ref.kind now in FX-SEC-001 screen (fleet-wide) + local_directory source_type_label redact-and-passed; ld-1 + ld-2 closed. **17 of 26 flip-ready** + 13 mods. Prior: #170 recon, #169 doc-sync.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 17 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **PT-B** (redact aider author_name + zendesk requester_id) -> closes the last 2 purple-team findings; modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
+### Entry #172: SESSION SEAL -- PT-B: aider + zendesk identity-field redact (purple-team remediation COMPLETE)
+
+**Entry ID**: `ptb172identityredact`
+**Timestamp**: 2026-06-13T21:00:00-04:00
+**Phase**: SUBSTANTIATE (purple-team remediation)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/aider/connector.py)
+= 7bbe8553b2a6154137e2fc00441e22cf7b575c0d1d63b04b638b8ffa37dd8b0a
+```
+
+**Previous Hash**: 085e70e09b0aad05308dbe28cc98a39c42c6c1cba19954fbb8d62f3f776ece22
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 48e5aab560e4d3c974799f409251709f3543d7197662338fdd2acfdec933d5ea
+```
+
+**Decision**: Closed the last 2 purple-team findings (aider-1 + zd-1) -- **3-connector purple-team
+remediation COMPLETE** (all 4 findings fixed: PT-A #171 kind + PT-B #172 identity). **aider**
+(`connectors/aider/connector.py`): `author = redact(str(record.get("author_name") or ""))` -- a real name
+(no email/phone shape) survives untouched, honoring the SG-2026-06-13-B provenance-retention intent, while an
+email/phone-shaped `author_name` (a CI bot `deploy-bot@corp.com (aider)`) is scrubbed and the `(aider)`
+attribution token is preserved. **zendesk** (`connectors/zendesk/connector.py:83`):
+`author = redact(_text(detail.get("requester_id")))` -- a numeric requester id passes `redact()` byte-for-byte
+(opacity preserved), a stray email/phone is scrubbed, so the descriptor's "never a name/email" guarantee is
+enforced rather than trusted. Both `data.pii_posture` blocks tightened to state the identity field is
+redact-and-passed. (FX-SEC-001 already screens `author` for secret/PHI/PAN; this closes the residual email/phone
+class at the mod-input boundary -- SG-2026-06-13-C.) **Tests:** aider real-name survives + email-shaped name
+scrubbed-with-attribution-kept; zendesk numeric id passes + email-shaped requester_id scrubbed. **Measured:**
+full suite **674 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate
+#1..#172 OK. **All 3 connectors purple-team-validated & remediated; 17 of 26 flip-ready, all purple-teamed.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#172 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PT-B SEALED at #172 (`48e5aab5`; L2)** -- **local_directory + aider + zendesk PURPLE-TEAM REMEDIATION COMPLETE (all 4 findings fixed: PT-A #171 kind-screen + PT-B #172 identity-redact, on the #170 recon).** All 3 purple-team-validated. **17 of 26 connectors flip-ready, ALL purple-teamed** + 13 mods. Prior: #171 PT-A, #170 recon.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 17 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). 9 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
