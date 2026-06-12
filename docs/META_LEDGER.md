@@ -6545,7 +6545,48 @@ mypy (210 files) clean, governance-gate #1..#196 OK. **The frontend now has a co
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#196 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **FX-MOD-CFG-001 FANOUT SEALED at #196 (`8834fa7c`; L1)** -- ALL 13 mods carry a UI descriptor (manifest-consistent). **UI contract complete: 26/26 connectors + 13/13 mods.** Prior: #195 mod-contract, #194 PT-final4.*
+### Entry #197: SESSION SEAL (SUBSTANTIATE) -- UI-completeness close-out: docs + SYSTEM_STATE synced to the 26/26 + 13/13 UI-contract milestone
+
+**Entry ID**: `substantiate197uicomplete`
+**Timestamp**: 2026-06-15T17:00:00-04:00
+**Phase**: SUBSTANTIATE (session seal)
+**Author**: Judge (qor-substantiate)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/SYSTEM_STATE.md)
+= 65635f1fe0db78a3bc91cf8e107adca06e5cfe6e172a8f03b2c4bfc224ba840c
+```
+
+**Previous Hash**: 8834fa7cc93932172010bdc03b57a7f1c34e51928f3469ac33f69220eb513254
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ce804f26c97177a564214799d38234486490ce975375b7b3bff9d7ae51ff22e8
+```
+
+**Decision**: Session seal for the UI-completeness work (operator ask: ensure every connector AND mod has
+equivalent setup docs / UI-exposure / requirements so the frontend can build a cohesive UI/UX). **README.md**
+mods section + "Config as a contract" principle updated: mods are now UI-renderable (FX-MOD-CFG-001), with the
+mods/index.json + schema + validator parity to connectors, rendered as one cohesive surface per UI_RENDERING_SPEC.
+**SYSTEM_STATE.md** load-bearing markers refreshed to current truth: Session Seal -> #196; connector descriptors
+ALL 26 done (fan-out complete); mods ALL 13 built + purple-teamed + FX-MOD-CFG-001 UI descriptors; the new
+scripts (validate_mod_config / build_mod_index / build_mod_setup) + mods/_schema + mods/index.json recorded.
+**Reality = Promise:** the UI data contract is COMPLETE for both families -- 26/26 connectors + 13/13 mods each
+ship descriptor + index + SETUP + schema + validator + UI spec. Verified: validators OK (connector + mod), full
+suite **705 passed**, ruff clean, whole-tree mypy clean, governance-gate #1..#197 OK. L1.
+
+**Session arc (this seal closes):** all 26 connectors brought flip-ready + purple-team-validated + doc-standard-
+attested across the fathom/claude_code, local_directory/aider/zendesk, gitlab/sentry/pagerduty, osv/sarif, and
+anthropic_admin/openai_admin/continue_dev/confluence batches (with the fleet-wide _SECRET_PATTERNS broadening,
+SG-2026-06-13-A..F + SG-2026-06-14-A..C); then the mod UI-descriptor contract (FX-MOD-CFG-001) giving the frontend
+parity for all 13 mods.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#197 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **SESSION SEALED at #197 (`ce804f26`; L1)** -- UI contract COMPLETE: 26/26 connectors + 13/13 mods each ship descriptor + index + SETUP + schema + validator + UI spec. All connectors flip-ready + purple-team-validated + doc-standard-attested; all mods built + purple-teamed + UI-renderable. Prior: #196 mod-fanout, #195 mod-contract.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, ALL with UI descriptors. Secrets never committed nor printed.*
-*Next required action: **/qor-document** (README mods section: now UI-renderable, connector+mod UI parity) + **/qor-substantiate** + final merge (operator ask). **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+*Next required action: **@jinhongkuan** -- the mcp frontend now has a complete connector+mod UI data contract (`connectors/index.json` + `mods/index.json` + `docs/UI_RENDERING_SPEC.md`); live-flips per `docs/runbooks/` (operator-gated; ADR-0012). Backlog: branch protection (B5); bot #73.*
