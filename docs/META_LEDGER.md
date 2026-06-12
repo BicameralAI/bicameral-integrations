@@ -5434,7 +5434,40 @@ connectors flip-ready.** L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#168 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **zendesk FLIP-READY, SEALED at #168 (`9989fdea`; L1)** -- FX-CFG-001 descriptor (webhook signature re-verified live); parse surface already redact-and-pass + HMAC verify + dedup + opaque requester_id. **ALL 3 lane connectors flip-ready: 17 of 26** + 13 mods. Prior: #167 aider, #166 local_directory.*
+### Entry #169: DELIVER -- doc sync: README + capability matrix to 17 flip-ready
+
+**Entry ID**: `docsync169matrix17`
+**Timestamp**: 2026-06-13T18:15:00-04:00
+**Phase**: DELIVER (documentation)
+**Author**: Technical Writer (qor-document)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/bicameral-integrations-capability-matrix.md)
+= 945c34c7c34a790f34a8f2142064e80e8a17ae19762ed3784dfa66c344af0f83
+```
+
+**Previous Hash**: 9989fdea72d7d96315c5daa39b6b9244a1428305049e09a81da78163ad0414ab
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 0515f4d6849acba19993ca0a4cd64a6b99868b8243c7436ac29aadfd1fe4d1bb
+```
+
+**Decision**: Synced the public docs to the 14->17 flip-ready milestone. **README.md**: maturity line
+14->17; the flip-ready section intro 14->17; **+3 rows** to the flip-ready capability matrix (zendesk,
+local_directory, aider) with their exact data-out + security posture; **-3** from Future Development (now 9).
+**docs/bicameral-integrations-capability-matrix.md**: header count 14->17; **+3 rows** to the Connector
+Capability Matrix (Zendesk redact-and-pass subject+body + opaque requester; Local Directory redact-and-pass +
+sha256-tokenized path; Aider redact-and-pass subject + author-name-retained-as-provenance); **-3** from Future
+Development (now 9). Both matrices verified at exactly 17 flip-ready rows; the lone remaining `14 of 26` is the
+sealed historical entry #161 (immutable). Docs-only; no code. governance-gate #1..#169 OK. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#169 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **DOC SYNC SEALED at #169 (`0515f4d6`; L1)** -- README + capability matrix now state 17 flip-ready (+3 rows zendesk/local_directory/aider; Future Development 9). **17 of 26 connectors flip-ready** + 13 mods. Prior: #168 zendesk, #167 aider.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 17 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-document** (README + capability matrix, 14->17 flip-ready) then **/qor-deep-audit** purple-team over local_directory + aider + zendesk. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+*Next required action: **/qor-deep-audit** purple-team over local_directory + aider + zendesk (adds path-traversal/symlink for local_directory), then remediate + tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
