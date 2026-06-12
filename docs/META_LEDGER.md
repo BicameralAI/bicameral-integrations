@@ -6390,7 +6390,46 @@ Development connector listings remain. Docs-only; no code. governance-gate #1..#
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#192 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **DOC SYNC SEALED at #192 (`12935692`; L1)** -- README + capability matrix now state **26/26 flip-ready (the entire catalog); Future Development -> 0.** + 13 mods. Prior: #191 confluence, #190 continue_dev.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods. The descriptor fan-out is COMPLETE; secrets never committed nor printed.*
-*Next required action: **/qor-deep-audit** purple-team over the final 4 (anthropic_admin/openai_admin/continue_dev/confluence; verify impact vs the real serializer SG-2026-06-13-C), then remediate + tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
+### Entry #193: RESEARCH BRIEF -- final-four purple-team recon (4 findings, 0 blocked) -- 26/26 PURPLE-TEAMED
+
+**Entry ID**: `purpleteam193reconfinal4`
+**Timestamp**: 2026-06-15T12:00:00-04:00
+**Phase**: RESEARCH (deep-audit recon)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-final-four-purpleteam-2026-06-13.md)
+= 6def56d2f9c071d6e86a8da7fc288b271f6fee7b167dc7ab7802d42d848f8e73
+```
+
+**Previous Hash**: 12935692dd7fc8d0dfecf32de530d6770086739ebfc095008e290d90e9dbc75e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 504b79619e35fe623dca7566bb0e041e451de7aff0bfa6049d3a98432f58ac4c
+```
+
+**Decision**: Deferred adversarial pass over the final-four flips (workflow `wf_c1e952ab`, 8 agents
+red->blue->verdict), pointed at each connector's headline CLAIM. **All four approved-with-fixes; ZERO blocked.**
+4 findings (one per connector), all low/medium -- the claims largely held (anthropic_admin IS PII-free in surfaced
+fields; openai_admin DOES drop actor email/id/IP; confluence's title FIELD is redacted), but the pass surfaced
+**two lone-unguarded-field parse gaps + two PII-in-a-"safe"-field leaks (mod-input).** ANTHROPIC-ADMIN-PARSE-1
+(low): `(bucket.get("starting_at") or "").strip()` crashes on a truthy non-str -- + the sibling
+openai_admin:46 `(event.get("type") or "").strip()` (sweep, SG-2026-06-12-B). OPENAI-ADMIN-PARSE-1 (medium): an
+out-of-range `effective_at` int passes `isinstance(int)` but `time.gmtime` raises OverflowError, aborting the
+batch (new SG-2026-06-14-C). CONTINUE-PII-1 (low, mod-input): the free-form `modelTitle` metadata reaches
+mod-input un-redacted. CONF-PII-URL-01 (medium, mod-input): page-title PII survives in `source_ref.url` (the
+webui title slug) even though the title field is redacted -- the "jira/github parity" claim is false for the url.
+Remediation in 1 cycle (PT-final4): isinstance-guard starting_at + type; try/except the gmtime overflow + extend
+`_PARSE_SKIP`; redact the modelTitle + the page url; correct the docs. **With this pass, 26/26 connectors are
+purple-team-validated.** EM-safe + read-only + ADR-0012 hold. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#193 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PURPLE-TEAM RECON SEALED at #193 (`504b7961`; L2)** -- final four approved-with-fixes, 0 blocked; 4 findings (2 parse-robustness, 2 mod-input PII). **26/26 connectors purple-team-validated.** + 13 mods. Prior: #192 doc-sync, #191 confluence.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods. Secrets never committed nor printed.*
+*Next required action: **PT-final4** (isinstance-guard starting_at + type; gmtime try/except + _PARSE_SKIP; redact modelTitle + page url; doc fixes); modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Then operator-asked **/qor-document UI-completeness pass** (connector+mod descriptor/UI parity) + **/qor-substantiate**. Backlog: branch protection (B5); bot #73.*
