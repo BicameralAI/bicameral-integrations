@@ -30,7 +30,7 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 - **Verification**: no verify — poll/passive (git import; no network delivery, no signature).
 - **Auth (deferred)**: none applicable (T0 git/file import); live git-log walk, `--analytics-log` JSONL, and `.aider.chat.history.md` transcript paths all deferred.
 - **Modes**: passive only; no webhooks exist for this source.
-- **PII handling**: commit messages and author names emitted as-is; producer sensitive screen (`FX-SEC-001`) is the in-pipeline guard.
+- **PII handling**: the commit **subject** is emitted via **redact-and-pass** — `adapter.core.redaction.redact` scrubs secret/PHI/PAN + email/phone to placeholders (F3 / SG-2026-06-13-A: a developer may paste a token/email into a commit message). The git **author name is RETAINED** (`author_name`, e.g. `"Dev Example (aider)"`) as the intentional T0 provenance signal — this connector exists to attribute developer-AI work, the deliberate opposite of the fathom/claude_code name-drop (F4 / SG-2026-06-13-B); only `author_name` is read, never `author_email`. The commit-hash floor is opaque and un-redacted. Producer sensitive screen (`FX-SEC-001`) remains the fail-closed backstop for secret/PHI/PAN.
 
 ## Canonical governance references
 

@@ -5358,7 +5358,46 @@ whole-tree mypy (210 files) clean, validator OK (descriptors valid + index fresh
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#166 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **local_directory FLIP-READY, SEALED at #166 (`cd048327`; L1)** -- redact-and-pass content + filename stem (SG-2026-06-13-A) + FX-CFG-001 descriptor; opaque sha256 path token. **15 of 26 connectors flip-ready** + 13 mods. Prior: #165 research, #164 PT2.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 15 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** aider (F3 subject redact + F4 author-provenance descriptor) then zendesk (descriptor-only), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #167: SESSION SEAL -- aider flip-ready (subject redact-and-pass + author-provenance descriptor)
+
+**Entry ID**: `aider167flip`
+**Timestamp**: 2026-06-13T16:30:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/aider/connector.py)
+= 6e9189979e80c75e8fa56bae6b9e05c88a7609e34db744ed1a3f12a2f79063ea
+```
+
+**Previous Hash**: cd048327d155aa427a988c91dd0fd63a2584de452ef3b8e725e4b71f475f3475
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 4b53b56f8c28b5d06fe7acad28ac14f1ac5e85e884e1573ada138f62f1f9a641
+```
+
+**Decision**: aider flipped flip-ready (2 of 3 this lane). **F3 (low-med):** `parse_commit` now
+redact-and-passes the commit **subject** (`redact(raw_subject)`) -- a developer may paste a token/email into a
+commit message, which FX-SEC-001 catches for secret/PAN but not email/phone (SG-2026-06-13-A). The
+`hash`/`"aider-commit"` floor stays opaque + un-redacted (the phone regex must not mangle a hex hash --
+claude_code floor discipline). **F4 (design call, document-not-strip):** the git **author name is RETAINED**
+(`author_name`, e.g. `"Dev Example (aider)"`) -- this connector exists to attribute developer-AI work, so *which
+human ran the AI pair-programmer is the evidence* at trust tier T0, the deliberate opposite of the
+fathom/claude_code name-drop (SG-2026-06-13-B); only `author_name` is read, never `author_email`, so no contact
+handle leaks. Authored `connectors/aider/config.json` (modes `["passive"]`, `credentials:[]`, `runtime_config`
+repo_path, `configure`+`verify` instructions; pii_posture states the retention honestly), regenerated `SETUP.md`
++ `index.json`, updated the references.md PII line. **Tests:** subject secret+email scrub + non-sensitive text
+preserved; author-name retention; opaque-hash floor un-mangled. **Measured:** full suite **669 passed**, ruff
+clean, whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#167 OK. **16 of 26 connectors
+flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#167 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **aider FLIP-READY, SEALED at #167 (`4b53b56f`; L1)** -- commit subject redact-and-pass (F3) + author name RETAINED as intentional T0 git provenance (F4 / SG-2026-06-13-B) + FX-CFG-001 descriptor. **16 of 26 connectors flip-ready** + 13 mods. Prior: #166 local_directory, #165 research.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 16 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-auto-dev-1** zendesk (descriptor-only; already redact-and-pass + HMAC verify + dedup), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

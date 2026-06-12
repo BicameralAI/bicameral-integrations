@@ -89,6 +89,34 @@ def test_non_string_fields_do_not_crash():
     assert out[0].source_id == "aider" and out[0].evidence[0].excerpt.strip()
 
 
+def test_subject_redact_and_passes_secret_and_email():
+    # F3 (low-med): a token/email pasted into the commit subject is scrubbed from excerpt + title.
+    rec = {
+        "hash": "feedface",
+        "message": "fix: rotate key AKIAIOSFODNN7EXAMPLE, ping ops@corp.com\n\nbody",
+        "author_name": "Dev Example (aider)",
+    }
+    obs = parse_commit(rec)
+    assert "AKIAIOSFODNN7EXAMPLE" not in obs.excerpt
+    assert "ops@corp.com" not in obs.excerpt
+    assert "AKIAIOSFODNN7EXAMPLE" not in obs.title
+    assert "fix:" in obs.excerpt  # non-sensitive subject text preserved
+
+
+def test_author_name_retained_as_provenance():
+    # F4 (design call): the human author name IS the evidence — retained, not dropped (SG-2026-06-13-B).
+    obs = parse_commit(_commit())
+    assert obs.author == "Dev Example (aider)"
+
+
+def test_opaque_hash_floor_not_mangled_by_redaction():
+    # The commit-hash floor must survive un-redacted when the subject is blank.
+    rec = {"hash": "1234567890abcdef", "message": "   "}
+    obs = parse_commit(rec)
+    assert obs.excerpt == "1234567890abcdef"
+    assert obs.source_ref.ref == "1234567890abcdef"
+
+
 def test_end_to_end_normalizes():
     out = normalize(AiderConnector().observations(_commit()), adapter_version="aider/0.1.0")
     assert len(out) == 1

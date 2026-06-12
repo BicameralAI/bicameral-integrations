@@ -16,6 +16,7 @@ from __future__ import annotations
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 
 
 def _trailer_texts(record: dict) -> list[str]:
@@ -48,13 +49,19 @@ def _attributed_by(record: dict) -> str:
 def parse_commit(record: dict) -> Observation:
     """Map an Aider-attributed git commit record into a provider-neutral Observation.
 
-    Field values are coerced to ``str`` and stripped where the emission contract
-    needs a non-blank string, so a malformed record (non-string or
-    whitespace-only field) is normalized to a terminal literal, not crashed and
-    not silently blank.
+    The commit **subject** is free text a developer may have pasted a token/email into, so it is
+    **redact-and-passed** (secret/PHI/PAN + email/phone scrubbed; F3 / SG-2026-06-13-A). The
+    ``hash``/``"aider-commit"`` floor is an opaque id and is NOT redacted (the phone regex must not
+    mangle a hex hash — the claude_code floor discipline). The git **author name is RETAINED**
+    (``author_name``, e.g. ``"Dev Example (aider)"``): this connector exists to attribute work — *which
+    human ran the AI pair-programmer is the evidence*, at trust tier T0 (F4 / SG-2026-06-13-B; the
+    opposite of the fathom/claude_code name-drop, by design). Only ``author_name`` is read, never
+    ``author_email``, so no contact handle leaks. Field values are coerced to ``str`` and stripped so a
+    malformed record is normalized to a terminal literal, not crashed and not silently blank.
     """
     message = record.get("message")
-    subject = message.split("\n", 1)[0].strip() if isinstance(message, str) else ""
+    raw_subject = message.split("\n", 1)[0].strip() if isinstance(message, str) else ""
+    subject = redact(raw_subject)  # F3: a commit message can carry a pasted token/email
     commit_hash = str(record.get("hash") or "").strip()
     excerpt = subject or commit_hash or "aider-commit"
     return Observation(
@@ -62,7 +69,7 @@ def parse_commit(record: dict) -> Observation:
         excerpt=excerpt,
         mode=SourceMode.PASSIVE,
         title=subject or commit_hash or "aider-commit",
-        author=str(record.get("author_name") or ""),
+        author=str(record.get("author_name") or ""),  # F4: real name RETAINED — git provenance is the point
         timestamp=str(record.get("authored_at") or ""),
         metadata={"attributed_by": _attributed_by(record), "short_hash": commit_hash[:7]},
     )

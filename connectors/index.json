@@ -1,5 +1,64 @@
 {
   "connectors": {
+    "aider": {
+      "available": true,
+      "category": "source-control / developer-AI tooling",
+      "credentials": [],
+      "data": {
+        "emits": [
+          "commit"
+        ],
+        "pii_posture": "The commit SUBJECT is redact-and-passed (secret/PHI/PAN + email/phone scrubbed; F3 / SG-2026-06-13-A — a developer may paste a token/email into a commit message). The git AUTHOR NAME is RETAINED (e.g. 'Dev Example (aider)'): this connector exists to attribute developer-AI work, so *which human ran the AI pair-programmer* is the evidence at trust tier T0 — the deliberate opposite of the fathom/claude_code name-drop (F4 / SG-2026-06-13-B). Only author_name is read, never author_email, so no contact handle leaks. The commit hash / 'aider-commit' floor is an opaque id and is NOT redacted. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+        "redaction": "redact-and-pass (commit subject); author name RETAINED as intentional T0 git provenance; opaque hash floor un-redacted; FX-SEC-001 rejects secret/PHI/PAN"
+      },
+      "description": "Aider-attributed git commits as read-only developer-AI provenance evidence (commit subject redact-and-passed; the human author name is retained as the provenance signal).",
+      "id": "aider",
+      "instructions": [
+        {
+          "action": "configure",
+          "ref": "connectors/aider/auth.md (Aider Auth)",
+          "text": "Point the operator runtime at the git repository to import. Aider's attribution ('(aider)' on the git author/committer name by default, or an opt-in Co-authored-by trailer) is detected automatically; only attributed commits are ingested. There are no network credentials — this is a local git import."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: an Aider-attributed commit should produce one emission (subject redact-and-passed; author name retained as provenance; attributed_by = author/committer/co-author)."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Parse + attribution detection + redact-and-pass on the subject are built and harness-proven; the author name is retained as deliberate git provenance. No network credentials (local git import). Gated on operator review + wiring the live git-log walk to a GatewaySink. To flip: set the repo path; wire the runtime git-log import; verify against an attributed commit; review before promoting.",
+      "modes": [
+        "passive"
+      ],
+      "name": "Aider",
+      "references": [
+        {
+          "kind": "git-attribution",
+          "url": "https://aider.chat/docs/git.html"
+        },
+        {
+          "kind": "auth",
+          "url": "connectors/aider/auth.md"
+        },
+        {
+          "kind": "contract",
+          "url": "connectors/aider/references.md"
+        }
+      ],
+      "runtime_config": [
+        {
+          "description": "Path to the git repo the operator runtime walks (git-log import). Aider auto-commits its edits and attributes them; only attributed commits are ingested. Read-only — no canonical writes (ADR-0008).",
+          "key": "repo_path",
+          "label": "Git repository / working copy path",
+          "required": true
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T0",
+      "wire_gates": [
+        "Contract re-verified live 2026-06-13 (aider.chat/docs/git.html): '(aider)' appended to BOTH git author + committer name by default; committer-only for dirty-file commits; --attribute-co-authored-by opt-in Co-authored-by trailer. _attributed_by precedence (author -> committer -> co-author) matches.",
+        "PII: commit subject redact-and-passed (secret/PHI/PAN + email/phone); author NAME retained as intentional T0 git provenance (SG-2026-06-13-B); author_email never read; opaque hash floor un-redacted. FX-SEC-001 backstops secret/PHI/PAN.",
+        "Live git-log walk, the --analytics-log JSONL, and the .aider.chat.history.md transcript are operator-runtime; no live ingest this cycle. Live flip gated on operator review + a real git-log import (ADR-0012)."
+      ]
+    },
     "claude_code": {
       "available": true,
       "category": "developer-ai",
