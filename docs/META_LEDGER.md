@@ -6358,7 +6358,39 @@ OK. **26 of 26 connectors flip-ready -- the descriptor fan-out is COMPLETE.** L1
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#191 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **confluence FLIP-READY, SEALED at #191 (`d56b1b13`; L1)** -- redact-and-pass title+body + poll-only descriptor (SG-2026-06-14-B). **ALL 26 OF 26 CONNECTORS FLIP-READY** + 13 mods. Prior: #190 continue_dev, #189 openai_admin.*
+### Entry #192: DELIVER -- doc sync: README + capability matrix to 26/26 flip-ready (Future Development -> 0)
+
+**Entry ID**: `docsync192matrix26of26`
+**Timestamp**: 2026-06-15T11:00:00-04:00
+**Phase**: DELIVER (documentation)
+**Author**: Technical Writer (qor-document)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/bicameral-integrations-capability-matrix.md)
+= 64f634554e07022b430700c7cb13189882f5f681aaaba8a518c7f1bb9c99b9ec
+```
+
+**Previous Hash**: d56b1b13001f5ffee35405ae913765d4ac6b9b40330cf77015e4aa455a126f09
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 12935692dd7fc8d0dfecf32de530d6770086739ebfc095008e290d90e9dbc75e
+```
+
+**Decision**: Synced the public docs to the **26 / 26 flip-ready milestone** (the descriptor fan-out complete).
+**README.md**: maturity line + flip-ready section intro 22 -> "all 26"; **+4 rows** to the flip-ready capability
+matrix (anthropic_admin PII-free aggregate; openai_admin actor-identity-dropped; continue_dev redact dev-AI
+text; confluence redact page + poll-only); **Future Development -> "None -- all 26 flip-ready"** (no pending
+list). **docs/bicameral-integrations-capability-matrix.md**: header 22 -> "26 -- the entire catalog"; **+4 rows**;
+Future Development emptied. Both matrices verified at exactly 26 flip-ready rows; no stale `22`; no Future
+Development connector listings remain. Docs-only; no code. governance-gate #1..#192 OK. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#192 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **DOC SYNC SEALED at #192 (`12935692`; L1)** -- README + capability matrix now state **26/26 flip-ready (the entire catalog); Future Development -> 0.** + 13 mods. Prior: #191 confluence, #190 continue_dev.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods. The descriptor fan-out is COMPLETE; secrets never committed nor printed.*
-*Next required action: **/qor-document** (README + capability matrix, 22->26 flip-ready; Future Development -> 0) then **/qor-deep-audit** purple-team over the final 4. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+*Next required action: **/qor-deep-audit** purple-team over the final 4 (anthropic_admin/openai_admin/continue_dev/confluence; verify impact vs the real serializer SG-2026-06-13-C), then remediate + tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*

@@ -32,7 +32,7 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 
 ## Connector Capability Matrix
 
-**22 flip-ready connectors.**
+**26 flip-ready connectors — the entire catalog.**
 
 | Connector | Category | Mode | Data in | Data out (neutral evidence) | Security & PII handling |
 |---|---|---|---|---|---|
@@ -58,6 +58,10 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 | **PagerDuty** | Observability | Webhook | v3 incident webhook events | `incident` — redact-and-passed title/summary; **no actor/assignee surfaced** | `X-PagerDuty-Signature` multi-signature `v1=` HMAC-SHA256 membership over the raw body (accept-any for zero-downtime rotation), constant-time; event-id/body-hash de-dup |
 | **OSV** | Security / vuln | Active | OSV.dev vulnerability records | `vulnerability` — redact-and-passed summary/details; severity, affected packages, aliases as metadata | **No credential** (free unauthenticated OSV.dev query API, host-pinned); public technical data; FX-SEC-001 hard-screen |
 | **SARIF** | Security / scan | Passive (file) | SARIF 2.1.0 static-analysis findings | `finding` — redact-and-passed result message; rule id + file URI + line as metadata | **No credential** (file import); **a secret quoted in a finding message is scrubbed but the finding is kept, not dropped** (redact-and-pass beats hard-reject for a security source); the raw code snippet is **never read**; FX-SEC-001 hard-screen |
+| **Anthropic Admin** | Developer-AI / usage | Active | Anthropic org usage/cost metrics | `usage_metrics` — **PII-free** token totals + distinct models | **PII-free by construction** (synthesized from numeric totals); opaque workspace/key ids **never surfaced**; `x-api-key` admin key (`sk-ant-admin…`), host-pinned; FX-SEC-001 hard-screen |
+| **OpenAI Admin** | Security / compliance | Active | OpenAI org audit-log events | `audit_event` — event type + project + time; non-PII actor type | **Actor identity dropped at parse** — email / id / IP **never read** (the sole control); Bearer admin key, host-pinned `api.openai.com`; excerpt redact()-ed defensively |
+| **Continue** | Developer-AI | Passive (local) | Continue.dev dev-data events (local JSONL) | `development_data` — redact-and-passed prompt/completion; opaque userId | **No credential** (local file import); dev-AI text redact-and-passed; the operator's `level:noCode` strips text at source; FX-SEC-001 hard-screen |
+| **Confluence** | Docs / knowledge-base | Active + Passive | Confluence Cloud page content | `page` — redact-and-passed title + body | Authenticated REST poll (API-token Basic / OAuth 3LO), host-pinned `*.atlassian.net`; the Connect-app-JWT Cloud webhook needs a registered Connect app, so the descriptor offers the **verifiable poll only**; FX-SEC-001 hard-screen |
 
 ---
 
@@ -101,9 +105,7 @@ Bicameral Integrations treats every inbound payload as untrusted and every crede
 
 ## Future Development
 
-The following connectors are in **Beta** — their parse surfaces are in development and not yet flip-ready:
-
-Anthropic Admin (usage) · Confluence · Continue.dev · OpenAI Admin (usage)
+**None — all 26 connectors are flip-ready.** The descriptor fan-out is complete: every harness-proven parse surface now carries a config descriptor, adversarial security hardening, and an operator runbook. New connectors are added demand-driven.
 
 ---
 
