@@ -54,6 +54,27 @@ def test_accepts_bare_issue_object():
     assert obs.excerpt == "boom" and obs.source_ref.ref == "9"
 
 
+def test_title_and_culprit_redact_and_passed():
+    # F1 (medium): the exception message + culprit are redact-and-passed (error messages embed PII/secrets).
+    issue = {
+        "id": "55",
+        "title": "OperationalError: could not connect for user ops@corp.com",
+        "culprit": "db.connect(AKIAIOSFODNN7EXAMPLE)",
+        "shortId": "PROJ-9",
+    }
+    obs = parse_issue({"data": {"issue": issue}})
+    assert "ops@corp.com" not in obs.title
+    assert "ops@corp.com" not in obs.excerpt
+    assert "AKIAIOSFODNN7EXAMPLE" not in parse_issue({"data": {"issue": {"id": "1", "culprit": issue["culprit"]}}}).excerpt
+
+
+def test_opaque_id_floor_not_redacted():
+    # The shortId/id floor is opaque — survives when title+culprit are empty.
+    obs = parse_issue({"data": {"issue": {"id": "4571234567", "shortId": "PROJ-9"}}})
+    assert obs.excerpt == "PROJ-9"
+    assert obs.source_ref.ref == "4571234567"
+
+
 def test_floors_excerpt_when_empty():
     obs = parse_issue({})
     assert obs.excerpt == "sentry-issue" and obs.source_ref.ref == "sentry-issue"

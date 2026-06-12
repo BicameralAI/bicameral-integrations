@@ -20,6 +20,7 @@ from collections.abc import Callable
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -37,14 +38,19 @@ def parse_issue(event: dict) -> Observation:
     """Map a Sentry issue webhook event into a provider-neutral Observation.
 
     Unwraps the ``data.issue`` envelope when present; falls back to treating the
-    payload as a bare issue object. Defends on absent/wrong-typed fields.
+    payload as a bare issue object. Defends on absent/wrong-typed fields. The issue
+    ``title`` (the exception message) and ``culprit`` (a code frame) are free text that
+    routinely embeds connection strings / emails / tokens -> **redact-and-pass** (secret/
+    PHI/PAN + email/phone scrubbed; FX-SEC-001 backstops only secret/PHI/PAN). The opaque
+    ``shortId``/``id`` floor is NOT redacted. The full stack trace / event body is never read
+    (data minimization).
     """
     data = event.get("data")
     issue = data.get("issue") if isinstance(data, dict) else None
     issue = issue if isinstance(issue, dict) else event
     iid = str(issue.get("id") or "sentry-issue")
-    title = _text(issue.get("title"))
-    culprit = _text(issue.get("culprit"))
+    title = redact(_text(issue.get("title")))
+    culprit = redact(_text(issue.get("culprit")))
     short = str(issue.get("shortId") or "")
     return Observation(
         source_ref=SourceRef(
