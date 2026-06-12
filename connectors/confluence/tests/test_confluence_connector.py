@@ -43,3 +43,18 @@ def test_blank_body_floors_to_title_then_literal():
     obs = parse_content(empty)
     assert obs.excerpt == "confluence-page"
     assert obs.source_ref.ref == "confluence-page"
+
+
+def test_page_body_and_title_redact_and_passed():
+    # F1 (medium): a Confluence page title + body are redact-and-passed (PII-dense internal docs).
+    content = {
+        "id": "999",
+        "title": "Onboarding for jane.doe@corp.com",
+        "body": {"storage": {"value": "<p>Contact ops@corp.com; key AKIAIOSFODNN7EXAMPLE</p>"}},
+    }
+    obs = parse_content(content)
+    assert "jane.doe@corp.com" not in obs.title
+    assert "ops@corp.com" not in obs.excerpt
+    assert "AKIAIOSFODNN7EXAMPLE" not in obs.excerpt
+    assert "Contact" in obs.excerpt  # non-sensitive page text preserved
+    assert obs.source_ref.ref == "999"  # opaque id ref un-redacted

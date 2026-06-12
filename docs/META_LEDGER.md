@@ -6314,7 +6314,51 @@ governance-gate #1..#190 OK. **25 of 26 connectors flip-ready.** L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#190 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **continue_dev FLIP-READY, SEALED at #190 (`cf9bd427`; L1)** -- redact-and-pass excerpt + userId; source_id "continue"->"continue_dev" (FX-CFG-001-forced, claude_code precedent) + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested). **25 of 26 flip-ready** + 13 mods. Prior: #189 openai_admin, #188 anthropic_admin.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 25 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** confluence (redact body+title; declare active+passive only, no unsignable Cloud webhook -- SG-2026-06-14-B) -> the LAST flip (26/26), then **/qor-document** + **/qor-deep-audit**. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+### Entry #191: SESSION SEAL -- confluence flip-ready (redact-and-pass + poll-only descriptor) -- ALL 26 CONNECTORS FLIP-READY
+
+**Entry ID**: `confluence191flip26of26`
+**Timestamp**: 2026-06-15T10:00:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/confluence/connector.py)
+= 4e20c2cf0292e1a016c4f20ee2337480d07d40d14e71e9ba7a886810b281a7ae
+```
+
+**Previous Hash**: cf9bd427fb0d04012675079e5eeefbb007c6df33d39bdc3eb5862d4d05c7f631
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= d56b1b13001f5ffee35405ae913765d4ac6b9b40330cf77015e4aa455a126f09
+```
+
+**Decision**: confluence flipped flip-ready (4 of 4 -- the remainder) -- **ALL 26 CONNECTORS NOW FLIP-READY.**
+**F1 (medium):** `parse_content` now redact-and-passes the page `title` + flattened storage `body` -- Confluence
+pages are PII-dense (internal docs, names, emails); `_strip_storage_html` is a lossy flattener, NOT a sanitizer,
+so `redact()` + FX-SEC-001 are the controls. The opaque `id` ref + page URL stay un-redacted; no author surfaced
+(the ref no longer falls back to the title). **F2 (descriptor honesty, SG-2026-06-14-B):** the descriptor declares
+`modes:["active","passive"]` (the authenticated REST poll -- API-token Basic or OAuth 3LO, host-pinned
+*.atlassian.net), **NOT webhook** -- the Cloud webhook's Connect-app JWT scheme (HS256 over the per-tenant install
+shared secret + qsh) needs a registered Connect app + install-handshake secret store, not a pasted secret, so it
+is not flip-ready via a descriptor (the WEBHOOK capability remains for a future Connect-app deployment). Authored
+`connectors/confluence/config.json`, regenerated `SETUP.md` + `index.json`.
+
+**Documentation standard -- EXCEEDS minimum (explicit attestation):** `references.md` -- verified-contract
+re-verified 2026-06-13 (Cloud scheme = Connect-app JWT, corrected) + PII bullet + flip-ready-surface note +
+attestation marker; `auth.md` -- auth model + webhook-JWT deferral rationale + deferred paths; `config.json` --
+dated `wire_gates` + explicit `pii_posture` + `live_readiness` + resolving instruction `ref`s. **EXCEEDS.**
+
+**Tests:** page title + body email/secret scrub + non-sensitive text preserved + opaque id ref. **Measured:**
+full suite **693 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#191
+OK. **26 of 26 connectors flip-ready -- the descriptor fan-out is COMPLETE.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#191 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **confluence FLIP-READY, SEALED at #191 (`d56b1b13`; L1)** -- redact-and-pass title+body + poll-only descriptor (SG-2026-06-14-B). **ALL 26 OF 26 CONNECTORS FLIP-READY** + 13 mods. Prior: #190 continue_dev, #189 openai_admin.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods. The descriptor fan-out is COMPLETE; secrets never committed nor printed.*
+*Next required action: **/qor-document** (README + capability matrix, 22->26 flip-ready; Future Development -> 0) then **/qor-deep-audit** purple-team over the final 4. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
