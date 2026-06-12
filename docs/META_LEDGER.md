@@ -5467,7 +5467,48 @@ sealed historical entry #161 (immutable). Docs-only; no code. governance-gate #1
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#169 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **DOC SYNC SEALED at #169 (`0515f4d6`; L1)** -- README + capability matrix now state 17 flip-ready (+3 rows zendesk/local_directory/aider; Future Development 9). **17 of 26 connectors flip-ready** + 13 mods. Prior: #168 zendesk, #167 aider.*
+### Entry #170: RESEARCH BRIEF -- local_directory + aider + zendesk purple-team recon (4 findings, 0 blocked)
+
+**Entry ID**: `purpleteam170recon3conn`
+**Timestamp**: 2026-06-13T19:30:00-04:00
+**Phase**: RESEARCH (deep-audit recon)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-3connectors-purpleteam-2026-06-13.md)
+= 1a2e9d917a85cb37ccfd930b3deeb60710cc0c99e6ccba37fd274ed5166fab26
+```
+
+**Previous Hash**: 0515f4d6849acba19993ca0a4cd64a6b99868b8243c7436ac29aadfd1fe4d1bb
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 72a44171b4051cdd5e3fe2d50e6cd9cb07d03b195df81029c36e224117550ac6
+```
+
+**Decision**: Deferred adversarial pass over the 3 newly-flip-ready connectors (workflow `wf_b97afadb`, 7
+agents red->blue->verdict). **All three approved-with-fixes; ZERO blocked.** 4 findings confirmed
+(local_directory 2, aider 1, zendesk 1), all medium/low. Cores held: Zendesk Base64-HMAC verify sound,
+redact-and-pass + opaque-token + dedup intact, all read-only, local_directory path genuinely sha256-tokenized
+(no traversal/symlink/layout leak). **One root:** a payload-derived field bypasses `redact()` and/or the screen
+-- `source_ref.kind` (from `source_type_label`) is the ONLY `SourceRef` sibling absent from `_screen_sensitive`
+(pipeline.py:133-136), and the `author` field (aider `author_name`, zendesk `requester_id`) never gets
+`redact()` for the email/phone class (FX-SEC-001 already screens author for secret/PHI/PAN). **Impact correction
+(verify-before-fix, new SG-2026-06-13-C):** the red agents asserted these "reach the wire" -- they do NOT;
+`runtime/gateway_mapping.py:emission_to_ingest_request` (l.56-62) maps the v1 IngestRequest from only
+title/description/source/source_type/excerpt and DROPS kind/author/timestamp/metadata. The gaps are real at the
+**mod-input boundary** (mods consume the full emission; the reason author/timestamp/metadata are already
+screened) + **descriptor-honesty / defense-in-depth**, NOT as a gateway-wire leak -- severity measured down
+med->low. Remediation in 2 governed cycles: **PT-A** (add `source_ref.kind` to `_screen_sensitive` + docstring;
+redact local_directory `source_type_label`) + **PT-B** (redact aider `author_name` + zendesk `requester_id`).
+EM-safe + read-only + ADR-0012 hold. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#170 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PURPLE-TEAM RECON SEALED at #170 (`72a44171`; L2)** -- 3 connectors approved-with-fixes, 0 blocked; 4 findings (one root: payload-derived kind/author bypasses redact/screen). Impact measured DOWN (mod-boundary + descriptor-honesty, NOT gateway-wire: emission_to_ingest_request drops kind/author; SG-2026-06-13-C). **17 of 26 flip-ready** + 13 mods. Prior: #169 doc-sync, #168 zendesk.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 17 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-deep-audit** purple-team over local_directory + aider + zendesk (adds path-traversal/symlink for local_directory), then remediate + tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
+*Next required action: **PT-A** (kind screen + local_directory label redact) then **PT-B** (aider + zendesk identity redact); each modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*

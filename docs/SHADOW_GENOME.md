@@ -501,3 +501,17 @@ handle leaks.) The discipline is per-connector: identity-minimization drops a na
 (a meeting speaker, a session OS-username) and retains-and-documents it when it is the **signal** the connector
 exists to carry. **Rule:** never blanket-apply the name-drop; for each connector decide whether the human
 identity is signal or noise, and state the retention explicitly in `data.pii_posture` when you keep it.
+
+## SG-2026-06-13-C — verify a finding's IMPACT against the real serializer, not the struct field's existence
+
+The purple-team over local_directory/aider/zendesk (#170) confirmed a true code gap — `source_ref.kind` and
+the `author` field bypass `redact()` and/or `_screen_sensitive` — but the red agents assigned MEDIUM on the
+premise that these fields "reach the wire." They do not: `runtime/gateway_mapping.py:emission_to_ingest_request`
+maps the v1 `IngestRequest` from only `title`/`description`/`source`/`source_type`/`evidence[].excerpt` and
+**drops `kind`, `author`, `timestamp`, and metadata entirely**. The gap is real at the *mod-input* boundary
+(mods consume the full in-process `AdapterEmission`, which is why `author`/`timestamp`/`metadata` are already
+screened) and as descriptor-honesty/defense-in-depth — not as a gateway-wire leak. **Rule:** before assigning
+severity to a "reaches the wire / forwarded to X" claim, trace it to the actual emit/serialize function and
+confirm the field is in that function's output; a field's presence in the in-memory struct is not proof it
+crosses the boundary. (Pairs with SG-2026-06-12-C: re-verify against the REAL envelope, not a fixture.) The fix
+still stands — screen + descriptor honesty are warranted — but the severity is measured down med->low.
