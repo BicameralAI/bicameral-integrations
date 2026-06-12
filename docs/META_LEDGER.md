@@ -5834,7 +5834,45 @@ references. Docs-only; no code. governance-gate #1..#178 OK. L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#178 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **DOC SYNC SEALED at #178 (`a9f7c2db`; L1)** -- README + capability matrix now state 20 flip-ready (+3 rows gitlab/sentry/pagerduty; Future Development 6). **20 of 26 connectors flip-ready** + 13 mods. Prior: #177 pagerduty, #176 sentry.*
+### Entry #179: RESEARCH BRIEF -- gitlab + sentry + pagerduty purple-team recon (2 findings, 0 blocked)
+
+**Entry ID**: `purpleteam179reconwebhook`
+**Timestamp**: 2026-06-14T13:00:00-04:00
+**Phase**: RESEARCH (deep-audit recon)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-webhooktrio-purpleteam-2026-06-13.md)
+= 60b2efa190af5de58fd4c6cd622b353858e70e60dfb8389a85ba1359af709941
+```
+
+**Previous Hash**: a9f7c2db8b61bd7df9f19332f79833ec88775704558b04f4904c08548e6845aa
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 6393f9ba37c676be703d80bb8c4c3ef4642cb9b841a0379ed5cac2869634fe6a
+```
+
+**Decision**: Deferred adversarial pass over the 3 webhook-trio flips (workflow `wf_1b274b00`, 5 agents
+red->blue->verdict). **All three approved-with-fixes; ZERO blocked.** 2 findings confirmed -- **both on gitlab**
+(sentry 0, pagerduty 0). The flips' redact-and-pass holds; FX-SEC-001 (now incl. `source_ref.kind`) intact; all
+read-only; the three signature verifiers sound. **sentry + pagerduty were built with the mature isinstance-unwrap
++ body-hash-dedup-fallback patterns and cleared clean; gitlab predates both.** **GITLAB-001 (medium, mod-input):**
+`_event_observation` floors only falsy nested containers (`object_attributes`/`project`/`user` `or {}`), so a
+truthy non-dict raises `AttributeError` out of the webhook path (the fathom #164 class; jira already guards).
+**GITLAB-002 (medium, v1-gateway-wire):** `normalize_event` dedup is `if delivery_id and ...` with no body-hash
+fallback, so a UUID-less replay bypasses dedup -> a duplicate evidence record reaches the gateway (every sibling
+has the fallback; gitlab is the lone omission). Impact boundaries verified against `emission_to_ingest_request`
+(SG-2026-06-13-C). Remediation in 1 governed cycle (PT-gitlab): isinstance-guard the 3 nested containers + add the
+`hashlib.sha256(body)` dedup fallback + correct the disclosure; regression tests (truthy-non-dict normalizes;
+UUID-less double-delivery collapses to one). EM-safe + read-only + ADR-0012 hold. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#179 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PURPLE-TEAM RECON SEALED at #179 (`6393f9ba`; L2)** -- webhook trio approved-with-fixes, 0 blocked; 2 findings BOTH on gitlab (parse-robustness + dedup parity it predates); sentry + pagerduty CLEAN. **20 of 26 flip-ready** + 13 mods. Prior: #178 doc-sync, #177 pagerduty.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 20 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-deep-audit** purple-team over gitlab + sentry + pagerduty (verify impact vs the real gateway serializer, SG-2026-06-13-C), then remediate + tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
+*Next required action: **PT-gitlab** (isinstance-guard nested containers + body-hash dedup fallback + disclosure fix); modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
