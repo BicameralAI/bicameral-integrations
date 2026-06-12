@@ -5716,7 +5716,49 @@ validator OK; governance-gate #1..#175 OK. L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#175 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **DOC-STANDARD ATTESTATION SEALED at #175 (`a1f107a7`; L1)** -- local_directory + aider + zendesk retroactively attested EXCEEDS minimum (durable marker in each references.md + ledger). Explicit per-connector attestation is now the standing standard for every flip. **18 of 26 flip-ready** + 13 mods. Prior: #174 gitlab, #173 research.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 18 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** sentry + pagerduty (each with the explicit doc-standard attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #176: SESSION SEAL -- sentry flip-ready (redact-and-pass error detail + FX-CFG-001 descriptor + doc-standard attestation)
+
+**Entry ID**: `sentry176flip`
+**Timestamp**: 2026-06-14T10:00:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/sentry/connector.py)
+= 014a4ac14049caf701c7e6d1a6132d29d2cda85fa3a9295c81dd51212962e358
+```
+
+**Previous Hash**: a1f107a78a30e987abd7847063cf6314ca212db11383a1101de482c35756c16d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5fc3606e00a1ea7f079dd36720ff64371cdaf0ba446d635c9b315cb617d43a81
+```
+
+**Decision**: sentry flipped flip-ready (2 of 3 webhook trio). **F1 (medium):** `parse_issue` now
+redact-and-passes the issue `title` (the exception message) + `culprit` (a code frame) -- previously raw, with
+only FX-SEC-001 (secret/PHI/PAN) backstop, and error messages routinely embed connection strings / emails /
+tokens. The opaque `shortId`/`id` floor stays un-redacted, and the **full stack trace / event body is never read**
+(data minimization); **no person attribution** (no author field). Authored `connectors/sentry/config.json` (modes
+`["webhook"]`; `sentry_webhook` = integration Client Secret; webhook block with the live-verified hex-HMAC scheme
+over the RAW body), regenerated `SETUP.md` + `index.json`.
+
+**Documentation standard -- EXCEEDS minimum (explicit attestation):** `references.md` -- Auth row + verified-
+contract re-verified live 2026-06-13 (docs.sentry.io, MATCH; raw-bytes verify more robust than the doc's
+JSON.stringify), PII bullet updated to redact-and-pass + attestation marker; `auth.md` -- signature scheme +
+deferred paths; `config.json` -- dated `wire_gates` + explicit `pii_posture` + `live_readiness` + resolving
+instruction `ref`s. **EXCEEDS.**
+
+**Tests:** exception-message + culprit email/secret scrub; opaque id floor un-redacted. **Measured:** full suite
+**678 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#176 OK.
+**19 of 26 connectors flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#176 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **sentry FLIP-READY, SEALED at #176 (`5fc3606e`; L1)** -- redact-and-pass title+culprit (full stack trace never read; no author) + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested). **19 of 26 flip-ready** + 13 mods. Prior: #175 doc-attestation, #174 gitlab.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 19 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-auto-dev-1** pagerduty (last of the trio, with attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
