@@ -6269,7 +6269,52 @@ NOWHERE in the output) is the regression guard for the descriptor's claim. **Mea
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#189 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **openai_admin FLIP-READY, SEALED at #189 (`950d714d`; L1)** -- FX-CFG-001 descriptor; actor identity dropped at parse (the sole control); doc-standard EXCEEDS minimum (attested). **24 of 26 flip-ready** + 13 mods. Prior: #188 anthropic_admin, #187 research.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 24 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** continue_dev (redact excerpt + userId), then confluence (redact body+title; active+passive only), then **/qor-document** + **/qor-deep-audit** -> 26/26. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+### Entry #190: SESSION SEAL -- continue_dev flip-ready (redact-and-pass + source_id rename + FX-CFG-001 descriptor + doc-standard attestation)
+
+**Entry ID**: `continuedev190flip`
+**Timestamp**: 2026-06-15T09:00:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/continue_dev/connector.py)
+= 45ebd27e4718184b207dec0f1bd4729499fb1a7dd0c7bf02c13cd8a387796afc
+```
+
+**Previous Hash**: 950d714d77c3c63d7606030f43b6dd198f6f3caed380f970fd8b7b4bc7810584
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= cf9bd427fb0d04012675079e5eeefbb007c6df33d39bdc3eb5862d4d05c7f631
+```
+
+**Decision**: continue_dev flipped flip-ready (3 of 4 -- the remainder). **F1 (medium):** `_event_excerpt` now
+redact-and-passes the dev-AI text fields (prompt/completion/content/message) -- a prompt can carry code with
+secrets/emails; the `"continue {eventName}"` floor stays un-redacted. **F2 (low):** the `userId` author is
+redact-and-passed (an opaque id passes unchanged; an email-shaped userId is scrubbed). **NOTABLE AUTOMATIC
+DECISION (contract-forced, claude_code precedent):** renamed `source_id` `"continue"` -> `"continue_dev"` so the
+FX-CFG-001 descriptor validates (id == folder == source_id, ADR-0015); the folder is fixed at `continue_dev`
+(`continue` is a Python keyword), so this rename is the ONLY way to give continue_dev a valid descriptor. Updated
+the 2 connector-test asserts + the runtime-test expected source_id (fully contained -- no registry/index/
+feature-index referenced the old id). The on-wire `source_type` becomes `continue_dev` (flip-ready, not Live;
+trivially reversible). Authored `connectors/continue_dev/config.json` (modes `["passive"]`, `credentials:[]` (file
+import), `runtime_config` dev_data_path + the level:noCode lever), regenerated `SETUP.md` + `index.json`.
+
+**Documentation standard -- EXCEEDS minimum (explicit attestation):** `references.md` -- shape re-confirmed live
+2026-06-13 (docs.continue.dev; field detail pinned + provenance recorded, SG-2026-06-13-D) + PII bullet ->
+redact-and-pass + attestation marker; `auth.md` -- file-import model + Redaction-lever section + deferred paths;
+`config.json` -- `wire_gates` + explicit `pii_posture` + `live_readiness` + resolving instruction `ref`. **EXCEEDS.**
+
+**Tests:** prompt secret+email scrub + non-sensitive text preserved; opaque userId passes, email-shaped scrubbed.
+**Measured:** full suite **692 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK,
+governance-gate #1..#190 OK. **25 of 26 connectors flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#190 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **continue_dev FLIP-READY, SEALED at #190 (`cf9bd427`; L1)** -- redact-and-pass excerpt + userId; source_id "continue"->"continue_dev" (FX-CFG-001-forced, claude_code precedent) + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested). **25 of 26 flip-ready** + 13 mods. Prior: #189 openai_admin, #188 anthropic_admin.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 25 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-auto-dev-1** confluence (redact body+title; declare active+passive only, no unsignable Cloud webhook -- SG-2026-06-14-B) -> the LAST flip (26/26), then **/qor-document** + **/qor-deep-audit**. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*

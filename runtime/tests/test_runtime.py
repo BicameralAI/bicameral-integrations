@@ -382,7 +382,7 @@ def test_deliver_poll_mcp_registry_beta():
 
 
 def test_deliver_poll_continue_beta():
-    _poll_one(ContinueConnector(), "continue_dev", "dev_data_event.json", "continue", 1)
+    _poll_one(ContinueConnector(), "continue_dev", "dev_data_event.json", "continue_dev", 1)
 
 
 def test_deliver_poll_aider_beta():

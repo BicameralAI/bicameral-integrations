@@ -63,7 +63,22 @@ def test_non_string_fields_do_not_crash():
     assert obs.excerpt == "continue 7"
     assert obs.source_ref.ref == "99"
     out = normalize([obs], adapter_version="continue/0.1.0")
-    assert out[0].source_id == "continue" and out[0].evidence[0].excerpt.strip()
+    assert out[0].source_id == "continue_dev" and out[0].evidence[0].excerpt.strip()
+
+
+def test_prompt_excerpt_redact_and_passed():
+    # F1 (medium): dev-AI prompt/completion text is redact-and-passed (a prompt can carry code/secrets).
+    obs = parse_event({"eventName": "chatInteraction",
+                       "prompt": "fix login for ops@corp.com using AKIAIOSFODNN7EXAMPLE"})
+    assert "ops@corp.com" not in obs.excerpt
+    assert "AKIAIOSFODNN7EXAMPLE" not in obs.excerpt
+    assert "fix login" in obs.excerpt  # non-sensitive text preserved
+
+
+def test_userid_author_redact_and_passed():
+    # F2 (low): an opaque userId passes redact unchanged; an email-shaped userId is scrubbed.
+    assert parse_event({"eventName": "x", "userId": "usr_abc123"}).author == "usr_abc123"
+    assert "dev@corp.com" not in parse_event({"eventName": "x", "userId": "dev@corp.com"}).author
 
 
 def test_end_to_end_normalizes():
@@ -71,4 +86,4 @@ def test_end_to_end_normalizes():
         ContinueConnector().observations(_event()), adapter_version="continue/0.1.0"
     )
     assert len(out) == 1
-    assert isinstance(out[0], AdapterEmission) and out[0].source_id == "continue"
+    assert isinstance(out[0], AdapterEmission) and out[0].source_id == "continue_dev"
