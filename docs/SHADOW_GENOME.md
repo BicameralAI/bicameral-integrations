@@ -585,3 +585,15 @@ FX-CFG-001 descriptor declares only the modes the connector can actually secure 
 `wire_gate`, NOT a webhook block. `capabilities ⊇ descriptor-modes` by design: a capability is what the parse
 surface CAN handle; a descriptor mode is what an operator may safely flip Live. Pairs with SG-2026-06-13-D
 (record what you could not verify) + ADR-0012 (flip-ready is an operator-safety claim, not a feature list).
+
+## SG-2026-06-14-C — isinstance(x, int) is NOT enough before time.gmtime/strftime; an out-of-range int crashes
+
+The final-four purple-team (#193) found that openai_admin's `_event_time` type-guarded `effective_at`
+(`if not isinstance(effective_at, int): return ""`) but a provider-supplied OUT-OF-RANGE int (e.g. `10**20`)
+passes the isinstance check and `time.gmtime(10**20)` raises OverflowError/OSError, uncaught — aborting the whole
+poll batch (one bad row drops all). **Rule:** any `gmtime`/`localtime`/`strftime`/`datetime.fromtimestamp` on a
+provider-supplied epoch int must be wrapped in `try/except (OverflowError, OSError, ValueError)` returning a safe
+empty value, AND those exception types belong in the runtime per-row `_PARSE_SKIP` backstop so one bad row never
+drops the batch. This is the time-conversion sibling of the `(x or "").strip()` truthy-non-str crash class
+(fathom #164 / gitlab GITLAB-001 / anthropic_admin ANTHROPIC-ADMIN-PARSE-1) — both are "the lone field the
+per-leaf type guards missed." Sweep every sibling that converts an epoch int (SG-2026-06-12-B).
