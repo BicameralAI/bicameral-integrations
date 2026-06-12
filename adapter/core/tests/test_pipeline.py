@@ -158,6 +158,18 @@ def test_secret_in_source_ref_is_rejected():
         validate_emissions([_emission_with_ref(ref=f"token-{_GHP}")])
 
 
+def test_secret_in_source_ref_kind_is_rejected():
+    # purple-team #170 (SG-2026-06-13-C): kind was the lone SourceRef sibling outside the screen.
+    # A payload-/operator-derived kind carrying a secret reaches the mod-input boundary otherwise.
+    ev = SourceEvidence(
+        source_ref=SourceRef(source_id="local_directory", ref="local-abc", kind=f"label-{_GHP}"),
+        excerpt="clean planning note",
+    )
+    with pytest.raises(EmissionContractError) as exc:
+        validate_emissions([_emission(evidence=(ev,))])
+    assert _GHP not in str(exc.value)  # raised detail uses the redacted excerpt (#53)
+
+
 def test_clean_realistic_url_and_ref_still_pass():
     # advisory: realistic high-risk-shaped url/ref that flow through the live harness must NOT false-positive.
     for ref, url in [

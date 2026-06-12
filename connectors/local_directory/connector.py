@@ -44,7 +44,9 @@ def parse_file(payload: dict) -> Observation:
     content = redact(str(payload.get("content") or ""))
     token = _path_token(path)
     stem = redact(PurePosixPath(path).stem) or token
-    kind = str(payload.get("source_type_label") or _DEFAULT_KIND)
+    # source_type_label is a freeform operator-supplied label -> redact-and-pass too
+    # (purple-team #170 / SG-2026-06-13-C; the platform screen now backstops kind fleet-wide).
+    kind = redact(str(payload.get("source_type_label") or _DEFAULT_KIND)) or _DEFAULT_KIND
     return Observation(
         source_ref=SourceRef(source_id="local_directory", ref=f"local-{token}", kind=kind),
         excerpt=content or stem,
