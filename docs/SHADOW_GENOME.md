@@ -541,3 +541,19 @@ misses. Leaning only on the hard-screen REDUCES security coverage for the one co
 Also keep the data minimization of reading the finding **message** but never the raw code **snippet**
 (`region.snippet.text` — the rawest secret surface). Reinforces SG-2026-06-13-A (redact-and-pass any free-text
 excerpt regardless of transport).
+
+## SG-2026-06-13-F — "redact-and-pass scrubs the secret" is only as strong as the CATALOG; point the red team at your strongest claim
+
+The osv+sarif purple-team (#185) aimed the red agent squarely at this session's strongest claim — SG-2026-06-13-E
+("redact-and-pass scrubs the secret value while keeping the security finding") — and it over-generalized.
+`redact()` and the FX-SEC-001 screen both reuse ONE catalog (`adapter/core/sensitive.py:_SECRET_PATTERNS`: AWS
+`AKIA`, classic GitHub `ghp_`, Azure-storage, PEM, JWT). A scanner finding quoting a NON-catalog token — Slack
+`xoxb-`, Google `AIza…`, GitHub fine-grained `github_pat_…`, Stripe `sk_live_…`, GitLab `glpat-…`, npm `npm_…` —
+is scrubbed by NEITHER and reaches the gateway wire verbatim. The `AKIA` example used to justify SG-2026-06-13-E
+happened to be covered, which masked the gap. **Rule:** (1) a redaction/screen claim must NAME the catalog it
+depends on and STATE the residual — never imply universal coverage from one worked example; (2) broaden the
+*shared* catalog (it fixes scrub + screen + every connector in one change) rather than patching one connector; (3)
+an unbounded high-entropy secret with no recognizable prefix (e.g. a bare 40-char AWS *secret* key) is a permanent
+regex residual to DISCLOSE, not to over-claim away (mirrors the bare-national-phone residual); (4) when you make a
+strong security claim, point the next adversarial pass AT it. Corrects SG-2026-06-13-E; reinforces SG-2026-06-12-B
+(sweep the shared surface) + SG-2026-06-05-F (measure the fix — a too-broad secret pattern false-positives).

@@ -6066,7 +6066,47 @@ no code. governance-gate #1..#184 OK. L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#184 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **DOC SYNC SEALED at #184 (`405ca347`; L1)** -- README + capability matrix now state 22 flip-ready (+2 rows osv/sarif; Future Development 4). **22 of 26 connectors flip-ready** + 13 mods. Prior: #183 sarif, #182 osv.*
+### Entry #185: RESEARCH BRIEF -- osv + sarif purple-team recon (2 findings, 0 blocked; a fleet-wide secret-catalog gap)
+
+**Entry ID**: `purpleteam185reconsecurity`
+**Timestamp**: 2026-06-14T19:00:00-04:00
+**Phase**: RESEARCH (deep-audit recon)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-osv-sarif-purpleteam-2026-06-13.md)
+= 46b050c903625fd09c382560d61be23e847c070f24e1d3ba676cb1d8f0400d2b
+```
+
+**Previous Hash**: 405ca347a7388c6506c73e9a6bf521916f8fe178a4161fd141376d92ba4936a9
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a24ca5b6cae91728fc179ae7d8429146bce816c504e3cd3682b9cb7ffc5ff148
+```
+
+**Decision**: Deferred adversarial pass over the security-batch flips (workflow `wf_b48dc848`, 4 agents
+red->blue->verdict). **Both approved-with-fixes; ZERO blocked.** osv: **0 findings (clean)** -- the
+SG-2026-06-04-I guards held. sarif: **2 confirmed.** The headline is candid: pointing the red team at this
+session's own strongest claim (SG-2026-06-13-E) surfaced that it over-generalized. **SARIF-PII-1 (medium,
+v1-gateway-wire):** `redact()` and FX-SEC-001 share ONE catalog (`adapter/core/sensitive.py:_SECRET_PATTERNS` =
+AWS AKIA / classic GitHub ghp_ / Azure / PEM / JWT), so a scanner finding quoting a NON-catalog token (Slack
+xoxb-, Google AIza, GitHub fine-grained github_pat_, Stripe sk_live_, GitLab glpat-, npm npm_) is scrubbed by
+NEITHER and reaches the wire verbatim -- the AKIA example justifying SG-2026-06-13-E happens to be covered but the
+claim implied universal coverage. **SARIF-PARSE-1 (low, availability):** `parse_sarif` lacks per-result isinstance
+guards, so a truthy non-list runs/results or a non-dict result drops EVERY finding (not just the bad row).
+Remediation in 1 cycle (PT-sarif): (a) extend `_SECRET_PATTERNS` with curated prefix-anchored scanner token
+families -- fleet-wide, gains both `redact_catalog` (scrub) + `detect_sensitive` (screen); (b) per-result
+resilience in `parse_sarif`; (c) scope SG-2026-06-13-E + the sarif docs to "catalog formats" + record the
+unbounded-entropy residual. New lesson SG-2026-06-13-F (a redact/screen claim is only as strong as its catalog;
+point the red team at your strongest claim; broaden the SHARED catalog). EM-safe + read-only + ADR-0012 hold. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#185 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PURPLE-TEAM RECON SEALED at #185 (`a24ca5b6`; L2)** -- security batch approved-with-fixes, 0 blocked; osv CLEAN; sarif 2 findings incl. a FLEET-WIDE secret-catalog gap (SARIF-PII-1) that honestly corrects SG-2026-06-13-E. **22 of 26 flip-ready** + 13 mods. Prior: #184 doc-sync, #183 sarif.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 22 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-deep-audit** purple-team over osv + sarif (SARIF secret-in-message is the crux; verify impact vs the real gateway serializer, SG-2026-06-13-C), then remediate + tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
+*Next required action: **PT-sarif** (extend _SECRET_PATTERNS fleet-wide + parse_sarif per-result resilience + honest doc scoping); modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
