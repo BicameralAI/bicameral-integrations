@@ -5585,7 +5585,49 @@ full suite **674 passed**, ruff clean, whole-tree mypy (210 files) clean, valida
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#172 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PT-B SEALED at #172 (`48e5aab5`; L2)** -- **local_directory + aider + zendesk PURPLE-TEAM REMEDIATION COMPLETE (all 4 findings fixed: PT-A #171 kind-screen + PT-B #172 identity-redact, on the #170 recon).** All 3 purple-team-validated. **17 of 26 connectors flip-ready, ALL purple-teamed** + 13 mods. Prior: #171 PT-A, #170 recon.*
+### Entry #173: RESEARCH BRIEF -- gitlab + sentry + pagerduty flip-ready (verify-before-cite)
+
+**Entry ID**: `research173webhooktrio`
+**Timestamp**: 2026-06-13T22:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-gitlab-sentry-pagerduty-2026-06-13.md)
+= 7344f0f332a578c49c49dceec19852b2272ff3763013830624c4ab041afa2636
+```
+
+**Previous Hash**: 48e5aab560e4d3c974799f409251709f3543d7197662338fdd2acfdec933d5ea
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= e0c02ee917d69f0914483792db2f1810fd1f3f5b29323a57f42ba4e85608649e
+```
+
+**Decision**: Research foundation for the webhook-trio batch (gitlab, sentry, pagerduty). **Verify-before-cite
+(SG-2026-06-12-A): zero signature drift on the supported path.** GitLab `X-Gitlab-Token` plaintext shared secret
+(`verify_shared_token`, constant-time) = the documented legacy method (docs.gitlab.com; the HMAC signing-token is
+the connector's named future enhancement). Sentry `Sentry-Hook-Signature` hex HMAC-SHA256 over the body w/ the
+integration Client Secret (docs.sentry.io) = `verify_hmac_hex` over the RAW body (more robust than the doc's
+JSON.stringify example -- avoids re-serialization key-order drift). PagerDuty `X-PagerDuty-Signature` `v1=<hex>`
+multi-signature membership = `verify_hmac_hex_multi` (header name live-confirmed via support.pagerduty.com; the
+exact `v1=` format page is a JS-SPA that rendered empty -- recorded as SG-2026-06-13-D, fell back to the
+harness-proven verified contract + impl). **All three Beta + harness-proven, missing only the FX-CFG-001
+descriptor + redact-and-pass parity.** Shared root: the free-text title/body/error-detail/incident-title is
+emitted with NO `redact()` (FX-SEC-001 backstops only secret/PHI/PAN, so email/phone in a PR description, error
+message, or incident title leaks) -- the exact gap github/jira/slack/zendesk already closed. Flip = mirror the
+github redact-and-pass standard (gitlab body+title, keeping the public username per SG-2026-06-13-B; sentry
+title+culprit; pagerduty title/summary) + author each descriptor. New lesson SG-2026-06-13-D (SPA signature docs:
+record the fetch limitation, fall back to the static support mirror + harness-proven contract, don't fake a live
+re-verify). One /qor-auto-dev-1 per connector, then a /qor-deep-audit purple-team. EM-safe + read-only +
+ADR-0012 hold. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#173 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **RESEARCH SEALED at #173 (`e0c02ee9`; L1)** -- gitlab + sentry + pagerduty flip-ready foundation; ZERO signature drift (X-Gitlab-Token / Sentry-Hook-Signature / X-PagerDuty-Signature all re-verified). Flip = FX-CFG-001 descriptor + redact-and-pass parity (the github standard). **17 of 26 flip-ready** + 13 mods. Prior: #172 PT-B, #171 PT-A.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 17 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). 9 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
+*Next required action: **/qor-auto-dev-1** per connector (gitlab -> sentry -> pagerduty), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

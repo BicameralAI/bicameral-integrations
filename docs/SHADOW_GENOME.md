@@ -515,3 +515,15 @@ severity to a "reaches the wire / forwarded to X" claim, trace it to the actual 
 confirm the field is in that function's output; a field's presence in the in-memory struct is not proof it
 crosses the boundary. (Pairs with SG-2026-06-12-C: re-verify against the REAL envelope, not a fixture.) The fix
 still stands — screen + descriptor honesty are warranted — but the severity is measured down med->low.
+
+## SG-2026-06-13-D — when a provider's signature doc is a JS-SPA that fetches empty, record it + fall back honestly
+
+`/qor-research` for the pagerduty flip needed to re-verify the `X-PagerDuty-Signature` `v1=` HMAC scheme
+(verify-before-cite, SG-2026-06-12-A), but `developer.pagerduty.com/docs/webhooks/webhook-signatures` is a
+client-rendered SPA that returns an empty body to a server-side fetch. The honest move is NOT to silently claim
+a live re-verify: instead (a) confirm what IS statically retrievable — the `x-pagerduty-signature` header name
+was confirmed via `support.pagerduty.com/main/docs/webhooks` — and (b) fall back to the connector's own
+harness-proven verified-contract record (`references.md`, dated) + the `verify_hmac_hex_multi` implementation for
+the scheme detail, and (c) state the provenance of each claim (live doc vs. support mirror vs. prior verified
+contract) in the brief. **Rule:** a fetch that renders empty is a recorded limitation, not a pass; never upgrade
+"couldn't retrieve" into "re-verified." Capture which channel substantiated each cited contract fact.
