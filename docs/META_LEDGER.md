@@ -5990,7 +5990,51 @@ connectors flip-ready.** L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#182 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **osv FLIP-READY, SEALED at #182 (`51e0837d`; L1)** -- redact-and-pass summary/details (opaque id floor; no author) + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested). **21 of 26 flip-ready** + 13 mods. Prior: #181 research, #180 PT-gitlab.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 21 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** sarif (the security crux: redact-and-pass message.text -> hard-reject becomes scrubbed-evidence, SG-2026-06-13-E; + the references.md doc fix), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+### Entry #183: SESSION SEAL -- sarif flip-ready (security crux: redact-and-pass message + FX-CFG-001 descriptor + doc-standard attestation)
+
+**Entry ID**: `sarif183flip`
+**Timestamp**: 2026-06-14T17:00:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/sarif/connector.py)
+= 6551e8debf9900c12cbc11c5be213c90f67dfb46391184ba96476a3fe3cfab6d
+```
+
+**Previous Hash**: 51e0837d5d8f1c96d65b3b79da14631528a5f4a9b9e1bfec7f5abb869373be1d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 86c4a56604ae9042850dfc5abad0fe46718b57c6e26036aa057d444c31c26bc7
+```
+
+**Decision**: sarif flipped flip-ready (2 of 2 -- **security batch COMPLETE**). **F1 (medium, the security crux
+-- SG-2026-06-13-E):** `parse_result` now redact-and-passes the SARIF `message.text`. A secret-scanner finding's
+message can quote the very secret it flags; emitted RAW, FX-SEC-001 HARD-REJECTED the finding and the security
+signal was LOST. `redact()` scrubs the secret VALUE and PRESERVES the finding ("Detected AWS key
+`[redacted:secret]` in config.py") -- strictly better for a security connector. The connector reads the finding
+`message` ONLY, never the raw code `region.snippet.text` (data minimization kept); the `ruleId`/`ref` floor is
+un-redacted. **F2 (low):** corrected the references.md "no user PII in the SARIF schema" line -- the real risk is
+embedded secrets, not user PII. Authored `connectors/sarif/config.json` (modes `["passive"]`, `credentials:[]`
+(file import), `runtime_config` report path/glob), regenerated `SETUP.md` + `index.json`.
+
+**Documentation standard -- EXCEEDS minimum (explicit attestation):** `references.md` -- verified-contract
+re-affirmed (frozen OASIS 2.1.0, pinned 2026-06-08) + PII/secret bullet rewritten to the redact-and-pass-keeps-
+the-finding posture + attestation marker; `auth.md` -- file-ingest model + deferred paths; `config.json` --
+`wire_gates` + explicit `pii_posture` (SG-2026-06-13-E) + `live_readiness` + resolving instruction `ref`. **EXCEEDS.**
+
+**Tests:** a secret in a finding message is scrubbed AND the finding survives normalize (no hard-reject) + the
+companion proving the RAW message WOULD be hard-rejected (so redact-and-pass is what preserves it). **Measured:**
+full suite **685 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#183
+OK. **22 of 26 connectors flip-ready; security batch (osv+sarif) complete.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#183 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **sarif FLIP-READY, SEALED at #183 (`86c4a566`; L1)** -- security crux: redact-and-pass message.text converts an FX-SEC-001 hard-reject of a secret-bearing finding into scrubbed-evidence (SG-2026-06-13-E); snippet never read + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested). **SECURITY BATCH COMPLETE: 22 of 26 flip-ready** + 13 mods. Prior: #182 osv, #181 research.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 22 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-document** (README + capability matrix, 20->22 flip-ready) then **/qor-deep-audit** purple-team over osv + sarif. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

@@ -6,8 +6,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from adapter.core.emissions import AdapterEmission
-from adapter.core.pipeline import normalize
+import pytest
+
+from adapter.core.emissions import AdapterEmission, SourceRef
+from adapter.core.observations import Observation
+from adapter.core.pipeline import EmissionContractError, normalize
 from connectors.sarif.connector import SarifConnector, parse_result, parse_sarif
 
 _FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "scan_report.json"
@@ -51,6 +54,34 @@ def test_parse_result_floors_excerpt_when_empty():
     assert obs.excerpt == "sarif-result"
     out = normalize([obs], adapter_version="sarif/0.1.0")
     assert out[0].evidence[0].excerpt.strip()
+
+
+def test_secret_in_message_is_scrubbed_and_finding_survives():
+    # F1 / SG-2026-06-13-E (the security crux): a secret-scanner finding whose message quotes the
+    # detected secret must be redact-and-passed — scrubbed AND emitted, NOT hard-rejected (signal kept).
+    result = {
+        "ruleId": "secrets.hardcoded-aws-key",
+        "message": {"text": "Detected AWS key AKIAIOSFODNN7EXAMPLE in config.py"},
+        "locations": [{"physicalLocation": {"artifactLocation": {"uri": "config.py"},
+                                            "region": {"startLine": 3}}}],
+    }
+    obs = parse_result(result, "gitleaks")
+    assert "AKIAIOSFODNN7EXAMPLE" not in obs.excerpt
+    assert "Detected AWS key" in obs.excerpt  # the finding signal survives
+    # the full normalize seam must NOT hard-reject it (the redacted emission passes FX-SEC-001)
+    out = normalize([obs], adapter_version="sarif/0.1.0")  # no EmissionContractError
+    assert out[0].evidence[0].excerpt.strip() and "AKIAIOSFODNN7EXAMPLE" not in out[0].evidence[0].excerpt
+
+
+def test_raw_secret_message_would_be_hard_rejected_without_redact():
+    # Companion: the RAW secret-bearing message trips FX-SEC-001 — proving redact-and-pass is what
+    # preserves the finding (SG-2026-06-13-E).
+    raw = Observation(
+        source_ref=SourceRef(source_id="sarif", ref="x", kind="finding"),
+        excerpt="Detected AWS key AKIAIOSFODNN7EXAMPLE in config.py",
+    )
+    with pytest.raises(EmissionContractError):
+        normalize([raw], adapter_version="sarif/0.1.0")
 
 
 def test_end_to_end_normalizes():

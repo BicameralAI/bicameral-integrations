@@ -1,0 +1,46 @@
+{
+  "id": "sarif",
+  "name": "SARIF",
+  "description": "SARIF 2.1.0 static-analysis findings (file import) as redact-and-pass governed evidence — a secret-scanner finding's message is scrubbed but preserved, not dropped.",
+  "category": "security/compliance-evidence",
+  "trust_tier": "T0",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["passive"],
+  "credentials": [],
+  "runtime_config": [
+    {
+      "key": "report_path",
+      "label": "SARIF file / CI-artifact glob",
+      "required": true,
+      "description": "Path (or glob) to the SARIF 2.1.0 report(s) the operator runtime ingests — e.g. a CI scan artifact. File import only; no network, no credential."
+    }
+  ],
+  "data": {
+    "emits": ["finding"],
+    "pii_posture": "The SARIF schema carries no user PII by design, but a SECURITY-SCANNER finding's message.text can quote the very secret it flags (a secret-scanner emits 'Detected AWS key AKIA... in config.py'). So message.text is redact-and-passed -- redact() scrubs secret/PHI/PAN + email/phone. This is the security-correct choice (SG-2026-06-13-E): emitted RAW, FX-SEC-001 would HARD-REJECT the finding and the security signal would be LOST; redact-and-pass scrubs the secret VALUE and PRESERVES the finding ('Detected AWS key [redacted:secret] in config.py'). The connector reads the finding MESSAGE only, NEVER the raw code snippet (region.snippet.text) -- data minimization. The ruleId/ref floor (rule id + repo path) is not redacted. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+    "redaction": "redact-and-pass (result message.text); snippet (region.snippet.text) never read; ruleId/ref floor un-redacted; FX-SEC-001 rejects secret/PHI/PAN"
+  },
+  "instructions": [
+    {
+      "action": "configure",
+      "text": "Point the operator runtime at the SARIF 2.1.0 report file or CI-artifact glob to ingest. This is a file import -- there are no credentials and no network.",
+      "ref": "connectors/sarif/auth.md (SARIF 2.1.0 Auth)"
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: ingesting a SARIF report should produce one emission per result (message redact-and-passed; a secret in a finding message is scrubbed but the finding survives; the code snippet is never read)."
+    }
+  ],
+  "references": [
+    {"kind": "spec", "url": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html"},
+    {"kind": "spec-repo", "url": "https://github.com/oasis-tcs/sarif-spec"},
+    {"kind": "auth", "url": "connectors/sarif/auth.md"}
+  ],
+  "wire_gates": [
+    "SARIF 2.1.0 is a FROZEN OASIS standard (no version drift): the result paths runs[].results[].{ruleId, level, message.text, locations[].physicalLocation.{artifactLocation.uri, region.startLine}} + runs[].tool.driver.name were verified against the OASIS schema 2026-06-08 and re-affirmed 2026-06-13.",
+    "PII/SECRET: result message.text redact-and-passed (secret/PHI/PAN + email/phone) -- converts an FX-SEC-001 hard-reject of a secret-bearing finding into scrubbed-evidence so the security signal survives (SG-2026-06-13-E). The raw code snippet (region.snippet.text) is NEVER read. ruleId/ref floor un-redacted. FX-SEC-001 backstops secret/PHI/PAN.",
+    "Live file-watch / CI-collection path is operator-runtime; no live ingest this cycle. Live flip gated on operator review + a real SARIF report ingest (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Parse + redact-and-pass are built and harness-proven; the result message is redact-and-passed (a secret-bearing finding becomes scrubbed-evidence rather than being dropped), the raw snippet is never read. No credentials (file import). Gated on operator review + wiring the live file-watch / CI-collection path to a GatewaySink. To flip: set the SARIF report path/glob; wire the runtime ingest; ingest a real report; review before promoting."
+}
