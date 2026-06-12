@@ -67,6 +67,17 @@ def test_filename_stem_redact_and_passes_email():
     assert "jane@corp.com" not in obs.excerpt
 
 
+def test_source_type_label_redact_and_passes():
+    # purple-team #170 (ld-1): a freeform operator source_type_label is redact-and-passed into kind.
+    payload = _payload()
+    payload["source_type_label"] = "ping ops@corp.com"
+    obs = parse_file(payload)
+    assert "ops@corp.com" not in obs.source_ref.kind
+    # a clean label survives unchanged
+    payload["source_type_label"] = "incident-notes"
+    assert parse_file(payload).source_ref.kind == "incident-notes"
+
+
 def test_path_token_ref_is_opaque_not_redacted():
     # The sha256 path token is an opaque floor — stable, and never the filesystem layout.
     payload = _payload()

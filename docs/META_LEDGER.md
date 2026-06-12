@@ -5508,7 +5508,45 @@ EM-safe + read-only + ADR-0012 hold. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#170 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PURPLE-TEAM RECON SEALED at #170 (`72a44171`; L2)** -- 3 connectors approved-with-fixes, 0 blocked; 4 findings (one root: payload-derived kind/author bypasses redact/screen). Impact measured DOWN (mod-boundary + descriptor-honesty, NOT gateway-wire: emission_to_ingest_request drops kind/author; SG-2026-06-13-C). **17 of 26 flip-ready** + 13 mods. Prior: #169 doc-sync, #168 zendesk.*
+### Entry #171: SESSION SEAL -- PT-A: source_ref.kind FX-SEC-001 screen (fleet-wide) + local_directory label redact
+
+**Entry ID**: `pta171kindscreen`
+**Timestamp**: 2026-06-13T20:15:00-04:00
+**Phase**: SUBSTANTIATE (purple-team remediation)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(adapter/core/pipeline.py)
+= 9d51c59cceefa40a3bde360f7abb9a39aa440638a5382abe36d6c7d89f0c7851
+```
+
+**Previous Hash**: 72a44171b4051cdd5e3fe2d50e6cd9cb07d03b195df81029c36e224117550ac6
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 085e70e09b0aad05308dbe28cc98a39c42c6c1cba19954fbb8d62f3f776ece22
+```
+
+**Decision**: Closed purple-team findings ld-1 + ld-2 (the `kind` root). **Platform (durable, fleet-wide):**
+added `ev.source_ref.kind` to the `_screen_sensitive` scan list (`adapter/core/pipeline.py:135`) -- `kind` was
+the lone `SourceRef` sibling outside the FX-SEC-001 screen, so a payload-/operator-derived `kind`
+(local_directory `source_type_label`, jira/linear event type) reached the **mod-input** boundary un-screened.
+FX-SEC-001 now hard-rejects a secret/PHI/PAN in `kind` for EVERY connector; the docstring's "covers EVERY
+wire-bound field" is now true (and the local_directory descriptor's "un-bypassable backstop" claim is now
+accurate -- ld-2 auto-resolved). **Connector:** local_directory now redact-and-passes the freeform operator
+`source_type_label` into `kind` (`redact(...) or _DEFAULT_KIND`) for the email/phone class. **Impact framed per
+SG-2026-06-13-C:** this is the mod-input-boundary + defense-in-depth fix, not a v1-gateway-wire leak
+(`emission_to_ingest_request` drops `kind`). **Tests:** a secret in `source_ref.kind` raises
+`EmissionContractError` (raised detail carries no raw secret); an email in `source_type_label` is scrubbed, a
+clean label survives. **Measured:** full suite **671 passed** (the shared-core screen change broke no
+connector), ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#171 OK. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#171 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PT-A SEALED at #171 (`085e70e0`; L2)** -- source_ref.kind now in FX-SEC-001 screen (fleet-wide) + local_directory source_type_label redact-and-passed; ld-1 + ld-2 closed. **17 of 26 flip-ready** + 13 mods. Prior: #170 recon, #169 doc-sync.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 17 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **PT-A** (kind screen + local_directory label redact) then **PT-B** (aider + zendesk identity redact); each modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
+*Next required action: **PT-B** (redact aider author_name + zendesk requester_id) -> closes the last 2 purple-team findings; modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*

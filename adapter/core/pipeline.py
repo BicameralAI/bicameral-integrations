@@ -121,10 +121,13 @@ def _screen_sensitive(emission: AdapterEmission) -> None:
     """Reject an emission carrying a secret / PHI / PAN. mcp parity: sensitive
     data is a HARD gate — never forwarded to a mod or the gateway. The scanned content
     covers EVERY wire-bound field: ``title``/``body``/``excerpt`` plus ``source_id`` (→ wire
-    ``source_type``) and each evidence ``source_ref.url``/``ref``/``source_id`` (a secret
-    in a provider URL/ref/id is otherwise forwarded as the gateway ``source`` — #52), and
-    every ``metadata`` leaf+key (preserved in-process for mods — ADR-0014), plus each
-    evidence ``author``/``timestamp`` (untrusted provider data — purple-team CONFIG-3).
+    ``source_type``) and each evidence ``source_ref.url``/``ref``/``source_id``/``kind`` (a secret
+    in a provider URL/ref/id/kind is otherwise forwarded to a mod as the in-process emission, and a
+    URL/ref as the gateway ``source`` — #52), and every ``metadata`` leaf+key (preserved in-process
+    for mods — ADR-0014), plus each evidence ``author``/``timestamp`` (untrusted provider data —
+    purple-team CONFIG-3). ``kind`` was the lone ``SourceRef`` sibling outside the screen — a
+    payload-/operator-derived ``kind`` (e.g. local_directory ``source_type_label``, jira/linear event
+    type) reached the mod-input boundary un-screened until purple-team #170 (SG-2026-06-13-C).
     EVERY field is scanned **per leaf** (core fields included, not joined into one blob):
     a single join could fabricate ``_is_id_preceded`` PAN suppression across two independent
     leaves — a false negative (purple-team PII-1). The raised detail uses the redacted
@@ -133,7 +136,7 @@ def _screen_sensitive(emission: AdapterEmission) -> None:
     core = [emission.title, emission.body, emission.source_id]
     for ev in emission.evidence:
         core.extend([ev.excerpt, ev.source_ref.url, ev.source_ref.ref, ev.source_ref.source_id,
-                     ev.author, ev.timestamp])
+                     ev.source_ref.kind, ev.author, ev.timestamp])
     # Scan EACH wire-bound field as its own unit (NOT one joined blob): a trailing ID-label
     # in one field (e.g. excerpt ending `ref=`) must not fabricate `_is_id_preceded` PAN
     # suppression for a Luhn-valid PAN at the start of an adjacent field (purple-team PII-1,
