@@ -597,3 +597,16 @@ empty value, AND those exception types belong in the runtime per-row `_PARSE_SKI
 drops the batch. This is the time-conversion sibling of the `(x or "").strip()` truthy-non-str crash class
 (fathom #164 / gitlab GITLAB-001 / anthropic_admin ANTHROPIC-ADMIN-PARSE-1) — both are "the lone field the
 per-leaf type guards missed." Sweep every sibling that converts an epoch int (SG-2026-06-12-B).
+
+## SG-2026-06-15-A — a byte-exact freshness validator needs .gitattributes LF-pinning for EVERY artifact family, not just the first
+
+FX-CFG-001 (connectors) pinned its generated artifacts to LF in `.gitattributes` (`connectors/index.json`,
+`connectors/*/config.json`, `connectors/_schema/*.json`, `connectors/*/SETUP.md`) so the validator's byte-exact
+`regenerate == committed` check is stable on every OS. When FX-MOD-CFG-001 mirrored the connector tooling
+(schema + build scripts + byte-exact validator) for mods, the `.gitattributes` LF-pinning was NOT mirrored. With
+`core.autocrlf=true` (Windows), `git checkout` then wrote CRLF into `mods/index.json` / `mods/*/SETUP.md`, so the
+mod validator's `read_bytes()` (CRLF) != regen (LF) and the test false-failed LOCALLY — while CI (Linux, LF)
+stayed green, masking it. **Rule:** any time you add a byte-exact-freshness validator for a NEW generated-artifact
+family, add the matching `<path> text eol=lf` lines to `.gitattributes` in the SAME change. A byte-exact check
+without LF-pinning is a cross-platform contributor trap (green on CI, red on a Windows checkout). Sweep all
+families that use the regenerate==committed pattern.

@@ -6590,3 +6590,53 @@ parity for all 13 mods.
 *Status: **SESSION SEALED at #197 (`ce804f26`; L1)** -- UI contract COMPLETE: 26/26 connectors + 13/13 mods each ship descriptor + index + SETUP + schema + validator + UI spec. All connectors flip-ready + purple-team-validated + doc-standard-attested; all mods built + purple-teamed + UI-renderable. Prior: #196 mod-fanout, #195 mod-contract.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, ALL with UI descriptors. Secrets never committed nor printed.*
 *Next required action: **@jinhongkuan** -- the mcp frontend now has a complete connector+mod UI data contract (`connectors/index.json` + `mods/index.json` + `docs/UI_RENDERING_SPEC.md`); live-flips per `docs/runbooks/` (operator-gated; ADR-0012). Backlog: branch protection (B5); bot #73.*
+
+---
+
+### Entry #198: SESSION SEAL -- .gitattributes LF-pin for mod artifacts (cross-platform fix for the FX-MOD-CFG-001 byte-exact validator)
+
+**Entry ID**: `gitattr198modlf`
+**Timestamp**: 2026-06-15T18:30:00-04:00
+**Phase**: SUBSTANTIATE (fix)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(.gitattributes)
+= b68379242e2c4e4f580f63df665798ce4cc2f6e3de946ebbb92a630db2b8e728
+```
+
+**Previous Hash**: ce804f26c97177a564214799d38234486490ce975375b7b3bff9d7ae51ff22e8
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 02303dc18ade357576e7810b0123088517491acf18b8a2f2d6271109c6e087ad
+```
+
+**Decision**: Closed a cross-platform defect in the FX-MOD-CFG-001 mod contract (#195/#196): the connector
+`.gitattributes` pins its generated artifacts to LF (so the byte-exact `regenerate == committed` validator is
+OS-stable), but the **mod artifacts were not mirrored**. With `core.autocrlf=true` (Windows), `git checkout`
+wrote CRLF into `mods/index.json` / `mods/*/SETUP.md`, so the mod validator's `read_bytes()` (CRLF) != regen (LF)
+and `test_all_mod_descriptors_valid_and_index_fresh` **false-failed on a Windows checkout** -- while CI (Linux,
+LF) stayed green, masking it (surfaced when the full suite was re-run on a fresh local checkout after merging the
+two open Devin PRs). **Fix:** added `mods/index.json` / `mods/*/config.json` / `mods/_schema/*.json` /
+`mods/*/SETUP.md` `text eol=lf` to `.gitattributes` (mirroring the connector block, scoped-narrow). New lesson
+**SG-2026-06-15-A** (a byte-exact freshness validator needs `.gitattributes` LF-pinning for EVERY artifact family
+in the same change; without it, green-on-CI/red-on-Windows). **Verified:** mods/index.json now LF locally,
+mod-validator OK, the previously-failing test passes, full suite **705 passed**, governance-gate #1..#198 OK.
+(No mod content changed -- the committed files were already LF; only `.gitattributes`.) L1.
+
+*Also this turn (open-PR sweep, operator ask):* merged **#169** (Devin -> closes Jin's #168: optional
+presentational `ingestion_gate` display-hints on the connector schema + devin/slack + UI spec; EM-safe boundary
+respected) and **#92** (Devin: governance-boundary formalization + leak-guard validator + BOUNDARY.md, change-
+scoped; issue #42-adjacent) -- both substantively reviewed; the only non-green check on each was the advisory
+contributor-reputation gate (bot author; `main` has no branch protection, so it is not a required gate).
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#198 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **SEALED at #198 (`02303dc1`; L1)** -- mod-artifact LF pin (cross-platform byte-exact validator fix, SG-2026-06-15-A); + the open-PR sweep merged #169 (ingestion_gate UI hints) + #92 (governance boundary). Prior: #197 substantiate, #196 mod-fanout.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, ALL with UI descriptors. Secrets never committed nor printed.*
+*Next required action: operator-asked **uniform Beta-state versioning** across connectors + mods (explicit per-component `version`, planned for a downstream consumer, anchored to the product beta). Then remaining issues triage (#40 ADR-0011 reframe, #42 boundary RFQ [partly addressed by #92], #93 Linear stress test, #101 accepted-risk hardening). Backlog: branch protection (B5); bot #73.*

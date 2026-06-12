@@ -5,3 +5,12 @@ connectors/index.json text eol=lf
 connectors/*/config.json text eol=lf
 connectors/_schema/*.json text eol=lf
 connectors/*/SETUP.md text eol=lf
+
+# Mod descriptors + generated index/SETUP (FX-MOD-CFG-001) — same byte-exact freshness contract,
+# so pin them to LF too (the connector pinning above was not mirrored for mods initially; on a
+# Windows checkout with autocrlf the mod validator's byte-exact check would otherwise false-fail —
+# SG-2026-06-15-A). Scoped narrowly, not a repo-wide renormalization.
+mods/index.json text eol=lf
+mods/*/config.json text eol=lf
+mods/_schema/*.json text eol=lf
+mods/*/SETUP.md text eol=lf
