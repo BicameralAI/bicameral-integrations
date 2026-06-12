@@ -24,10 +24,18 @@ _ACTOR_TYPES = frozenset({"session", "api_key"})
 
 
 def _event_time(effective_at: object) -> str:
-    """Format unix seconds as a UTC ISO string deterministically; ``''`` when absent/bad."""
-    if not isinstance(effective_at, int):
+    """Format unix seconds as a UTC ISO string deterministically; ``''`` when absent/bad.
+
+    ``isinstance(int)`` is not enough: an OUT-OF-RANGE int passes the type check but
+    ``time.gmtime`` raises OverflowError/OSError -- catch it so one bad row never aborts the
+    batch (purple-team OPENAI-ADMIN-PARSE-1 / SG-2026-06-14-C). ``bool`` is not an epoch.
+    """
+    if not isinstance(effective_at, int) or isinstance(effective_at, bool):
         return ""
-    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(effective_at))
+    try:
+        return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(effective_at))
+    except (OverflowError, OSError, ValueError):
+        return ""
 
 
 def _actor_type(event: dict) -> str:
@@ -43,7 +51,8 @@ def parse_audit_log(event: dict) -> Observation:
     Identity is dropped: actor email / id / ip_address are NEVER read; only the
     non-PII actor type is surfaced. The excerpt is redacted defensively.
     """
-    event_type = (event.get("type") or "").strip()
+    raw_type = event.get("type")  # isinstance-guard: a truthy non-str must not crash .strip() (sibling sweep, SG-2026-06-12-B)
+    event_type = raw_type.strip() if isinstance(raw_type, str) else ""
     project = event.get("project")
     name = (project.get("name") or project.get("id") or "") if isinstance(project, dict) else ""
     summary = f"OpenAI audit {event_type or 'event'}"

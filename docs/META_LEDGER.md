@@ -6429,7 +6429,45 @@ purple-team-validated.** EM-safe + read-only + ADR-0012 hold. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#193 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PURPLE-TEAM RECON SEALED at #193 (`504b7961`; L2)** -- final four approved-with-fixes, 0 blocked; 4 findings (2 parse-robustness, 2 mod-input PII). **26/26 connectors purple-team-validated.** + 13 mods. Prior: #192 doc-sync, #191 confluence.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods. Secrets never committed nor printed.*
-*Next required action: **PT-final4** (isinstance-guard starting_at + type; gmtime try/except + _PARSE_SKIP; redact modelTitle + page url; doc fixes); modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Then operator-asked **/qor-document UI-completeness pass** (connector+mod descriptor/UI parity) + **/qor-substantiate**. Backlog: branch protection (B5); bot #73.*
+### Entry #194: SESSION SEAL -- PT-final4: parse-robustness + mod-input PII (final-four purple-team remediation COMPLETE) -- ALL 26 PURPLE-TEAM-REMEDIATED
+
+**Entry ID**: `ptfinal4194complete`
+**Timestamp**: 2026-06-15T13:00:00-04:00
+**Phase**: SUBSTANTIATE (purple-team remediation)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/openai_admin/connector.py)
+= e645f4584c64ca71997c92baa3b3a959216c65a415ad84d2b8706eece3b68a39
+```
+
+**Previous Hash**: 504b79619e35fe623dca7566bb0e041e451de7aff0bfa6049d3a98432f58ac4c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 1b88a4ac07f44cfab95d64607f0a30e9dd694749d30b422326b6d2879e79ac23
+```
+
+**Decision**: Closed all 4 final-four purple-team findings -- **final-four purple-team remediation COMPLETE; ALL
+26 connectors purple-team-validated AND remediated.** **ANTHROPIC-ADMIN-PARSE-1 (low):** isinstance-guard
+`starting_at` (`connectors/anthropic_admin/connector.py`). **Sibling sweep (SG-2026-06-12-B):** same guard on
+openai_admin `type`. **OPENAI-ADMIN-PARSE-1 (medium, SG-2026-06-14-C):** `_event_time` now wraps `gmtime`/
+`strftime` in `try/except (OverflowError, OSError, ValueError)` (an out-of-range epoch int passed `isinstance(int)`
+but crashed the batch); `bool` excluded; **extended `runtime/delivery._PARSE_SKIP` with OverflowError/OSError**
+as a systemic per-row backstop. **CONTINUE-PII-1 (low, mod-input):** the free-form `modelTitle` metadata is now
+redact-and-passed (it is user-defined, not uniform-technical); docs corrected. **CONF-PII-URL-01 (medium,
+mod-input):** the page `url` is now redact-and-passed (the `_links.webui` slug carries the page title, so title
+PII survived in `source_ref.url` even with the title field redacted); the false "jira/github url parity" claim
+corrected + the URL-encoded-slug residual disclosed. **MEASURED (SG-2026-06-05-F):** the shared-core `_PARSE_SKIP`
+change broke NOTHING -- full suite **698 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK,
+governance-gate #1..#194 OK. **26/26 connectors flip-ready, purple-team-validated, doc-standard-attested.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#194 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PT-final4 SEALED at #194 (`1b88a4ac`; L2)** -- **FINAL-FOUR PURPLE-TEAM REMEDIATION COMPLETE; ALL 26 CONNECTORS FLIP-READY + PURPLE-TEAM-VALIDATED + DOC-STANDARD-ATTESTED.** + 13 mods (also purple-teamed). Prior: #193 recon, #192 doc-sync.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors (all purple-teamed) + 13 advisory mods. Secrets never committed nor printed.*
+*Next required action: operator-asked **/qor-document UI-completeness pass** -- ensure every connector + mod has equivalent setup docs / UI-exposure / requirements / nice-to-haves so the mcp frontend can build a cohesive UI/UX -- then **/qor-substantiate** + final merge. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*

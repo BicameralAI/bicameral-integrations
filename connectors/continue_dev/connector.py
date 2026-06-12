@@ -62,7 +62,9 @@ def parse_event(event: dict) -> Observation:
         metadata={
             "name": name,
             "schema": str(event.get("schema") or ""),
-            "model": str(event.get("modelTitle") or event.get("modelName") or event.get("model") or ""),
+            # modelTitle is a USER-DEFINED free-form string (a developer names their model config),
+            # not uniform-technical like name/schema -> redact-and-pass (purple-team CONTINUE-PII-1).
+            "model": redact(str(event.get("modelTitle") or event.get("modelName") or event.get("model") or "")),
         },
     )
 

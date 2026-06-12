@@ -60,7 +60,7 @@ python -m runtime.cli run confluence --sink gateway   # real POST (go-live; defa
 ## Data & permissions
 
 - Emits: page
-- PII posture: A Confluence page TITLE + flattened storage BODY are PII-dense free text (internal docs, names, emails) -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed; the jira/github standard, since FX-SEC-001 backstops only secret/PHI/PAN). The opaque page id ref + page URL are not redacted; _strip_storage_html is a lossy flattener (NOT a sanitizer) -- redact() + FX-SEC-001 are the security controls. No author is surfaced. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.
+- PII posture: A Confluence page TITLE + flattened storage BODY are PII-dense free text (internal docs, names, emails) -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed, since FX-SEC-001 backstops only secret/PHI/PAN). The page URL is ALSO redact-and-passed because the _links.webui slug carries the page title (purple-team CONF-PII-URL-01); the opaque page id ref is not redacted. RESIDUAL: a URL-encoded email in the title slug (e.g. %40) is not regex-matchable -- the redacted title field is the canonical surface. _strip_storage_html is a lossy flattener (NOT a sanitizer) -- redact() + FX-SEC-001 are the security controls. No author is surfaced. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.
 
 ## Go-live
 

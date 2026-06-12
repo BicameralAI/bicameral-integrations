@@ -43,3 +43,16 @@ def test_blank_event_floors():
     assert obs.source_ref.ref == "openai-audit-event"
     assert obs.excerpt  # non-blank ("OpenAI audit event via unknown")
     assert "via unknown" in obs.excerpt
+
+
+def test_out_of_range_effective_at_does_not_crash():
+    # purple-team OPENAI-ADMIN-PARSE-1 / SG-2026-06-14-C: a huge epoch int passes isinstance(int)
+    # but time.gmtime would raise OverflowError — must be caught, time floored to empty.
+    obs = parse_audit_log({"type": "project.created", "effective_at": 10**20})  # must not raise
+    assert obs.excerpt and "at " not in obs.excerpt.split("via")[-1]  # no "at <time>" appended
+
+
+def test_truthy_non_str_type_does_not_crash():
+    # sibling sweep (SG-2026-06-12-B): a truthy non-str type must normalize, not crash.
+    obs = parse_audit_log({"type": 7})  # must not raise
+    assert obs.excerpt
