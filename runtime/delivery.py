@@ -18,6 +18,7 @@ from adapter.core.observations import Observation
 from adapter.core.pipeline import normalize
 
 from .sinks import EmissionSink
+from .versioning import adapter_version_for
 
 _MAX_BODY = 1_048_576  # 1 MiB — reject an oversized webhook body before parse/regex (#55)
 _log = logging.getLogger(__name__)
@@ -55,19 +56,22 @@ def deliver_webhook(
     headers: dict[str, str],
     body: bytes,
     sink: EmissionSink,
-    adapter_version: str = "runtime/0.1.0",
+    adapter_version: str | None = None,
 ) -> int:
     """Verify+normalize a webhook delivery and emit; return the emission count.
 
     Returns 0 (and never calls ``sink.emit``) when the connector rejects or
-    dedups the delivery, or when the body exceeds ``_MAX_BODY`` (#55).
+    dedups the delivery, or when the body exceeds ``_MAX_BODY`` (#55). When
+    ``adapter_version`` is None it derives ``<source_id>/<descriptor version>``
+    from the connector descriptor (single source — see ``runtime.versioning``).
     """
     if len(body) > _MAX_BODY:  # bound parse/regex work on a hostile oversized payload
         return 0
     observations = connector.normalize_event(headers=headers, body=body)
     if not observations:
         return 0
-    emissions = normalize(observations, adapter_version=adapter_version)
+    av = adapter_version or adapter_version_for(connector.source_id)
+    emissions = normalize(observations, adapter_version=av)
     sink.emit(emissions)
     return len(emissions)
 
@@ -77,9 +81,13 @@ def deliver_poll(
     payloads: list[dict],
     *,
     sink: EmissionSink,
-    adapter_version: str = "runtime/0.1.0",
+    adapter_version: str | None = None,
 ) -> int:
-    """Parse+normalize a batch of polled payloads and emit; return the count."""
+    """Parse+normalize a batch of polled payloads and emit; return the count.
+
+    When ``adapter_version`` is None it derives ``<source_id>/<descriptor version>``
+    from the connector descriptor (single source — see ``runtime.versioning``).
+    """
     observations: list[Observation] = []
     for payload in payloads:
         try:
@@ -91,6 +99,7 @@ def deliver_poll(
             continue
     if not observations:
         return 0
-    emissions = normalize(observations, adapter_version=adapter_version)
+    av = adapter_version or adapter_version_for(connector.source_id)
+    emissions = normalize(observations, adapter_version=av)
     sink.emit(emissions)
     return len(emissions)

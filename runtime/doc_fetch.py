@@ -25,6 +25,7 @@ from adapter.core.pipeline import normalize
 from .poll_auth import PollAuth, PollError
 from .poll_client import HttpTransport
 from .sinks import EmissionSink
+from .versioning import adapter_version_for
 
 _MAX_RESPONSE = 8 * 1024 * 1024  # cap a hostile/huge provider body before parse (local; not poll_client's)
 
@@ -59,12 +60,18 @@ def fetch_document(
     transport: HttpTransport,
     sink: EmissionSink,
     *,
-    adapter_version: str = "runtime/0.1.0",
+    adapter_version: str | None = None,
 ) -> int:
-    """GET one document by its resolved URL, parse → screen → emit; return the count. Fail-closed."""
+    """GET one document by its resolved URL, parse → screen → emit; return the count. Fail-closed.
+
+    ``adapter_version=None`` derives ``<source_id>/<version>`` from the connector descriptor
+    (single source — ``runtime.versioning``) using the parsed observation's source_id.
+    """
     response = transport.request("GET", spec.url, headers=spec.auth.headers())
     document = _decode(response.status, response.body)
-    emissions = normalize([spec.parse(document)], adapter_version=adapter_version)  # FX-SEC-001 screen
+    obs = spec.parse(document)
+    av = adapter_version or adapter_version_for(obs.source_ref.source_id)
+    emissions = normalize([obs], adapter_version=av)  # FX-SEC-001 screen
     sink.emit(emissions)
     return len(emissions)
 

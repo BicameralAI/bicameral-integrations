@@ -240,9 +240,12 @@ def poll(
     *,
     transport: HttpTransport,
     sink: EmissionSink,
-    adapter_version: str = "runtime/0.1.0",
+    adapter_version: str | None = None,
 ) -> int:
     """Fetch (with pagination) then ``deliver_poll`` (parse → normalize → emit).
+
+    ``adapter_version=None`` lets ``deliver_poll`` derive ``<source_id>/<version>`` from the
+    connector descriptor (single source — ``runtime.versioning``).
 
     Returns the emission count. Fail-closed: a non-200, an unparseable/non-object
     body, a non-list ``items`` result, a poisoned page token, or exceeding

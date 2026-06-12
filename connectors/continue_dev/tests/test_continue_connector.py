@@ -53,7 +53,7 @@ def test_floors_excerpt_when_empty():
     obs = parse_event({})
     assert obs.excerpt == "continue continue-event"
     assert obs.source_ref.ref.startswith("continue-event")
-    out = normalize([obs], adapter_version="continue/0.1.0")
+    out = normalize([obs], adapter_version="continue_dev/0.1.0")
     assert out[0].evidence[0].excerpt.strip()
 
 
@@ -62,7 +62,7 @@ def test_non_string_fields_do_not_crash():
     obs = parse_event({"name": 7, "prompt": 123, "completion": ["x"], "eventId": 99})
     assert obs.excerpt == "continue 7"
     assert obs.source_ref.ref == "99"
-    out = normalize([obs], adapter_version="continue/0.1.0")
+    out = normalize([obs], adapter_version="continue_dev/0.1.0")
     assert out[0].source_id == "continue_dev" and out[0].evidence[0].excerpt.strip()
 
 
@@ -89,7 +89,7 @@ def test_free_form_model_metadata_redact_and_passed():
 
 def test_end_to_end_normalizes():
     out = normalize(
-        ContinueConnector().observations(_event()), adapter_version="continue/0.1.0"
+        ContinueConnector().observations(_event()), adapter_version="continue_dev/0.1.0"
     )
     assert len(out) == 1
     assert isinstance(out[0], AdapterEmission) and out[0].source_id == "continue_dev"
