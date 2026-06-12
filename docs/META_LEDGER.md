@@ -5950,7 +5950,47 @@ purple-team (adds path-traversal/oversize for the SARIF import). EM-safe + read-
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#181 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **RESEARCH SEALED at #181 (`04b5cc62`; L1)** -- osv + sarif (security batch) foundation; ZERO drift (OSV schema re-verified live; SARIF frozen OASIS 2.1.0). Crux: SARIF message redact-and-pass IMPROVES security coverage (hard-reject -> scrubbed-evidence; SG-2026-06-13-E). **20 of 26 flip-ready** + 13 mods. Prior: #180 PT-gitlab, #179 recon.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 20 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** per connector (osv -> sarif, each with explicit doc-standard attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+### Entry #182: SESSION SEAL -- osv flip-ready (redact-and-pass + FX-CFG-001 descriptor + doc-standard attestation)
+
+**Entry ID**: `osv182flip`
+**Timestamp**: 2026-06-14T16:00:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/osv/connector.py)
+= c9cd88c816000f093cd049cb8d3d7b0b5591806c5d396820dde29912e5879d7e
+```
+
+**Previous Hash**: 04b5cc62e82d3a6ecbad5497a2ddfaa46a1a65764b6a9ff2d17b673371b2178b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 51e0837d5d8f1c96d65b3b79da14631528a5f4a9b9e1bfec7f5abb869373be1d
+```
+
+**Decision**: osv flipped flip-ready (1 of 2 security batch). **F1 (low):** `parse_vuln` now redact-and-passes
+the free-text `summary` + `details` -- OSV is public technical vuln data (low PII risk), but a description can
+embed a contributor email or a tokened URL, and redaction is non-destructive parity (SG-2026-06-13-A). The opaque
+vuln `id` floor stays un-redacted; technical metadata (severity/packages/aliases) kept; no person attribution.
+Authored `connectors/osv/config.json` (modes `["active"]`, `credentials:[]` (free unauthenticated API),
+`runtime_config` query scope + host pin, `configure`+`verify` instructions), regenerated `SETUP.md` + `index.json`.
+
+**Documentation standard -- EXCEEDS minimum (explicit attestation):** `references.md` -- verified-contract
+re-verified live 2026-06-13 (ossf.github.io/osv-schema MATCH) + PII bullet -> redact-and-pass + attestation
+marker; `auth.md` -- no-credential query model + deferred paths; `config.json` -- dated `wire_gates` + explicit
+`pii_posture` + `live_readiness` + resolving instruction `ref`. **EXCEEDS.**
+
+**Tests:** summary/details email+secret scrub; opaque id floor un-redacted. **Measured:** full suite **683
+passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#182 OK. **21 of 26
+connectors flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#182 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **osv FLIP-READY, SEALED at #182 (`51e0837d`; L1)** -- redact-and-pass summary/details (opaque id floor; no author) + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested). **21 of 26 flip-ready** + 13 mods. Prior: #181 research, #180 PT-gitlab.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 21 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **/qor-auto-dev-1** sarif (the security crux: redact-and-pass message.text -> hard-reject becomes scrubbed-evidence, SG-2026-06-13-E; + the references.md doc fix), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
