@@ -23,7 +23,9 @@ maintained provider-docs table and refresh cadence.
 | Admin API reference | https://platform.claude.com/docs/en/api/admin |
 | Auth (admin key) | https://platform.claude.com/settings/admin-keys |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+> **Doc-standard attestation (ledger #188, 2026-06-13):** this `references.md` (verified-contract section + provider-docs table + PII handling) + `auth.md` (admin-key model + Privacy/PII section + deferred paths) + `config.json` (explicit `pii_posture` + `wire_gates` + `live_readiness`) assessed against the connector documentation standard — **EXCEEDS minimum**.
+
+## Verified API/webhook contract (as built, 2026-06-05; usage API re-verified live 2026-06-13)
 
 - **Endpoint (parsed)**: `GET /v1/organizations/usage_report/messages` (token usage); companion
   `GET /v1/organizations/cost_report`. Returns time buckets (`bucket_width` `1m`/`1h`/`1d`;

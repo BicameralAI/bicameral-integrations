@@ -36,3 +36,16 @@ def test_blank_bucket_floors():
     obs = parse_usage({})
     assert obs.source_ref.ref == "anthropic-usage"
     assert obs.excerpt  # non-blank
+
+
+def test_pii_free_by_construction_opaque_dimensions_never_surfaced():
+    # Descriptor PII-free claim: even a PII-shaped value in a non-surfaced grouping dimension
+    # cannot leak — the connector reads only token metrics + model, never workspace/key ids.
+    bucket = {"starting_at": "2026-06-04T00:00:00Z", "results": [
+        {"model": "claude-opus-4-8", "workspace_id": "owner-jane@corp.com",
+         "api_key_id": "apikey_secret", "output_tokens": 5, "uncached_input_tokens": 10}]}
+    obs = parse_usage(bucket)
+    assert "jane@corp.com" not in obs.excerpt
+    assert "apikey_secret" not in obs.excerpt
+    assert obs.author == ""  # no person attribution
+    assert "10 input / 5 output" in obs.excerpt  # metrics still summarized
