@@ -1,0 +1,68 @@
+{
+  "id": "openai_admin",
+  "name": "OpenAI Admin",
+  "description": "OpenAI organization audit-log events as governed evidence with actor identity dropped (event type + project + time; actor email/id/IP never read).",
+  "category": "security/compliance-evidence",
+  "trust_tier": "T1",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["active"],
+  "credentials": [
+    {
+      "key": "openai_admin",
+      "type": "api_key",
+      "label": "Admin API key",
+      "required": true,
+      "modes": ["active"],
+      "header": "Authorization: Bearer <admin key>",
+      "obtain": {
+        "url": "https://platform.openai.com/docs/api-reference/audit-logs",
+        "steps": [
+          "An Org Owner provisions an Admin API key and enables org logging in Data Controls (irreversible).",
+          "Bicameral sends it as Authorization: Bearer on GET /v1/organization/audit_logs (verified 2026-06-13)."
+        ]
+      }
+    }
+  ],
+  "runtime_config": [
+    {
+      "key": "base_url",
+      "label": "OpenAI API base URL",
+      "required": false,
+      "default": "https://api.openai.com",
+      "description": "Host the poll client pins to (anti-SSRF)."
+    }
+  ],
+  "data": {
+    "emits": ["audit_event"],
+    "pii_posture": "The EVENT (type + project + UTC time) is the evidence; the actor is structured identity (actor.*.user.email, actor.session.ip_address, user ids) and is DROPPED AT PARSE -- NEVER read. FX-SEC-001 screens secret/PHI/PAN only (NOT generic email/IP) and redact() has no IPv4 scrub, so the parse-time identity drop is the SOLE control for actor identity. Only the non-PII actor.type (session/api_key, allowlisted) is surfaced; the synthesized excerpt is redact()-ed defensively. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+    "redaction": "actor identity (email/id/ip) DROPPED at parse (never read); only non-PII actor.type surfaced; excerpt redact()-ed defensively; FX-SEC-001 rejects secret/PHI/PAN"
+  },
+  "instructions": [
+    {
+      "action": "open_url",
+      "text": "An Org Owner provisions an Admin API key and enables org logging in Data Controls (irreversible).",
+      "link": "https://platform.openai.com/docs/api-reference/audit-logs",
+      "ref": "connectors/openai_admin/auth.md (OpenAI Admin Auth)"
+    },
+    {
+      "action": "paste_secret",
+      "text": "Paste the Admin API key (sent as Authorization: Bearer)."
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: an audit-log poll should return one emission per event (type + project + time + non-PII actor type; actor email/id/IP never read)."
+    }
+  ],
+  "references": [
+    {"kind": "audit-logs-api", "url": "https://platform.openai.com/docs/api-reference/audit-logs"},
+    {"kind": "administration", "url": "https://platform.openai.com/docs/api-reference/administration"},
+    {"kind": "auth", "url": "connectors/openai_admin/auth.md"}
+  ],
+  "wire_gates": [
+    "Audit-logs API re-verified live 2026-06-13 (platform.openai.com/docs/api-reference/audit-logs): GET /v1/organization/audit_logs, Authorization: Bearer Admin key; each event {id, type, effective_at, project, actor, <detail>}. MATCHES parse_audit_log; the connector reads only the non-PII type/project/actor.type/effective_at.",
+    "PII: actor identity (email/id/IP) DROPPED at parse (never read) -- the SOLE control, since FX-SEC-001 does not screen generic email/IP and redact() has no IPv4 scrub. Only the non-PII actor.type is surfaced; excerpt redact()-ed defensively. FX-SEC-001 backstops secret/PHI/PAN.",
+    "The live REST poll + Bearer Admin-key resolution are operator-runtime; org logging must be enabled in Data Controls (irreversible). No live network this cycle. Live flip gated on operator review + a real audit-log poll with an Admin key (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Parse + identity-drop + defensive redact are built and harness-proven; actor email/id/IP are never read. Gated on operator review + wiring the live audit-log poll (host-pinned to api.openai.com, Bearer Admin key, org logging enabled) to a GatewaySink. To flip: provision the Admin key + enable org logging; wire the runtime poll; run a real poll; review before promoting."
+}
