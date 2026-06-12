@@ -527,3 +527,17 @@ harness-proven verified-contract record (`references.md`, dated) + the `verify_h
 the scheme detail, and (c) state the provenance of each claim (live doc vs. support mirror vs. prior verified
 contract) in the brief. **Rule:** a fetch that renders empty is a recorded limitation, not a pass; never upgrade
 "couldn't retrieve" into "re-verified." Capture which channel substantiated each cited contract fact.
+
+## SG-2026-06-13-E — for a security-scanner import, redact-and-pass BEATS relying on the FX-SEC-001 hard-screen
+
+`/qor-research` for the sarif flip surfaced a counter-intuitive failure mode: a SARIF / secret-scanner result's
+`message.text` can quote the very secret it flags (e.g. "Detected AWS key AKIAIOSFODNN7EXAMPLE in config.py").
+The sarif connector emitted `message.text` RAW (`connectors/sarif/connector.py:30,35`), trusting FX-SEC-001 as
+the guard — but FX-SEC-001 HARD-REJECTS any emission carrying a secret/PHI/PAN, so the entire finding is DROPPED
+and the security signal ("a secret was found in config.py") is LOST. For a *security* connector that is the worst
+outcome. **Rule:** apply `redact()` (redact-and-pass) to scanner-finding messages so the secret value becomes
+`[redacted:secret]` while the finding SURVIVES as evidence; keep FX-SEC-001 as the backstop for anything redact
+misses. Leaning only on the hard-screen REDUCES security coverage for the one connector class that most needs it.
+Also keep the data minimization of reading the finding **message** but never the raw code **snippet**
+(`region.snippet.text` — the rawest secret surface). Reinforces SG-2026-06-13-A (redact-and-pass any free-text
+excerpt regardless of transport).

@@ -5911,7 +5911,46 @@ flip-ready, all purple-teamed.** L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#180 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PT-gitlab SEALED at #180 (`6619fd7c`; L2)** -- **webhook-trio PURPLE-TEAM REMEDIATION COMPLETE (both gitlab findings fixed: parse-robustness isinstance-guards + body-hash dedup fallback, on the #179 recon; sentry + pagerduty were clean).** All 3 purple-team-validated. **20 of 26 connectors flip-ready, ALL purple-teamed** + 13 mods. Prior: #179 recon, #178 doc-sync.*
+### Entry #181: RESEARCH BRIEF -- osv + sarif flip-ready (security batch; verify-before-cite)
+
+**Entry ID**: `research181osvsarif`
+**Timestamp**: 2026-06-14T15:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-osv-sarif-2026-06-13.md)
+= 41b0cb02fe61eae57f54b532476a2bd6c3c88722cbdb9a59ff7072bc34148a94
+```
+
+**Previous Hash**: 6619fd7ca214d83bdec4e42fa4911f202c39d9da61d74a2c839b60b2dc832df1
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 04b5cc62e82d3a6ecbad5497a2ddfaa46a1a65764b6a9ff2d17b673371b2178b
+```
+
+**Decision**: Research foundation for the security batch (osv, sarif). **Verify-before-cite (SG-2026-06-12-A):
+zero contract drift.** OSV schema re-verified live (ossf.github.io/osv-schema 2026-06-13): id+modified required,
+summary/details free-text, severity[{type,score}], affected[].package.{name}, references[].url, aliases[] -- ALL
+match `parse_vuln`. SARIF 2.1.0 is a FROZEN OASIS standard (pinned 2026-06-08; no drift possible) -- re-affirmed,
+provenance recorded honestly (SG-2026-06-13-D). Both Beta + harness-proven + read-only + no-credential (OSV free
+query API; SARIF file import), missing only the FX-CFG-001 descriptor + redact-and-pass parity. **The headline is
+SARIF's security crux (new SG-2026-06-13-E):** a secret-scanner finding's `message.text` can quote the very
+secret it flags (`AKIA...`/PAT/PEM); emitted raw, FX-SEC-001 HARD-REJECTS the finding -> the security signal is
+LOST. Redact-and-pass converts that into scrubbed-evidence (`[redacted:secret]`, finding preserved) -- strictly
+BETTER for a security connector; keep the existing data minimization (reads `message.text`, never the raw
+`region.snippet.text`). osv F1 (low): redact-and-pass summary+details for parity (public technical data). sarif
+F2 (low): correct the references.md "no user PII" line -- the risk is embedded secrets, not user PII. One
+/qor-auto-dev-1 per connector (each with the explicit doc-standard attestation), then a /qor-deep-audit
+purple-team (adds path-traversal/oversize for the SARIF import). EM-safe + read-only + ADR-0012 hold. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#181 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **RESEARCH SEALED at #181 (`04b5cc62`; L1)** -- osv + sarif (security batch) foundation; ZERO drift (OSV schema re-verified live; SARIF frozen OASIS 2.1.0). Crux: SARIF message redact-and-pass IMPROVES security coverage (hard-reject -> scrubbed-evidence; SG-2026-06-13-E). **20 of 26 flip-ready** + 13 mods. Prior: #180 PT-gitlab, #179 recon.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 20 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). 6 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*
+*Next required action: **/qor-auto-dev-1** per connector (osv -> sarif, each with explicit doc-standard attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
