@@ -530,6 +530,10 @@ contract) in the brief. **Rule:** a fetch that renders empty is a recorded limit
 
 ## SG-2026-06-13-E — for a security-scanner import, redact-and-pass BEATS relying on the FX-SEC-001 hard-screen
 
+> **SCOPED by SG-2026-06-13-F (purple-team #185):** "redact-and-pass scrubs the secret value" holds only for the
+> shared `_SECRET_PATTERNS` catalog. A non-catalog token (Slack/Google/Stripe/GitLab/npm/GitHub-fine-grained, now
+> added) or a prefix-less high-entropy token is a residual — broaden the SHARED catalog and disclose the residual.
+
 `/qor-research` for the sarif flip surfaced a counter-intuitive failure mode: a SARIF / secret-scanner result's
 `message.text` can quote the very secret it flags (e.g. "Detected AWS key AKIAIOSFODNN7EXAMPLE in config.py").
 The sarif connector emitted `message.text` RAW (`connectors/sarif/connector.py:30,35`), trusting FX-SEC-001 as
@@ -557,3 +561,15 @@ an unbounded high-entropy secret with no recognizable prefix (e.g. a bare 40-cha
 regex residual to DISCLOSE, not to over-claim away (mirrors the bare-national-phone residual); (4) when you make a
 strong security claim, point the next adversarial pass AT it. Corrects SG-2026-06-13-E; reinforces SG-2026-06-12-B
 (sweep the shared surface) + SG-2026-06-05-F (measure the fix — a too-broad secret pattern false-positives).
+
+## SG-2026-06-14-A — assemble secret-shaped TEST fixtures by concatenation or GitHub push-protection blocks the push
+
+PT-sarif (#186) broadened `_SECRET_PATTERNS` to scanner token families (Slack/Stripe/Google/…) and the tests
+used literal fake tokens (`xoxb-…`, `sk_live_…`) to prove detection. The push was REJECTED by **GitHub
+push-protection** (GH013) — its own secret scanner flagged the test fixtures as real Slack/Stripe secrets, even
+though they were obviously-fake example values. **Rule:** any test/fixture that must contain a secret SHAPE
+(to exercise a detector/redactor) must ASSEMBLE the string by concatenation/repetition at runtime
+(`"xox" + "b-" + …`, `"sk" + "_live_" + "0"*24`) so no contiguous token literal appears in the committed bytes —
+the runtime value still matches your regex, but the scanner has nothing to flag. (The AWS-docs example `AKIA…`
+and `ghp_0123…`-style sequential fakes are commonly allowlisted; the prefix families added in #186 are not.)
+Pairs with the stealth-mode discipline: keep secret-shaped strings out of tracked literal source.

@@ -41,6 +41,8 @@ class SensitiveHit(NamedTuple):
 _SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("aws-access-key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     ("github-pat", re.compile(r"\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}\b")),
+    # github fine-grained PAT (distinct from the classic ghp_ shape): github_pat_ + 82 chars.
+    ("github-fine-grained-pat", re.compile(r"\bgithub_pat_[0-9A-Za-z_]{82}\b")),
     (
         "azure-storage-key",
         re.compile(
@@ -50,6 +52,15 @@ _SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ),
     ("private-key-pem", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
     ("jwt", re.compile(r"\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b")),
+    # Scanner-emitted token families (SG-2026-06-13-F): all distinctly prefixed -> low false-positive.
+    # Extending this tuple broadens BOTH detect_sensitive (the hard screen) AND redact_catalog (the
+    # scrub) for every connector, since both reuse it.
+    ("slack-token", re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}\b")),
+    ("google-api-key", re.compile(r"\bAIza[0-9A-Za-z_-]{35}\b")),
+    ("stripe-live-key", re.compile(r"\b(?:sk|rk)_live_[0-9A-Za-z]{24,}\b")),
+    ("gitlab-pat", re.compile(r"\bglpat-[0-9A-Za-z_-]{20}\b")),
+    ("npm-token", re.compile(r"\bnpm_[0-9A-Za-z]{36}\b")),
+    ("openai-key", re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9]{32,}\b")),
 )
 
 _PHI_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (

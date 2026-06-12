@@ -6106,7 +6106,46 @@ point the red team at your strongest claim; broaden the SHARED catalog). EM-safe
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#185 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **PURPLE-TEAM RECON SEALED at #185 (`a24ca5b6`; L2)** -- security batch approved-with-fixes, 0 blocked; osv CLEAN; sarif 2 findings incl. a FLEET-WIDE secret-catalog gap (SARIF-PII-1) that honestly corrects SG-2026-06-13-E. **22 of 26 flip-ready** + 13 mods. Prior: #184 doc-sync, #183 sarif.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 22 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **PT-sarif** (extend _SECRET_PATTERNS fleet-wide + parse_sarif per-result resilience + honest doc scoping); modular-commit -> PR -> merge-if-green; tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
+### Entry #186: SESSION SEAL -- PT-sarif: fleet-wide secret-catalog breadth + parse resilience (security-batch purple-team remediation COMPLETE)
+
+**Entry ID**: `ptsarif186catalog`
+**Timestamp**: 2026-06-14T20:00:00-04:00
+**Phase**: SUBSTANTIATE (purple-team remediation)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(adapter/core/sensitive.py)
+= 3c9a819373eb7a3e9c013388d73a26bd9bdb67af2203cbb98ee71020c075a625
+```
+
+**Previous Hash**: a24ca5b6cae91728fc179ae7d8429146bce816c504e3cd3682b9cb7ffc5ff148
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a05cfde782c3d93fc631c211d3f9010c43f98a4614bb9936bf4af5817640aece
+```
+
+**Decision**: Closed both security-batch purple-team findings (sarif; osv was clean) -- **security-batch
+purple-team remediation COMPLETE.** **SARIF-PII-1 (medium, fleet-wide):** extended `_SECRET_PATTERNS`
+(`adapter/core/sensitive.py`) with six curated, prefix-anchored scanner token families -- GitHub fine-grained
+PAT (`github_pat_`), Slack (`xox[abprs]-`), Google API key (`AIza`), Stripe live (`(sk|rk)_live_`), GitLab
+(`glpat-`), npm (`npm_`), OpenAI (`sk-`). Because `redact_catalog` (the scrub) AND `detect_sensitive` (the screen)
+both reuse the tuple, this broadens BOTH for EVERY connector at once -- a non-catalog token in a scanner finding
+no longer reaches the wire verbatim. The prefix-less high-entropy token (e.g. a bare 40-char AWS *secret* key)
+is now a DISCLOSED residual (not regex-matchable), and SG-2026-06-13-E is scoped/corrected by SG-2026-06-13-F
+accordingly (+ the sarif config.json/references.md). **SARIF-PARSE-1 (low):** `parse_sarif` is now per-result
+resilient -- isinstance-guards `runs`/`results` as lists + skips a non-dict `run`/`result`, so one malformed row
+drops only itself, not the whole report (the #59 pattern). **MEASURED (SG-2026-06-05-F):** the shared-core catalog
+broadening false-positived on NOTHING -- full suite **689 passed** (+ a clean-text no-false-positive test), ruff
+clean, whole-tree mypy (210 files) clean, validator OK, governance-gate #1..#186 OK. **Both security-batch
+connectors purple-team-validated & remediated; 22 of 26 flip-ready, all purple-teamed.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#186 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **PT-sarif SEALED at #186 (`a05cfde7`; L2)** -- **security-batch PURPLE-TEAM REMEDIATION COMPLETE (osv clean; sarif fixed: fleet-wide _SECRET_PATTERNS breadth + parse_sarif per-result resilience + honest SG-2026-06-13-E scoping, on the #185 recon).** Both purple-team-validated. **22 of 26 connectors flip-ready, ALL purple-teamed** + 13 mods. Prior: #185 recon, #184 doc-sync.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 22 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **@jinhongkuan** live-flips per `docs/runbooks/` (operator-gated; ADR-0012). 4 connectors remain for the descriptor fan-out. Backlog: branch protection (B5); bot #73.*

@@ -56,12 +56,22 @@ def parse_result(result: dict, tool_name: str) -> Observation:
 
 
 def parse_sarif(report: dict) -> list[Observation]:
-    """Flatten a SARIF report into one Observation per result across all runs."""
+    """Flatten a SARIF report into one Observation per result across all runs.
+
+    Per-result resilient (purple-team SARIF-PARSE-1, the #59 per-row pattern): a non-list
+    ``runs``/``results`` or a non-dict ``run``/``result`` is SKIPPED, so one malformed row
+    drops only itself, not every other finding in the report.
+    """
     out: list[Observation] = []
-    for run in report.get("runs") or []:
+    runs = report.get("runs")
+    for run in runs if isinstance(runs, list) else []:
+        if not isinstance(run, dict):
+            continue
         tool_name = (((run.get("tool") or {}).get("driver") or {}).get("name")) or ""
-        for result in run.get("results") or []:
-            out.append(parse_result(result, tool_name))
+        results = run.get("results")
+        for result in results if isinstance(results, list) else []:
+            if isinstance(result, dict):
+                out.append(parse_result(result, tool_name))
     return out
 
 
