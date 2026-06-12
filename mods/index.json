@@ -1,0 +1,123 @@
+{
+  "mods": {
+    "adapter_contract": {
+      "advises_on": "Missing or unstable source_ref fields; lost provider-native ids/timestamps/URLs/excerpts/evidence pointers; output that bypasses the Observation -> AdapterEmission normalization; schema/SARIF fields that cannot be independently reviewed; connector behavior that starts owning canonical state.",
+      "consumes": [
+        "source_ref fields (source_id, ref, url, kind)",
+        "evidence excerpt + title",
+        "emission shape / normalization metadata"
+      ],
+      "description": "Advisory mod that flags evidence-shape and contract-preservation risks in connector/adapter output.",
+      "em_safe": {
+        "forbidden_actions": [
+          "write_canonical_decision",
+          "approve_signoff",
+          "resolve_compliance",
+          "create_blocking_ci_result",
+          "bypass_governance_policy",
+          "mutate_source_evidence",
+          "collapse_confidence_score"
+        ],
+        "non_authoritative": true
+      },
+      "emits": [
+        "source_evidence_annotation",
+        "routing_hint",
+        "advisory_governance_result"
+      ],
+      "enablement": {
+        "default_enabled": true,
+        "trust_gated": false
+      },
+      "family": "evidence-contract",
+      "id": "adapter_contract",
+      "manifest_id": "adapter-contract",
+      "name": "Adapter Contract",
+      "references": [
+        {
+          "kind": "scope",
+          "url": "mods/adapter_contract/README.md"
+        },
+        {
+          "kind": "mod-safety-contract",
+          "url": "mods/README.md"
+        },
+        {
+          "kind": "adr",
+          "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+        }
+      ],
+      "requirements": [
+        "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+      ],
+      "ui": {
+        "advisory_only": true,
+        "card_blurb": "Annotates contract-preservation risk; may suggest review questions, never repairs a record."
+      },
+      "version": "0.1.0"
+    },
+    "noisy_source_gate": {
+      "advises_on": "High-volume, low-signal channels (Slack chat, Granola/Fathom meeting transcripts) flooding the candidate store; recommends a manual gate unless the source's trust tier is operator-raised. A non-noisy source yields nothing.",
+      "consumes": [
+        "source_id",
+        "operator source-trust configuration (read-only)"
+      ],
+      "description": "Advisory mod that recommends manual review-gating for high-noise evidence sources unless the operator has raised the source's trust.",
+      "em_safe": {
+        "forbidden_actions": [
+          "write_canonical_decision",
+          "approve_signoff",
+          "resolve_compliance",
+          "create_blocking_ci_result",
+          "bypass_governance_policy",
+          "mutate_source_evidence",
+          "collapse_confidence_score"
+        ],
+        "non_authoritative": true
+      },
+      "emits": [
+        "routing_hint",
+        "advisory_governance_result"
+      ],
+      "enablement": {
+        "config": [
+          {
+            "description": "Source ids the operator has explicitly trusted, so the mod does NOT recommend a manual gate for them. The default high-noise set (slack/granola/fathom) is config-as-code in the mod.",
+            "key": "raised_trust_sources",
+            "label": "Sources with operator-raised trust (skip the gate)",
+            "required": false
+          }
+        ],
+        "default_enabled": true,
+        "trust_gated": true
+      },
+      "family": "trust",
+      "id": "noisy_source_gate",
+      "manifest_id": "noisy-source-gate",
+      "name": "Noisy Source Gate",
+      "references": [
+        {
+          "kind": "scope",
+          "url": "mods/noisy_source_gate/README.md"
+        },
+        {
+          "kind": "mod-safety-contract",
+          "url": "mods/README.md"
+        },
+        {
+          "kind": "adr",
+          "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+        }
+      ],
+      "requirements": [
+        "The neutral evidence stream (AdapterEmission) — no credentials, no live network.",
+        "Optional: an operator source-trust map to suppress the gate for raised sources."
+      ],
+      "ui": {
+        "advisory_only": true,
+        "card_blurb": "Suggests a manual gate for noisy sources; it suggests, never enforces."
+      },
+      "version": "0.1.0"
+    }
+  }
+}

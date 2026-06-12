@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bicameral.ai/schemas/mod-descriptor.schema.json",
+  "title": "Mod descriptor (UI contract)",
+  "description": "Machine-readable per-mod descriptor consumed by the mcp UI — the EM-safe-mod parity of the connector config descriptor (FX-CFG-001). Holds UI-rendering + disclosure data only: what evidence the mod CONSUMES, what advisory artifacts it EMITS, the EM-safe forbidden_actions boundary (the trust-disclosure surface), and enablement knobs. A mod has NO credentials and NO live network — it is an advisory post-processor over the neutral evidence stream (ADR-0008/0013). Structural rules live here; the semantic rules (id == folder; emits + forbidden_actions consistent with the enforced manifest.yaml; index/SETUP freshness) are enforced by scripts/validate_mod_config.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "manifest_id", "name", "version", "description", "family", "advises_on", "consumes", "emits", "em_safe", "enablement", "requirements", "ui", "references"],
+  "properties": {
+    "id": {"type": "string", "description": "Stable mod id; equals the folder name AND the `run-mods` key (e.g. 'noisy_source_gate')."},
+    "manifest_id": {"type": "string", "description": "The mod's manifest.yaml `id` (hyphenated, e.g. 'noisy-source-gate'); cross-referenced by the validator."},
+    "name": {"type": "string", "description": "Human display name."},
+    "version": {"type": "string", "description": "Mod version (matches manifest.yaml `version`)."},
+    "description": {"type": "string", "description": "One-line summary for the UI mod card."},
+    "icon": {"type": "string", "description": "Optional icon/logo slug for the UI."},
+    "family": {"type": "string", "description": "Mod family/category for grouping (e.g. evidence-contract, security, review-risk, routing, data-governance, trust, testing, freshness, dependency, webhook)."},
+    "advises_on": {"type": "string", "description": "Human summary of the risk/signal the mod detects and advises on."},
+    "consumes": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "The evidence-stream surface the mod READS (the input disclosure) — e.g. 'source_ref fields', 'changed file paths', 'evidence excerpt text', 'source_id'. A mod reads the neutral AdapterEmission, never a raw secret."
+    },
+    "emits": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "The advisory artifact types the mod EMITS (must be consistent with the enforced manifest.yaml `outputs`) — e.g. routing_hint, source_evidence_annotation, advisory_governance_result, owner_lens_hint, suggested_review_question, dependency_signal."
+    },
+    "em_safe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["non_authoritative", "forbidden_actions"],
+      "properties": {
+        "non_authoritative": {"const": true, "description": "Always true — a mod is non-authoritative by construction (ADR-0008). The UI renders this as the 'advisory only, never decides' trust badge."},
+        "forbidden_actions": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "The actions the mod can NEVER take (must equal the enforced manifest.yaml `forbidden_actions`) — the UI's trust-disclosure surface, e.g. write_canonical_decision, approve_signoff, resolve_compliance, create_blocking_ci_result, bypass_governance_policy, mutate_source_evidence, collapse_confidence_score."
+        }
+      }
+    },
+    "enablement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_enabled", "trust_gated"],
+      "properties": {
+        "default_enabled": {"type": "boolean", "description": "Whether the UI should show the mod enabled by default."},
+        "trust_gated": {"type": "boolean", "description": "True when the mod's behavior is conditioned on an operator-raised source trust tier (e.g. noisy_source_gate) — the UI surfaces the trust knob."},
+        "config": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "label", "required", "description"],
+            "properties": {
+              "key": {"type": "string"},
+              "label": {"type": "string"},
+              "required": {"type": "boolean"},
+              "default": {},
+              "description": {"type": "string"}
+            }
+          },
+          "description": "Optional per-mod enablement knobs / nice-to-haves the UI renders (operator-runtime config; no secrets)."
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "What the mod needs to run — for an EM-safe mod this is the neutral evidence stream + (optionally) the operator config knobs. NO credentials, NO live network."
+    },
+    "ui": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["advisory_only"],
+      "properties": {
+        "advisory_only": {"const": true, "description": "Always true — the UI renders the 'advisory only' badge; a mod output is never a decision."},
+        "card_blurb": {"type": "string", "description": "Optional short card subtitle for the UI."}
+      }
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "url"],
+        "properties": {"kind": {"type": "string"}, "url": {"type": "string"}}
+      }
+    }
+  }
+}

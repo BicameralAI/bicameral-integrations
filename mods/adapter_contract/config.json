@@ -1,0 +1,43 @@
+{
+  "id": "adapter_contract",
+  "manifest_id": "adapter-contract",
+  "name": "Adapter Contract",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags evidence-shape and contract-preservation risks in connector/adapter output.",
+  "family": "evidence-contract",
+  "advises_on": "Missing or unstable source_ref fields; lost provider-native ids/timestamps/URLs/excerpts/evidence pointers; output that bypasses the Observation -> AdapterEmission normalization; schema/SARIF fields that cannot be independently reviewed; connector behavior that starts owning canonical state.",
+  "consumes": [
+    "source_ref fields (source_id, ref, url, kind)",
+    "evidence excerpt + title",
+    "emission shape / normalization metadata"
+  ],
+  "emits": ["source_evidence_annotation", "routing_hint", "advisory_governance_result"],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Annotates contract-preservation risk; may suggest review questions, never repairs a record."
+  },
+  "references": [
+    {"kind": "scope", "url": "mods/adapter_contract/README.md"},
+    {"kind": "mod-safety-contract", "url": "mods/README.md"},
+    {"kind": "adr", "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"}
+  ]
+}
