@@ -19,6 +19,7 @@ from collections.abc import Callable
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -36,14 +37,17 @@ def parse_event(envelope: dict) -> Observation:
     """Map a PagerDuty v3 incident webhook envelope into an Observation.
 
     Unwraps the nested ``event.data`` envelope; both levels are isinstance-
-    guarded so a malformed/partial payload normalizes rather than crashes.
+    guarded so a malformed/partial payload normalizes rather than crashes. The incident
+    ``title``/``summary`` is free text that can carry customer PII -> **redact-and-pass**
+    (secret/PHI/PAN + email/phone scrubbed; FX-SEC-001 backstops only secret/PHI/PAN). The
+    opaque ``id`` floor is NOT redacted; no actor/assignee identity is surfaced.
     """
     event = envelope.get("event")
     ev = event if isinstance(event, dict) else envelope
     nested = ev.get("data")
     data = nested if isinstance(nested, dict) else {}
     iid = str(data.get("id") or "pagerduty-incident")
-    title = _text(data.get("title")) or _text(data.get("summary"))
+    title = redact(_text(data.get("title")) or _text(data.get("summary")))
     return Observation(
         source_ref=SourceRef(
             source_id="pagerduty", ref=iid, url=data.get("html_url") or "", kind="incident"
