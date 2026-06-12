@@ -32,7 +32,7 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 
 ## Connector Capability Matrix
 
-**14 flip-ready connectors.**
+**17 flip-ready connectors.**
 
 | Connector | Category | Mode | Data in | Data out (neutral evidence) | Security & PII handling |
 |---|---|---|---|---|---|
@@ -50,6 +50,9 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 | **Notion** | Docs | Webhook | Page-change events | Page-changed **pointer** keyed by the stable page id (signals *what changed*) | `X-Notion-Signature` HMAC-SHA256 over the body; delivery de-dup with body-hash fallback |
 | **Fathom** | Meetings | Passive + Webhook | Meeting transcripts + summaries | `meeting` — redact-and-passed transcript/summary; **speaker + recorder real names dropped** | `whsec_` HMAC-SHA256 over `{id}.{timestamp}.{body}`, 5-min replay; `X-Api-Key` poll |
 | **Claude Code** | Developer-AI | Passive (local file) | Claude Code session transcripts (local JSONL) | `user`/`assistant`/`summary` turns — redact-and-passed content | **No credential** (local file import); transcript content redact-and-passed; `cwd` OS-username scrubbed; FX-SEC-001 hard-screen |
+| **Zendesk** | Support / CS | Webhook (+ Active) | Support-ticket webhook events | `ticket` — redact-and-passed subject + body; requester surfaced as an **opaque id** (no name/email) | `X-Zendesk-Webhook-Signature` Base64 HMAC-SHA256 over `{timestamp}{body}`, constant-time; delivery de-dup with body-hash fallback; comments + attachments excluded; active REST poll deferred |
+| **Local Directory** | File import | Passive (local file) | Files dropped in a watched directory | `planning` — redact-and-passed file content + filename stem | **No credential** (host filesystem permissions); file content + filename redact-and-passed; path **sha256-tokenized** (filesystem layout never stored); FX-SEC-001 hard-screen |
+| **Aider** | Developer-AI | Passive (local git) | Aider-attributed git commits | `commit` — redact-and-passed subject; **author name retained as provenance** | **No credential** (local git import); commit subject redact-and-passed; the human author name is retained as the attribution signal (only the name, never the email); opaque hash floor; FX-SEC-001 hard-screen |
 
 ---
 
@@ -95,7 +98,7 @@ Bicameral Integrations treats every inbound payload as untrusted and every crede
 
 The following connectors are in **Beta** — their parse surfaces are in development and not yet flip-ready:
 
-Aider · Anthropic Admin (usage) · Confluence · Continue.dev · GitLab · Local Directory · OpenAI Admin (usage) · OSV (vulnerabilities) · PagerDuty · SARIF (scan results) · Sentry · Zendesk
+Anthropic Admin (usage) · Confluence · Continue.dev · GitLab · OpenAI Admin (usage) · OSV (vulnerabilities) · PagerDuty · SARIF (scan results) · Sentry
 
 ---
 
