@@ -22,13 +22,15 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | Not applicable (file ingest) |
 | Changelog/notes | https://github.com/oasis-tcs/sarif-spec |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+> **Doc-standard attestation (ledger #183, 2026-06-13):** this `references.md` (verified-contract section + provider-docs table + PII handling) + `auth.md` (file-ingest model + deferred paths) + `config.json` (explicit `pii_posture` + `wire_gates` + `live_readiness`) assessed against the connector documentation standard — **EXCEEDS minimum**.
 
-- **SARIF 2.1.0 report (parsed)**: `parse_sarif` flattens `runs[].results[]` — one Observation per result; `parse_result` reads `{ruleId, level (enum none|note|warning|error), message.text, locations[0].physicalLocation.{artifactLocation.uri, region.startLine}}`; ref is `"{ruleId}@{uri}:{startLine}"`; tool name from `run.tool.driver.name`. (Verified 2026-06-08 against the OASIS SARIF 2.1.0 schema — all paths + the `level` enum confirmed.)
+## Verified API/webhook contract (as built, 2026-06-05; SARIF 2.1.0 OASIS schema verified 2026-06-08, frozen standard re-affirmed 2026-06-13)
+
+- **SARIF 2.1.0 report (parsed)**: `parse_sarif` flattens `runs[].results[]` — one Observation per result; `parse_result` reads `{ruleId, level (enum none|note|warning|error), message.text, locations[0].physicalLocation.{artifactLocation.uri, region.startLine}}`; ref is `"{ruleId}@{uri}:{startLine}"`; tool name from `run.tool.driver.name`. (Verified 2026-06-08 against the OASIS SARIF 2.1.0 schema — all paths + the `level` enum confirmed. SARIF 2.1.0 is a FROZEN OASIS standard, re-affirmed 2026-06-13; no version drift possible.)
 - **Verification**: no verify — file import (T0); no network delivery, no signature.
 - **Auth (deferred)**: none applicable (file ingest); live file-watch/CI-collection path deferred.
 - **Modes**: passive only (file import); no webhooks.
-- **PII handling**: static-analysis finding messages, file URIs, and rule IDs emitted; no user PII in the SARIF schema by design.
+- **PII / secret handling**: the SARIF schema carries no *user PII* by design, but a **security-scanner finding `message.text` can quote the very secret it flags** (a secret-scanner emits "Detected AWS key `AKIA…` in `config.py`"). So `message.text` is emitted via **redact-and-pass** — `adapter.core.redaction.redact` scrubs secret/PHI/PAN + email/phone, which is the security-correct choice: emitted RAW, FX-SEC-001 would HARD-REJECT the finding and the security signal would be LOST; redact-and-pass scrubs the secret VALUE and PRESERVES the finding (SG-2026-06-13-E). The connector reads the finding **message** only, **never** the raw code `region.snippet.text` (data minimization); the `ruleId`/`ref` (rule id + repo path) floor is not redacted. Producer sensitive screen (`FX-SEC-001`) remains the fail-closed backstop.
 
 ## Canonical governance references
 

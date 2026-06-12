@@ -12,6 +12,7 @@ from __future__ import annotations
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 
 
 def _first_location(result: dict) -> tuple[str, str]:
@@ -25,9 +26,18 @@ def _first_location(result: dict) -> tuple[str, str]:
 
 
 def parse_result(result: dict, tool_name: str) -> Observation:
-    """Map one SARIF result into a provider-neutral Observation."""
+    """Map one SARIF result into a provider-neutral Observation.
+
+    A scanner finding's ``message.text`` can quote the very secret it flags (a secret-scanner emits
+    "Detected AWS key AKIA... in config.py") -> **redact-and-pass** (`redact()` scrubs secret/PHI/PAN +
+    email/phone). This is the security-correct choice: emitted RAW, FX-SEC-001 would HARD-REJECT the
+    finding and the security signal would be lost; redact-and-pass scrubs the secret VALUE and PRESERVES
+    the finding ("Detected AWS key [redacted:secret] in config.py") -- SG-2026-06-13-E. The connector reads
+    the finding ``message`` only, NEVER the raw code ``region.snippet.text`` (data minimization). The
+    ``ruleId``/``ref`` floor (a rule identifier + repo path) is NOT redacted.
+    """
     rule_id = result.get("ruleId") or ""
-    message = (result.get("message") or {}).get("text") or ""
+    message = redact((result.get("message") or {}).get("text") or "")
     uri, line = _first_location(result)
     ref = f"{rule_id}@{uri}:{line}" if uri else (rule_id or "sarif-result")
     return Observation(
