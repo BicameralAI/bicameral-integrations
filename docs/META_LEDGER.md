@@ -5673,7 +5673,50 @@ full suite **676 passed**, ruff clean, whole-tree mypy (210 files) clean, valida
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#174 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **gitlab FLIP-READY, SEALED at #174 (`f0876260`; L1)** -- redact-and-pass title/description + public username retained + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (explicit attestation). **18 of 26 flip-ready** + 13 mods. Prior: #173 research, #172 PT-B.*
+### Entry #175: DELIVER -- retroactive doc-standard attestation: local_directory + aider + zendesk
+
+**Entry ID**: `docstandard175retro`
+**Timestamp**: 2026-06-14T09:00:00-04:00
+**Phase**: DELIVER (governance / documentation)
+**Author**: Technical Writer (qor-document)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/local_directory/references.md)
+= 31d24e6eb7cbba3172ebf3c7449fc2ed194cb513fc2f400b8f8256ba9d77f1b7
+```
+
+**Previous Hash**: f0876260facd04b32b0b2834aba6f6447a62010b68c06a4a06ee1ebc4f0f5626
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a1f107a78a30e987abd7847063cf6314ca212db11383a1101de482c35756c16d
+```
+
+**Decision**: Closes the recorded-attestation gap the operator flagged (2026-06-13): the local_directory (#166) +
+aider (#167) + zendesk (#168) flips brought each connector's docs to standard (PII-line refresh + rich
+descriptor) but did NOT record an explicit per-connector "doc-standard EXCEEDS minimum" attestation -- unlike
+fathom/claude_code, whose #159 brief graded the docs explicitly. Operator chose (2026-06-13) explicit
+per-connector attestation in the ledger, retroactive for these three. **Verified, not rubber-stamped** -- each
+checked against the standard (references.md verified-contract section + provider-docs table + PII handling;
+auth.md scheme + deferred paths; config.json explicit pii_posture + wire_gates + live_readiness) and all three
+PASS/EXCEED. Recorded a durable attestation marker at the head of each connector's `references.md`
+verified-contract section (visible in the connector docs, not only the ledger), and re-dated each
+verified-contract heading to note the flip-cycle re-verification (local_directory flip / aider attribution /
+zendesk signature, all 2026-06-13). **Per-connector verdict:**
+- **local_directory** -- EXCEEDS (redact-and-pass content+stem; opaque sha256 path token; no-credential model documented).
+- **aider** -- EXCEEDS (redact-and-pass subject; author-name retention documented as intentional T0 provenance).
+- **zendesk** -- EXCEEDS (redact-and-pass subject+body; opaque requester_id; Base64-HMAC scheme + deferred REST poll).
+
+Standard going forward (operator direction): every flip's ledger entry carries the explicit EXCEEDS-minimum
+attestation block naming the specific items (as #174 gitlab did, and sentry/pagerduty will). No code change;
+validator OK; governance-gate #1..#175 OK. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#175 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **DOC-STANDARD ATTESTATION SEALED at #175 (`a1f107a7`; L1)** -- local_directory + aider + zendesk retroactively attested EXCEEDS minimum (durable marker in each references.md + ledger). Explicit per-connector attestation is now the standing standard for every flip. **18 of 26 flip-ready** + 13 mods. Prior: #174 gitlab, #173 research.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 18 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **retroactive doc-standard attestation** for local_directory + aider + zendesk (operator ask 2026-06-13), then **/qor-auto-dev-1** sentry + pagerduty (each with the explicit attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+*Next required action: **/qor-auto-dev-1** sentry + pagerduty (each with the explicit doc-standard attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*

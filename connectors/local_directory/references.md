@@ -22,7 +22,9 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | No network credentials (host filesystem permissions) |
 | Changelog/notes | n/a |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+> **Doc-standard attestation (ledger #175, 2026-06-13):** this `references.md` (verified-contract section + provider-docs table + PII handling) + `auth.md` (no-credential filesystem model + deferred operator-runtime concerns) + `config.json` (explicit `pii_posture` + `wire_gates` + `live_readiness`) assessed against the connector documentation standard — **EXCEEDS minimum**.
+
+## Verified API/webhook contract (as built, 2026-06-05; flip re-verified 2026-06-13)
 
 - **File payload (parsed)**: `parse_file` reads `{path, content, modified, source_type_label}`; ref is `"local-{sha256(path)[:16]}"` (stable, opaque — operator filesystem layout never stored in the ledger); excerpt is the **redact-and-passed** file content, falling back to the redacted filename stem then the opaque path token.
 - **Verification**: no verify — local filesystem import; no network delivery, no signature.

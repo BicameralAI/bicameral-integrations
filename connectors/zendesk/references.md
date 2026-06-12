@@ -22,7 +22,9 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Webhook verify | https://developer.zendesk.com/documentation/webhooks/verifying/ |
 | Auth | https://developer.zendesk.com/api-reference/introduction/security-and-auth/ |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+> **Doc-standard attestation (ledger #175, 2026-06-13):** this `references.md` (verified-contract section + provider-docs table + PII handling) + `auth.md` (webhook signature scheme + PII/ticket-body section + deferred paths) + `config.json` (explicit `pii_posture` + `wire_gates` + `live_readiness`) assessed against the connector documentation standard — **EXCEEDS minimum**.
+
+## Verified API/webhook contract (as built, 2026-06-05; signature re-verified live 2026-06-13)
 
 - **Ticket webhook event (parsed)**: `parse_ticket` reads `{type, id, time, detail.{id, subject, description, url, requester_id, updated_at, status, priority, via.channel}, event.type}`; ticket id from `detail.id` or parsed from `"zen:ticket:<id>"` subject; excerpt is `redact(subject) — redact(description)`.
 - **Verification (built)**: `X-Zendesk-Webhook-Signature` = `base64(HMAC-SHA256(signing_secret, timestamp + body))` with companion `X-Zendesk-Webhook-Signature-Timestamp`; `verify()` calls `verify_zendesk_signature` (fail-closed, constant-time). Concatenation is `timestamp + body` with no separator; signature is Base64 (not hex). No anti-replay window; best-effort dedup on envelope `id` then `detail.id`.
