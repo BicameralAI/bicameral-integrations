@@ -32,7 +32,7 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 
 ## Connector Capability Matrix
 
-**20 flip-ready connectors.**
+**22 flip-ready connectors.**
 
 | Connector | Category | Mode | Data in | Data out (neutral evidence) | Security & PII handling |
 |---|---|---|---|---|---|
@@ -56,6 +56,8 @@ Three pieces compose it: a **Universal Adapter** (the normalization seam and sec
 | **GitLab** | Source control | Webhook (+ Active) | Merge-request + issue webhook events | `merge_request`/`issue` — redact-and-passed title + description; public username retained as the artifact author | `X-Gitlab-Token` plaintext shared secret, constant-time compared (GitLab does not HMAC-sign the body); delivery de-dup on the event UUID; the Standard-Webhooks signing token is the documented stronger next step; active REST poll deferred |
 | **Sentry** | Observability | Webhook | Issue webhook events | `issue` — redact-and-passed exception message + culprit; **full stack trace never read** | `Sentry-Hook-Signature` hex HMAC-SHA256 over the raw body (Client Secret), constant-time; Request-ID/body-hash de-dup; no person attribution |
 | **PagerDuty** | Observability | Webhook | v3 incident webhook events | `incident` — redact-and-passed title/summary; **no actor/assignee surfaced** | `X-PagerDuty-Signature` multi-signature `v1=` HMAC-SHA256 membership over the raw body (accept-any for zero-downtime rotation), constant-time; event-id/body-hash de-dup |
+| **OSV** | Security / vuln | Active | OSV.dev vulnerability records | `vulnerability` — redact-and-passed summary/details; severity, affected packages, aliases as metadata | **No credential** (free unauthenticated OSV.dev query API, host-pinned); public technical data; FX-SEC-001 hard-screen |
+| **SARIF** | Security / scan | Passive (file) | SARIF 2.1.0 static-analysis findings | `finding` — redact-and-passed result message; rule id + file URI + line as metadata | **No credential** (file import); **a secret quoted in a finding message is scrubbed but the finding is kept, not dropped** (redact-and-pass beats hard-reject for a security source); the raw code snippet is **never read**; FX-SEC-001 hard-screen |
 
 ---
 
@@ -101,7 +103,7 @@ Bicameral Integrations treats every inbound payload as untrusted and every crede
 
 The following connectors are in **Beta** — their parse surfaces are in development and not yet flip-ready:
 
-Anthropic Admin (usage) · Confluence · Continue.dev · OpenAI Admin (usage) · OSV (vulnerabilities) · SARIF (scan results)
+Anthropic Admin (usage) · Confluence · Continue.dev · OpenAI Admin (usage)
 
 ---
 

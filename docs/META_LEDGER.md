@@ -6034,7 +6034,39 @@ OK. **22 of 26 connectors flip-ready; security batch (osv+sarif) complete.** L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#183 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **sarif FLIP-READY, SEALED at #183 (`86c4a566`; L1)** -- security crux: redact-and-pass message.text converts an FX-SEC-001 hard-reject of a secret-bearing finding into scrubbed-evidence (SG-2026-06-13-E); snippet never read + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (attested). **SECURITY BATCH COMPLETE: 22 of 26 flip-ready** + 13 mods. Prior: #182 osv, #181 research.*
+### Entry #184: DELIVER -- doc sync: README + capability matrix to 22 flip-ready
+
+**Entry ID**: `docsync184matrix22`
+**Timestamp**: 2026-06-14T18:00:00-04:00
+**Phase**: DELIVER (documentation)
+**Author**: Technical Writer (qor-document)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/bicameral-integrations-capability-matrix.md)
+= 12ef64e7c5b03da10171f04e04d583719e5b1e755b8914c890d9e292a1757079
+```
+
+**Previous Hash**: 86c4a56604ae9042850dfc5abad0fe46718b57c6e26036aa057d444c31c26bc7
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 405ca347a7388c6506c73e9a6bf521916f8fe178a4161fd141376d92ba4936a9
+```
+
+**Decision**: Synced the public docs to the 20->22 flip-ready milestone (security batch). **README.md**: maturity
+line + flip-ready section intro 20->22; **+2 rows** to the flip-ready capability matrix (osv, sarif); **-2** from
+Future Development (now 4). **docs/bicameral-integrations-capability-matrix.md**: header count 20->22; **+2 rows**
+(OSV no-credential public query + redact summary/details; SARIF file-import + the security crux -- a secret quoted
+in a finding message is scrubbed but KEPT, not dropped, snippet never read); **-2** from Future Development (now
+4). Both matrices verified at exactly 22 flip-ready rows; 4 Future Development; no stale `20` references. Docs-only;
+no code. governance-gate #1..#184 OK. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#184 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **DOC SYNC SEALED at #184 (`405ca347`; L1)** -- README + capability matrix now state 22 flip-ready (+2 rows osv/sarif; Future Development 4). **22 of 26 connectors flip-ready** + 13 mods. Prior: #183 sarif, #182 osv.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 22 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-document** (README + capability matrix, 20->22 flip-ready) then **/qor-deep-audit** purple-team over osv + sarif. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+*Next required action: **/qor-deep-audit** purple-team over osv + sarif (SARIF secret-in-message is the crux; verify impact vs the real gateway serializer, SG-2026-06-13-C), then remediate + tag **@jinhongkuan**. Backlog: branch protection (B5); bot #73.*
