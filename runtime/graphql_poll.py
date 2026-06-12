@@ -31,6 +31,7 @@ from adapter.core.pipeline import normalize
 from .poll_auth import PollAuth, PollError, _reject_control_chars
 from .poll_client import HttpTransport
 from .sinks import EmissionSink
+from .versioning import adapter_version_for
 
 _MAX_RESPONSE = 8 * 1024 * 1024  # cap a hostile/huge provider body before parse (local; not poll_client's)
 _MAX_PAGES = 100  # bound a runaway/cyclic pager (fail-safe)
@@ -123,9 +124,13 @@ def poll_graphql(
     transport: HttpTransport,
     sink: EmissionSink,
     *,
-    adapter_version: str = "runtime/0.1.0",
+    adapter_version: str | None = None,
 ) -> int:
-    """Walk a GraphQL cursor-paginated query and emit; return the emission count. Fail-closed."""
+    """Walk a GraphQL cursor-paginated query and emit; return the emission count. Fail-closed.
+
+    ``adapter_version=None`` derives ``<source_id>/<version>`` from the connector descriptor
+    (single source — ``runtime.versioning``) using the emitted observations' source_id.
+    """
     headers = {**spec.auth.headers(), "Content-Type": "application/json"}
     observations: list[Observation] = []
     cursor: str | None = None
@@ -146,7 +151,8 @@ def poll_graphql(
             break
     if not observations:
         return 0
-    emissions = normalize(observations, adapter_version=adapter_version)  # FX-SEC-001 screen here
+    av = adapter_version or adapter_version_for(observations[0].source_ref.source_id)
+    emissions = normalize(observations, adapter_version=av)  # FX-SEC-001 screen here
     sink.emit(emissions)
     return len(emissions)
 

@@ -6688,3 +6688,50 @@ passed**, ruff clean, whole-tree mypy (226 files w/ scripts) clean, governance-g
 *Status: **VERSIONING SEALED at #199 (`9cc5f4b1`; L2)** -- per-component `version` + uniform `channel:beta` across 26 connectors + 13 mods, single-sourced (`product_meta.PRODUCT_CHANNEL`) + CI-enforced; UI-renderable. Prior: #198 gitattributes-fix, #197 substantiate.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, ALL with UI descriptors carrying version + channel. Secrets never committed nor printed.*
 *Next required action: **adapter_version reconciliation** (single-source the emission version from the descriptor; fix the `continue/0.1.0` drift), then remaining issues triage (#40/#42/#93/#101). **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*
+
+---
+
+### Entry #200: SESSION SEAL -- adapter_version single-sourced from the descriptor (emission carries the per-connector version)
+
+**Entry ID**: `adapterversion200singlesource`
+**Timestamp**: 2026-06-15T21:30:00-04:00
+**Phase**: SUBSTANTIATE (versioning reconciliation; operator ask)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(runtime/versioning.py)
+= 61d414341df52b7bd1344acde7b301df0533730486fc7b2474d5a3cec9950bbe
+```
+
+**Previous Hash**: 9cc5f4b180e6eae07317bb14b538fa17d84ba4274226e8c739d84c8a7278977f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ca5681b42f5fa7e8d0d3a984d7a83d9b91787c736e4559ec62d764103df44ed6
+```
+
+**Decision**: Completed the versioning work (#199 + this) -- the emission `adapter_version` now derives from the
+descriptor `version` (single source), so a downstream gateway consumer of emissions sees the real
+`<source_id>/<version>` provenance, not the old generic constant. New `runtime/versioning.py:adapter_version_for(source_id)`
+reads `connectors/<id>/config.json` version (lru-cached, fail-soft -> baseline on missing/bad), returning
+`"<source_id>/<version>"`. Wired into the emission path: `deliver_poll`/`deliver_webhook` derive from
+`connector.source_id`; `poll`/`poll_graphql`/`fetch_document` default `adapter_version=None` and derive (graphql/
+doc from the emitted observation's `source_ref.source_id`) -- production previously emitted a generic
+`"runtime/0.1.0"`. Fixed the one actual drift/lie: the stale `continue/0.1.0` test fixtures ->
+`continue_dev/0.1.0` (left over from the source_id rename, #190). Explicit `adapter_version` still honored (tests
+that pass it are unaffected -- only the default changed). **Tests:** `adapter_version_for` reads the descriptor +
+falls back for an unknown source; `deliver_poll` stamps `<connector>/<version>` by default; an explicit override
+is honored. **Measured:** full suite **712 passed** (the runtime default-change broke no existing assertion --
+they check source_id/count, not the version string), ruff clean, whole-tree mypy (212 files) clean,
+governance-gate #1..#200 OK. **Versioning COMPLETE: explicit per-component version + uniform channel in the
+descriptor (UI/consumer-facing) AND single-sourced into the emission provenance.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#200 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **SEALED at #200 (`ca5681b4`; L2)** -- adapter_version single-sourced from the descriptor; emission carries `<source_id>/<version>`; stale `continue/0.1.0` drift fixed. **Versioning COMPLETE** (descriptor version+channel #199 + emission provenance #200). Prior: #199 versioning, #198 gitattributes.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
+*Next required action: remaining issues triage (#40 ADR-0011 reframe, #42 boundary RFQ [partly #92], #93 Linear stress test, #101 accepted-risk hardening). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
