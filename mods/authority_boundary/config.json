@@ -1,0 +1,57 @@
+{
+  "id": "authority_boundary",
+  "manifest_id": "authority-boundary",
+  "name": "Authority Boundary",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags changes that may cross Bicameral's authority, trust-tier, or canonical-state boundaries.",
+  "family": "governance-boundary",
+  "advises_on": "Changes that may cross Bicameral's authority, trust-tier, or canonical-state boundaries.",
+  "consumes": [
+    "evidence excerpt + title",
+    "source_ref (source_id, kind)",
+    "emission shape / authority signals"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "source_evidence_annotation",
+    "suggested_review_question"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Flags authority/trust-tier/canonical-state boundary risk; suggests review, never enforces."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/authority_boundary/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

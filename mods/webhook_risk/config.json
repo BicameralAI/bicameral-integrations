@@ -1,0 +1,55 @@
+{
+  "id": "webhook_risk",
+  "manifest_id": "webhook-risk",
+  "name": "Webhook Risk",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags webhook safety signals across signature verification, replay protection, event schema handling, idempotency, and outbound side effects.",
+  "family": "security",
+  "advises_on": "Webhook safety signals across signature verification, replay protection, event schema handling, idempotency, and outbound side effects.",
+  "consumes": [
+    "webhook evidence (signature/replay/schema signals)",
+    "source_ref (kind=webhook)"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "source_evidence_annotation"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Surfaces webhook-safety signals; an advisory, never a gate."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/webhook_risk/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

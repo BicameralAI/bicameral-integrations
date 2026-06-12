@@ -1,0 +1,56 @@
+{
+  "id": "ownership_routing",
+  "manifest_id": "ownership-routing",
+  "name": "Ownership Routing",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags reviewer lenses and domain ownership suggested from changed paths, source evidence, and recorded ownership hints.",
+  "family": "routing",
+  "advises_on": "Reviewer lenses and domain ownership suggested from changed paths, source evidence, and recorded ownership hints.",
+  "consumes": [
+    "changed file paths",
+    "source evidence",
+    "recorded ownership hints (read-only)"
+  ],
+  "emits": [
+    "owner_lens_hint",
+    "routing_hint",
+    "source_evidence_annotation"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Suggests reviewer lenses / domain owners; a hint, never an assignment."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/ownership_routing/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

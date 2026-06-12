@@ -1,0 +1,57 @@
+{
+  "id": "decision_drift",
+  "manifest_id": "decision-drift",
+  "name": "Decision Drift",
+  "version": "0.1.0",
+  "description": "Advisory mod that flags new source evidence that appears to conflict with recorded decisions, ADRs, trust tiers, or governance docs.",
+  "family": "governance-boundary",
+  "advises_on": "New source evidence that appears to conflict with recorded decisions, ADRs, trust tiers, or governance docs.",
+  "consumes": [
+    "evidence excerpt + title",
+    "source_ref",
+    "recorded decisions/ADRs (read-only)"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "source_evidence_annotation",
+    "suggested_review_question"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Surfaces possible drift from recorded decisions; suggests review, never overwrites a record."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/decision_drift/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}
