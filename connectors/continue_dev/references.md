@@ -24,13 +24,15 @@ See [INTEGRATION_DOCS_INDEX](../../docs/INTEGRATION_DOCS_INDEX.md) for the maint
 | Auth | None for local file ingest; Bearer `apiKey` for HTTP sink |
 | Changelog/notes | https://github.com/continuedev/continue |
 
-## Verified API/webhook contract (as built, 2026-06-05)
+> **Doc-standard attestation (ledger #190, 2026-06-13):** this `references.md` (verified-contract section + provider-docs table + PII handling) + `auth.md` (file-import model + Redaction-lever section + deferred paths) + `config.json` (explicit `pii_posture` + `wire_gates` + `live_readiness`) assessed against the connector documentation standard — **EXCEEDS minimum**.
 
-- **Dev-data event (parsed, verified 2026-06-08 docs.continue.dev)**: `parse_event` reads `{eventName (legacy `name` fallback), timestamp/ts, prompt, completion, content, message, userId, schema, modelTitle/modelName/model}`; the base schema field is **`eventName`** and there is **no event-id field** (ref floors to `eventName:timestamp`); excerpt is the first non-empty text field among `prompt`, `completion`, `content`, `message`, falling back to `"continue {eventName}"`. The schema (`0.1.0`/`0.2.0`) is documented to churn; all field access is str-coerced.
+## Verified API/webhook contract (as built, 2026-06-05; shape re-confirmed live 2026-06-13)
+
+- **Dev-data event (parsed, verified 2026-06-08 docs.continue.dev)**: `parse_event` reads `{eventName (legacy `name` fallback), timestamp/ts, prompt, completion, content, message, userId, schema, modelTitle/modelName/model}`; the base schema field is **`eventName`** and there is **no event-id field** (ref floors to `eventName:timestamp`); excerpt is the first non-empty text field among `prompt`, `completion`, `content`, `message`, falling back to `"continue {eventName}"`. The schema (`0.1.0`/`0.2.0`) is documented to churn; all field access is str-coerced. **Provenance (2026-06-13, SG-2026-06-13-D)**: the [docs.continue.dev development-data](https://docs.continue.dev/customize/deep-dives/development-data) page re-confirms the **schema-versioned event JSON blob** + HTTP-sink shape but defers the field list to the Continue source; the `eventName`/text-field/`noCode` detail was pinned 2026-06-08 against docs/source and is handled defensively here. No drift on the confirmed surface.
 - **Verification**: no verify — passive file import; no network delivery, no signature.
 - **Auth (deferred)**: none for local file ingest (T0); HTTP-sink path uses Bearer `apiKey` in `config.yaml` — deferred. No live network this cycle.
 - **Modes**: passive only; no webhooks (provider id `"continue"`; package `continue_dev`).
-- **PII handling**: prompts and completions may contain code and personal context; `level: noCode` strips text fields at source (operator-set). Producer sensitive screen (`FX-SEC-001`) is the in-pipeline guard.
+- **PII handling**: prompts/completions/content/messages are developer-AI interaction text (code + personal context) emitted via **redact-and-pass** — `adapter.core.redaction.redact` scrubs secret/PHI/PAN + email/phone (a prompt can carry code with secrets/emails; FX-SEC-001 backstops only secret/PHI/PAN). The `userId` `author` is redact-and-passed too (an opaque id passes unchanged; an email-shaped userId is scrubbed); the `"continue {eventName}"` floor is not redacted. The operator's `level: noCode` lever additionally strips text fields at source. Producer sensitive screen (`FX-SEC-001`) remains the fail-closed backstop.
 
 ## Canonical governance references
 

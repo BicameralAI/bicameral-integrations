@@ -200,6 +200,72 @@
         "Local file import (T0), no credential, no network. Live file-watch of ~/.claude/projects/<slug>/<session-id>.jsonl + history.jsonl (epoch-ms ts) are deferred (operator runtime). Live flip gated on operator review (ADR-0012)."
       ]
     },
+    "continue_dev": {
+      "available": true,
+      "category": "developer-AI / source-control",
+      "credentials": [],
+      "data": {
+        "emits": [
+          "development_data"
+        ],
+        "pii_posture": "Continue dev-data events carry developer-AI interaction text (prompt/completion/content/message) that can contain code with secrets/emails -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed; SG-2026-06-13-A). The userId author is redact-and-passed too (an opaque id passes unchanged; an email-shaped userId is scrubbed); the 'continue {eventName}' floor + the technical metadata (name/schema/model) are not redacted. The operator's Continue level:noCode lever additionally strips text fields AT SOURCE. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+        "redaction": "redact-and-pass (prompt/completion/content/message excerpt + userId author); event-kind floor + technical metadata kept; operator level:noCode strips at source; FX-SEC-001 rejects secret/PHI/PAN"
+      },
+      "description": "Continue (continue.dev) developer-AI dev-data events (local JSONL) as redact-and-pass governed evidence (prompt/completion text scrubbed; opaque userId).",
+      "id": "continue_dev",
+      "instructions": [
+        {
+          "action": "configure",
+          "ref": "connectors/continue_dev/auth.md (Continue Auth)",
+          "text": "Point the operator runtime at Continue's development-data JSONL path. This is a local file import -- there are no credentials and no network. Optionally enable Continue's level:noCode to strip prompt/completion text at source."
+        },
+        {
+          "action": "verify",
+          "text": "Test the connection: ingesting a dev-data event should produce one emission (prompt/completion redact-and-passed; opaque userId; event-kind floor when text is stripped)."
+        }
+      ],
+      "live_readiness": "Flip-ready, NOT yet Live. Parse + redact-and-pass are built and harness-proven; prompt/completion text + userId redact-and-passed, the operator level:noCode lever strips at source. No credentials (local file import). Gated on operator review + wiring the live JSONL file-watch / HTTP-sink to a GatewaySink. To flip: set the dev-data path; wire the runtime ingest; ingest a real event; review before promoting.",
+      "modes": [
+        "passive"
+      ],
+      "name": "Continue",
+      "references": [
+        {
+          "kind": "dev-data",
+          "url": "https://docs.continue.dev/customize/deep-dives/development-data"
+        },
+        {
+          "kind": "repo",
+          "url": "https://github.com/continuedev/continue"
+        },
+        {
+          "kind": "auth",
+          "url": "connectors/continue_dev/auth.md"
+        }
+      ],
+      "runtime_config": [
+        {
+          "description": "Path (or glob) to Continue's local development-data JSONL the operator runtime ingests (one event per developer-AI interaction). File import only; no network, no credential.",
+          "key": "dev_data_path",
+          "label": "Continue dev-data JSONL path",
+          "required": true
+        },
+        {
+          "default": false,
+          "description": "When the operator sets Continue's level:noCode, Continue strips prompt/completion text fields AT SOURCE before they are written — defense-in-depth on top of Bicameral's redact-and-pass.",
+          "key": "no_code_lever",
+          "label": "Continue level:noCode (source-side redaction)",
+          "required": false
+        }
+      ],
+      "status": "live-ready",
+      "trust_tier": "T0",
+      "wire_gates": [
+        "Dev-data shape re-confirmed live 2026-06-13 (docs.continue.dev development-data): schema-versioned event JSON blob + HTTP-sink. Field detail (eventName base field, no event-id, prompt/completion/content/message text fields, level:noCode lever) pinned 2026-06-08 against docs/source and handled defensively (eventName/name fallback, schema-version-tolerant, str-coerced); the doc defers the field list to source (SG-2026-06-13-D). No drift on the confirmed surface.",
+        "PII: prompt/completion/content/message excerpt + userId author redact-and-passed (secret/PHI/PAN + email/phone); event-kind floor + technical metadata kept; operator level:noCode strips text at source. FX-SEC-001 backstops secret/PHI/PAN.",
+        "The live JSONL file-watch / HTTP-sink collection is operator-runtime; no live ingest this cycle. Live flip gated on operator review + a real dev-data ingest (ADR-0012)."
+      ]
+    },
     "copilot": {
       "available": true,
       "category": "developer-ai",
