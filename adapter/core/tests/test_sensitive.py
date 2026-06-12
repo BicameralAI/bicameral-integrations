@@ -26,6 +26,30 @@ def test_detect_flags_pem_private_key():
     assert any(h.cls == "secret" for h in hits)
 
 
+def test_detect_flags_broadened_scanner_token_families():
+    # purple-team #185 / SG-2026-06-13-F: the catalog now covers the common scanner-emitted
+    # token families that previously slipped past both detect and redact.
+    # NOTE: each fixture is ASSEMBLED by concatenation so no literal token shape appears in source —
+    # otherwise GitHub push-protection flags the test file itself (SG-2026-06-14-A).
+    samples = [
+        "xox" + "b-" + "123456789012-" + "a" * 16,        # slack
+        "AIza" + "Sy" + "A" * 33,                          # google api key (AIza + 35)
+        "github_" + "pat_" + "A" * 82,                     # github fine-grained PAT
+        "sk" + "_live_" + "0" * 24,                        # stripe live
+        "glpat" + "-" + "a" * 20,                          # gitlab PAT (glpat- + 20)
+        "npm" + "_" + "a" * 36,                            # npm token
+        "sk" + "-" + "A" * 40,                             # openai key
+    ]
+    for s in samples:
+        assert any(h.cls == "secret" for h in detect_sensitive(f"found {s} here")), s
+
+
+def test_clean_text_not_flagged_by_broadened_catalog():
+    # the broadened patterns are prefix-anchored — ordinary prose must not false-positive.
+    for clean in ("the sky-blue banner", "task npm install ran", "see section AIza notes"):
+        assert not any(h.cls == "secret" for h in detect_sensitive(clean)), clean
+
+
 def test_detect_flags_phi_mrn_label():
     hits = detect_sensitive("patient MRN: 1234567 admitted")
     assert any(h.cls == "phi" for h in hits)

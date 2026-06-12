@@ -84,6 +84,33 @@ def test_raw_secret_message_would_be_hard_rejected_without_redact():
         normalize([raw], adapter_version="sarif/0.1.0")
 
 
+def test_non_catalog_token_in_message_now_scrubbed():
+    # purple-team SARIF-PII-1 / SG-2026-06-13-F: Slack/Google/Stripe tokens were non-catalog and
+    # slipped past both redact() and FX-SEC-001 — the broadened catalog now scrubs them.
+    # Tokens are ASSEMBLED by concatenation so no literal shape appears in source (push-protection;
+    # SG-2026-06-14-A).
+    for token in ("xox" + "b-" + "123456789012-" + "a" * 16,
+                  "AIza" + "Sy" + "A" * 33,
+                  "sk" + "_live_" + "0" * 24):
+        result = {"ruleId": "secrets.token", "message": {"text": f"Detected token {token} in app.py"},
+                  "locations": [{"physicalLocation": {"artifactLocation": {"uri": "app.py"}}}]}
+        obs = parse_result(result, "gitleaks")
+        assert token not in obs.excerpt, token
+        out = normalize([obs], adapter_version="sarif/0.1.0")  # not hard-rejected
+        assert token not in out[0].evidence[0].excerpt
+
+
+def test_one_bad_result_does_not_drop_the_rest():
+    # purple-team SARIF-PARSE-1: a non-dict result in a multi-result run yields N-1, not 0.
+    report = {"runs": [{"tool": {"driver": {"name": "t"}},
+                        "results": [{"ruleId": "ok", "message": {"text": "fine"}}, "not-a-dict", 7]}]}
+    obs = parse_sarif(report)
+    assert len(obs) == 1 and obs[0].title == "ok"
+    # a non-list runs/results is skipped, not crashed
+    assert parse_sarif({"runs": {"x": 1}}) == []
+    assert parse_sarif({"runs": [{"results": "nope"}]}) == []
+
+
 def test_end_to_end_normalizes():
     out = normalize(
         SarifConnector().observations(_report()), adapter_version="sarif/0.1.0"
