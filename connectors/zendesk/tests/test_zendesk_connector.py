@@ -33,6 +33,20 @@ def test_parse_ticket_maps_subject_and_metadata():
     assert obs.metadata["via"] == "web"
 
 
+def test_requester_id_opaque_passes_redact_unchanged():
+    # purple-team #170 (zd-1): a numeric requester id passes redact() byte-for-byte (opacity preserved).
+    obs = parse_ticket(_event())
+    assert obs.author == "9001"
+
+
+def test_email_shaped_requester_id_is_redacted():
+    # purple-team #170 (zd-1): a stray email/phone in requester_id is scrubbed — opacity enforced, not trusted.
+    event = _event()
+    event["detail"]["requester_id"] = "agent-jane@support.com"
+    obs = parse_ticket(event)
+    assert "jane@support.com" not in obs.author
+
+
 def test_ticket_body_redacted_and_emitted():
     # Body (description) now emitted via redact-and-pass, with PII scrubbed.
     obs = parse_ticket(_event())

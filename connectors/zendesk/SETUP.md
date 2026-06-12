@@ -66,7 +66,7 @@ python -m runtime.cli run zendesk --sink gateway   # real POST (go-live; default
 ## Data & permissions
 
 - Emits: ticket
-- PII posture: Ticket SUBJECT + BODY (detail.description) are PII-dense free text -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed to placeholders). The requester is surfaced only as detail.requester_id, an OPAQUE numeric id -- never a requester name or email (a deliberate identity-minimization choice). Comment threads and attachments are excluded (first description only). FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.
+- PII posture: Ticket SUBJECT + BODY (detail.description) are PII-dense free text -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed to placeholders). The requester is surfaced only as detail.requester_id, an OPAQUE numeric id -- never a requester name or email (a deliberate identity-minimization choice); requester_id is itself redact-and-passed so a numeric id passes unchanged while a stray email/phone is scrubbed -- the opacity guarantee is enforced, not merely trusted (purple-team #170). Comment threads and attachments are excluded (first description only). FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.
 
 ## Go-live
 

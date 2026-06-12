@@ -69,7 +69,7 @@ def parse_commit(record: dict) -> Observation:
         excerpt=excerpt,
         mode=SourceMode.PASSIVE,
         title=subject or commit_hash or "aider-commit",
-        author=str(record.get("author_name") or ""),  # F4: real name RETAINED — git provenance is the point
+        author=redact(str(record.get("author_name") or "")),  # F4: real name RETAINED (provenance); redact-and-pass guards an email/phone-shaped name (purple-team #170)
         timestamp=str(record.get("authored_at") or ""),
         metadata={"attributed_by": _attributed_by(record), "short_hash": commit_hash[:7]},
     )
