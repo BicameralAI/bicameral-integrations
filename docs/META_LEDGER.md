@@ -5627,7 +5627,53 @@ ADR-0012 hold. L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#173 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **RESEARCH SEALED at #173 (`e0c02ee9`; L1)** -- gitlab + sentry + pagerduty flip-ready foundation; ZERO signature drift (X-Gitlab-Token / Sentry-Hook-Signature / X-PagerDuty-Signature all re-verified). Flip = FX-CFG-001 descriptor + redact-and-pass parity (the github standard). **17 of 26 flip-ready** + 13 mods. Prior: #172 PT-B, #171 PT-A.*
-*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 17 flip-ready connectors (all purple-teamed) + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
-*Next required action: **/qor-auto-dev-1** per connector (gitlab -> sentry -> pagerduty), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+### Entry #174: SESSION SEAL -- gitlab flip-ready (redact-and-pass + FX-CFG-001 descriptor + doc-standard attestation)
+
+**Entry ID**: `gitlab174flip`
+**Timestamp**: 2026-06-13T23:00:00-04:00
+**Phase**: SUBSTANTIATE (connector flip)
+**Author**: Judge (qor-auto-dev-1)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/gitlab/connector.py)
+= e4c04961b3bac634aedf0614ab70e371355c4ea58af3db6e364f14a4babafb00
+```
+
+**Previous Hash**: e0c02ee917d69f0914483792db2f1810fd1f3f5b29323a57f42ba4e85608649e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= f0876260facd04b32b0b2834aba6f6447a62010b68c06a4a06ee1ebc4f0f5626
+```
+
+**Decision**: gitlab flipped flip-ready (1 of 3 webhook trio). **F1 (medium):** `_event_observation` now
+redact-and-passes the MR/issue `title` + `description` (`redact(...)`, the github standard) -- previously raw,
+with only FX-SEC-001 (secret/PHI/PAN) backstop, so email/phone in a PR/issue body leaked. **F2 (design):** the
+`author` (`user.username`) is RETAINED -- a PUBLIC GitLab handle, the kept-public-login precedent github set
+(reads only `username`, never name/email; SG-2026-06-13-B). Authored `connectors/gitlab/config.json` (modes
+`["webhook","active"]`; `gitlab_webhook` plaintext `X-Gitlab-Token` secret + deferred active `gitlab` token;
+webhook block with the live-verified plaintext scheme + the Standard-Webhooks signing token named as the stronger
+next step), regenerated `SETUP.md` + `index.json`.
+
+**Documentation standard -- EXCEEDS minimum (explicit attestation, per operator direction 2026-06-13):**
+- `references.md`: verified-contract section re-dated "as built 2026-06-05; **re-verified live 2026-06-13**" with
+  the docs.gitlab.com MATCH recorded, **+ a new PII-handling bullet** (redact-and-pass title/description; public
+  username retained). Provider-docs table + governance refs present. **EXCEEDS.**
+- `auth.md`: implemented `X-Gitlab-Token` scheme + fail-closed/constant-time detail + no-replay-window note +
+  the deferred Standard-Webhooks signing-token path + expected secret keys + deferred live paths. **EXCEEDS.**
+- `config.json`: live-re-verified `wire_gates` (dated), explicit `pii_posture`, `live_readiness` narrative,
+  instruction `ref`s that resolve against auth.md headings. **EXCEEDS.**
+
+**Tests:** title/description email+secret scrub + clean text preserved; public username retained. **Measured:**
+full suite **676 passed**, ruff clean, whole-tree mypy (210 files) clean, validator OK, governance-gate
+#1..#174 OK. **18 of 26 connectors flip-ready.** L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#174 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **gitlab FLIP-READY, SEALED at #174 (`f0876260`; L1)** -- redact-and-pass title/description + public username retained + FX-CFG-001 descriptor; doc-standard EXCEEDS minimum (explicit attestation). **18 of 26 flip-ready** + 13 mods. Prior: #173 research, #172 PT-B.*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 18 flip-ready connectors + 13 advisory mods. 26 Beta; secrets never committed nor printed.*
+*Next required action: **retroactive doc-standard attestation** for local_directory + aider + zendesk (operator ask 2026-06-13), then **/qor-auto-dev-1** sentry + pagerduty (each with the explicit attestation), then **/qor-document** + **/qor-deep-audit** purple-team. **@jinhongkuan** live-flips. Backlog: branch protection (B5); bot #73.*

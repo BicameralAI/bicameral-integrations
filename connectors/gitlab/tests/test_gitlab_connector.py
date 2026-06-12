@@ -50,6 +50,35 @@ def test_blank_title_and_body_floor():
     assert obs.source_ref.ref == "gitlab-issue"  # no project/iid -> floored
 
 
+def test_body_and_title_redact_and_passed():
+    # F1 (medium): MR/issue title + description are redact-and-passed (the github standard).
+    payload = {
+        "object_kind": "issue",
+        "object_attributes": {
+            "iid": 9,
+            "title": "Outage ping ops@corp.com",
+            "description": "leaked AKIAIOSFODNN7EXAMPLE in the logs",
+        },
+        "project": {"path_with_namespace": "acme/widgets"},
+        "user": {"username": "devuser"},
+    }
+    obs = parse_issue(payload)
+    assert "ops@corp.com" not in obs.title
+    assert "AKIAIOSFODNN7EXAMPLE" not in obs.excerpt
+    assert obs.author == "devuser"  # public username retained (not redacted)
+
+
+def test_public_username_retained_as_author():
+    # F2 (design): the public GitLab username is the artifact author — kept, like github's login.
+    payload = {
+        "object_kind": "merge_request",
+        "object_attributes": {"iid": 1, "title": "x", "description": "clean"},
+        "project": {"path_with_namespace": "acme/widgets"},
+        "user": {"username": "octo-dev"},
+    }
+    assert parse_merge_request(payload).author == "octo-dev"
+
+
 def test_verify_shared_token_via_connector():
     conn = GitLabConnector(secret=_TOKEN)
     body = _body("merge_request_event.json")

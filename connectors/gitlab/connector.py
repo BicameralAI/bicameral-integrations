@@ -22,6 +22,7 @@ from urllib.parse import urlsplit
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
+from adapter.core.redaction import redact
 from adapter.core.webhook_security import (
     DeliveryDedupCache,
     WebhookVerificationError,
@@ -34,14 +35,18 @@ def _event_observation(payload: dict, *, kind: str, sep: str) -> Observation:
     """Map a GitLab ``object_attributes`` event body into an Observation.
 
     Shared by the merge-request and issue surfaces (they differ only in the ref
-    separator and kind). Blank title/description floor to a non-blank literal so
+    separator and kind). MR/issue ``title`` + ``description`` are free text ->
+    **redact-and-pass** (secret/PHI/PAN + email/phone scrubbed; the github standard, since
+    FX-SEC-001 backstops only secret/PHI/PAN). ``author`` is the PUBLIC GitLab ``username``
+    (the artifact author, the kept-public-login precedent github set; reads only ``username``,
+    not name/email) and is NOT redacted. Blank title/description floor to a non-blank literal so
     the emission contract's non-blank-excerpt rule is satisfied.
     """
     floor = f"gitlab-{kind.replace('_', '-')}"
     attrs = payload.get("object_attributes") or {}
     project = (payload.get("project") or {}).get("path_with_namespace", "") or ""
     ref = f"{project}{sep}{attrs.get('iid', '')}".strip()
-    title = (attrs.get("title") or "").strip()
+    title = redact((attrs.get("title") or "").strip())
     body = (attrs.get("description") or "").strip()
     return Observation(
         source_ref=SourceRef(
@@ -50,9 +55,9 @@ def _event_observation(payload: dict, *, kind: str, sep: str) -> Observation:
             url=attrs.get("url", "") or "",
             kind=kind,
         ),
-        excerpt=body or title or floor,
+        excerpt=redact(body) or title or floor,
         mode=SourceMode.WEBHOOK,
-        title=title,
+        title=title or floor,
         author=(payload.get("user") or {}).get("username", "") or "",
     )
 

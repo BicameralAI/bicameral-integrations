@@ -1,0 +1,99 @@
+{
+  "id": "gitlab",
+  "name": "GitLab",
+  "description": "GitLab merge-request + issue webhook events as redact-and-pass governed evidence (body + title scrubbed; public username retained as the artifact author).",
+  "category": "source-control",
+  "trust_tier": "T1",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["webhook", "active"],
+  "credentials": [
+    {
+      "key": "gitlab_webhook",
+      "type": "webhook_secret",
+      "label": "Webhook secret token",
+      "required": true,
+      "modes": ["webhook"],
+      "header": "X-Gitlab-Token (plaintext shared secret, constant-time compared — GitLab does NOT HMAC-sign the body)",
+      "obtain": {
+        "url": "https://docs.gitlab.com/user/project/integrations/webhooks/",
+        "steps": [
+          "When you create the GitLab webhook, set a Secret token; GitLab sends it verbatim in the X-Gitlab-Token header.",
+          "Bicameral constant-time-compares it to this secret (fail-closed) and dedups on X-Gitlab-Event-UUID (verified 2026-06-13). The newer Standard-Webhooks signing token is the documented stronger next step, not wired this cycle."
+        ]
+      }
+    },
+    {
+      "key": "gitlab",
+      "type": "api_key",
+      "label": "Access token (active REST poll — deferred)",
+      "required": false,
+      "modes": ["active"],
+      "wiring_oversight": true,
+      "header": "Authorization: Bearer <personal/project/group access token> (or PRIVATE-TOKEN)",
+      "obtain": {
+        "url": "https://docs.gitlab.com/ee/api/rest/authentication.html",
+        "steps": [
+          "Create a personal/project/group access token with read scope for the deferred REST poll of merge requests / issues.",
+          "The active REST poll is operator-runtime and DEFERRED this cycle; the webhook is the built + verified path. Wiring needs operator oversight."
+        ]
+      }
+    }
+  ],
+  "webhook": {
+    "signature_scheme": "plaintext shared-secret token in the X-Gitlab-Token header (GitLab does NOT HMAC-sign the body); constant-time compared, fail-closed; no replay-timestamp window -> best-effort dedup on X-Gitlab-Event-UUID. The newer Standard-Webhooks signing token (HMAC-SHA256 over webhook-id.webhook-timestamp.body, webhook-signature header) is GitLab's recommended method and the documented stronger next step, not wired this cycle.",
+    "header": "X-Gitlab-Token",
+    "events": ["merge_request", "issue"],
+    "setup": {
+      "url": "https://docs.gitlab.com/user/project/integrations/webhooks/",
+      "steps": [
+        "In your GitLab project, add a webhook subscribed to Merge request events + Issue events and set a Secret token.",
+        "Set the webhook URL to your Bicameral webhook receiver (see receiver below)."
+      ]
+    },
+    "receiver": {
+      "required": true,
+      "label": "Bicameral webhook receiver URL (operator-provisioned)",
+      "provisioned_by": "operator"
+    }
+  },
+  "data": {
+    "emits": ["merge_request", "issue"],
+    "pii_posture": "MR/issue SUBJECT (title) + BODY (description) are PII-dense free text -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed to placeholders; the github standard, since FX-SEC-001 backstops only secret/PHI/PAN). The author is the PUBLIC GitLab username (user.username) -- the artifact author, the kept-public-login precedent github set (SG-2026-06-13-B); only username is read, never name or email, and it is NOT redacted. FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+    "redaction": "redact-and-pass (title + description); public username retained as artifact author (name/email never read); FX-SEC-001 rejects secret/PHI/PAN"
+  },
+  "instructions": [
+    {
+      "action": "register_webhook",
+      "text": "Add a GitLab webhook on Merge request + Issue events, set a Secret token, and point it at your Bicameral receiver URL.",
+      "link": "https://docs.gitlab.com/user/project/integrations/webhooks/",
+      "ref": "connectors/gitlab/auth.md (GitLab Auth)"
+    },
+    {
+      "action": "paste_secret",
+      "text": "Paste the GitLab webhook Secret token (sent verbatim in X-Gitlab-Token)."
+    },
+    {
+      "action": "open_url",
+      "text": "Optional (deferred): create an access token for the active REST poll. The webhook is the built + verified path; the REST poll is operator-runtime and not wired this cycle.",
+      "link": "https://docs.gitlab.com/ee/api/rest/authentication.html",
+      "ref": "connectors/gitlab/auth.md (Deferred live paths)"
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: a webhook delivery with a matching X-Gitlab-Token should produce one emission (title + description redact-and-passed; public username retained; dedup on replay)."
+    }
+  ],
+  "references": [
+    {"kind": "api", "url": "https://docs.gitlab.com/ee/api/"},
+    {"kind": "webhooks", "url": "https://docs.gitlab.com/user/project/integrations/webhooks/"},
+    {"kind": "webhook-verify", "url": "https://docs.gitlab.com/user/project/integrations/webhooks/#validate-payloads-by-using-a-secret-token"},
+    {"kind": "auth", "url": "https://docs.gitlab.com/ee/api/rest/authentication.html"}
+  ],
+  "wire_gates": [
+    "Webhook verification re-verified live 2026-06-13 (docs.gitlab.com webhooks): the X-Gitlab-Token plaintext shared secret is GitLab's documented (legacy) method; GitLab does NOT HMAC-sign the body. Built verify_shared_token (constant-time, fail-closed) MATCHES. The Standard-Webhooks signing token (HMAC-SHA256 over {id}.{ts}.{body}) is the recommended stronger next step, not wired.",
+    "PII: title + description redact-and-passed (secret/PHI/PAN + email/phone); author = public username (user.username, never name/email). FX-SEC-001 backstops secret/PHI/PAN.",
+    "Webhook RECEIPT + the active REST poll are operator-runtime; the REST poll is DEFERRED this cycle (webhook is the built + verified path). Live flip gated on operator review + a live delivery with a matching token (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Parse + plaintext X-Gitlab-Token verify + dedup are built and harness-proven; title/description redact-and-passed, public username retained. The active REST poll is deferred (operator-runtime). Gated on operator review + a live delivery. To flip: create the webhook + secret token + a Bicameral receiver URL; wire GatewaySink; send a test delivery; review before promoting. Stronger path: configure a Standard-Webhooks signing token and reuse the existing Svix verifier."
+}
