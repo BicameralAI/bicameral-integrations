@@ -1,0 +1,99 @@
+{
+  "id": "zendesk",
+  "name": "Zendesk",
+  "description": "Zendesk support-ticket webhook events as redact-and-pass governed evidence (subject + body scrubbed; requester surfaced as an opaque id, never a name/email).",
+  "category": "support / customer-success",
+  "trust_tier": "T1",
+  "status": "live-ready",
+  "available": true,
+  "modes": ["webhook", "active"],
+  "credentials": [
+    {
+      "key": "zendesk_webhook",
+      "type": "webhook_secret",
+      "label": "Webhook signing secret",
+      "required": true,
+      "modes": ["webhook"],
+      "header": "X-Zendesk-Webhook-Signature (base64 HMAC-SHA256 over {timestamp}{body}, companion X-Zendesk-Webhook-Signature-Timestamp)",
+      "obtain": {
+        "url": "https://developer.zendesk.com/documentation/webhooks/verifying/",
+        "steps": [
+          "Create the webhook in Zendesk Admin Center; Zendesk generates a per-webhook signing secret (a static test secret applies before creation).",
+          "Copy it — Bicameral verifies X-Zendesk-Webhook-Signature = base64(HMAC-SHA256(secret, timestamp + body)), constant-time, fail-closed (verified 2026-06-13)."
+        ]
+      }
+    },
+    {
+      "key": "zendesk",
+      "type": "api_key",
+      "label": "API token (active REST poll — deferred)",
+      "required": false,
+      "modes": ["active"],
+      "wiring_oversight": true,
+      "header": "Authorization: Basic base64('{email}/token:{api_token}')",
+      "obtain": {
+        "url": "https://developer.zendesk.com/api-reference/introduction/security-and-auth/",
+        "steps": [
+          "In Zendesk Admin Center, enable token access and create an API token (Apps and integrations -> APIs -> Zendesk API).",
+          "The active REST poll (/api/v2) is operator-runtime and DEFERRED this cycle; the webhook is the built + verified path. Wiring the token/OAuth exchange needs operator oversight."
+        ]
+      }
+    }
+  ],
+  "webhook": {
+    "signature_scheme": "base64 HMAC-SHA256 over '{timestamp}{body}' (no separator) with companion X-Zendesk-Webhook-Signature-Timestamp; constant-time; Zendesk documents no replay window, so best-effort dedup (envelope id -> detail.id -> body-hash) is the replay guard",
+    "header": "X-Zendesk-Webhook-Signature",
+    "events": ["ticket"],
+    "setup": {
+      "url": "https://developer.zendesk.com/documentation/webhooks/",
+      "steps": [
+        "In Zendesk Admin Center, create a webhook (and a trigger/automation that fires it on ticket events).",
+        "Set its endpoint URL to your Bicameral webhook receiver (see receiver below)."
+      ]
+    },
+    "receiver": {
+      "required": true,
+      "label": "Bicameral webhook receiver URL (operator-provisioned)",
+      "provisioned_by": "operator"
+    }
+  },
+  "data": {
+    "emits": ["ticket"],
+    "pii_posture": "Ticket SUBJECT + BODY (detail.description) are PII-dense free text -> redact-and-passed (secret/PHI/PAN + email/phone scrubbed to placeholders). The requester is surfaced only as detail.requester_id, an OPAQUE numeric id -- never a requester name or email (a deliberate identity-minimization choice). Comment threads and attachments are excluded (first description only). FX-SEC-001 hard-screens secret/PHI/PAN as the un-bypassable backstop.",
+    "redaction": "redact-and-pass (subject + body); requester surfaced as opaque requester_id (no name/email); comments + attachments excluded; FX-SEC-001 rejects secret/PHI/PAN"
+  },
+  "instructions": [
+    {
+      "action": "register_webhook",
+      "text": "Create a Zendesk webhook (with a trigger/automation firing on ticket events) pointing at your Bicameral receiver URL; capture the signing secret.",
+      "link": "https://developer.zendesk.com/documentation/webhooks/",
+      "ref": "connectors/zendesk/auth.md (Webhook signature)"
+    },
+    {
+      "action": "paste_secret",
+      "text": "Paste the Zendesk webhook signing secret."
+    },
+    {
+      "action": "open_url",
+      "text": "Optional (deferred): create an API token for the active REST poll. The webhook is the built + verified path; the REST poll is operator-runtime and not wired this cycle.",
+      "link": "https://developer.zendesk.com/api-reference/introduction/security-and-auth/",
+      "ref": "connectors/zendesk/auth.md (Deferred)"
+    },
+    {
+      "action": "verify",
+      "text": "Test the connection: a signed ticket webhook delivery should produce one emission (subject + body redact-and-passed; requester an opaque id; dedup on replay)."
+    }
+  ],
+  "references": [
+    {"kind": "api", "url": "https://developer.zendesk.com/api-reference/ticketing/introduction/"},
+    {"kind": "webhooks", "url": "https://developer.zendesk.com/documentation/webhooks/"},
+    {"kind": "webhook-verify", "url": "https://developer.zendesk.com/documentation/webhooks/verifying/"},
+    {"kind": "auth", "url": "https://developer.zendesk.com/api-reference/introduction/security-and-auth/"}
+  ],
+  "wire_gates": [
+    "Webhook signature re-verified live 2026-06-13 (developer.zendesk.com/documentation/webhooks/verifying): X-Zendesk-Webhook-Signature = base64(HMAC-SHA256(secret, timestamp + body)) with companion X-Zendesk-Webhook-Signature-Timestamp, constant-time. Built verify_zendesk_signature MATCHES (no separator; Base64 not hex). No documented replay window -> best-effort dedup (envelope id -> detail.id -> body-hash fallback) is the only replay guard.",
+    "PII: subject + body redact-and-passed (secret/PHI/PAN + email/phone); requester surfaced as opaque requester_id (no name/email); comments + attachments excluded. FX-SEC-001 backstops secret/PHI/PAN.",
+    "Webhook RECEIPT + the active REST poll (/api/v2, API token or OAuth) are operator-runtime; the REST poll is DEFERRED this cycle (webhook is the built + verified path). Live flip gated on operator review + a signed live delivery (ADR-0012)."
+  ],
+  "live_readiness": "Flip-ready, NOT yet Live. Parse + Base64-HMAC webhook verify + dedup are built and harness-proven; ticket subject + body redact-and-passed, requester an opaque id. The active REST poll is deferred (operator-runtime). Gated on operator review + a live signed delivery. To flip: create the webhook + trigger + signing secret + a Bicameral receiver URL; wire GatewaySink; send a signed test delivery; review before promoting."
+}
