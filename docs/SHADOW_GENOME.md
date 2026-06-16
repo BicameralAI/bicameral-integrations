@@ -610,3 +610,22 @@ stayed green, masking it. **Rule:** any time you add a byte-exact-freshness vali
 family, add the matching `<path> text eol=lf` lines to `.gitattributes` in the SAME change. A byte-exact check
 without LF-pinning is a cross-platform contributor trap (green on CI, red on a Windows checkout). Sweep all
 families that use the regenerate==committed pattern.
+
+## SG-2026-06-16-A — the platform is an INGEST funnel only; any "browse & pick a provider resource" feature is a net-new discovery edge
+
+`/qor-research` for RFQ #173 (source-acquisition boundary for Linear/Google Drive/GitHub) found the repo has
+**no pull/discovery surface at all**: a grep for every candidate interface (`list_resources`, `get_resource`,
+`fetch_provider_item`, `validate_resource_access`, `create_provider_resource`, `ProviderResourceDescriptor`)
+returns zero files. Every connector is ingest-shaped (push: provider → `Observation` → `AdapterEmission` →
+gateway); even the "fetch half" (`runtime/poll_client.py`, `doc_fetch.py`, `graphql_poll.py`) fetches a *known*
+resource by cursor/URL/id, it does not list/discover. The architecture *anticipated* discovery —
+`SourceMode.DISCOVERY` exists (`adapter/core/capabilities.py:15`) and `SourceCapabilities` carries
+`supports_filters`/`supports_resource_overrides`/`source_specific_filters` — but **0/26 connectors declare it**
+and the flags are unused. **Rule:** treat a resource-picker / discovery contract as net-new work orthogonal to
+the ingest funnel — do NOT model a picker descriptor as an `Observation`/`AdapterEmission` (those are *screened
+evidence* shapes, not *locator* shapes). **Naming hazard:** "descriptor" is overloaded — `connectors/*/config.json`
+is the per-connector *config* descriptor (ADR-0015/FX-CFG-001); #173's is a per-resource *provider-resource*
+descriptor. Qualify the term (`ConnectorConfigDescriptor` vs `ProviderResourceDescriptor`) in every new artifact.
+Pairs with the merged #42 position (`docs/rfq-bot-integrations-boundary-2026-06-06.md`): #173 acquisition feeds
+#42 ingest; both keep the expressive-edge/bot-authority split (ADR-0008) — note `create_provider_resource` (Drive
+folder) is the first write integrations would own, so route it through `ProposedAction`, don't break read-only.

@@ -6731,7 +6731,81 @@ descriptor (UI/consumer-facing) AND single-sourced into the emission provenance.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#200 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **SEALED at #200 (`ca5681b4`; L2)** -- adapter_version single-sourced from the descriptor; emission carries `<source_id>/<version>`; stale `continue/0.1.0` drift fixed. **Versioning COMPLETE** (descriptor version+channel #199 + emission provenance #200). Prior: #199 versioning, #198 gitattributes.*
+### Entry #201: RESEARCH BRIEF -- source acquisition boundary for Linear/Google Drive/GitHub (GH #173)
+
+**Entry ID**: `research201sourceacquisition173`
+**Timestamp**: 2026-06-16T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-research)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-source-acquisition-boundary-2026-06-16.md)
+= 059f703919753c7e9934ce8055c7dd699efc8830114ee06ce8ba6187e9efdd89
+```
+
+**Previous Hash**: ca5681b42f5fa7e8d0d3a984d7a83d9b91787c736e4559ec62d764103df44ed6
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 8f2788dfac73b097d0dd5778a47065bc0f5bed6388e588fb17774e9050920533
+```
+
+**Decision**: RFQ #173 researched against the live tree; brief at `docs/research-brief-source-acquisition-boundary-2026-06-16.md`. **Central finding: the acquisition/discovery surface #173 asks for does not exist -- it is a structural GAP, not a drift.** The repo is an *ingest funnel* only (push: webhook/poll -> `Observation` -> `AdapterEmission` -> gateway); a grep for every #173 candidate interface (`list_resources`/`get_resource`/`fetch_provider_item`/`validate_resource_access`/`create_provider_resource`/`ProviderResourceDescriptor`) returns **zero files**. Latent scaffolding exists: `SourceMode.DISCOVERY` (`adapter/core/capabilities.py:15`) is declared by **0/26** connectors, and `SourceCapabilities` carries unused `supports_filters`/`supports_resource_overrides`/`source_specific_filters` flags -- the architecture anticipated discovery but never built it. **#42 (merged PR #69, `docs/rfq-bot-integrations-boundary-2026-06-06.md`) is complementary, not overlapping**: it settled the evidence-ingest/egress/identity/schema/preflight boundary; #173 is the pre-ingest *acquisition* boundary that feeds it; both share the expressive-edge/authority split. **Naming hazard flagged**: "descriptor" is overloaded -- `config.json` is the per-connector *config* descriptor (ADR-0015/#116); #173's is a per-resource *provider-resource* descriptor (distinct object, qualify it). Per-connector reality: Linear has webhook+GraphQL issue fetch but no team/project enumeration; Google Drive's `files.list` folder discovery is **explicitly deferred** (the critical-path blocker for alpha Drive ingestion) -- only `documents.get` ships; GitHub has no live fetch at all. Answered all 11 #173 questions (descriptor fields, item envelope, safe capability names, per-provider alpha-first resources, scopes + typed `permission_state`/`action_needed`, fixtures-without-creds). 8 recommendations -- P1: author a *Provider Acquisition Contract* ADR; lock the two-descriptor vocabulary; carve out / route `create_provider_resource` (Drive folder) via `ProposedAction` to keep ADR-0008 read-only intact. **RFQ answer only -- no implementation authorized** until cross-repo sign-off (Kevin/Jin + bot #405/#386/#390); #173 Non-Goals + `agent-task` exclusion respected. New shadow-genome candidate **SG-2026-06-16-A** (ingest-funnel-only architecture; discovery edge is net-new). L1, advisory.
+
+---
+
+### Entry #202: DESIGN DECISION -- ADR-0017 Provider Acquisition Contract (discovery/fetch edge; GH #173)
+
+**Entry ID**: `adr0017provideracquisition202`
+**Timestamp**: 2026-06-16T00:00:00-04:00
+**Phase**: IDEATE/DESIGN (ADR scaffold; RFQ #173 answer artifact)
+**Author**: Analyst -> Strategist (qor-research follow-up)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/adr/0017-provider-acquisition-contract.md)
+= 811af2505f6b309cedfaeb57975fe187a8d37c8a8e3969cf34fc8e7ced7301ac
+```
+
+**Previous Hash**: 8f2788dfac73b097d0dd5778a47065bc0f5bed6388e588fb17774e9050920533
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= dab5de6eb6cbb4e71c90ef11a9d7b119dc307c536a2696097af1ab5bb91a8892
+```
+
+**Decision**: Scaffolded **ADR-0017 (Provider Acquisition Contract)** -- the discovery/fetch/readiness
+edge #173 asks for -- in **Proposed** status (not Accepted until Kevin/Jin + bot #405/#386/#390 sign off;
+#173 Non-Goals respected, no implementation). Operator context: the connector/adapter side was
+deliberately minimized while mcp took shape; now supplying the greater structure, designed for the
+**entire ecosystem** (26 connectors, T0-T3, active/passive/webhook) + the universal adapter, not just
+#173's three. **Design choices, all extending existing structure rather than forking it:** (1) a fourth
+connector surface -- `DiscoveryConnector(Connector, Protocol)` peer to the existing Active/Polling/Webhook
+Protocols in `adapter/core/contracts.py`, gated on the latent `SourceMode.DISCOVERY` (declared by 0/26
+today); (2) neutral objects in a new `adapter/core/discovery.py` (`ProviderResourceDescriptor`,
+`ProviderItemEnvelope`, `PermissionState`, `ResourceCapability`, `ResourcePage`, `AccessVerdict`) reusing
+`SourceRef`/`Observation` + `FilterSpec`/`QuotaSpec`; (3) **one security chokepoint, every surface** --
+`fetch_provider_item` returns `Observation`s that funnel through the SAME `validate_emissions`/FX-SEC-001
+screen; descriptors get a `screen_descriptor` per-leaf pass reusing `sensitive.detect_sensitive` (no
+side-channel, "N surfaces -> 1 screen" preserved for pull as for push); (4) `create_provider_resource`
+routes via **`ProposedAction`** (ADR-0011/#42 Domain 2) so ADR-0008 read-only stays intact -- integrations
+proposes, bot governs/executes; (5) opt-in per connector + ADR-0015 config-descriptor `discovery` block
+(additive, `modes subset capabilities.modes` guard holds); (6) ADR-0012 ladder unchanged (fixtures=Beta,
+live creds=Live); (7) descriptor->shared-schema promotion mirrors #42 Domain 4. Naming hazard locked:
+`ConnectorConfigDescriptor` (ADR-0015) vs `ProviderResourceDescriptor` (this ADR). Alpha scope per
+provider defined (Linear team/project/issue; Drive folder via the deferred `files.list` = critical path;
+GitHub repo/file/issue/PR). GOVERNANCE_INDEX updated (ADR range 0004..0017 + Last Reviewed 2026-06-16,
+clears the stale-tier1 drift). Open/cross-repo: bot #405 must confirm consumption shape; GitHub live-fetch
+auth (PAT vs App) unbuilt. L2 (new cross-repo-consumed surface + auth/permission semantics).
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#202 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **#202 DESIGN (L2, Proposed ADR-0017) on SEAL #200 (`ca5681b4`)** -- Provider Acquisition Contract scaffolded for #173 (discovery edge): fourth `DiscoveryConnector` Protocol, neutral discovery objects, one FX-SEC-001 screen across pull+push, `create` via ProposedAction (ADR-0008 intact). Prior: #201 RESEARCH (#173 brief); #200 adapter_version single-sourcing; #199 versioning.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
-*Next required action: remaining issues triage (#40 ADR-0011 reframe, #42 boundary RFQ [partly #92], #93 Linear stress test, #101 accepted-risk hardening). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+*Next required action: ADR-0017 needs Kevin/Jin + bot #405 sign-off -> on Accept, `/qor-plan` the discovery build (Drive `files.list` is critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ [partly #92], #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-202 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
