@@ -3,6 +3,7 @@
 Status: Proposed
 Date: 2026-06-04
 Owner: BicameralAI
+Relates to: ADR-0017 (the discovery edge's `create_provider_resource` reuses the ProposedAction lane)
 
 ## Context
 
