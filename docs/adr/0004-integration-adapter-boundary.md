@@ -2,7 +2,8 @@
 
 **Date:** 2026-06-02  
 **Status:** proposed  
-**Level:** L1
+**Level:** L1  
+**Relates to:** ADR-0017 (the discovery edge shares this boundary's single normalize/screen seam)
 
 ## Problem
 

@@ -80,3 +80,11 @@ This ADR is implemented when:
 - At least one adapter emits normalized evidence records
 - Unknown payloads are quarantined
 - External state mutation is impossible without explicit proposed-action or governed-write policy
+
+## Amendment (ADR-0017, 2026-06-16)
+
+ADR-0017 (Provider Acquisition Contract) introduces a provider **discovery** edge. Its one write
+operation, `create_provider_resource` (e.g. a provider-safe Drive folder), is **not** a carve-out from
+this ADR: it is modeled as a `ProposedAction` (ADR-0011) — integrations proposes, the bot governs and
+executes it as `Egress`. Integrations holds no approval/execution/retry state for it. The read-only
+authority invariant therefore holds unchanged: the discovery edge adds **no** new write authority.

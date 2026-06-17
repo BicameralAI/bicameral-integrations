@@ -1,6 +1,6 @@
 # Governance Index
 
-**Last Reviewed**: 2026-06-04
+**Last Reviewed**: 2026-06-16
 
 A single authoritative map of every governance artifact in this project, organized
 into six freshness tiers with explicit drift contracts. A stale entry here is
@@ -60,7 +60,8 @@ Informational, slow-drift. Drift signal: factual claims diverge from current cod
 
 | Artifact | Path |
 |----------|------|
-| Architecture decision records | `docs/adr/0004..0012-*.md` |
+| Architecture decision records | `docs/adr/0004..0017-*.md` |
+| Provider acquisition contract (proposed) | `docs/PROVIDER_ACQUISITION_CONTRACT.md` |
 | Integration candidate catalog | `docs/INTEGRATION_CANDIDATE_CATALOG.md` |
 | Integration docs index | `docs/INTEGRATION_DOCS_INDEX.md` |
 | Integration strategy & candidate harvesting | `docs/INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING.md` |

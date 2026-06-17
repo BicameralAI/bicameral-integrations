@@ -2,7 +2,8 @@
 
 **Date:** 2026-06-02  
 **Status:** proposed  
-**Level:** L1
+**Level:** L1  
+**Relates to:** ADR-0017 (activates the latent `SourceMode.DISCOVERY` as the fourth mode)
 
 ## Problem
 

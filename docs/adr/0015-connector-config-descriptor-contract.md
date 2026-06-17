@@ -74,3 +74,13 @@ ships now telling the truth.
 - **A real `jsonschema` dependency** — rejected (violates stdlib-only); the fail-closed lite checker
   suffices at this scale, with its limit stated.
 - **Wiring the validator into `governance_gate.py`** — rejected (breaks cross-repo portability).
+
+## Amendment (ADR-0017, 2026-06-16)
+
+ADR-0017 (Provider Acquisition Contract) extends this descriptor for connectors that gain a discovery
+surface: such a connector adds `"discovery"` to `modes` and an **additive, optional `discovery` block**
+declaring a per-`resource_kind` capability matrix plus the scopes discovery requires. The existing
+`modes ⊆ capabilities.modes` drift-guard covers the new mode for free; the additive block is built in
+the post-sign-off cycle (it is not yet in `connector-config.schema.json`). Naming: this ADR's
+per-connector object is the **`ConnectorConfigDescriptor`** ("how to connect"); ADR-0017's per-resource
+object is the **`ProviderResourceDescriptor`** ("what to pick once connected") — distinct, never conflated.
