@@ -12,9 +12,14 @@ silently corrupt them:
   entry's ``chain_hash`` and ``chain_hash == sha256(content_hash + previous_hash)``.
 - ``verify_feature_index`` — every ``docs/FEATURE_INDEX.md`` row that cites a
   test path points at a file that exists (waiver / N-A cells are skipped).
+- ``verify_entry_subject_locality`` — in-repo decision provenance (ADR-0018):
+  no META_LEDGER entry **header** may name a sibling Bicameral repo as its
+  subject. Governed writes land in the repo that owns the decision; cross-repo
+  *reads* (body mentions, "bot #405" relations) are fine. #206 is the single
+  documented, allowlisted exception (corrected by #207).
 
 Runs on a clean CI runner with no third-party dependencies and no ``qor`` venv.
-Exit code is non-zero when either check reports an error.
+Exit code is non-zero when any check reports an error.
 """
 
 from __future__ import annotations
@@ -28,6 +33,13 @@ _HEX64 = re.compile(r"[0-9a-f]{64}")
 _ENTRY_SPLIT = re.compile(r"^### Entry #(\d+)", re.MULTILINE)
 _PREVIOUS = re.compile(r"\*\*Previous Hash\*\*:\s*(.+)")
 _PY_PATH = re.compile(r"[\w./-]+\.py")
+
+# ADR-0018 in-repo decision provenance: a sibling Bicameral repo named in an
+# entry's subject header means the decision is owned elsewhere. Body mentions
+# (reads / relations like "bot #405") are fine — only the header declares
+# ownership. #206 is the documented, corrected exception.
+_SIBLING_REPO = re.compile(r"\bbicameral-(mcp|bot|cli|core)\b", re.IGNORECASE)
+_SUBJECT_LOCALITY_ALLOW = frozenset({"206"})
 
 
 def _hash_after(body: str, label: str) -> str | None:
@@ -91,6 +103,23 @@ def verify_ledger_chain(text: str) -> list[str]:
     return errors
 
 
+def verify_entry_subject_locality(text: str) -> list[str]:
+    """Return errors for entries whose subject header names a sibling repo (ADR-0018)."""
+    errors: list[str] = []
+    for num, body in _entries(text):
+        if num in _SUBJECT_LOCALITY_ALLOW:
+            continue
+        header = body.splitlines()[0] if body else ""
+        m = _SIBLING_REPO.search(header)
+        if m:
+            errors.append(
+                f"#{num}: entry header names sibling repo '{m.group(0)}' as its subject; "
+                f"governed writes must land in the owning repo (ADR-0018). Run/seal this in "
+                f"that repo, or keep only a labelled handoff here."
+            )
+    return errors
+
+
 def verify_feature_index(text: str, repo_root: Path) -> list[str]:
     """Return errors for any FEATURE_INDEX test path that does not exist."""
     errors: list[str] = []
@@ -128,13 +157,17 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     ledger = ledger_path.read_text(encoding="utf-8")
     feature_index = fi_path.read_text(encoding="utf-8") if fi_path.exists() else ""
-    errors = verify_ledger_chain(ledger) + verify_feature_index(feature_index, repo_root)
+    errors = (
+        verify_ledger_chain(ledger)
+        + verify_entry_subject_locality(ledger)
+        + verify_feature_index(feature_index, repo_root)
+    )
     if errors:
         print("governance-gate: FAIL")
         for err in errors:
             print(f"  - {err}")
         return 1
-    print("governance-gate: OK (ledger chain + FEATURE_INDEX verified)")
+    print("governance-gate: OK (ledger chain + subject locality + FEATURE_INDEX verified)")
     return 0
 
 

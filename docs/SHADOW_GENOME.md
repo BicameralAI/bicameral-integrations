@@ -629,3 +629,41 @@ descriptor. Qualify the term (`ConnectorConfigDescriptor` vs `ProviderResourceDe
 Pairs with the merged #42 position (`docs/rfq-bot-integrations-boundary-2026-06-06.md`): #173 acquisition feeds
 #42 ingest; both keep the expressive-edge/bot-authority split (ADR-0008) — note `create_provider_resource` (Drive
 folder) is the first write integrations would own, so route it through `ProposedAction`, don't break read-only.
+
+## SG-2026-06-17 — passive RECONSTRUCTION beats cooperative SELF-REPORT for decision capture
+
+`/qor-research` over two external targets in service of **bicameral-mcp #148** (capturing *implicit*
+agent-authored decisions) surfaced a convergent lesson. Microsoft AGT's **ADR-0018 (Reconstructible Decision
+BOM)** ships, in production, the right shape: reconstruct a decision's context *after the fact* from passive
+observability signals (audit/trust/policy/OTel) — **agents never need to cooperate**, partial reconstruction
+is surfaced via explicit *completeness levels* (never silently incomplete), zero hot-path overhead. The local
+**PAMAS paper** supplies the complementary taxonomy (target M0–M5 × strength Observed→Canonical × downstream
+authority A0–A5, fail-closed defaults, validation≠authorization two-key) but its decision flow is a
+**cooperative-proposal lattice**: step 2 is "agent *proposes* mutation within its charter," so it presumes a
+declared Mutation Contract and **starts one step too late** for #148, whose population is decisions never
+declared. **Rule:** for any decision-capture feature, make the *mechanism* passive/reconstructive (AGT-0018)
+and reuse the *schema* from a classification taxonomy (PAMAS axes); an LLM "is-this-a-decision?" detector is
+legitimate only as an **advisory candidate generator** (AGT **ADR-0004**: LLM out of the allow/deny loop),
+shipped **shadow/observe-only first** with a measured FP rate before it is allowed to write the ledger. Also
+noted: AGT **ADR-0017** (Merkle audit chain) is convergent-evolution proof of META_LEDGER and flags the same
+full-chain-replacement gap → reinforces the release-trust cosign/attestation milestone (external anchoring).
+Brief: `docs/research-brief-148-decision-capture-governance-2026-06-17.md` (ledger #206). NOTE: this lesson
+is bicameral-mcp #148-owned; it lives here as archaeology of the #206 cycle, but its owning record belongs in
+the sibling MCP repo (ADR-0018; see SG-2026-06-17-B).
+
+## SG-2026-06-17-B — a decision's owning record belongs in the repo that owns the decision (cross-repo reads OK, writes follow ownership)
+
+Producing #206 exposed the failure directly: `/qor-research` run in **bicameral-integrations** but framed "in
+service of bicameral-mcp #148" wrote its owning artifacts (brief + ledger #206 + gate artifact) into **this**
+chain — splitting one decision across two tamper-evident chains (the #148 research already had a home: that
+repo's PR #536), so neither chain held the complete record. **Rule (ADR-0018):** cross-repo *reads* are always
+fine (you cannot research without reading other repos/issues/sources); governed *writes* — META_LEDGER entries,
+ADRs, `.qor/gates/**`, owning briefs — must land in the repo that **owns the decision**. A dev cycle is scoped
+to one repo's chain; if research here serves another repo's decision, keep only a **labelled handoff** and seal
+the owning record there. Ecosystem-wide governance gets one designated owner repo, never smeared into whichever
+repo you're standing in. **Enforcement:** `governance_gate.py:verify_entry_subject_locality` fails any entry
+whose *header* names a sibling repo (`bicameral-mcp|bot|cli|core`); body mentions ("bot #405" relations) are
+unaffected; #206 is the lone allowlisted, documented exception, corrected by #207. **Correction discipline:**
+#206 was NOT rewritten — sealed artifacts are truthful history; the fix is the append-only #207 + re-scoped
+brief `docs/research-brief-agt-pamas-governance-2026-06-17.md`. Pairs with [[ecosystem-governance-rollout]]
+(the legitimate cross-cutting case → needs a single designated owner).

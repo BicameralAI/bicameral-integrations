@@ -6930,7 +6930,99 @@ mcp picker spec) remains DEFERRED pending bot #405 sign-off. L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#205 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #206: RESEARCH BRIEF -- decision-visibility & governance shape for implicit agent-authored decisions (bicameral-mcp #148)
+
+**Entry ID**: `researchbrief206decisioncapture148`
+**Timestamp**: 2026-06-17T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-148-decision-capture-governance-2026-06-17.md)
+= e56c73965d7b41a4204ff6ea4ceaf6eac3daf856df5196450ad3eff59ddcfa37
+```
+
+**Previous Hash**: a2f127902509a20955436cc018fbb7cf761a98287e0cac004a70548de08770bf
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 58e8d1dad63a270ab346f16d3176775e899977ac7157dfd4fe1210094fb95149
+```
+
+**Decision**: Researched two external targets in service of **bicameral-mcp #148** (capturing implicit
+agent-authored decisions; that repo's research brief shipped as PR #536, OPEN, awaiting Phase-1 signal
+greenlight). **(1) microsoft/agent-governance-toolkit** -- mature OWASP-Agentic/NIST-RMF/EU-AI-Act-aligned
+platform; 32 indexed ADRs + RFC process + compliance crosswalks. Key lessons: **ADR-0018 Reconstructible
+Decision BOM** (reconstruct decision context after-the-fact from passive signals -- audit/trust/policy/OTel --
+non-invasive, completeness-aware, agents never cooperate) = strong external validation of #148's passive
+Phase-1 design; **ADR-0017 Merkle hash chain** = convergent-evolution validation of META_LEDGER + flags the
+full-chain-replacement gap (needs external anchoring -> reinforces release-trust cosign/attestation milestone);
+**ADR-0004 deterministic policy, LLM out of allow/deny** = an "is-this-a-decision?" classifier may only be an
+advisory candidate generator, never a gate; **ADR-0030 action-bound fail-closed approval** + **shadow mode**
+(observe-only before enforce) = ship #148 signals shadow-first and measure FP rate before gating.
+**(2) PAMAS paper (Proportional Adaptive Mutation Authority)** -- evaluated decision-tree shape: NOT a single
+tree but a **multi-axis classification lattice** (target M0-M5 x strength Observed->Canonical x downstream
+authority A0-A5) feeding a two-evaluator pipeline (lifecycle then authority) routed through 5 handling lanes.
+Strengths: orthogonal axes separate confidence from consequence; fail-closed defaults ("unknown consequence
+!= presumed safety"); demotion as first-class reverse edge; validation-vs-authorization two-key separation.
+**DRIFT for #148:** the lattice presumes a *declared* Mutation Contract (step 2 = "agent proposes") and so
+**starts one step too late** -- it has no upstream *detection* stage for *undeclared* decisions, which is the
+entire #148 population. **Synthesis recommendation:** adopt PAMAS taxonomy as the capture *schema* + AGT
+ADR-0018 reconstruction as the capture *mechanism* + an advisory LLM detector shipped shadow-first. Brief:
+`docs/research-brief-148-decision-capture-governance-2026-06-17.md`. SHADOW_GENOME updated (SG-2026-06-17:
+passive reconstruction beats cooperative self-report). Advisory only; no `src/`, no contract change; L1.
+
+---
+
+### Entry #207: GOVERNANCE DECISION (ADR-0018) -- in-repo decision provenance; re-scope of #206
+
+**Entry ID**: `governancedecision207inrepoprovenance`
+**Timestamp**: 2026-06-17T01:00:00-04:00
+**Phase**: SUBSTANTIATE (governance decision + provenance correction)
+**Author**: Governor
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-agt-pamas-governance-2026-06-17.md)
+= b1eac63b1d17d7ba516bdf72a95305d96e37ed71a5b474b5b39cbd241fd78717
+```
+
+**Previous Hash**: 58e8d1dad63a270ab346f16d3176775e899977ac7157dfd4fe1210094fb95149
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c87ce330419f7b5dea0c66de783e5fd00bbdc2d71487868c209d60e5288cdeea
+```
+
+**Decision**: Operator established **in-repo decision provenance** as governance policy (**ADR-0018**,
+Accepted) after #206 leaked a sibling-repo decision into this chain. **The defect:** #206's research, though
+run here, was owned by the sibling MCP repo's issue #148 (whose research already shipped there as PR #536) --
+recording its owning artifact in *this* chain **split one decision across two tamper-evident chains**, leaving
+neither chain with the complete record. **The rule (ADR-0018):** cross-repo *reads* are always allowed
+(research cannot happen otherwise); governed *writes* -- ledger entries, ADRs, gate artifacts, owning briefs --
+must land in the repo that **owns the decision**; a dev cycle is scoped to one repo's chain; ecosystem-wide
+governance gets one designated owner repo, never smeared into whichever repo the operator is standing in.
+**Correction applied (append-only; #206 NOT mutated -- sealed artifacts are never rewritten):** (1) #206 stands
+as the truthful record that the original was mis-scoped; (2) `docs/research-brief-agt-pamas-governance-2026-06-17.md`
+re-homes the **integrations-owned** conclusions (META_LEDGER tamper-evidence parity w/ AGT ADR-0017 + the
+full-chain-replacement gap -> release-trust cosign milestone; mods stay advisory per AGT ADR-0004; AGT-sidecar
+B3 upgraded to evidence-backed; PAMAS M/strength/A taxonomy as a candidate mod-authority frame); (3) the
+#148-specific findings are carried in that brief's **Appendix A as a labelled handoff** -- to be sealed in a
+sibling-MCP-repo dev cycle, not here. **Enforcement:** `scripts/governance_gate.py` gains
+`verify_entry_subject_locality` -- any entry whose **header** names a sibling Bicameral repo
+(`bicameral-mcp|bot|cli|core`) as its subject fails the gate; body mentions (reads / "bot #405" relations) are
+unaffected; #206 is the single documented, allowlisted exception. **Verified:** gate re-derives #1..#207 clean
++ subject-locality passes; detector unit-checked (foreign header flagged, body-only mention ignored, #206
+allowlisted). No `src/` touched. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#207 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
