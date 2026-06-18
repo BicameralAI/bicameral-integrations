@@ -1,0 +1,21 @@
+{
+  "_comment": "Golden fixture: GitHub repository resource descriptor.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "github",
+  "resource_id": "example-org/example-repo",
+  "display_name": "example-repo",
+  "resource_type": "repository",
+  "uri": "https://github.com/example-org/example-repo",
+  "capabilities": ["list", "read", "search", "watch"],
+  "permission": "granted",
+  "freshness": {
+    "last_modified": "2026-06-14T20:00:00Z",
+    "etag": "W/\"abc123def456\""
+  },
+  "provider_metadata": {
+    "default_branch": "main",
+    "visibility": "private",
+    "language": "Rust"
+  },
+  "captured_at": "2026-06-15T09:10:00Z"
+}

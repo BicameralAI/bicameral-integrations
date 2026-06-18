@@ -1,0 +1,15 @@
+{
+  "_comment": "Golden fixture: Linear workspace-level resource descriptor.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "linear",
+  "resource_id": "ws_acme-corp",
+  "display_name": "Acme Corp",
+  "resource_type": "workspace",
+  "uri": "https://linear.app/acme",
+  "capabilities": ["list", "search"],
+  "permission": "granted",
+  "freshness": {
+    "last_modified": "2026-06-10T14:30:00Z"
+  },
+  "captured_at": "2026-06-15T09:00:00Z"
+}

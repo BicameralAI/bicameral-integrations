@@ -1,0 +1,20 @@
+{
+  "_comment": "Golden fixture: Google Drive folder resource descriptor nested under a shared drive.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "google_drive",
+  "resource_id": "folder_1BcDeFgHiJkLmNoPqRsTuVwXyZ",
+  "display_name": "Architecture ADRs",
+  "resource_type": "folder",
+  "uri": "https://drive.google.com/drive/folders/1BcDeFgHiJkLmNoPqRsTuVwXyZ",
+  "capabilities": ["list", "read"],
+  "permission": "granted",
+  "parent": {
+    "resource_id": "drive_0APxxxxxxxxxxxxxxx",
+    "display_name": "Engineering Decisions"
+  },
+  "freshness": {
+    "last_modified": "2026-06-12T09:30:00Z",
+    "item_count": 8
+  },
+  "captured_at": "2026-06-15T09:05:30Z"
+}

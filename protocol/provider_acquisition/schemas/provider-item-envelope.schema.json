@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ProviderItemEnvelope",
+  "description": "Provisional alpha envelope for a fetched provider item.\n\nWraps one item retrieved from a provider resource (an issue, file, message, document, commit, etc.) with provider-neutral metadata. The payload is screened content — it must not contain secrets, tokens, credentials, PII, or raw authentication material.\n\n# Authority boundary\n\nThis envelope is a **provider fact**, not Bicameral evidence or a decision candidate. It does not carry:\n\n- Local actor/session authority (`AuthorityContext`) - Review commands or signoff approval - Event-store write intent - Bot lifecycle authority (tracking state, compliance, governance verdicts) - `SourceBinding` approval or `Source` materialization\n\nThe item becomes Bicameral evidence only after explicit promotion through the existing ingestion and governance paths.",
+  "type": "object",
+  "required": [
+    "content",
+    "fetched_at",
+    "item_id",
+    "item_type",
+    "provider",
+    "resource_id"
+  ],
+  "properties": {
+    "content": {
+      "description": "Screened textual content of the item. Must not contain secrets, tokens, credentials, or PII.",
+      "type": "string"
+    },
+    "content_hash": {
+      "description": "Content hash (SHA-256) of the screened content. Downstream consumers verify if provided, compute if omitted.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fetched_at": {
+      "description": "When this item was fetched from the provider (ISO-8601).",
+      "type": "string"
+    },
+    "freshness": {
+      "description": "Freshness metadata from the provider for this specific item.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/FreshnessMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "item_id": {
+      "description": "Provider-scoped unique item identifier.",
+      "type": "string"
+    },
+    "item_type": {
+      "description": "Provider-assigned item type (e.g. `issue`, `file`, `message`, `document`, `commit`, `comment`).",
+      "type": "string"
+    },
+    "provider": {
+      "description": "Provider system identifier (must match the descriptor's `provider`).",
+      "type": "string"
+    },
+    "provider_metadata": {
+      "description": "Provider-supplied metadata that does not fit the typed fields above. Must not contain secrets, tokens, credentials, or PII.",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "resource_id": {
+      "description": "The resource this item belongs to (matches the descriptor's `resource_id`).",
+      "type": "string"
+    },
+    "title": {
+      "description": "Human-readable title or subject line, if the item has one.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uri": {
+      "description": "Canonical URI for the item on the provider.",
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "definitions": {
+    "FreshnessMetadata": {
+      "description": "Provider-reported freshness metadata for a resource or item.",
+      "type": "object",
+      "properties": {
+        "etag": {
+          "description": "Provider-reported entity tag or revision identifier.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "item_count": {
+          "description": "Provider-reported item or version count, if available.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "last_modified": {
+          "description": "Provider-reported last-modified timestamp (ISO-8601).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

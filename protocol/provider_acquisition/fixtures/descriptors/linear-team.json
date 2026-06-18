@@ -1,0 +1,20 @@
+{
+  "_comment": "Golden fixture: Linear team resource descriptor nested under a workspace.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "linear",
+  "resource_id": "team_plat",
+  "display_name": "Platform",
+  "resource_type": "team",
+  "uri": "https://linear.app/acme/team/PLAT",
+  "capabilities": ["list", "read", "search"],
+  "permission": "granted",
+  "parent": {
+    "resource_id": "ws_acme-corp",
+    "display_name": "Acme Corp"
+  },
+  "freshness": {
+    "last_modified": "2026-06-12T08:15:00Z",
+    "item_count": 47
+  },
+  "captured_at": "2026-06-15T09:00:00Z"
+}
