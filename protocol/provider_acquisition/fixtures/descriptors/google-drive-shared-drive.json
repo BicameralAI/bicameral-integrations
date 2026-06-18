@@ -1,0 +1,15 @@
+{
+  "_comment": "Golden fixture: Google Drive shared-drive resource descriptor.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "google_drive",
+  "resource_id": "drive_0APxxxxxxxxxxxxxxx",
+  "display_name": "Engineering Decisions",
+  "resource_type": "shared_drive",
+  "uri": "https://drive.google.com/drive/folders/0APxxxxxxxxxxxxxxx",
+  "capabilities": ["list", "read", "search"],
+  "permission": "granted",
+  "freshness": {
+    "last_modified": "2026-06-13T11:00:00Z"
+  },
+  "captured_at": "2026-06-15T09:05:00Z"
+}

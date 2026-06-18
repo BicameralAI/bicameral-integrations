@@ -1,0 +1,20 @@
+{
+  "_comment": "Golden fixture: GitHub pull-request path resource descriptor.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "github",
+  "resource_id": "example-org/example-repo/pulls",
+  "display_name": "Pull Requests",
+  "resource_type": "pull_request_stream",
+  "uri": "https://github.com/example-org/example-repo/pulls",
+  "capabilities": ["list", "read", "search", "watch"],
+  "permission": "granted",
+  "parent": {
+    "resource_id": "example-org/example-repo",
+    "display_name": "example-repo"
+  },
+  "freshness": {
+    "last_modified": "2026-06-14T21:30:00Z",
+    "item_count": 92
+  },
+  "captured_at": "2026-06-15T09:11:30Z"
+}

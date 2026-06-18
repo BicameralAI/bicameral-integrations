@@ -1,0 +1,20 @@
+{
+  "_comment": "Golden fixture: Linear project resource descriptor.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "linear",
+  "resource_id": "proj_q3-migration",
+  "display_name": "Q3 Event Store Migration",
+  "resource_type": "project",
+  "uri": "https://linear.app/acme/project/q3-migration",
+  "capabilities": ["list", "read"],
+  "permission": "granted",
+  "parent": {
+    "resource_id": "team_plat",
+    "display_name": "Platform"
+  },
+  "freshness": {
+    "last_modified": "2026-06-14T16:45:00Z",
+    "item_count": 12
+  },
+  "captured_at": "2026-06-15T09:01:00Z"
+}

@@ -1,0 +1,26 @@
+{
+  "_comment": "Golden fixture: Linear issue/comment-bearing item path descriptor.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "linear",
+  "resource_id": "issue_PLAT-204",
+  "display_name": "PLAT-204: Adopt Postgres advisory locks for the watermark cursor",
+  "resource_type": "issue",
+  "uri": "https://linear.app/acme/issue/PLAT-204",
+  "capabilities": ["read"],
+  "permission": "granted",
+  "parent": {
+    "resource_id": "team_plat",
+    "display_name": "Platform"
+  },
+  "freshness": {
+    "last_modified": "2026-06-14T18:42:11Z",
+    "item_count": 3
+  },
+  "provider_metadata": {
+    "priority": 2,
+    "state": "Todo",
+    "has_comments": true,
+    "comment_count": 3
+  },
+  "captured_at": "2026-06-15T09:02:00Z"
+}

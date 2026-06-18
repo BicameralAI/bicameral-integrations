@@ -1,0 +1,24 @@
+{
+  "_comment": "Golden fixture: Google Drive document resource descriptor.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "google_drive",
+  "resource_id": "doc_1AbcDEFghIJKlmNOpqRStuVWxyz",
+  "display_name": "Event Store Substrate Decision",
+  "resource_type": "document",
+  "uri": "https://docs.google.com/document/d/1AbcDEFghIJKlmNOpqRStuVWxyz/edit",
+  "capabilities": ["read"],
+  "permission": "granted",
+  "parent": {
+    "resource_id": "folder_1BcDeFgHiJkLmNoPqRsTuVwXyZ",
+    "display_name": "Architecture ADRs"
+  },
+  "freshness": {
+    "last_modified": "2026-06-10T15:20:00Z",
+    "etag": "\"MTcyMzQ1Njc4OTAwMA\""
+  },
+  "provider_metadata": {
+    "mime_type": "application/vnd.google-apps.document",
+    "version": "42"
+  },
+  "captured_at": "2026-06-15T09:06:00Z"
+}

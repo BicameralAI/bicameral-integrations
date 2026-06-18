@@ -1,0 +1,19 @@
+{
+  "_comment": "Golden fixture: Linear comment item envelope — a comment on a Linear issue.",
+  "_authority_boundary": "Provider fact only. Not Source, SourceSnapshot, SourceEvidence, DecisionCandidate, Decision, ToolRequest, ExternalIngestEnvelope, or event-store authority.",
+  "provider": "linear",
+  "resource_id": "issue_PLAT-204",
+  "item_id": "comment_a1b2c3d4",
+  "item_type": "comment",
+  "content": "Checked the Postgres docs on advisory locks. Session-level locks seem safer than transaction-level for our long-running poller pattern. Will prototype with pg_advisory_lock(bigint).",
+  "uri": "https://linear.app/acme/issue/PLAT-204#comment-a1b2c3d4",
+  "content_hash": "b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5",
+  "freshness": {
+    "last_modified": "2026-06-14T19:10:00Z"
+  },
+  "provider_metadata": {
+    "parent_issue_identifier": "PLAT-204",
+    "comment_index": 2
+  },
+  "fetched_at": "2026-06-15T09:15:30Z"
+}

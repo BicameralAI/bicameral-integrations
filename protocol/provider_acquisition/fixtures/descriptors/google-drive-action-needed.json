@@ -1,0 +1,18 @@
+{
+  "_comment": "Golden fixture: Google Drive descriptor with action_needed permission state — files.list is unavailable because the OAuth scope is insufficient.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "google_drive",
+  "resource_id": "drive_0BPyyyyyyyyyyyyyy",
+  "display_name": "Product Specs (restricted)",
+  "resource_type": "shared_drive",
+  "uri": "https://drive.google.com/drive/folders/0BPyyyyyyyyyyyyyy",
+  "capabilities": [],
+  "permission": "action_needed",
+  "provider_metadata": {
+    "action_needed_reason": "missing_scope",
+    "required_scope": "https://www.googleapis.com/auth/drive.readonly",
+    "current_scope": "https://www.googleapis.com/auth/drive.metadata.readonly",
+    "action_hint": "Re-authorize with drive.readonly scope to enable file listing and content reading."
+  },
+  "captured_at": "2026-06-15T09:07:00Z"
+}
