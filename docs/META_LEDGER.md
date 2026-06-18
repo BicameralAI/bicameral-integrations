@@ -6731,7 +6731,300 @@ descriptor (UI/consumer-facing) AND single-sourced into the emission provenance.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#200 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **SEALED at #200 (`ca5681b4`; L2)** -- adapter_version single-sourced from the descriptor; emission carries `<source_id>/<version>`; stale `continue/0.1.0` drift fixed. **Versioning COMPLETE** (descriptor version+channel #199 + emission provenance #200). Prior: #199 versioning, #198 gitattributes.*
+### Entry #201: RESEARCH BRIEF -- source acquisition boundary for Linear/Google Drive/GitHub (GH #173)
+
+**Entry ID**: `research201sourceacquisition173`
+**Timestamp**: 2026-06-16T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst (qor-research)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-source-acquisition-boundary-2026-06-16.md)
+= 059f703919753c7e9934ce8055c7dd699efc8830114ee06ce8ba6187e9efdd89
+```
+
+**Previous Hash**: ca5681b42f5fa7e8d0d3a984d7a83d9b91787c736e4559ec62d764103df44ed6
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 8f2788dfac73b097d0dd5778a47065bc0f5bed6388e588fb17774e9050920533
+```
+
+**Decision**: RFQ #173 researched against the live tree; brief at `docs/research-brief-source-acquisition-boundary-2026-06-16.md`. **Central finding: the acquisition/discovery surface #173 asks for does not exist -- it is a structural GAP, not a drift.** The repo is an *ingest funnel* only (push: webhook/poll -> `Observation` -> `AdapterEmission` -> gateway); a grep for every #173 candidate interface (`list_resources`/`get_resource`/`fetch_provider_item`/`validate_resource_access`/`create_provider_resource`/`ProviderResourceDescriptor`) returns **zero files**. Latent scaffolding exists: `SourceMode.DISCOVERY` (`adapter/core/capabilities.py:15`) is declared by **0/26** connectors, and `SourceCapabilities` carries unused `supports_filters`/`supports_resource_overrides`/`source_specific_filters` flags -- the architecture anticipated discovery but never built it. **#42 (merged PR #69, `docs/rfq-bot-integrations-boundary-2026-06-06.md`) is complementary, not overlapping**: it settled the evidence-ingest/egress/identity/schema/preflight boundary; #173 is the pre-ingest *acquisition* boundary that feeds it; both share the expressive-edge/authority split. **Naming hazard flagged**: "descriptor" is overloaded -- `config.json` is the per-connector *config* descriptor (ADR-0015/#116); #173's is a per-resource *provider-resource* descriptor (distinct object, qualify it). Per-connector reality: Linear has webhook+GraphQL issue fetch but no team/project enumeration; Google Drive's `files.list` folder discovery is **explicitly deferred** (the critical-path blocker for alpha Drive ingestion) -- only `documents.get` ships; GitHub has no live fetch at all. Answered all 11 #173 questions (descriptor fields, item envelope, safe capability names, per-provider alpha-first resources, scopes + typed `permission_state`/`action_needed`, fixtures-without-creds). 8 recommendations -- P1: author a *Provider Acquisition Contract* ADR; lock the two-descriptor vocabulary; carve out / route `create_provider_resource` (Drive folder) via `ProposedAction` to keep ADR-0008 read-only intact. **RFQ answer only -- no implementation authorized** until cross-repo sign-off (Kevin/Jin + bot #405/#386/#390); #173 Non-Goals + `agent-task` exclusion respected. New shadow-genome candidate **SG-2026-06-16-A** (ingest-funnel-only architecture; discovery edge is net-new). L1, advisory.
+
+---
+
+### Entry #202: DESIGN DECISION -- ADR-0017 Provider Acquisition Contract (discovery/fetch edge; GH #173)
+
+**Entry ID**: `adr0017provideracquisition202`
+**Timestamp**: 2026-06-16T00:00:00-04:00
+**Phase**: IDEATE/DESIGN (ADR scaffold; RFQ #173 answer artifact)
+**Author**: Analyst -> Strategist (qor-research follow-up)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/adr/0017-provider-acquisition-contract.md)
+= 811af2505f6b309cedfaeb57975fe187a8d37c8a8e3969cf34fc8e7ced7301ac
+```
+
+**Previous Hash**: 8f2788dfac73b097d0dd5778a47065bc0f5bed6388e588fb17774e9050920533
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= dab5de6eb6cbb4e71c90ef11a9d7b119dc307c536a2696097af1ab5bb91a8892
+```
+
+**Decision**: Scaffolded **ADR-0017 (Provider Acquisition Contract)** -- the discovery/fetch/readiness
+edge #173 asks for -- in **Proposed** status (not Accepted until Kevin/Jin + bot #405/#386/#390 sign off;
+#173 Non-Goals respected, no implementation). Operator context: the connector/adapter side was
+deliberately minimized while mcp took shape; now supplying the greater structure, designed for the
+**entire ecosystem** (26 connectors, T0-T3, active/passive/webhook) + the universal adapter, not just
+#173's three. **Design choices, all extending existing structure rather than forking it:** (1) a fourth
+connector surface -- `DiscoveryConnector(Connector, Protocol)` peer to the existing Active/Polling/Webhook
+Protocols in `adapter/core/contracts.py`, gated on the latent `SourceMode.DISCOVERY` (declared by 0/26
+today); (2) neutral objects in a new `adapter/core/discovery.py` (`ProviderResourceDescriptor`,
+`ProviderItemEnvelope`, `PermissionState`, `ResourceCapability`, `ResourcePage`, `AccessVerdict`) reusing
+`SourceRef`/`Observation` + `FilterSpec`/`QuotaSpec`; (3) **one security chokepoint, every surface** --
+`fetch_provider_item` returns `Observation`s that funnel through the SAME `validate_emissions`/FX-SEC-001
+screen; descriptors get a `screen_descriptor` per-leaf pass reusing `sensitive.detect_sensitive` (no
+side-channel, "N surfaces -> 1 screen" preserved for pull as for push); (4) `create_provider_resource`
+routes via **`ProposedAction`** (ADR-0011/#42 Domain 2) so ADR-0008 read-only stays intact -- integrations
+proposes, bot governs/executes; (5) opt-in per connector + ADR-0015 config-descriptor `discovery` block
+(additive, `modes subset capabilities.modes` guard holds); (6) ADR-0012 ladder unchanged (fixtures=Beta,
+live creds=Live); (7) descriptor->shared-schema promotion mirrors #42 Domain 4. Naming hazard locked:
+`ConnectorConfigDescriptor` (ADR-0015) vs `ProviderResourceDescriptor` (this ADR). Alpha scope per
+provider defined (Linear team/project/issue; Drive folder via the deferred `files.list` = critical path;
+GitHub repo/file/issue/PR). GOVERNANCE_INDEX updated (ADR range 0004..0017 + Last Reviewed 2026-06-16,
+clears the stale-tier1 drift). Open/cross-repo: bot #405 must confirm consumption shape; GitHub live-fetch
+auth (PAT vs App) unbuilt. L2 (new cross-repo-consumed surface + auth/permission semantics).
+
+---
+
+### Entry #203: GATE TRIBUNAL -- PASS (L1) -- provider-acquisition docs plan
+
+**Entry ID**: `gatetribunal203provideracqdocs`
+**Timestamp**: 2026-06-16T00:00:00-04:00
+**Phase**: AUDIT (gate tribunal)
+**Author**: Judge (solo; codex-plugin shortfall recorded)
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(.agent/staging/AUDIT_REPORT.md)
+= 180d5ae200a194c5051297a6d67f22e436d9485b502a4dd25abbf4ec19e16893
+```
+
+**Previous Hash**: dab5de6eb6cbb4e71c90ef11a9d7b119dc307c536a2696097af1ab5bb91a8892
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 12349345de3112020d1ca8bd9f4279428d2882c9fb1a96cc3d1d63e219b6b3b2
+```
+
+**Verdict**: **PASS (L1)**. Target `docs/plan-provider-acquisition-docs-2026-06-16.md` (docs/governance only;
+ADR-0017 completeness). All adversarial passes clear: prompt-injection clean (3 gov files scanned; plan
+manually attested -- name outside the canary allowlist); no L3/OWASP/ghost-UI/razor surface (no code/UI by
+construction); Test Functionality PASS (all planned checks invoke a real gate/lint and assert on output --
+governance_gate chain re-derive, ADR bidirectional `grep -l 0017` closure, plan_text_consistency_lint,
+enum-parity char-identity, governance-index registration; deferred code round-trip correctly a D4.d waiver,
+not a presence-only check); Dependency none; Macro-architecture clean (ADR=decision vs
+PROVIDER_ACQUISITION_CONTRACT.md=contract surface, composed not complected); Feature Inventory empty (docs
+exempt); **Infrastructure Alignment PASS** -- every cited path grep-verified (6 ADRs + UI_RENDERING_SPEC +
+CONNECTOR_BACKEND_SETUP + schema + 2 scripts + capabilities.py + sensitive.py all EXIST; the two cited-NEW
+paths PROVIDER_ACQUISITION_CONTRACT.md + adapter/core/discovery.py correctly ABSENT; SourceMode.DISCOVERY +
+detect_sensitive symbols present); Orphan none (new spec connected via index + ADR-0017). Pre-audit:
+plan_iteration_status_lint exit 0, audit_risk_score option_b_required false, prose_test_lint --enforce exit
+0, ci_coverage_lint WARN-only (non-binding). No repeated-VETO pattern (#201/#202 clean). Two operator open
+questions (spec-doc filename; 0008/0015 amendment style) are Governor decisions, not audit blockers. Next:
+`/qor-implement`.
+
+---
+
+### Entry #204: IMPLEMENTATION -- provider-acquisition documentation (ADR-0017 completeness)
+
+**Entry ID**: `impl204provideracqdocs`
+**Timestamp**: 2026-06-16T00:00:00-04:00
+**Phase**: IMPLEMENT (docs/governance; doc_tier standard)
+**Author**: Specialist
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/PROVIDER_ACQUISITION_CONTRACT.md)
+= 5a0e776d3b6aed0d4a876ea434ea6aef34ecc3ffd8f50c4776680edd502dc314
+```
+
+**Previous Hash**: 12349345de3112020d1ca8bd9f4279428d2882c9fb1a96cc3d1d63e219b6b3b2
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 78915e02c85c99b21c05129e92dd29e6303f1b7fdb86e191661f7a581fa46847
+```
+
+**Decision**: Built the plan `docs/plan-provider-acquisition-docs-2026-06-16.md` (PASS #203). **Phase 1**
+-- ADR back-references made bidirectional: cross-ref `Relates to: ADR-0017` lines on 0004/0006/0011; dated
+`## Amendment (ADR-0017, 2026-06-16)` blocks on **0008** (create→ProposedAction keeps read-only intact, no
+new write authority) and **0015** (additive `discovery` mode + config block; ConnectorConfigDescriptor vs
+ProviderResourceDescriptor naming locked). **Phase 2** -- new `docs/PROVIDER_ACQUISITION_CONTRACT.md`
+(Status: Proposed): the consumable contract surface for #405/mcp -- descriptor + item-envelope field
+tables, `PermissionState`/`ResourceCapability` enums, `DiscoveryConnector` operation signatures, the
+one-screen-every-surface security invariant, per-provider alpha kinds + scopes, conformance-fixture
+format. **Phase 3** -- registered in GOVERNANCE_INDEX (Tier 5). **Verification (D4):** Phase 1 bidirectional
+closure -- `grep -l 0017 docs/adr/*.md` = {0004,0006,0008,0011,0015,0017}; Phase 2 enum-parity -- both
+value sets character-identical between the spec and ADR-0017 §2 (PermissionState 5, ResourceCapability 5);
+chain re-derives #1..#204 clean; governance-index reports the spec registered, no new stale-tier1. **D4.d
+waiver carried:** no code round-trip test (the `adapter/core/discovery.py` enums do not exist pre-sign-off;
+follow-up = post-sign-off build plan). DEFERRED per plan exclusions (NOT built): per-connector discovery
+docs, UI_RENDERING_SPEC picker section, schema `discovery` block (all gated on bot #405 sign-off). No
+`src/` touched; FEATURE_INDEX untouched (docs-only). L1.
+
+---
+
+### Entry #205: SESSION SEAL (SUBSTANTIATE) -- provider-acquisition documentation cycle (ADR-0017 completeness; #173)
+
+**Entry ID**: `sessionseal205provideracqdocs`
+**Timestamp**: 2026-06-16T00:00:00-04:00
+**Phase**: SUBSTANTIATE (session seal; docs/governance cycle)
+**Author**: Judge
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/plan-provider-acquisition-docs-2026-06-16.md)
+= a867b77390883b9a46c9fdc0a197c65078ce8aa2a41b3f6d6589606781b3539d
+```
+
+**Previous Hash**: 78915e02c85c99b21c05129e92dd29e6303f1b7fdb86e191661f7a581fa46847
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a2f127902509a20955436cc018fbb7cf761a98287e0cac004a70548de08770bf
+```
+
+**Decision**: **Sealed the provider-acquisition documentation cycle** (#201 RESEARCH -> #202 DESIGN -> #203
+AUDIT PASS -> #204 IMPLEMENT -> this seal). Reality = Promise: the plan
+`docs/plan-provider-acquisition-docs-2026-06-16.md` declared three doc phases; all three shipped --
+(1) ADR-0004/0006/0008/0011/0015 cross-linked to ADR-0017 (bidirectional closure verified:
+`grep -l 0017 docs/adr/*.md` = the 5 + 0017); (2) `docs/PROVIDER_ACQUISITION_CONTRACT.md` (Status:
+Proposed) shipped with enum-parity to ADR-0017 §2 char-identical (PermissionState 5, ResourceCapability
+5); (3) GOVERNANCE_INDEX registered + SYSTEM_STATE milestone added. **Gates run (real exit):**
+skill_admission / gate_skill_matrix / gate_chain_completeness / merge_velocity_check / secret_scanner
+(--staged) / dist_compile all PASS; governance_gate re-derives #1..#205 clean; governance-index reports
+the spec registered + no stale-tier1. **Honest SKIPs (operator-elected repo-convention seal):** this repo
+seals docs cycles via the SESSION SEAL ledger entry + governance_gate chain -- it has **0 git tags** and
+**no README badges** across 200 prior entries -- so the generic skill's release-class steps were NOT
+applied: version-bump + first-ever git tag (Step 7.5/9.5.5) and README badge_currency (Step 6.5, which
+exits 1 only because no badges exist to update) are out of this repo's docs-cycle practice; **intent_lock**
+was not captured at implement Step 5.5 (process gap this cycle -- recorded, not gamed with a retroactive
+lock). No `src/` touched; FEATURE_INDEX not adopted for docs. The discovery code build (the
+`DiscoveryConnector` Protocol + `adapter/core/discovery.py` + Drive `files.list` + per-connector docs +
+mcp picker spec) remains DEFERRED pending bot #405 sign-off. L1.
+
+---
+
+### Entry #206: RESEARCH BRIEF -- decision-visibility & governance shape for implicit agent-authored decisions (bicameral-mcp #148)
+
+**Entry ID**: `researchbrief206decisioncapture148`
+**Timestamp**: 2026-06-17T00:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-148-decision-capture-governance-2026-06-17.md)
+= e56c73965d7b41a4204ff6ea4ceaf6eac3daf856df5196450ad3eff59ddcfa37
+```
+
+**Previous Hash**: a2f127902509a20955436cc018fbb7cf761a98287e0cac004a70548de08770bf
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 58e8d1dad63a270ab346f16d3176775e899977ac7157dfd4fe1210094fb95149
+```
+
+**Decision**: Researched two external targets in service of **bicameral-mcp #148** (capturing implicit
+agent-authored decisions; that repo's research brief shipped as PR #536, OPEN, awaiting Phase-1 signal
+greenlight). **(1) microsoft/agent-governance-toolkit** -- mature OWASP-Agentic/NIST-RMF/EU-AI-Act-aligned
+platform; 32 indexed ADRs + RFC process + compliance crosswalks. Key lessons: **ADR-0018 Reconstructible
+Decision BOM** (reconstruct decision context after-the-fact from passive signals -- audit/trust/policy/OTel --
+non-invasive, completeness-aware, agents never cooperate) = strong external validation of #148's passive
+Phase-1 design; **ADR-0017 Merkle hash chain** = convergent-evolution validation of META_LEDGER + flags the
+full-chain-replacement gap (needs external anchoring -> reinforces release-trust cosign/attestation milestone);
+**ADR-0004 deterministic policy, LLM out of allow/deny** = an "is-this-a-decision?" classifier may only be an
+advisory candidate generator, never a gate; **ADR-0030 action-bound fail-closed approval** + **shadow mode**
+(observe-only before enforce) = ship #148 signals shadow-first and measure FP rate before gating.
+**(2) PAMAS paper (Proportional Adaptive Mutation Authority)** -- evaluated decision-tree shape: NOT a single
+tree but a **multi-axis classification lattice** (target M0-M5 x strength Observed->Canonical x downstream
+authority A0-A5) feeding a two-evaluator pipeline (lifecycle then authority) routed through 5 handling lanes.
+Strengths: orthogonal axes separate confidence from consequence; fail-closed defaults ("unknown consequence
+!= presumed safety"); demotion as first-class reverse edge; validation-vs-authorization two-key separation.
+**DRIFT for #148:** the lattice presumes a *declared* Mutation Contract (step 2 = "agent proposes") and so
+**starts one step too late** -- it has no upstream *detection* stage for *undeclared* decisions, which is the
+entire #148 population. **Synthesis recommendation:** adopt PAMAS taxonomy as the capture *schema* + AGT
+ADR-0018 reconstruction as the capture *mechanism* + an advisory LLM detector shipped shadow-first. Brief:
+`docs/research-brief-148-decision-capture-governance-2026-06-17.md`. SHADOW_GENOME updated (SG-2026-06-17:
+passive reconstruction beats cooperative self-report). Advisory only; no `src/`, no contract change; L1.
+
+---
+
+### Entry #207: GOVERNANCE DECISION (ADR-0018) -- in-repo decision provenance; re-scope of #206
+
+**Entry ID**: `governancedecision207inrepoprovenance`
+**Timestamp**: 2026-06-17T01:00:00-04:00
+**Phase**: SUBSTANTIATE (governance decision + provenance correction)
+**Author**: Governor
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-agt-pamas-governance-2026-06-17.md)
+= b1eac63b1d17d7ba516bdf72a95305d96e37ed71a5b474b5b39cbd241fd78717
+```
+
+**Previous Hash**: 58e8d1dad63a270ab346f16d3176775e899977ac7157dfd4fe1210094fb95149
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c87ce330419f7b5dea0c66de783e5fd00bbdc2d71487868c209d60e5288cdeea
+```
+
+**Decision**: Operator established **in-repo decision provenance** as governance policy (**ADR-0018**,
+Accepted) after #206 leaked a sibling-repo decision into this chain. **The defect:** #206's research, though
+run here, was owned by the sibling MCP repo's issue #148 (whose research already shipped there as PR #536) --
+recording its owning artifact in *this* chain **split one decision across two tamper-evident chains**, leaving
+neither chain with the complete record. **The rule (ADR-0018):** cross-repo *reads* are always allowed
+(research cannot happen otherwise); governed *writes* -- ledger entries, ADRs, gate artifacts, owning briefs --
+must land in the repo that **owns the decision**; a dev cycle is scoped to one repo's chain; ecosystem-wide
+governance gets one designated owner repo, never smeared into whichever repo the operator is standing in.
+**Correction applied (append-only; #206 NOT mutated -- sealed artifacts are never rewritten):** (1) #206 stands
+as the truthful record that the original was mis-scoped; (2) `docs/research-brief-agt-pamas-governance-2026-06-17.md`
+re-homes the **integrations-owned** conclusions (META_LEDGER tamper-evidence parity w/ AGT ADR-0017 + the
+full-chain-replacement gap -> release-trust cosign milestone; mods stay advisory per AGT ADR-0004; AGT-sidecar
+B3 upgraded to evidence-backed; PAMAS M/strength/A taxonomy as a candidate mod-authority frame); (3) the
+#148-specific findings are carried in that brief's **Appendix A as a labelled handoff** -- to be sealed in a
+sibling-MCP-repo dev cycle, not here. **Enforcement:** `scripts/governance_gate.py` gains
+`verify_entry_subject_locality` -- any entry whose **header** names a sibling Bicameral repo
+(`bicameral-mcp|bot|cli|core`) as its subject fails the gate; body mentions (reads / "bot #405" relations) are
+unaffected; #206 is the single documented, allowlisted exception. **Verified:** gate re-derives #1..#207 clean
++ subject-locality passes; detector unit-checked (foreign header flagged, body-only mention ignored, #206
+allowlisted). No `src/` touched. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#207 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
-*Next required action: remaining issues triage (#40 ADR-0011 reframe, #42 boundary RFQ [partly #92], #93 Linear stress test, #101 accepted-risk hardening). **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73.*
+*Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
+*The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
+*Next required action: ADR-0017 needs Kevin/Jin + bot #405 sign-off -> on Accept, `/qor-plan` the discovery build (Drive `files.list` is critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ [partly #92], #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-202 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
