@@ -29,7 +29,10 @@ from .provenance import ActorType, Attribution, Provenance
 from .sensitive import detect_sensitive
 
 # Pin to the SDK contract this mapping targets (cross-repo read; integrations owns the pin).
+# The vendored JSON schema (runtime/schemas/sdk_evidence_v0.schema.json) is pinned to this commit;
+# the conformance test fails first on drift (FX-EVIDENCE-001).
 SDK_EVIDENCE_CONTRACT = "bicameral-sdk/src/evidence/index.ts@GH#7"
+SDK_EVIDENCE_PIN_COMMIT = "180415bba0d7d777f8d1ce2ce3a5b81b29de1842"
 
 _RAW = "raw"
 
@@ -131,6 +134,7 @@ def emission_to_sdk_evidence(
 
 __all__ = [
     "SDK_EVIDENCE_CONTRACT",
+    "SDK_EVIDENCE_PIN_COMMIT",
     "EvidenceExportError",
     "to_sdk_evidence",
     "emission_to_sdk_evidence",

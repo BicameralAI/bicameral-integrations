@@ -7283,9 +7283,51 @@ Devil's-advocate: re-screen proven on a hand-built secret-bearing emission; no r
 (752 pass). Not bot/sidecar work -- integrations stays the evidence edge; Live bot-gated. **Review Boundary
 honored:** staged on `feat/212a-sdk-evidence-sink`, not pushed/merged at authoring. L2.
 
+### Entry #214: IMPLEMENTATION -- Cycle B: SDK evidence-shape vendoring (pin-to-commit) + conformance (#212 follow-up, FX-EVIDENCE-001)
+
+**Entry ID**: `impl214sdkevidencevendorconformance`
+**Timestamp**: 2026-06-18T08:00:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(runtime/schemas/sdk_evidence_v0.schema.json)
+= 1918d9d4c944a227fcc261ede384233190f894b583db2cb3bbba598766ddecfb
+```
+
+**Previous Hash**: b179aefe78136f11745ef080d97fee88bbe646ce480013abef0e53e4cea6f0f5
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 54fc16cc5c83bb0d5ed3717ab5acfdd6034ba31e4d749baee1714d64ac899413
+```
+
+**Decision**: #212 follow-up Cycle B (plan-less micro-cycle off #213; self-audit folded) -- **SDK
+evidence-shape vendoring (pin-to-commit) + cross-repo conformance**. **(1)
+`runtime/schemas/sdk_evidence_v0.schema.json` (NEW)** -- a VENDORED draft-07 JSON-schema mirror of the SDK
+evidence/provenance TypeScript contract (the SDK ships TS interfaces only, no JSON schema), following the
+`ingest_request_v1.schema.json` vendoring convention: `$comment` pins **bicameral-sdk @ commit
+`180415bba0d7d777f8d1ce2ce3a5b81b29de1842` (GH #7)**, dated. Defines `Evidence` (required id/source/excerpt/
+provenance/status/capturedAt) + `SourceSystemRef`/`SourceExcerptRef`/`Provenance`/`Attribution`, `status` and
+`actorType` enum-locked. **(2) `adapter/core/sdk_evidence.py`** -- `SDK_EVIDENCE_PIN_COMMIT` records the pin.
+**(3) `runtime/tests/test_sdk_evidence_conformance.py` (NEW)** -- structurally validates `to_sdk_evidence` +
+`emission_to_sdk_evidence` output against the vendored schema's required/enum (house pattern, dependency-light
+-- mirrors `test_gateway_mapping`, NOT a third-party validator), across webhook/active/passive modes;
+**integrations fails first on SDK drift**. The conformance check **runs in the normal pytest CI** (mirrors the
+provider_acquisition fixture-conformance precedent) -- no separate workflow. FX-EVIDENCE-001 updated.
+**Verification:** 756 tests pass (4 new); ruff clean; mypy clean (255 files); bandit CI-style exit 0;
+governance-gate OK (chain #1..#214 + FEATURE_INDEX + subject-locality). **Caveat (recorded, not a blocker):**
+the SDK is untagged (`0.1.0`) with no published JSON schema, so the pin is to a **commit SHA**; a cleaner pin
+awaits the SDK publishing an `Evidence` JSON schema + a version tag (suggested upstream ask). Not bot/sidecar
+work. **Review Boundary honored:** staged on `feat/212b-sdk-evidence-vendor-conformance`, not pushed/merged at
+authoring. L2.
+
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#213 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#214 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
