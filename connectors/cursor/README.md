@@ -11,6 +11,14 @@ priority P1, default trust tier T1). A developer-AI-leverage adapter from the
   (`parse_usage_day`). Read-only evidence; no canonical writes (ADR-0008). **Poll-only —
   Cursor publishes no webhooks** (docs recommend polling at most hourly).
 
+> **Known limitation — single-request fetch (no pagination wired).** Cursor's endpoint
+> paginates via a POST-body `page`/`pageSize` cursor (verified 2026-06-11), but
+> `runtime.poll_specs.build_cursor_spec` currently issues a **single request**
+> (`pagination=None`) — a body-cursor pager is not yet built (it needs a new abstraction,
+> like `graphql_poll` did). For a **large team a single page can truncate silently**;
+> until the pager is wired, the operator widens `pageSize` and bounds the date range. See
+> [`auth.md`](auth.md). Tracked for a follow-up (overlaps #101 hardening).
+
 ## Readiness: Beta (ADR-0012)
 
 Promoted to **Beta**: its usage-row → `runtime.deliver_poll` → reference sink path is proven

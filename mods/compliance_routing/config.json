@@ -1,0 +1,56 @@
+{
+  "id": "compliance_routing",
+  "manifest_id": "compliance-routing",
+  "name": "Compliance Routing",
+  "version": "0.1.0",
+  "channel": "beta",
+  "description": "Advisory mod that routes evidence naming a regulatory/compliance framework (HIPAA/GDPR/PCI DSS/SOC 2/CCPA/SOX/FedRAMP/NIST/...) to a compliance reviewer so the regulated scope is weighed before a change lands.",
+  "family": "governance",
+  "advises_on": "Named regulatory/compliance frameworks (HIPAA/GDPR/PCI/PCI DSS/SOC 2/CCPA/SOX/FERPA/GLBA/FedRAMP/ISO 27001/NIST/data subject/breach notification/...) in title + body + evidence excerpts.",
+  "consumes": [
+    "title + body",
+    "evidence excerpts"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "suggested_review_question"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Routes evidence naming a regulatory framework to compliance review; a routing signal, never a finding-of-record."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/compliance_routing/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

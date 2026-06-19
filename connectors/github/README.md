@@ -4,11 +4,15 @@ Provider-facing GitHub adapter.
 
 ## Modes
 
-- **Active** — a GitHub pull-request object maps to one neutral `Observation`
-  (`parse_pull_request`).
-- **Webhook** — a pull-request event is an envelope (`{action, number,
-  pull_request:{…}, repository}`); `normalize_event` rebuilds the flat PR object
-  `parse_pull_request` expects (injecting the top-level `number`) before parsing.
+- **Webhook** (only operator-runnable mode today) — a pull-request event is an
+  envelope (`{action, number, pull_request:{…}, repository}`); `normalize_event`
+  rebuilds the flat PR object `parse_pull_request` expects (injecting the
+  top-level `number`) before parsing.
+- **Active** — a `parse_pull_request` **parse surface** exists (and the connector
+  declares the `ACTIVE` capability), but the live `fetch_active` REST path is
+  **deferred / not wired**. There is no operator-runnable active fetch yet, which
+  is why `config.json` lists `modes: ["webhook"]` only. The parse surface is ready
+  for whenever the live fetch is built.
 
 `X-Hub-Signature-256` (hex HMAC-SHA256 over the raw body, `sha256=`-prefixed)
 verification and best-effort `X-GitHub-Delivery` dedup are implemented in

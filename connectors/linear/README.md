@@ -7,7 +7,14 @@ Provider-facing Linear (issue tracking) client and auth documentation.
 - **Webhook** (primary) — the event envelope `{action, type, actor, data,
   updatedFrom, ...}` carries a fully-serialized entity plus change context a
   poll cannot; `parse_event` maps an Issue event to a neutral `Observation`.
-- **Active** — GraphQL fetch as a fallback (deferred this cycle).
+  Only `Issue` **create**/**update** events with a non-empty `identifier` are
+  ingested — `_is_issue_event` fail-closes on a `Comment`/`Project` event, a
+  `remove` (delete) action, or a shapeless envelope (a `config.json` event
+  subscription is a Linear-UI hint, not an enforced filter — SG-2026-06-18-A).
+- **Active** — GraphQL issue fetch (`parse_issue_node`, driven by
+  `runtime.graphql_poll`): **code-complete and harness-proven** (FX-LINEAR-003), not
+  "deferred". The live `api.linear.app/graphql` call + API-key resolution stay
+  operator-run; flip-ready, **not yet Live** (ADR-0012).
 
 `Linear-Signature` verification (hex HMAC-SHA256 over the raw body + 60 s
 anti-replay window) and best-effort `webhookId` dedup are implemented in
@@ -23,8 +30,9 @@ First connector promoted to **Beta**: its signed-webhook →
 ## Surface
 
 - `parse_event(event)` — Linear webhook event → `Observation` (`identifier` +
-  `title` → title; `description` → excerpt; `actor.name` → author; `createdAt`
-  → timestamp; `action`/`type`/`organizationId` → `metadata`).
+  `title` → title; `description` → excerpt; `createdAt` → timestamp;
+  `action`/`type`/`organizationId` → `metadata`). `author` is **always empty** —
+  the actor's real name is dropped, never surfaced (PII-safe, SG-2026-06-11-D).
 - `LinearConnector` — connector identity and capabilities (`WEBHOOK`, `ACTIVE`).
 
 ## References

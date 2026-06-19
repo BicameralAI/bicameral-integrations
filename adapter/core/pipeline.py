@@ -180,7 +180,10 @@ def _emission_from(obs: Observation, adapter_version: str) -> AdapterEmission:
         title=obs.title,
         body=obs.excerpt,
         evidence=(evidence,),
-        emission_type="candidate",
+        # A connector emits raw EVIDENCE, never a candidate decision — candidate-extraction
+        # and promotion are downstream (bot) concerns (SG-2026-06-18-D; SDK evidence contract,
+        # GH #187). `"candidate"` stays a valid hand-built type; the connector default is `"evidence"`.
+        emission_type="evidence",
         adapter_version=adapter_version,
         metadata=dict(obs.metadata),  # preserve connector metadata (ADR-0014); defensive copy
     )

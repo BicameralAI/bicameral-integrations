@@ -1,0 +1,56 @@
+{
+  "id": "cross_system_reference",
+  "manifest_id": "cross-system-reference",
+  "name": "Cross-System Reference",
+  "version": "0.1.0",
+  "channel": "beta",
+  "description": "Advisory mod that surfaces when an emission's evidence text references a different external system (github/gitlab/linear/jira/notion/slack/sentry/pagerduty/zendesk/confluence) than its own source_id, so a reviewer can reconcile the two systems.",
+  "family": "integration",
+  "advises_on": "Cross-system linkage: evidence text (title + body + excerpts) that names an external system other than the emission's own source_id.",
+  "consumes": [
+    "title + body",
+    "evidence excerpts"
+  ],
+  "emits": [
+    "routing_hint",
+    "source_evidence_annotation",
+    "suggested_review_question"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Flags cross-system references for reconciliation; a routing signal, never a finding-of-record."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/cross_system_reference/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}

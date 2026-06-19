@@ -248,7 +248,7 @@ def test_run_mod_rejects_secret_in_input_metadata():
 def test_all_manifests_representable():
     # F4: every shipped manifest's outputs are known + forbidden_actions ⊇ the EM-safe baseline.
     manifests = sorted(_MODS_DIR.glob("*/manifest.yaml"))
-    assert len(manifests) == 13
+    assert len(manifests) == 18  # 13 original + 5 Cycle-2 advisory mods (brief #208 workstream e)
     for path in manifests:
         m = load_manifest(path)
         assert m.outputs <= _KNOWN_OUTPUTS, f"{path}: unknown outputs {m.outputs - _KNOWN_OUTPUTS}"

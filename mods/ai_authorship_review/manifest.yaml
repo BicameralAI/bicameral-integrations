@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: MIT
+id: ai-authorship-review
+version: 0.1.0
+name: AI Authorship Review
+outputs:
+  - advisory_governance_result
+  - routing_hint
+  - suggested_review_question
+forbidden_actions:
+  - write_canonical_decision
+  - approve_signoff
+  - resolve_compliance
+  - create_blocking_ci_result
+  - bypass_governance_policy
+  - mutate_source_evidence
+  - collapse_confidence_score

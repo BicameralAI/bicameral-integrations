@@ -1,29 +1,32 @@
 # Connector Freshness Mod
 
-Status: Scoped
+Status: Scoped  ·  version 0.1.0
 
-Advisory mod for detecting stale provider assumptions in connector docs,
-fixtures, auth notes, references, and parser scope.
+Advisory mod for surfacing provider-freshness signals — a deprecation or API-version change that may stale a connector's documented assumptions — so a reviewer can refresh references/auth before they break.
 
-## Scope
+## How it works
 
-- Provider API version changes and deprecations.
-- Missing or stale `references.md` and `auth.md` links.
-- Rate-limit, pagination, and retry assumptions that are undocumented.
-- Webhook schema drift and unknown event payloads.
-- Connector docs that imply live support where only parse fixtures exist.
+Pure, read-only function over `list[AdapterEmission]` (no network, no provider fetch); signals come only from the emission text (title + body + evidence excerpts, lowercased), matched via `matched_terms`:
+
+- **deprecation / breaking change** (strong → routes) — a `_BREAK_TERMS` hit: `deprecated` / `deprecation` / `deprecating`, `sunsetting` / `decommissioned` / `discontinued`, `eol` / `end of life`, `retire` / `retired` / `retiring` (word-boundary, so not `retirement`), `breaking change`, `no longer supported`, `will be removed`, `migrate to v1/v2/v3`, `upgrade to v1/v2/v3`.
+- **soft version mention** (annotate only) — a `_VERSION_TERMS` hit (`api version`, `v1`, `v2`, `v3`) with NO break term. Too weak to route.
+
+No freshness term → NO output.
 
 ## Outputs
 
-- `source_evidence_annotation`
-- `routing_hint`
-- `advisory_governance_result`
+On a strong (break) signal:
 
-## Boundary
+- `source_evidence_annotation` — `provider-freshness signal on <source>: <terms>`.
+- `advisory_governance_result` — "provider change may stale a connector assumption … review references/auth", metadata `{terms, source}`.
+- `routing_hint` — `role="connectors"`, `priority="normal"`.
 
-This mod can flag freshness risk and route connector review. It must not fetch
-providers automatically or expand credentials.
+On a soft signal only: a single `source_evidence_annotation` — "api-version mention … (soft freshness signal)", no routing.
+
+## Boundary (EM-safe)
+
+It flags a possibly-stale assumption and suggests a refresh; it never fetches a provider, expands a credential, or edits a doc — it cannot write canonical state, approve/sign off, resolve compliance, or block CI (ADR-0007/0008/0013). Every wire-bound field is re-screened by `run_mod` (FX-SEC-001).
 
 ## References
 
-See [references.md](references.md).
+ADR-0008 (evidence adapters, not state authorities), ADR-0013 (mod execution contract). See the [mod safety contract](../README.md) and [references.md](references.md).

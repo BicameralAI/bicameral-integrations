@@ -667,3 +667,51 @@ unaffected; #206 is the lone allowlisted, documented exception, corrected by #20
 #206 was NOT rewritten — sealed artifacts are truthful history; the fix is the append-only #207 + re-scoped
 brief `docs/research-brief-agt-pamas-governance-2026-06-17.md`. Pairs with [[ecosystem-governance-rollout]]
 (the legitimate cross-cutting case → needs a single designated owner).
+
+## SG-2026-06-18-A — a `config.json events:[...]` subscription is a UI hint, NOT an enforced receiver filter
+
+The Linear webhook receiver parsed **any** event type even though `config.json` subscribed only to `Issue`
+(`events:["Issue"]`): `observations()`/`normalize_event()` (`connectors/linear/connector.py:117-120`,
+`:139-151`) call `parse_event` unconditionally. A `Comment` webhook (has `body`, no `identifier`/`title`/
+`description`) therefore emits an Observation with `title=""`/`excerpt=""` — a **silent ADR-0005 non-empty
+contract violation** — and a `remove`/delete action emits stale deleted-issue data as live evidence. **Rule:**
+a webhook connector must **fail-closed at the receiver on `type` and `action`** (`type==Issue`, handle/skip
+`remove`, require the entity invariant like a non-empty `identifier`) before parsing — never assume the
+provider sends only what you subscribed to, and never assume the envelope matches the happy-path shape. Sweep
+**every** webhook connector for this "subscribed ⇒ trusted shape" assumption (jira/github/gitlab/notion/slack/
+sentry/pagerduty/zendesk/fathom). Pairs with the FX-SEC-001 producer screen (which catches secrets but NOT a
+contract-empty excerpt). Surfaced by the Linear ingress deep-dive (research #208).
+
+## SG-2026-06-18-B — one mode, three contradictory readiness voices across a connector's own docs
+
+For several connectors the **same** mode is described three different ways: README "deferred this cycle" ↔
+`config.json` "status: live-ready" ↔ `references.md` "flip-ready, NOT yet Live" (confirmed linear README:10,
+notion, servicenow, slack). The README — what an operator reads first — was consistently the most stale (e.g.
+Linear Active GraphQL is **built + harness-proven** per FX-LINEAR-003 yet README says "deferred"). **Rule:**
+pick ONE canonical readiness vocabulary and propagate it README→config→references; readiness drift hides real
+state and misleads the operator at the exact moment they decide whether to flip Live. Audit the whole connector
+fleet for the three-voices pattern, not just the four caught here.
+
+## SG-2026-06-18-C — "all built + tested" does not imply "documented"; a robust README is part of done
+
+The mod framework (`mods/contract.py` run_mod enforcer, `mods/_signals.py` matchers) and every mod's
+`config.json` were consistent and correct, yet **10 of 13 mod READMEs were one-sentence scope stubs**
+(~700-900 B) — not "robust and easy to understand." Code quality masked doc debt. **Rule:** treat a robust
+README (Status · one-line purpose · How-it-works decision paths · Outputs with metadata/routing · Boundary ·
+References) as a completion criterion, using the best-documented sibling as the template (here `dependency_risk`,
+1590 B). A passing test suite is not documentation. Generalises beyond mods to connectors (B-audit found thin
+`auth.md` where `config.json` held the real redaction nuance). Surfaced by research #208.
+
+## SG-2026-06-18-D — a source connector emits raw EVIDENCE, never a CANDIDATE; default `emission_type="candidate"` is quiet authority creep
+
+Researching #187 against the closed SDK evidence contract (`bicameral-sdk/src/evidence/index.ts`) showed
+`adapter/core/pipeline.py:normalize` **hardcodes `emission_type="candidate"`** — which makes every connector
+silently pre-judge its output as a *candidate decision*. The SDK contract is explicit: *"Evidence is NEVER
+canonical. Only reviewed and promoted decisions reach canonical authority. Evidence stays raw."* **Rule:** a
+source connector emits **`status:'raw'` non-authoritative evidence** carrying full **provenance**
+(`capturedBy = Attribution(actorType="connector")`, `captureMethod = the ingest mode`, `pipelineVersion =
+adapter_version`, optional `sourceHash`); **candidate-extraction and promotion are downstream (bot) concerns**,
+never asserted by the connector. This also reconciles the PII-drop: the *capturer* of evidence is the connector
+(a `'connector'` actor), not the human author — so provenance attribution is the connector/source id and a human
+identity is still never surfaced. Conformance is a mapping + provenance build proven Beta on fixtures; Live
+stays bot-gated (the bot consumes the evidence). Pairs with [[connector-priorities-and-pattern]] and ADR-0008.

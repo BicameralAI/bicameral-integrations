@@ -7020,9 +7020,314 @@ unaffected; #206 is the single documented, allowlisted exception. **Verified:** 
 + subject-locality passes; detector unit-checked (foreign header flagged, body-only mention ignored, #206
 allowlisted). No `src/` touched. L1.
 
+### Entry #208: RESEARCH BRIEF -- Linear ingress gaps + connector/mod documentation audit + mods expansion
+
+**Entry ID**: `researchbrief208linearingressmodsconnectordocs`
+**Timestamp**: 2026-06-18T02:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-linear-ingress-gaps-mods-connector-docs-2026-06-18.md)
+= b7c66ba24ec2734aa685aaca33fabdc260dfbb192f77693e3b57a4f51ce0d572
+```
+
+**Previous Hash**: c87ce330419f7b5dea0c66de783e5fd00bbdc2d71487868c209d60e5288cdeea
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 3dcfac87672fbcf5dc13a1cc339f15749d821c9f25ee9d008815315b37439a7d
+```
+
+**Decision**: Full `/qor-research` over (1) Linear **ingress** gaps, (2) documentation completeness of **every
+connector + every mod**, (3) **mods-expansion** candidates -- via four parallel read-only audits. **Linear
+ingress: 12 ranked gaps; two HIGH + Live-blocking** -- (A1) the webhook receiver applies **no event-type
+filter** despite `config.json events:["Issue"]`, so a `Comment`/`Project` webhook is parsed unconditionally and
+emits an empty-`title`/`excerpt` Observation that **violates the ADR-0005 non-empty contract**
+(`connector.py:117-120`, `:139-151`); (A2) the `remove`/delete `action` is **not distinguished**, emitting
+deleted-issue data as live evidence (`connector.py:33-63`). A1+A2+A3 = one fail-closed envelope-guard defect
+(the "dropped ball"). Plus missing-`data`-wrapper (A4), webhookId null (A5), fixtures-only live gate (A6),
+`updatedFrom` unused (A7), no circular-cursor detection (A8), README "Active deferred" drift though it's built
+(A10). **Docs:** ~22/26 connectors operator-robust (exemplar `gitlab`), but a **systemic readiness-language
+drift** -- same mode reads "deferred this cycle" (README) / "live-ready" (config) / "flip-ready, NOT yet Live"
+(references) on linear/notion/servicenow/slack (B1) -- plus **three real impl drifts beyond Linear**: granola
+`author` reads non-existent `attendees[].name` (truth=`owner`, unfixed), cursor `build_cursor_spec` issues a
+single request vs a paginating contract (silent truncation), github README claims Active+Webhook vs webhook-only
+config (B2). **Mods: 10/13 READMEs are ~700-900 B scope-stubs**; only dependency_risk/noisy_source_gate/
+security_mentions robust; framework (`contract.py`/`_signals.py`) is consistent -- code solid, README prose thin
+(C). dependency_risk = README template (5 sections). **Expansion:** 5 curated new EM-safe mods
+(cross_system_reference, ai_authorship_review, policy_exemption_audit, compliance_routing,
+notification_scope_risk), de-duplicated against the existing 13. 8 recommendations; remediation subsumes open
+issues **#93** (Linear stress test) + **#101** (accepted-risk hardening). Lessons -> SHADOW_GENOME
+SG-2026-06-18-A/-B/-C. Companion quick-actions this session: dependabot **#184 closed** (keeps the deliberate
+checkout v6.0.3 pin); **#185** doc-promotion drafted to `dev` for codeowner approval. Gated next phase
+`/qor-plan` (5 work-streams). Advisory; no implementation authorized.
+
+### Entry #209: IMPLEMENTATION -- Cycle 1 remediation: Linear ingress fail-closed guard + connector/mod docs (research #208)
+
+**Entry ID**: `impl209linearingressguardanddocs`
+**Timestamp**: 2026-06-18T03:00:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT committed/pushed)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(connectors/linear/connector.py)
+= fc085536fa20296f76fc647738aa70143079400761ccebfd4be14231df96ea57
+```
+
+**Previous Hash**: 3dcfac87672fbcf5dc13a1cc339f15749d821c9f25ee9d008815315b37439a7d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 8c1378331e152804a9335ad9ea8f601ad42443bedaf8420caae49a749fc37beb
+```
+
+**Decision**: Cycle 1 of the brief-#208 remediation (operator chose sequenced cycles, keystone first; Cycle 2 =
+the 5 new mods, deferred). **(a) Linear ingress fail-closed (keystone, A1/A2/A3 -- HIGH/Live-blocking):** new
+`_is_issue_event` receiver guard applied in **both** `observations()` and `normalize_event()` -- only an
+**Issue create/update** event with a non-empty `data.identifier` yields an Observation; a `Comment`/`Project`
+event, a `remove` (delete) action, or a shapeless envelope is skipped before parse (a `config.json events:[]`
+subscription is a UI hint, not an enforced filter -- SG-2026-06-18-A). Stops the empty-`title`/`excerpt`
+ADR-0005 contract violation + the deleted-issue-as-live-evidence defect. **graphql_poll hardening (A8/A4):**
+circular/repeating-cursor detection (`seen_cursors` -> `circular_cursor` PollError) and a `missing_data`
+fail-closed guard. Docstring/README PII + Active-mode drift fixed (A9/A10). New fixtures (`comment_event`,
+`issue_removed`) + 7 tests (non-Issue/remove/no-identifier skipped on both paths; circular-cursor; missing-data).
+**(b) readiness-language docs (B1):** linear/github/slack READMEs corrected (Active parse-surface vs deferred
+live fetch; slack T2-ingest with T3 deferred); notion/servicenow already honest, left. **(c) impl drifts (B2):**
+github README de-overstated (config `webhook` is correct -- no live fetch wired); cursor README now documents
+the single-request/silent-truncation limitation (config `wire_gates` already had it); **granola = NO FIX --
+agent's "broken author" was a FALSE POSITIVE** (`author=""` is intentional PII-drop, SG-2026-06-11-D;
+verify-before-cite caught it). **(d) mod docs (C):** 10 thin mod READMEs (~700-900 B stubs) rewritten to the
+`dependency_risk` 5-section template (~2 KB each), grounded in real `connector.py` logic; 2 old READMEs that
+overstated scope (connector_freshness, code_review_risk) corrected. **Verification:** 720 tests pass (7 new);
+ruff clean; mypy clean (230 files); bandit CI-style (`-x tests -skip B101`) exit 0; governance-gate OK; secret
+scan clean. 21 files touched, all in scope; no `src/` authority change; FEATURE_INDEX untouched. **Review
+Boundary honored:** staged locally on this branch, NOT committed/pushed/merged -- awaits operator review. L2.
+
+### Entry #210: IMPLEMENTATION -- Cycle 2: 5 new EM-safe advisory mods (brief #208 workstream e)
+
+**Entry ID**: `impl210fivenewadvisorymods`
+**Timestamp**: 2026-06-18T04:00:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT committed/pushed)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(mods/index.json)
+= ed7091c8ede1d1a6db8b8671b2f4911c0424f2864ac6e449932e9190b8b8e222
+```
+
+**Previous Hash**: 8c1378331e152804a9335ad9ea8f601ad42443bedaf8420caae49a749fc37beb
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 813a5682e47435b8d82944ddbf57442a6eb377e913ab3c6150a6bf92262fdb86
+```
+
+**Decision**: Cycle 2 (sequenced after Cycle 1 #209) built the **5 new EM-safe advisory mods** from brief #208
+finding D, taking the mod count **13 -> 18**. Each follows the proven pattern (`mods/_signals.matched_terms`
+word-boundary/substring matcher, `safe_id` echo, `mods.contract.ModEmission`, manifest⟷code⟷config output
+parity, the 7-action EM-safe forbidden baseline, `run_mod` input+output FX-SEC-001 re-screen, no opaque numeric
+score). Built as 5 disjoint parallel slices, then shared-wired by the orchestrator. **The mods:**
+(1) **cross_system_reference** (`integration`) -- evidence referencing a *different* external system than its
+own `source_id` (self-reference skipped) -> reconcile; (2) **ai_authorship_review** (`ai-safety`) -- AI-coding
+source (aider/cursor/copilot/claude_code/continue_dev/devin) **gated** + low-confidence/unfinished markers
+(TODO/FIXME/"not sure"/...) -> qa review; (3) **policy_exemption_audit** (`governance`) -- exemption/waiver/
+accepted-risk/wontfix claims -> policy re-approval (vocab disjoint from authority_boundary's action vocab,
+proven by test); (4) **compliance_routing** (`governance`) -- named regulatory frameworks (HIPAA/GDPR/PCI/SOC2/
+...) -> compliance route (distinct from data_classification's confidentiality markers; whole-word so "soxhlet"
+!= "sox"); (5) **notification_scope_risk** (`security`) -- broad/unscoped broadcast (@channel/@everyone/notify
+all/...) -> blast-radius review. Each emits 3 advisory artifacts (annotation/question + routing_hint), echoes
+only fixed-vocab matches + `safe_id(source_id)` (no excerpt text -> no leak vector). Wired into
+`runtime.runner_registry._MODS` (+ imports); `mods/index.json` + 18 `SETUP.md` regenerated by the canonical
+`scripts/build_mod_*`; `test_all_manifests_representable` count 13->18. **Verification:** 740 tests pass (20 new,
+4/mod through `run_mod`); ruff clean; mypy clean (250 files); bandit CI-style exit 0; `validate_mod_config` OK
+(descriptors valid + manifest-consistent + index fresh); governance-gate OK; adversarial probe -- all 5 load via
+registry (manifest parity) + a secret in input is rejected before `evaluate`. **Known non-blocking nit (purple-
+team follow-up):** cross_system_reference `"gh-"` marker substring-matches "high-..." (advisory-only false
+positive). **Review Boundary honored:** staged on `feat/cycle2-five-new-mods`, NOT committed/pushed/merged at
+authoring. L2.
+
+### Entry #211: RESEARCH BRIEF -- evidence-only ingest boundary / SDK evidence-contract conformance (#187)
+
+**Entry ID**: `researchbrief211evidenceonlyingestboundary`
+**Timestamp**: 2026-06-18T05:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-187-evidence-only-ingest-boundary-2026-06-18.md)
+= a86664c011b981e027f43736de1105156ff1770a098f1410b6ce0ccc876f7fa8
+```
+
+**Previous Hash**: 813a5682e47435b8d82944ddbf57442a6eb377e913ab3c6150a6bf92262fdb86
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ff0ba004914d692bdfe2f8de09c0006da04e60bb189f570e45bf657a1fea478b
+```
+
+**Decision**: Researched GH #187 (evidence-only ingest boundary, Alex-aligned). **Actionable now:** the one hard
+dependency -- the **SDK evidence contract (bicameral-sdk #7) is CLOSED/implemented** (`src/evidence/index.ts` +
+`provenance/index.ts`); the OPEN deps (bot #481 promotion, bot #484 drift, sidecar #5 Alex scope) are
+**downstream consumers**, not blockers. **Central finding -- conformance gap, not a boundary violation:**
+integrations already honours the posture (ADR-0008 read-only, FX-SEC-001, frozen evidence, EM-safe mods) but its
+`AdapterEmission`/`SourceEvidence`/`SourceRef` shape does NOT map to the SDK `Evidence` shape and is missing the
+two load-bearing pieces -- a **`Provenance` object** (`capturedAt`, `capturedBy: Attribution{actorType:
+'connector'}`, `captureMethod`, `pipelineVersion?`, `sourceHash?`) which integrations has NONE of, and an
+explicit **`status:'raw'`** non-authoritative marker. **DRIFT:** `pipeline.normalize` **hardcodes
+`emission_type="candidate"`** -- the connector pre-judges a candidate, exactly what the SDK separates ("Evidence
+is NEVER canonical; only promoted decisions reach authority"); a connector must emit raw evidence and route
+candidate-extraction/promotion downstream (bot #481). Mapping is direct (SourceRef->SourceSystemRef,
+adapter_version->pipelineVersion, Observation.mode->captureMethod, author-drop aligns: capturer = connector, not
+the human actor). 6 recommendations: build a Provenance object + SDK-conformant evidence mapping, stop
+hardcoding "candidate", add recorded conformance fixtures (Beta; Live bot-gated), pin/own the vendored SDK shape,
+authority-limits doc. Subject-locality clean (integrations-owned edge; SDK/bot/sidecar are cross-repo reads,
+ADR-0018). Lesson -> SHADOW_GENOME SG-2026-06-18-D. Gated next phase `/qor-plan`. Advisory; no implementation
+authorized.
+
+### Entry #212: IMPLEMENTATION -- evidence-only ingest boundary / SDK evidence-contract conformance (#187, FX-EVIDENCE-001)
+
+**Entry ID**: `impl212evidenceonlyingestboundary`
+**Timestamp**: 2026-06-18T06:00:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(adapter/core/sdk_evidence.py)
+= 73de03860d1227f12c8df5824cab94ea8863cd30802ca1389698462c07fe47c0
+```
+
+**Previous Hash**: ff0ba004914d692bdfe2f8de09c0006da04e60bb189f570e45bf657a1fea478b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 800cddced40f3e766e7668905d0e1f974aaeee5ea38d74096da831163a8c89ae
+```
+
+**Decision**: Implemented #187 (plan `docs/plan-187-...md`, self-audit PASS) -- the integrations-side
+**evidence-only ingest boundary** conforming to the SDK evidence contract (bicameral-sdk #7, CLOSED).
+**(1) `adapter/core/provenance.py` (NEW)** -- `Attribution`/`ActorType(human|agent|system|connector)`/
+`Provenance` mirroring `src/provenance/index.ts`. **(2) `adapter/core/sdk_evidence.py` (NEW)** --
+`to_sdk_evidence(obs, *, adapter_version, captured_at=None) -> dict` maps a connector `Observation` to the SDK
+`Evidence` shape: **`status` ALWAYS `"raw"`** (evidence is never canonical; candidate-extraction/promotion are
+bot-owned #481/#484), `capturedBy = Attribution(actorType="connector")` (the **capturer is the connector**, the
+human actor is never surfaced -- preserves the PII-drop), `captureMethod` from `Observation.mode`,
+`pipelineVersion`, `sourceHash=sha256:<hex>`. **Self-screens** (FX-SEC-001 parity -- a secret in the excerpt
+raises `EvidenceExportError`, never exported). Pins the SDK contract (`SDK_EVIDENCE_CONTRACT`); golden fixtures
+are the conformance lock. **(3) `pipeline.normalize` default `emission_type` `candidate`->`evidence`**
+(SG-2026-06-18-D: a connector emits raw evidence, not a candidate). **Blast-radius measured inert:** the only
+non-test reader of `emission_type` is `source_trust_calibration` (`in {hint,advisory}` -- neither candidate nor
+evidence); `gateway_mapping` doesn't read it; no test asserts normalize-output is `candidate`; `"candidate"`
+stays valid for hand-built emissions. **(4) `docs/CONNECTOR_AUTHORITY_LIMITS.md` (NEW)** -- authority-limits
+doc tying `status:'raw'` + "evidence never canonical" to ADR-0008 + the SDK; per-connector `trust_tier` is the
+scoped-permission metadata the sidecar consumes. FX-EVIDENCE-001 added. **Verification:** 746 tests pass (6 new
+golden/screen/normalize-evidence); ruff clean; mypy clean (253 files); bandit CI-style exit 0; governance-gate
+OK (chain #1..#212 + FEATURE_INDEX paths exist + subject-locality). Devil's-advocate: candidate->evidence
+confirmed inert; export screens exactly the exported leaves; deterministic (no clock -- runtime injects
+captured_at). Not bot promotion/drift (#481/#484) nor sidecar scope (#5) -- integrations stays the evidence
+edge; Live is bot-gated (Beta on fixtures). **Review Boundary honored:** staged on
+`research/187-evidence-only-ingest-boundary`, not pushed/merged at authoring. L2.
+
+### Entry #213: IMPLEMENTATION -- Cycle A: wire to_sdk_evidence into the emit path (SdkEvidenceSink; #212 follow-up, FX-EVIDENCE-001)
+
+**Entry ID**: `impl213sdkevidencesink`
+**Timestamp**: 2026-06-18T07:00:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(adapter/core/sdk_evidence.py)
+= f4a3abd2304ff37b73940790a9781244b8dc7fbdd7e613f346d7391e474c06cb
+```
+
+**Previous Hash**: 800cddced40f3e766e7668905d0e1f974aaeee5ea38d74096da831163a8c89ae
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b179aefe78136f11745ef080d97fee88bbe646ce480013abef0e53e4cea6f0f5
+```
+
+**Decision**: #212 follow-up Cycle A (plan `docs/plan-212a-...md`, self-audit PASS) -- wired the SDK-evidence
+export into the runtime emit boundary. **Additive, zero change to the sealed runners / gateway mapping /
+`_emission_from`** (the last is REQUIRED: `test_pipeline.py:234` asserts exact `metadata`, so `captureMethod`
+is sink-configured, not metadata-threaded). **(1) `adapter/core/sdk_evidence.py`** -- refactored a shared
+`_build_evidence` helper; added **`emission_to_sdk_evidence(emission, *, capture_method="active",
+captured_at=None) -> list[dict]`** mapping each post-normalize `SourceEvidence` → one SDK `Evidence`
+(`pipelineVersion = emission.adapter_version`; re-screened for parity). **(2) `runtime/sinks.py`** -- new
+**`SdkEvidenceSink(*, capture_method="active")`**: the **Beta** in-memory emit seam (peer of `CollectingSink`)
+that turns emitted `AdapterEmission`s into SDK `Evidence` dicts (`status` raw, capturer = connector); the Live
+SDK-consumer HTTP delivery is bot/SDK-gated, like `GatewaySink` (out of scope). `capture_method` defaults to
+`"active"` (poll/graphql/fetch runtimes); operator passes `"webhook"` for a webhook connector. FX-EVIDENCE-001
+updated. **Verification:** 752 tests pass (6 new -- emit→SDK Evidence, configurable captureMethod, capturer-is-
+connector, accumulation, defensive secret re-screen, one-evidence-per-item); ruff clean; mypy clean (254
+files); bandit CI-style exit 0; governance-gate OK (chain #1..#213 + FEATURE_INDEX + subject-locality).
+Devil's-advocate: re-screen proven on a hand-built secret-bearing emission; no regression in the sealed paths
+(752 pass). Not bot/sidecar work -- integrations stays the evidence edge; Live bot-gated. **Review Boundary
+honored:** staged on `feat/212a-sdk-evidence-sink`, not pushed/merged at authoring. L2.
+
+### Entry #214: IMPLEMENTATION -- Cycle B: SDK evidence-shape vendoring (pin-to-commit) + conformance (#212 follow-up, FX-EVIDENCE-001)
+
+**Entry ID**: `impl214sdkevidencevendorconformance`
+**Timestamp**: 2026-06-18T08:00:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(runtime/schemas/sdk_evidence_v0.schema.json)
+= 1918d9d4c944a227fcc261ede384233190f894b583db2cb3bbba598766ddecfb
+```
+
+**Previous Hash**: b179aefe78136f11745ef080d97fee88bbe646ce480013abef0e53e4cea6f0f5
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 54fc16cc5c83bb0d5ed3717ab5acfdd6034ba31e4d749baee1714d64ac899413
+```
+
+**Decision**: #212 follow-up Cycle B (plan-less micro-cycle off #213; self-audit folded) -- **SDK
+evidence-shape vendoring (pin-to-commit) + cross-repo conformance**. **(1)
+`runtime/schemas/sdk_evidence_v0.schema.json` (NEW)** -- a VENDORED draft-07 JSON-schema mirror of the SDK
+evidence/provenance TypeScript contract (the SDK ships TS interfaces only, no JSON schema), following the
+`ingest_request_v1.schema.json` vendoring convention: `$comment` pins **bicameral-sdk @ commit
+`180415bba0d7d777f8d1ce2ce3a5b81b29de1842` (GH #7)**, dated. Defines `Evidence` (required id/source/excerpt/
+provenance/status/capturedAt) + `SourceSystemRef`/`SourceExcerptRef`/`Provenance`/`Attribution`, `status` and
+`actorType` enum-locked. **(2) `adapter/core/sdk_evidence.py`** -- `SDK_EVIDENCE_PIN_COMMIT` records the pin.
+**(3) `runtime/tests/test_sdk_evidence_conformance.py` (NEW)** -- structurally validates `to_sdk_evidence` +
+`emission_to_sdk_evidence` output against the vendored schema's required/enum (house pattern, dependency-light
+-- mirrors `test_gateway_mapping`, NOT a third-party validator), across webhook/active/passive modes;
+**integrations fails first on SDK drift**. The conformance check **runs in the normal pytest CI** (mirrors the
+provider_acquisition fixture-conformance precedent) -- no separate workflow. FX-EVIDENCE-001 updated.
+**Verification:** 756 tests pass (4 new); ruff clean; mypy clean (255 files); bandit CI-style exit 0;
+governance-gate OK (chain #1..#214 + FEATURE_INDEX + subject-locality). **Caveat (recorded, not a blocker):**
+the SDK is untagged (`0.1.0`) with no published JSON schema, so the pin is to a **commit SHA**; a cleaner pin
+awaits the SDK publishing an `Evidence` JSON schema + a version tag (suggested upstream ask). Not bot/sidecar
+work. **Review Boundary honored:** staged on `feat/212b-sdk-evidence-vendor-conformance`, not pushed/merged at
+authoring. L2.
+
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#207 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#214 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
