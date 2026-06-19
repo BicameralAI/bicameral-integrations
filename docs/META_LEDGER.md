@@ -7156,9 +7156,50 @@ team follow-up):** cross_system_reference `"gh-"` marker substring-matches "high
 positive). **Review Boundary honored:** staged on `feat/cycle2-five-new-mods`, NOT committed/pushed/merged at
 authoring. L2.
 
+### Entry #211: RESEARCH BRIEF -- evidence-only ingest boundary / SDK evidence-contract conformance (#187)
+
+**Entry ID**: `researchbrief211evidenceonlyingestboundary`
+**Timestamp**: 2026-06-18T05:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-187-evidence-only-ingest-boundary-2026-06-18.md)
+= a86664c011b981e027f43736de1105156ff1770a098f1410b6ce0ccc876f7fa8
+```
+
+**Previous Hash**: 813a5682e47435b8d82944ddbf57442a6eb377e913ab3c6150a6bf92262fdb86
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ff0ba004914d692bdfe2f8de09c0006da04e60bb189f570e45bf657a1fea478b
+```
+
+**Decision**: Researched GH #187 (evidence-only ingest boundary, Alex-aligned). **Actionable now:** the one hard
+dependency -- the **SDK evidence contract (bicameral-sdk #7) is CLOSED/implemented** (`src/evidence/index.ts` +
+`provenance/index.ts`); the OPEN deps (bot #481 promotion, bot #484 drift, sidecar #5 Alex scope) are
+**downstream consumers**, not blockers. **Central finding -- conformance gap, not a boundary violation:**
+integrations already honours the posture (ADR-0008 read-only, FX-SEC-001, frozen evidence, EM-safe mods) but its
+`AdapterEmission`/`SourceEvidence`/`SourceRef` shape does NOT map to the SDK `Evidence` shape and is missing the
+two load-bearing pieces -- a **`Provenance` object** (`capturedAt`, `capturedBy: Attribution{actorType:
+'connector'}`, `captureMethod`, `pipelineVersion?`, `sourceHash?`) which integrations has NONE of, and an
+explicit **`status:'raw'`** non-authoritative marker. **DRIFT:** `pipeline.normalize` **hardcodes
+`emission_type="candidate"`** -- the connector pre-judges a candidate, exactly what the SDK separates ("Evidence
+is NEVER canonical; only promoted decisions reach authority"); a connector must emit raw evidence and route
+candidate-extraction/promotion downstream (bot #481). Mapping is direct (SourceRef->SourceSystemRef,
+adapter_version->pipelineVersion, Observation.mode->captureMethod, author-drop aligns: capturer = connector, not
+the human actor). 6 recommendations: build a Provenance object + SDK-conformant evidence mapping, stop
+hardcoding "candidate", add recorded conformance fixtures (Beta; Live bot-gated), pin/own the vendored SDK shape,
+authority-limits doc. Subject-locality clean (integrations-owned edge; SDK/bot/sidecar are cross-repo reads,
+ADR-0018). Lesson -> SHADOW_GENOME SG-2026-06-18-D. Gated next phase `/qor-plan`. Advisory; no implementation
+authorized.
+
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#210 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#211 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
