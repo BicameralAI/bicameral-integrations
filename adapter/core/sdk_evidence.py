@@ -23,12 +23,16 @@ from __future__ import annotations
 
 import hashlib
 
+from .emissions import AdapterEmission, SourceRef
 from .observations import Observation
 from .provenance import ActorType, Attribution, Provenance
 from .sensitive import detect_sensitive
 
 # Pin to the SDK contract this mapping targets (cross-repo read; integrations owns the pin).
+# The vendored JSON schema (runtime/schemas/sdk_evidence_v0.schema.json) is pinned to this commit;
+# the conformance test fails first on drift (FX-EVIDENCE-001).
 SDK_EVIDENCE_CONTRACT = "bicameral-sdk/src/evidence/index.ts@GH#7"
+SDK_EVIDENCE_PIN_COMMIT = "180415bba0d7d777f8d1ce2ce3a5b81b29de1842"
 
 _RAW = "raw"
 
@@ -53,34 +57,29 @@ def _screen(*values: str) -> None:
             )
 
 
-def to_sdk_evidence(
-    obs: Observation, *, adapter_version: str, captured_at: str | None = None
+def _build_evidence(
+    ref: SourceRef, excerpt: str, *, adapter_version: str, capture_method: str,
+    captured_at: str, evidence_id: str = "",
 ) -> dict:
-    """One connector ``Observation`` → an SDK-conformant ``Evidence`` dict (``status='raw'``).
-
-    ``captured_at`` defaults to the observation timestamp (the operator runtime may inject the
-    true ingestion time). ``capturedBy`` is the connector, never the source's human actor.
-    """
-    ref = obs.source_ref
-    when = captured_at if captured_at is not None else obs.timestamp
-    method = str(getattr(obs.mode, "value", obs.mode))  # SourceMode enum → its value; tolerate a raw str
-    _screen(obs.excerpt, ref.source_id, ref.ref, ref.url, ref.kind)
+    """Shared mapper: a (source_ref, excerpt) + capture facts → one SDK ``Evidence`` dict
+    (``status='raw'``, capturer = connector). Self-screens (FX-SEC-001 parity)."""
+    _screen(excerpt, ref.source_id, ref.ref, ref.url, ref.kind)
     provenance = Provenance(
-        captured_at=when,
+        captured_at=captured_at,
         captured_by=Attribution(actor_id=ref.source_id, actor_type=ActorType.CONNECTOR),
-        capture_method=method,
+        capture_method=capture_method,
         pipeline_version=adapter_version,
-        source_hash=_source_hash(obs.excerpt),
+        source_hash=_source_hash(excerpt),
     )
     return {
-        "id": ref.ref or provenance.source_hash,
+        "id": evidence_id or ref.ref or provenance.source_hash,
         "source": {
             "system": ref.source_id,
             "resourceId": ref.ref,
             "resourceType": ref.kind,
             "url": ref.url,
         },
-        "excerpt": {"excerpt": obs.excerpt, "capturedAt": when},
+        "excerpt": {"excerpt": excerpt, "capturedAt": captured_at},
         "provenance": {
             "capturedAt": provenance.captured_at,
             "capturedBy": {
@@ -92,8 +91,51 @@ def to_sdk_evidence(
             "sourceHash": provenance.source_hash,
         },
         "status": _RAW,
-        "capturedAt": when,
+        "capturedAt": captured_at,
     }
 
 
-__all__ = ["SDK_EVIDENCE_CONTRACT", "EvidenceExportError", "to_sdk_evidence"]
+def to_sdk_evidence(
+    obs: Observation, *, adapter_version: str, captured_at: str | None = None
+) -> dict:
+    """One connector ``Observation`` → an SDK-conformant ``Evidence`` dict (``status='raw'``).
+
+    ``captured_at`` defaults to the observation timestamp (the operator runtime may inject the
+    true ingestion time). ``captureMethod`` is the observation's ingest mode.
+    """
+    when = captured_at if captured_at is not None else obs.timestamp
+    method = str(getattr(obs.mode, "value", obs.mode))  # SourceMode enum → its value; tolerate a raw str
+    return _build_evidence(
+        obs.source_ref, obs.excerpt, adapter_version=adapter_version,
+        capture_method=method, captured_at=when,
+    )
+
+
+def emission_to_sdk_evidence(
+    emission: AdapterEmission, *, capture_method: str = "active", captured_at: str | None = None
+) -> list[dict]:
+    """Each ``SourceEvidence`` of a (post-normalize, already-screened) ``AdapterEmission`` → an SDK
+    ``Evidence`` dict — the seam an ``SdkEvidenceSink`` uses at the emit boundary.
+
+    The emission does not carry the ingest mode, so ``capture_method`` is supplied by the caller
+    (the connector's mode — default ``"active"`` for the poll/graphql/fetch runtimes; ``"webhook"``
+    for webhook connectors). ``pipelineVersion`` is the emission's ``adapter_version``. Re-screened
+    for parity (the export is the single chokepoint, independent of the upstream screen).
+    """
+    out: list[dict] = []
+    for ev in emission.evidence:
+        when = captured_at if captured_at is not None else ev.timestamp
+        out.append(_build_evidence(
+            ev.source_ref, ev.excerpt, adapter_version=emission.adapter_version,
+            capture_method=capture_method, captured_at=when, evidence_id=ev.evidence_id,
+        ))
+    return out
+
+
+__all__ = [
+    "SDK_EVIDENCE_CONTRACT",
+    "SDK_EVIDENCE_PIN_COMMIT",
+    "EvidenceExportError",
+    "to_sdk_evidence",
+    "emission_to_sdk_evidence",
+]
