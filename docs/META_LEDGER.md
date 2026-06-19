@@ -7020,9 +7020,55 @@ unaffected; #206 is the single documented, allowlisted exception. **Verified:** 
 + subject-locality passes; detector unit-checked (foreign header flagged, body-only mention ignored, #206
 allowlisted). No `src/` touched. L1.
 
+### Entry #208: RESEARCH BRIEF -- Linear ingress gaps + connector/mod documentation audit + mods expansion
+
+**Entry ID**: `researchbrief208linearingressmodsconnectordocs`
+**Timestamp**: 2026-06-18T02:00:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-linear-ingress-gaps-mods-connector-docs-2026-06-18.md)
+= b7c66ba24ec2734aa685aaca33fabdc260dfbb192f77693e3b57a4f51ce0d572
+```
+
+**Previous Hash**: c87ce330419f7b5dea0c66de783e5fd00bbdc2d71487868c209d60e5288cdeea
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 3dcfac87672fbcf5dc13a1cc339f15749d821c9f25ee9d008815315b37439a7d
+```
+
+**Decision**: Full `/qor-research` over (1) Linear **ingress** gaps, (2) documentation completeness of **every
+connector + every mod**, (3) **mods-expansion** candidates -- via four parallel read-only audits. **Linear
+ingress: 12 ranked gaps; two HIGH + Live-blocking** -- (A1) the webhook receiver applies **no event-type
+filter** despite `config.json events:["Issue"]`, so a `Comment`/`Project` webhook is parsed unconditionally and
+emits an empty-`title`/`excerpt` Observation that **violates the ADR-0005 non-empty contract**
+(`connector.py:117-120`, `:139-151`); (A2) the `remove`/delete `action` is **not distinguished**, emitting
+deleted-issue data as live evidence (`connector.py:33-63`). A1+A2+A3 = one fail-closed envelope-guard defect
+(the "dropped ball"). Plus missing-`data`-wrapper (A4), webhookId null (A5), fixtures-only live gate (A6),
+`updatedFrom` unused (A7), no circular-cursor detection (A8), README "Active deferred" drift though it's built
+(A10). **Docs:** ~22/26 connectors operator-robust (exemplar `gitlab`), but a **systemic readiness-language
+drift** -- same mode reads "deferred this cycle" (README) / "live-ready" (config) / "flip-ready, NOT yet Live"
+(references) on linear/notion/servicenow/slack (B1) -- plus **three real impl drifts beyond Linear**: granola
+`author` reads non-existent `attendees[].name` (truth=`owner`, unfixed), cursor `build_cursor_spec` issues a
+single request vs a paginating contract (silent truncation), github README claims Active+Webhook vs webhook-only
+config (B2). **Mods: 10/13 READMEs are ~700-900 B scope-stubs**; only dependency_risk/noisy_source_gate/
+security_mentions robust; framework (`contract.py`/`_signals.py`) is consistent -- code solid, README prose thin
+(C). dependency_risk = README template (5 sections). **Expansion:** 5 curated new EM-safe mods
+(cross_system_reference, ai_authorship_review, policy_exemption_audit, compliance_routing,
+notification_scope_risk), de-duplicated against the existing 13. 8 recommendations; remediation subsumes open
+issues **#93** (Linear stress test) + **#101** (accepted-risk hardening). Lessons -> SHADOW_GENOME
+SG-2026-06-18-A/-B/-C. Companion quick-actions this session: dependabot **#184 closed** (keeps the deliberate
+checkout v6.0.3 pin); **#185** doc-promotion drafted to `dev` for codeowner approval. Gated next phase
+`/qor-plan` (5 work-streams). Advisory; no implementation authorized.
+
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#207 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#208 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
