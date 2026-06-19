@@ -701,3 +701,17 @@ README (Status · one-line purpose · How-it-works decision paths · Outputs wit
 References) as a completion criterion, using the best-documented sibling as the template (here `dependency_risk`,
 1590 B). A passing test suite is not documentation. Generalises beyond mods to connectors (B-audit found thin
 `auth.md` where `config.json` held the real redaction nuance). Surfaced by research #208.
+
+## SG-2026-06-18-D — a source connector emits raw EVIDENCE, never a CANDIDATE; default `emission_type="candidate"` is quiet authority creep
+
+Researching #187 against the closed SDK evidence contract (`bicameral-sdk/src/evidence/index.ts`) showed
+`adapter/core/pipeline.py:normalize` **hardcodes `emission_type="candidate"`** — which makes every connector
+silently pre-judge its output as a *candidate decision*. The SDK contract is explicit: *"Evidence is NEVER
+canonical. Only reviewed and promoted decisions reach canonical authority. Evidence stays raw."* **Rule:** a
+source connector emits **`status:'raw'` non-authoritative evidence** carrying full **provenance**
+(`capturedBy = Attribution(actorType="connector")`, `captureMethod = the ingest mode`, `pipelineVersion =
+adapter_version`, optional `sourceHash`); **candidate-extraction and promotion are downstream (bot) concerns**,
+never asserted by the connector. This also reconciles the PII-drop: the *capturer* of evidence is the connector
+(a `'connector'` actor), not the human author — so provenance attribution is the connector/source id and a human
+identity is still never surfaced. Conformance is a mapping + provenance build proven Beta on fixtures; Live
+stays bot-gated (the bot consumes the evidence). Pairs with [[connector-priorities-and-pattern]] and ADR-0008.
