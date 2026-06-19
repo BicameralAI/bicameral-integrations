@@ -1,0 +1,56 @@
+{
+  "id": "notification_scope_risk",
+  "manifest_id": "notification-scope-risk",
+  "name": "Notification Scope Risk",
+  "version": "0.1.0",
+  "channel": "beta",
+  "description": "Advisory mod that surfaces broad/unscoped broadcast-notification language (@channel, notify all, company-wide, all-hands, ...) in title + body + evidence excerpts so a reviewer checks the blast radius.",
+  "family": "security",
+  "advises_on": "Broad/unscoped broadcast-notification language (@channel, notify all, company-wide, all-hands, ...) in title + body + evidence excerpts.",
+  "consumes": [
+    "title + body",
+    "evidence excerpts"
+  ],
+  "emits": [
+    "advisory_governance_result",
+    "routing_hint",
+    "suggested_review_question"
+  ],
+  "em_safe": {
+    "non_authoritative": true,
+    "forbidden_actions": [
+      "write_canonical_decision",
+      "approve_signoff",
+      "resolve_compliance",
+      "create_blocking_ci_result",
+      "bypass_governance_policy",
+      "mutate_source_evidence",
+      "collapse_confidence_score"
+    ]
+  },
+  "enablement": {
+    "default_enabled": true,
+    "trust_gated": false
+  },
+  "requirements": [
+    "The neutral evidence stream (AdapterEmission) — no credentials, no live network."
+  ],
+  "ui": {
+    "advisory_only": true,
+    "card_blurb": "Surfaces over-broad notification scope; a routing signal, never a finding-of-record."
+  },
+  "references": [
+    {
+      "kind": "scope",
+      "url": "mods/notification_scope_risk/README.md"
+    },
+    {
+      "kind": "mod-safety-contract",
+      "url": "mods/README.md"
+    },
+    {
+      "kind": "adr",
+      "url": "docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md"
+    }
+  ]
+}
