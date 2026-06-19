@@ -7243,9 +7243,49 @@ captured_at). Not bot promotion/drift (#481/#484) nor sidecar scope (#5) -- inte
 edge; Live is bot-gated (Beta on fixtures). **Review Boundary honored:** staged on
 `research/187-evidence-only-ingest-boundary`, not pushed/merged at authoring. L2.
 
+### Entry #213: IMPLEMENTATION -- Cycle A: wire to_sdk_evidence into the emit path (SdkEvidenceSink; #212 follow-up, FX-EVIDENCE-001)
+
+**Entry ID**: `impl213sdkevidencesink`
+**Timestamp**: 2026-06-18T07:00:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(adapter/core/sdk_evidence.py)
+= f4a3abd2304ff37b73940790a9781244b8dc7fbdd7e613f346d7391e474c06cb
+```
+
+**Previous Hash**: 800cddced40f3e766e7668905d0e1f974aaeee5ea38d74096da831163a8c89ae
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b179aefe78136f11745ef080d97fee88bbe646ce480013abef0e53e4cea6f0f5
+```
+
+**Decision**: #212 follow-up Cycle A (plan `docs/plan-212a-...md`, self-audit PASS) -- wired the SDK-evidence
+export into the runtime emit boundary. **Additive, zero change to the sealed runners / gateway mapping /
+`_emission_from`** (the last is REQUIRED: `test_pipeline.py:234` asserts exact `metadata`, so `captureMethod`
+is sink-configured, not metadata-threaded). **(1) `adapter/core/sdk_evidence.py`** -- refactored a shared
+`_build_evidence` helper; added **`emission_to_sdk_evidence(emission, *, capture_method="active",
+captured_at=None) -> list[dict]`** mapping each post-normalize `SourceEvidence` → one SDK `Evidence`
+(`pipelineVersion = emission.adapter_version`; re-screened for parity). **(2) `runtime/sinks.py`** -- new
+**`SdkEvidenceSink(*, capture_method="active")`**: the **Beta** in-memory emit seam (peer of `CollectingSink`)
+that turns emitted `AdapterEmission`s into SDK `Evidence` dicts (`status` raw, capturer = connector); the Live
+SDK-consumer HTTP delivery is bot/SDK-gated, like `GatewaySink` (out of scope). `capture_method` defaults to
+`"active"` (poll/graphql/fetch runtimes); operator passes `"webhook"` for a webhook connector. FX-EVIDENCE-001
+updated. **Verification:** 752 tests pass (6 new -- emit→SDK Evidence, configurable captureMethod, capturer-is-
+connector, accumulation, defensive secret re-screen, one-evidence-per-item); ruff clean; mypy clean (254
+files); bandit CI-style exit 0; governance-gate OK (chain #1..#213 + FEATURE_INDEX + subject-locality).
+Devil's-advocate: re-screen proven on a hand-built secret-bearing emission; no regression in the sealed paths
+(752 pass). Not bot/sidecar work -- integrations stays the evidence edge; Live bot-gated. **Review Boundary
+honored:** staged on `feat/212a-sdk-evidence-sink`, not pushed/merged at authoring. L2.
+
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#212 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#213 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*

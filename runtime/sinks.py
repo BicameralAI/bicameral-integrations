@@ -22,6 +22,7 @@ from typing import Any, Callable, Protocol, runtime_checkable
 
 from adapter.core.emissions import AdapterEmission
 from adapter.core.pipeline import validate_emissions
+from adapter.core.sdk_evidence import emission_to_sdk_evidence
 
 from .gateway_mapping import emission_to_ingest_request
 
@@ -72,6 +73,27 @@ class CollectingSink:
 
     def emit(self, emissions: list[AdapterEmission]) -> None:
         self.emissions.extend(emissions)
+
+
+class SdkEvidenceSink:
+    """Emit-boundary seam that shapes each ``AdapterEmission`` into SDK ``Evidence`` dicts
+    (``adapter.core.sdk_evidence.emission_to_sdk_evidence``) and accumulates them — the **Beta**
+    in-memory counterpart of a future Live SDK-evidence delivery (bot/SDK-gated, like
+    ``GatewaySink``). ``status`` is always ``raw`` and the capturer is the connector (never a human
+    actor). ``capture_method`` is the connector's ingest mode (the emission does not carry it):
+    default ``"active"`` for the poll/graphql/fetch runtimes; pass ``"webhook"`` for a webhook
+    connector. The export self-screens (FX-SEC-001 parity) before any dict is accumulated.
+    """
+
+    def __init__(self, *, capture_method: str = "active") -> None:
+        self._capture_method = capture_method
+        self.evidence: list[dict] = []
+
+    def emit(self, emissions: list[AdapterEmission]) -> None:
+        for emission in emissions:
+            self.evidence.extend(
+                emission_to_sdk_evidence(emission, capture_method=self._capture_method)
+            )
 
 
 class GatewaySink:
