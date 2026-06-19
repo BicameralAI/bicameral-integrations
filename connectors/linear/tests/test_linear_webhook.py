@@ -96,3 +96,21 @@ def test_normalize_event_dedup_second_delivery_returns_empty():
     headers = _headers(fx, body)
     assert len(conn.normalize_event(headers=headers, body=body)) == 1
     assert conn.normalize_event(headers=headers, body=body) == []
+
+
+def test_normalize_event_skips_verified_non_issue_event():
+    # A1: a signed Comment event passes HMAC but is skipped by the receiver guard, never emitted.
+    fx, _ = _vec()
+    payload = dict(fx["body"])
+    payload["type"] = "Comment"
+    body = json.dumps(payload).encode("utf-8")
+    assert _connector(fx).normalize_event(headers=_headers(fx, body), body=body) == []
+
+
+def test_normalize_event_skips_verified_remove_action():
+    # A2: a signed delete passes HMAC but must not emit a now-deleted issue as live evidence.
+    fx, _ = _vec()
+    payload = dict(fx["body"])
+    payload["action"] = "remove"
+    body = json.dumps(payload).encode("utf-8")
+    assert _connector(fx).normalize_event(headers=_headers(fx, body), body=body) == []

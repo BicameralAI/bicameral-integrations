@@ -1,7 +1,10 @@
 # Slack Connector
 
 Provider-facing Slack adapter. **Status: Beta** (ADR-0012; catalog communication,
-priority P0, default trust tier T2/T3). A Phase-1 foundation candidate from the
+priority P0). Trust tier **T2 (ingest)** is what this connector implements and what
+`config.json` declares; **T3 (notify/write) is deferred** (ADR-0008, evidence
+before action) — the catalog's "T2/T3" names the intended span, not a built mode.
+A Phase-1 foundation candidate from the
 [Integration Candidate Catalog](../../docs/INTEGRATION_CANDIDATE_CATALOG.md).
 
 ## Modes

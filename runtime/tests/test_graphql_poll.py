@@ -134,3 +134,21 @@ def test_graphql_runaway_cursor_stops():
     count = poll_graphql(_spec(), transport, CollectingSink())
     assert count == 1
     assert len(transport.bodies) == 1  # exactly one request — no runaway loop
+
+
+def test_graphql_circular_cursor_fails_closed():
+    # A8: hasNextPage:true with a REPEATING endCursor must stop, not re-fetch the same page.
+    # The recording transport repeats its last response, so page 2 returns cursor "c1" again.
+    transport = _RecordingTransport([_page([_issue("ENG-1")], has_next=True, end_cursor="c1")])
+    with pytest.raises(PollError) as exc:
+        poll_graphql(_spec(), transport, CollectingSink())
+    assert exc.value.reason == "circular_cursor"
+    assert len(transport.bodies) == 2  # page 1 (after=None) + page 2 (after="c1"), then stop
+
+
+def test_graphql_missing_data_fails_closed():
+    # A4: a 200 whose body lacks a `data` object → clear fail-closed error (not a vague nodes error).
+    transport = _RecordingTransport([_resp(200, {"notdata": {"issues": {}}})])
+    with pytest.raises(PollError) as exc:
+        poll_graphql(_spec(), transport, CollectingSink())
+    assert exc.value.reason == "missing_data"
