@@ -1,0 +1,15 @@
+id: cross-system-reference
+version: 0.1.0
+name: Cross-System Reference
+outputs:
+  - routing_hint
+  - source_evidence_annotation
+  - suggested_review_question
+forbidden_actions:
+  - write_canonical_decision
+  - approve_signoff
+  - resolve_compliance
+  - create_blocking_ci_result
+  - bypass_governance_policy
+  - mutate_source_evidence
+  - collapse_confidence_score

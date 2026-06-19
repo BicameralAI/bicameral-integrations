@@ -21,15 +21,20 @@ from connectors.mcp_registry.connector import McpRegistryConnector
 from connectors.openai_admin.connector import OpenAIAdminConnector
 from connectors.servicenow.connector import ServiceNowConnector
 from mods.adapter_contract import AdapterContractMod
+from mods.ai_authorship_review import AiAuthorshipReviewMod
 from mods.authority_boundary import AuthorityBoundaryMod
 from mods.code_review_risk import CodeReviewRiskMod
+from mods.compliance_routing import ComplianceRoutingMod
 from mods.connector_freshness import ConnectorFreshnessMod
 from mods.contract import Manifest, Mod, load_manifest
+from mods.cross_system_reference import CrossSystemReferenceMod
 from mods.data_classification import DataClassificationMod
 from mods.decision_drift import DecisionDriftMod
 from mods.dependency_risk import DependencyRiskMod
 from mods.noisy_source_gate import NoisySourceGateMod
+from mods.notification_scope_risk import NotificationScopeRiskMod
 from mods.ownership_routing import OwnershipRoutingMod
+from mods.policy_exemption_audit import PolicyExemptionAuditMod
 from mods.security_mentions import SecurityMentionsMod
 from mods.source_trust_calibration import SourceTrustCalibrationMod
 from mods.test_adequacy import TestAdequacyMod
@@ -114,6 +119,12 @@ _MODS: dict[str, tuple[Callable[[], Mod], Path]] = {
     "test_adequacy": (TestAdequacyMod, _MODS_DIR / "test_adequacy" / "manifest.yaml"),
     "ownership_routing": (OwnershipRoutingMod, _MODS_DIR / "ownership_routing" / "manifest.yaml"),
     "decision_drift": (DecisionDriftMod, _MODS_DIR / "decision_drift" / "manifest.yaml"),
+    # Cycle 2 (brief #208 workstream e) — 5 new EM-safe advisory mods.
+    "cross_system_reference": (CrossSystemReferenceMod, _MODS_DIR / "cross_system_reference" / "manifest.yaml"),
+    "ai_authorship_review": (AiAuthorshipReviewMod, _MODS_DIR / "ai_authorship_review" / "manifest.yaml"),
+    "policy_exemption_audit": (PolicyExemptionAuditMod, _MODS_DIR / "policy_exemption_audit" / "manifest.yaml"),
+    "compliance_routing": (ComplianceRoutingMod, _MODS_DIR / "compliance_routing" / "manifest.yaml"),
+    "notification_scope_risk": (NotificationScopeRiskMod, _MODS_DIR / "notification_scope_risk" / "manifest.yaml"),
 }
 
 
