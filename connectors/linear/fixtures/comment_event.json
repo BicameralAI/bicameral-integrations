@@ -1,0 +1,15 @@
+{
+  "action": "create",
+  "type": "Comment",
+  "actor": {"id": "usr_7f3a", "type": "user", "name": "Jordan Park"},
+  "createdAt": "2026-06-02T18:42:11.000Z",
+  "data": {
+    "id": "cmt_0a1b2c3d",
+    "body": "Looks good — shipping after CI passes.",
+    "issue": {"id": "b1e2c3d4-5678-49ab-9cde-0123456789ab", "identifier": "PLAT-204"}
+  },
+  "url": "https://linear.app/acme/issue/PLAT-204#comment-cmt_0a1b2c3d",
+  "webhookId": "wh_33bb",
+  "webhookTimestamp": 1780000000000,
+  "organizationId": "org_acme"
+}

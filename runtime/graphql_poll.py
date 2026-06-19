@@ -103,6 +103,8 @@ def _decode_page(status: int, body: bytes) -> dict:
     parsed = _parse_body(body)
     if parsed.get("errors"):  # a 200 can carry GraphQL errors — never emit a partial result
         raise PollError(0, "graphql_errors")
+    if not isinstance(parsed.get("data"), dict):  # a well-formed OK response always carries a `data` object
+        raise PollError(0, "missing_data")
     return parsed
 
 
@@ -134,6 +136,7 @@ def poll_graphql(
     headers = {**spec.auth.headers(), "Content-Type": "application/json"}
     observations: list[Observation] = []
     cursor: str | None = None
+    seen_cursors: set[str] = set()  # detect a repeating/cyclic cursor (A8) — don't re-fetch a page
     for _ in range(_MAX_PAGES):
         variables = {"first": spec.page_size, "after": cursor}
         body = json.dumps({"query": spec.query, "variables": variables}).encode("utf-8")
@@ -149,6 +152,9 @@ def poll_graphql(
         cursor = _next_cursor(page, spec.page_info_path)
         if cursor is None:
             break
+        if cursor in seen_cursors:  # provider returned a cursor we already followed → stop (A8)
+            raise PollError(0, "circular_cursor")
+        seen_cursors.add(cursor)
     if not observations:
         return 0
     av = adapter_version or adapter_version_for(observations[0].source_ref.source_id)

@@ -30,12 +30,37 @@ from adapter.core.webhook_security import (
 _REPLAY_WINDOW_MS = 60_000
 
 
+def _is_issue_event(payload: dict) -> bool:
+    """Fail-closed receiver guard: only a create/update **Issue** event carrying a non-empty
+    ``data.identifier`` yields an Observation.
+
+    A ``config.json events:["Issue"]`` subscription is a Linear-UI hint, **not** an enforced
+    filter (SG-2026-06-18-A): Linear can still deliver ``Comment``/``Project``/``Attachment``
+    events (which lack ``identifier``/``title``/``description`` and would otherwise emit an
+    empty-``title``/``excerpt`` Observation that violates the ADR-0005 non-empty contract), and a
+    ``remove`` (delete) action must not surface a now-deleted issue as live evidence. Anything
+    that is not an ingestible Issue create/update is skipped at the boundary.
+    """
+    if payload.get("type") != "Issue":
+        return False
+    if payload.get("action") == "remove":
+        return False
+    data = payload.get("data")
+    return isinstance(data, dict) and bool(data.get("identifier"))
+
+
 def parse_event(event: dict) -> Observation:
     """Map a Linear webhook event into a provider-neutral Observation.
 
     The title combines the human identifier (e.g. ``PROJ-123``) with the issue
     title; the excerpt is the description, falling back to the title then the
-    identifier so the contract's non-empty-excerpt rule holds.
+    identifier so the contract's non-empty-excerpt rule holds. ``author`` is
+    deliberately EMPTY: the actor's real name (``actor.name``) is dropped, not
+    surfaced (SG-2026-06-11-D; jira/granola precedent) — a generic name is not
+    caught by the FX-SEC-001 screen, so non-forwarding is the fail-closed choice.
+
+    Assumes an ingestible Issue create/update envelope; callers gate on
+    ``_is_issue_event`` first, so ``data.identifier`` is present here.
     """
     data = event.get("data") or {}
     identifier = data.get("identifier") or data.get("id") or ""
@@ -117,6 +142,8 @@ class LinearConnector:
     def observations(self, payload: dict) -> list[Observation]:
         if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
             return []
+        if not _is_issue_event(payload):  # fail-closed receiver guard (SG-2026-06-18-A)
+            return []
         return [parse_event(payload)]
 
     def _timestamp_ok(self, data: dict, now_ms: float) -> bool:
@@ -143,6 +170,8 @@ class LinearConnector:
         if not self.verify(headers=headers, body=body):
             return []
         payload = json.loads(body)
+        if not _is_issue_event(payload):  # subscribed != enforced: skip non-Issue/remove/shapeless (SG-2026-06-18-A)
+            return []
         if self._dedup is not None:
             delivery_id = str(payload.get("webhookId") or "")
             if not delivery_id or self._dedup.is_duplicate("linear", delivery_id):

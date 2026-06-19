@@ -1,28 +1,31 @@
 # Ownership Routing Mod
 
-Status: Scoped
+Status: Scoped  ·  version 0.1.0
 
-Advisory mod for suggesting reviewer lenses and domain ownership based on
-changed paths, source evidence, and recorded ownership hints.
+Advisory mod for mapping a change to a reviewer lens / domain owner, so a change reaches the right eyes without ever being auto-assigned.
 
-## Scope
+## How it works
 
-- CODEOWNERS and path ownership hints.
-- Connector, adapter, governance, security, docs, and CI domain routing.
-- Review questions for likely owners.
-- Mismatches between risky changes and requested reviewers.
+Pure, read-only function over `list[AdapterEmission]`, fires only on **change evidence** (`is_change_evidence` — a `pull_request` / `issue` / `merge_request`) and keys off the change text (title + body + evidence excerpts, lowercased). It maps domain hints to a reviewer lens (`any_match`; alphanumeric terms word-boundary, paths/phrases substring), in stable order:
+
+- **security** — `security`, `auth`, `crypto`, `redact`, `sensitive`, `vulnerability`, `credential`, `signature`, `cve`, `xss`, `csrf`, `injection`, `rce`, `sqli`, `exploit`.
+- **connectors** — `connector(s)`, `adapter`, `webhook`, `parse surface`, `poll spec`.
+- **governance** — `governance`, `ledger`, `adr`, `compliance`, `policy`, `trust tier`.
+- **ci** — `.github/workflows`, `ci pipeline`, `scorecard`, `sbom`, `workflow yaml`.
+- **docs** — `readme`, `documentation`, `docs/`, `changelog`.
+
+One `owner_lens_hint` + one `routing_hint` per matched domain, plus a single annotation. No domain matched, or non-change evidence → NO output.
 
 ## Outputs
 
-- `owner_lens_hint`
-- `routing_hint`
-- `source_evidence_annotation`
+- `source_evidence_annotation` — `change on <source> maps to owner lens(es): <domains>`.
+- `owner_lens_hint` (per domain) — `review through the <domain> lens`, metadata `{lens, source}`.
+- `routing_hint` (per domain) — `role=<domain>`, `priority="normal"`.
 
-## Boundary
+## Boundary (EM-safe)
 
-This mod may suggest reviewers or owner lenses. It must not assign reviewers,
-require approval, or override branch protection.
+It SUGGESTS a reviewer lens or owner; it never assigns a reviewer, requires approval, or overrides branch protection — it cannot write canonical state, approve/sign off, resolve compliance, or block CI (ADR-0007/0008/0013). Every wire-bound field is re-screened by `run_mod` (FX-SEC-001).
 
 ## References
 
-See [references.md](references.md).
+ADR-0008 (evidence adapters, not state authorities), ADR-0013 (mod execution contract). See the [mod safety contract](../README.md) and [references.md](references.md).

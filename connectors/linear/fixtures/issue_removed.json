@@ -1,0 +1,16 @@
+{
+  "action": "remove",
+  "type": "Issue",
+  "actor": {"id": "usr_7f3a", "type": "user", "name": "Jordan Park"},
+  "createdAt": "2026-06-02T18:42:11.000Z",
+  "data": {
+    "id": "b1e2c3d4-5678-49ab-9cde-0123456789ab",
+    "identifier": "PLAT-204",
+    "title": "Adopt Postgres advisory locks for the watermark cursor",
+    "url": "https://linear.app/acme/issue/PLAT-204"
+  },
+  "url": "https://linear.app/acme/issue/PLAT-204",
+  "webhookId": "wh_44cc",
+  "webhookTimestamp": 1780000000000,
+  "organizationId": "org_acme"
+}

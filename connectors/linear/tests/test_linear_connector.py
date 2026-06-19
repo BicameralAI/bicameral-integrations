@@ -71,6 +71,32 @@ def test_end_to_end_normalizes_to_emission():
     assert emission.evidence[0].excerpt == event["data"]["description"]
 
 
+def _fixture(name: str) -> dict:
+    path = Path(__file__).resolve().parents[1] / "fixtures" / name
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_observations_emits_for_issue_create():
+    # Positive control: a valid Issue create still yields exactly one Observation.
+    assert len(LinearConnector().observations(_event())) == 1
+
+
+def test_observations_skips_non_issue_event():
+    # A1: a Comment webhook (no identifier/title/description) must NOT emit an empty Observation.
+    assert LinearConnector().observations(_fixture("comment_event.json")) == []
+
+
+def test_observations_skips_remove_action():
+    # A2: a delete must NOT surface a now-removed issue as live evidence.
+    assert LinearConnector().observations(_fixture("issue_removed.json")) == []
+
+
+def test_observations_skips_issue_without_identifier():
+    # A3: an Issue event lacking `data.identifier` fails the boundary invariant.
+    event = {"type": "Issue", "action": "create", "data": {"title": "no id here"}}
+    assert LinearConnector().observations(event) == []
+
+
 def test_parse_issue_node():
     # GraphQL active-fetch path: an Issue node → Observation (distinct from the webhook envelope).
     node = {
