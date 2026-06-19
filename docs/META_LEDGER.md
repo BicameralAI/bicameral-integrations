@@ -7197,9 +7197,55 @@ authority-limits doc. Subject-locality clean (integrations-owned edge; SDK/bot/s
 ADR-0018). Lesson -> SHADOW_GENOME SG-2026-06-18-D. Gated next phase `/qor-plan`. Advisory; no implementation
 authorized.
 
+### Entry #212: IMPLEMENTATION -- evidence-only ingest boundary / SDK evidence-contract conformance (#187, FX-EVIDENCE-001)
+
+**Entry ID**: `impl212evidenceonlyingestboundary`
+**Timestamp**: 2026-06-18T06:00:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(adapter/core/sdk_evidence.py)
+= 73de03860d1227f12c8df5824cab94ea8863cd30802ca1389698462c07fe47c0
+```
+
+**Previous Hash**: ff0ba004914d692bdfe2f8de09c0006da04e60bb189f570e45bf657a1fea478b
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 800cddced40f3e766e7668905d0e1f974aaeee5ea38d74096da831163a8c89ae
+```
+
+**Decision**: Implemented #187 (plan `docs/plan-187-...md`, self-audit PASS) -- the integrations-side
+**evidence-only ingest boundary** conforming to the SDK evidence contract (bicameral-sdk #7, CLOSED).
+**(1) `adapter/core/provenance.py` (NEW)** -- `Attribution`/`ActorType(human|agent|system|connector)`/
+`Provenance` mirroring `src/provenance/index.ts`. **(2) `adapter/core/sdk_evidence.py` (NEW)** --
+`to_sdk_evidence(obs, *, adapter_version, captured_at=None) -> dict` maps a connector `Observation` to the SDK
+`Evidence` shape: **`status` ALWAYS `"raw"`** (evidence is never canonical; candidate-extraction/promotion are
+bot-owned #481/#484), `capturedBy = Attribution(actorType="connector")` (the **capturer is the connector**, the
+human actor is never surfaced -- preserves the PII-drop), `captureMethod` from `Observation.mode`,
+`pipelineVersion`, `sourceHash=sha256:<hex>`. **Self-screens** (FX-SEC-001 parity -- a secret in the excerpt
+raises `EvidenceExportError`, never exported). Pins the SDK contract (`SDK_EVIDENCE_CONTRACT`); golden fixtures
+are the conformance lock. **(3) `pipeline.normalize` default `emission_type` `candidate`->`evidence`**
+(SG-2026-06-18-D: a connector emits raw evidence, not a candidate). **Blast-radius measured inert:** the only
+non-test reader of `emission_type` is `source_trust_calibration` (`in {hint,advisory}` -- neither candidate nor
+evidence); `gateway_mapping` doesn't read it; no test asserts normalize-output is `candidate`; `"candidate"`
+stays valid for hand-built emissions. **(4) `docs/CONNECTOR_AUTHORITY_LIMITS.md` (NEW)** -- authority-limits
+doc tying `status:'raw'` + "evidence never canonical" to ADR-0008 + the SDK; per-connector `trust_tier` is the
+scoped-permission metadata the sidecar consumes. FX-EVIDENCE-001 added. **Verification:** 746 tests pass (6 new
+golden/screen/normalize-evidence); ruff clean; mypy clean (253 files); bandit CI-style exit 0; governance-gate
+OK (chain #1..#212 + FEATURE_INDEX paths exist + subject-locality). Devil's-advocate: candidate->evidence
+confirmed inert; export screens exactly the exported leaves; deterministic (no clock -- runtime injects
+captured_at). Not bot promotion/drift (#481/#484) nor sidecar scope (#5) -- integrations stays the evidence
+edge; Live is bot-gated (Beta on fixtures). **Review Boundary honored:** staged on
+`research/187-evidence-only-ingest-boundary`, not pushed/merged at authoring. L2.
+
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#211 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#212 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
