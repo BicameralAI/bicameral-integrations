@@ -184,8 +184,8 @@ fails first on drift (it owns the mapping + pin).
 - `create_provider_resource` introduces no new authority: it is a `ProposedAction`, governed/executed
   bot-side.
 - **Open / cross-repo (not decided here):** bot #405 must confirm it consumes descriptors/items in
-  this shape; the descriptor→shared-schema promotion; the GitHub live-fetch auth model (PAT vs App
-  installation token) is unbuilt and unspecified.
+  this shape; the descriptor→shared-schema promotion. **The GitHub live-fetch auth model is now decided —
+  see Addendum 2026-06-23 (#180).**
 
 ## Alternatives considered
 
@@ -202,3 +202,26 @@ fails first on drift (it owns the mapping + pin).
   of `ProposedAction` routing, which keeps ADR-0008 read-only and reuses the governed egress lifecycle.
 - **Reuse "descriptor" unqualified for both config and resource** — rejected: it is the documented
   naming hazard (research brief Finding 3); the two objects are qualified.
+
+## Addendum 2026-06-23 (#180): GitHub live discovery/fetch auth model — DECIDED
+
+Resolving the Consequences open question for GitHub (owner decision on #173):
+
+- **GitHub App installation auth ONLY.** Live GitHub discovery/fetch authenticates as a GitHub App
+  **installation**, using a short-lived installation access token. **PAT / imported-token fallback is
+  rejected for alpha live fetch** — there is no PAT code path by construction.
+- **Hosted credential boundary.** The GitHub App private key / client secret are brokered hosted-side
+  (the installation token broker, BicameralAI/bicameral-cloud#7); the integrations connector receives
+  only the resolved installation token via an injected `InstallationTokenProvider` and never sees the
+  App private key. Tokens never appear in descriptors, fixtures, logs, schemas, or error messages
+  (token-free `DiscoveryError`, mirroring `poll_auth.PollError`).
+- **Mocked/recorded slice built; live deferred.** `protocol/provider_acquisition/github/`
+  (`GitHubDiscoveryConnector` over an injected transport + token provider) implements
+  list/get/validate/fetch against **recorded** GitHub REST responses
+  (`fixtures/recorded/github/*.json`, secret-guard-covered). The live `urllib` transport is deferred to
+  cloud#7 — a mock never promotes to Live (§6). Descriptor/item screening reuses the single
+  `adapter.core.sensitive` catalog via `protocol/provider_acquisition/screening.py` (§3; shared with the
+  Drive slice #179). `create_provider_resource` remains absent (§4 / ADR-0008).
+- **Config-descriptor block deferred.** §5's `discovery` block in `connectors/github/config.json` is
+  **not** added here: the `connector-config.schema.json` `modes` enum is `webhook|active|passive`, so a
+  `discovery` mode + block is an additive ADR-0015 config-contract change owned by that fan-out, not #180.

@@ -1,8 +1,21 @@
-# Provider Acquisition — Golden Fixtures
+# Provider Acquisition — Discovery Surface
 
-Provisional alpha golden fixtures for the `ProviderResourceDescriptor` and
-`ProviderItemEnvelope` types defined in
+Provisional alpha golden fixtures + discovery connectors for the
+`ProviderResourceDescriptor` and `ProviderItemEnvelope` types defined in
 [BicameralAI/bicameral-bot#462](https://github.com/BicameralAI/bicameral-bot/issues/462).
+
+Connectors:
+
+- `stub.py` — `FixtureDiscoveryStub`: fixture-backed emitter for contract-shape /
+  downstream integration testing (#178).
+- `github/` — `GitHubDiscoveryConnector`: GitHub App **installation-only** discovery
+  over an injected transport + token provider (#180). Mocked/recorded slice — the
+  live `urllib` transport + App-key handling are hosted-side (cloud#7) and out of
+  scope; recorded GitHub REST responses live under `fixtures/recorded/github/` (so
+  the secret-guard's `rglob` covers them). See ADR-0017 Addendum 2026-06-23.
+- `screening.py` — `screen_descriptor` / `screen_item`: fail-closed reuse of the
+  single `adapter.core.sensitive` catalog before any object crosses the boundary
+  (ADR-0017 §3; shared by the GitHub + Drive slices).
 
 ## Authority boundary
 
@@ -30,9 +43,15 @@ protocol/provider_acquisition/
 │   │   ├── linear-*.json
 │   │   ├── google-drive-*.json
 │   │   └── github-*.json
-│   └── items/                        # Golden ProviderItemEnvelope examples
-│       ├── linear-*.json
-│       └── github-*.json
+│   ├── items/                        # Golden ProviderItemEnvelope examples
+│   │   ├── linear-*.json
+│   │   └── github-*.json
+│   └── recorded/github/              # Recorded GitHub REST responses (#180)
+├── github/                           # GitHubDiscoveryConnector (#180)
+│   ├── auth.py · transport.py · mapping.py · connector.py
+│   └── tests/test_github_discovery.py
+├── screening.py                      # Fail-closed descriptor/item screen
+├── stub.py                           # FixtureDiscoveryStub (#178)
 ├── tests/
 │   ├── test_fixture_schema_conformance.py
 │   └── test_fixture_secret_guard.py

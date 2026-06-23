@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded GitHub REST response: listing with a stale/invalid pagination cursor (422).",
+  "method": "GET",
+  "path": "/installation/repositories?cursor=stale",
+  "status": 422,
+  "json": {"message": "Invalid pagination cursor", "documentation_url": "https://docs.github.com/rest"}
+}
