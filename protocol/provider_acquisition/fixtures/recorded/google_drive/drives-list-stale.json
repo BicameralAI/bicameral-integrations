@@ -1,0 +1,8 @@
+{
+  "_comment": "Recorded drives.list with a stale/invalid pageToken (400).",
+  "method": "GET",
+  "path": "/drive/v3/drives",
+  "params": {"pageToken": "stale"},
+  "status": 400,
+  "json": {"error": {"code": 400, "status": "INVALID_ARGUMENT", "errors": [{"reason": "invalid"}]}}
+}

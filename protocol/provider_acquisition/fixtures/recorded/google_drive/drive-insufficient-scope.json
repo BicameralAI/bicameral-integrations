@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded 403 ACCESS_TOKEN_SCOPE_INSUFFICIENT — the OAuth scope is too narrow (drive.metadata.readonly only).",
+  "method": "GET",
+  "path": "/drive/v3/drives/noScope403",
+  "status": 403,
+  "json": {"error": {"code": 403, "status": "PERMISSION_DENIED", "message": "Request had insufficient authentication scopes.", "errors": [{"reason": "insufficientPermissions"}]}}
+}

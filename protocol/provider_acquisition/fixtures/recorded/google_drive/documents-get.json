@@ -1,0 +1,16 @@
+{
+  "_comment": "Recorded GET docs.googleapis.com/v1/documents/{id} (documents.get) — a structured Google Doc.",
+  "method": "GET",
+  "path": "https://docs.googleapis.com/v1/documents/1DOC2222documentid12345",
+  "status": 200,
+  "json": {
+    "documentId": "1DOC2222documentid12345",
+    "title": "Event Store Substrate Decision",
+    "body": {
+      "content": [
+        {"paragraph": {"elements": [{"textRun": {"content": "Decision\n"}}], "paragraphStyle": {"namedStyleType": "HEADING_1"}}},
+        {"paragraph": {"elements": [{"textRun": {"content": "Adopt an append-only event log for the project substrate; snapshots are derived, not authoritative.\n"}}]}}
+      ]
+    }
+  }
+}

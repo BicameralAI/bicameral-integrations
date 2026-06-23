@@ -1,0 +1,14 @@
+{
+  "_comment": "Recorded files.list step 1 for a drive with no .bicameral folder — empty (a drive with no projects yet).",
+  "method": "GET",
+  "path": "/drive/v3/files",
+  "params": {
+    "q": "name = '.bicameral' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+    "driveId": "0EMPTYdriveNoBicam",
+    "corpora": "drive",
+    "includeItemsFromAllDrives": "true",
+    "supportsAllDrives": "true"
+  },
+  "status": 200,
+  "json": {"kind": "drive#fileList", "incompleteSearch": false, "files": []}
+}

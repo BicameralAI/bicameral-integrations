@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded 403 insufficientFilePermissions — the account lacks access to this shared drive.",
+  "method": "GET",
+  "path": "/drive/v3/drives/denied403",
+  "status": 403,
+  "json": {"error": {"code": 403, "status": "PERMISSION_DENIED", "message": "The user does not have sufficient permissions for this shared drive.", "errors": [{"reason": "insufficientFilePermissions"}]}}
+}

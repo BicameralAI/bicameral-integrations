@@ -225,3 +225,31 @@ Resolving the Consequences open question for GitHub (owner decision on #173):
 - **Config-descriptor block deferred.** §5's `discovery` block in `connectors/github/config.json` is
   **not** added here: the `connector-config.schema.json` `modes` enum is `webhook|active|passive`, so a
   `discovery` mode + block is an additive ADR-0015 config-contract change owned by that fan-out, not #180.
+
+## Addendum 2026-06-23 (#179): Google Drive discovery slice — BUILT (mocked/recorded)
+
+Implements the §Alpha-scope Drive slice (`files.list` — the named critical-path build), mocked/recorded;
+live deferred to factory#93 (Google live-connection baseline).
+
+- **Surface.** `protocol/provider_acquisition/google_drive/` (`GoogleDriveDiscoveryConnector`):
+  `list_resources` → shared drives (`drives.list`) or, when `config.drive_id` is set, the `.bicameral`
+  project folders within that drive (`files.list`, two-step); `get_resource`/`validate_resource_access` →
+  `drives.get`/`files.get`; `fetch_provider_item` → a document leaf (`documents.get`). Descriptors mirror
+  the golden `google-drive-shared-drive`/`folder`/`document` fixtures (id prefixes `drive_`/`folder_`/
+  `doc_`). `create_provider_resource` absent — **`.bicameral` folder creation is egress/ProposedAction
+  (§4), out of scope** (read-only discovery).
+- **Refined product scope** (issue #179 owner comment): discover **shared drives + `.bicameral/<project>/`
+  project folders only**, not arbitrary folder picking; consumer / personal My-Drive is unsupported for
+  team projects (→ `action_needed`). Auto-select-if-one / prompt-if-many is bot/UI-side; the connector only
+  emits the descriptors.
+- **Auth — reuse, no new type.** The OAuth access token is resolved via the existing
+  `runtime.secrets.SecretResolver` (operator wires `RefreshTokenSecretResolver`; refresh stays operator-
+  side). Unlike #180's GitHub `InstallationTokenProvider`, **no new token type** is introduced. Token-free
+  errors; control-char screened before the `Bearer` splice. Scopes `drive.readonly` + `documents.readonly`
+  (Finding 4: `drive.metadata.readonly` is invalid for `documents.get`) are already declared in
+  `connectors/google_drive/config.json` — **no config change**; the `discovery` block stays deferred to the
+  ADR-0015 fan-out.
+- **Reuse-not-fork.** Descriptor/item screening reuses `screening.py` unchanged; document content reuses the
+  audited `connectors.google_drive.connector.extract_document_text`. The transport seam is a **local mirror**
+  of #180's (a shared `params` Protocol would have changed GitHub's no-`params` shape and forced edits to
+  merged code; unification is explicitly deferred). **Zero edit to merged #180 code.**
