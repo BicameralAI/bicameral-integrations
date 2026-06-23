@@ -1,0 +1,17 @@
+{
+  "_comment": "Recorded GitHub REST response: GET /repos/example-org/example-repo/pulls/92 (synthetic).",
+  "method": "GET",
+  "path": "/repos/example-org/example-repo/pulls/92",
+  "status": 200,
+  "json": {
+    "number": 92,
+    "title": "Add health-check route",
+    "body": "Adds GET /healthz returning 200 for liveness probes. Includes integration test and k8s manifest update.",
+    "html_url": "https://github.com/example-org/example-repo/pull/92",
+    "state": "closed",
+    "merged": true,
+    "user": {"login": "octo-dev"},
+    "base": {"ref": "main"},
+    "updated_at": "2026-06-14T20:00:00Z"
+  }
+}

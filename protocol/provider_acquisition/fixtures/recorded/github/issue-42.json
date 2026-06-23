@@ -1,0 +1,16 @@
+{
+  "_comment": "Recorded GitHub REST response: GET /repos/example-org/example-repo/issues/42 (synthetic).",
+  "method": "GET",
+  "path": "/repos/example-org/example-repo/issues/42",
+  "status": 200,
+  "json": {
+    "number": 42,
+    "title": "Add health-check route for liveness probes",
+    "body": "We need a GET /healthz endpoint returning 200 for Kubernetes liveness probes. The current service has no health signal and restarts are blind.",
+    "html_url": "https://github.com/example-org/example-repo/issues/42",
+    "state": "open",
+    "user": {"login": "octo-dev"},
+    "labels": [{"name": "enhancement"}, {"name": "good first issue"}],
+    "updated_at": "2026-06-14T16:00:00Z"
+  }
+}

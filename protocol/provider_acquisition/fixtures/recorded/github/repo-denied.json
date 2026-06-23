@@ -1,0 +1,8 @@
+{
+  "_comment": "Recorded GitHub REST response: GET on a repo the installation lacks access to (403 insufficient permission).",
+  "method": "GET",
+  "path": "/repos/private-org/internal-tooling",
+  "status": 403,
+  "headers": {"X-RateLimit-Remaining": "4990"},
+  "json": {"message": "Resource not accessible by integration", "documentation_url": "https://docs.github.com/rest"}
+}

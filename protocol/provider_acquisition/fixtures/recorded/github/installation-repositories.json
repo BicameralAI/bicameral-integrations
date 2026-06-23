@@ -1,0 +1,34 @@
+{
+  "_comment": "Recorded GitHub REST response: GET /installation/repositories (synthetic, secret-free).",
+  "method": "GET",
+  "path": "/installation/repositories",
+  "status": 200,
+  "headers": {"X-RateLimit-Remaining": "4998"},
+  "json": {
+    "total_count": 2,
+    "repositories": [
+      {
+        "full_name": "example-org/example-repo",
+        "name": "example-repo",
+        "html_url": "https://github.com/example-org/example-repo",
+        "default_branch": "main",
+        "visibility": "private",
+        "language": "Rust",
+        "node_id": "R_kgDOExample1",
+        "updated_at": "2026-06-14T20:00:00Z",
+        "permissions": {"admin": false, "maintain": false, "push": true, "pull": true}
+      },
+      {
+        "full_name": "example-org/docs-site",
+        "name": "docs-site",
+        "html_url": "https://github.com/example-org/docs-site",
+        "default_branch": "main",
+        "visibility": "public",
+        "language": "TypeScript",
+        "node_id": "R_kgDOExample2",
+        "updated_at": "2026-06-12T09:30:00Z",
+        "permissions": {"admin": false, "maintain": false, "push": false, "pull": true}
+      }
+    ]
+  }
+}

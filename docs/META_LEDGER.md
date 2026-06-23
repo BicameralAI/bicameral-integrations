@@ -7327,7 +7327,98 @@ authoring. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#214 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #215: GATE TRIBUNAL -- AUDIT PASS: GitHub App installation discovery (mocked/recorded slice, #180)
+
+**Entry ID**: `audit215githubinstallationdiscovery`
+**Timestamp**: 2026-06-23T20:50:00-04:00
+**Phase**: AUDIT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Judge
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/plan-180-github-installation-discovery-2026-06-23.md)
+= dc2833b21676d465b7df3c67d9a91cc3e5fe4dd9e230ae080e371eb97f6f4e03
+```
+
+**Previous Hash**: 54fc16cc5c83bb0d5ed3717ab5acfdd6034ba31e4d749baee1714d64ac899413
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 52b0d1490a90bf8737dfcebfeda190ad0c9e99e09bc3b7409aaefefdff99d7bd
+```
+
+**Decision**: **PASS** (solo; `audit_risk_score option_b_required: false`; codex-plugin shortfall recorded).
+Audited the plan for the GitHub App **installation-only** discovery slice (#180), mocked/recorded — live
+HTTP deferred to cloud#7. All adversarial passes clear: Security/L3 (installation token injected operator-
+side, App private key/client secret never enters the package, screening fail-closed), OWASP (pure JSON map,
+`json.loads` only, no fail-open/empty-success, token-free `DiscoveryError`), Razor (auth/transport/mapping/
+connector decomposition + error-map helper keeps <250/<40 — discipline note carried), Test Functionality
+(behavioral assertions on emitted descriptors/items + `DiscoveryErrorKind` per error row; existing secret-
+guard auto-extends via `fixtures/` location), Dependency (no new third-party dep), Macro Architecture
+(`protocol → adapter.core` established direction; local transport seam avoids `protocol → runtime` reverse
+import), Filter-Stage (screen-before-emit, no inversion), Orphan (opt-in surface proven by tests, same
+posture as merged `FixtureDiscoveryStub`). **Infrastructure Alignment**: every claim grep-verified —
+merged #178 `DiscoveryConnector` envelope sig (`contracts.py:72`), `DiscoveryErrorKind` 5-value enum
+(`types.py:39`), `detect_sensitive` (`sensitive.py:130`), secret-guard `rglob fixtures/**`
+(`test_fixture_secret_guard.py:20`), conformance globs only `descriptors/`+`items/`, config schema `modes`
+enum = webhook|active|passive (**discovery block correctly deferred** to the ADR-0015 config fan-out).
+**Authority boundary** intact (no `create_provider_resource`; no SourceBinding/Source/evidence/candidate).
+Report: `.agent/staging/AUDIT_REPORT.md`. **Required next action:** `/qor-implement`. **Review Boundary
+honored:** staged on `feat/180-github-installation-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #216: IMPLEMENTATION -- GitHub App installation discovery connector (mocked/recorded slice, #180)
+
+**Entry ID**: `impl216githubinstallationdiscovery`
+**Timestamp**: 2026-06-23T21:10:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(protocol/provider_acquisition/github/connector.py)
+= 017c59a0123304c178c8d6afd65cdd484dba612f37e4f05b1c4ff3b6282fb034
+```
+
+**Previous Hash**: 52b0d1490a90bf8737dfcebfeda190ad0c9e99e09bc3b7409aaefefdff99d7bd
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ffda9a66a50d744860c34ba897935386441a940d46a853038e42eb3d3743d6b0
+```
+
+**Decision**: Implemented the audited plan (#215 PASS) for #180 — the **first GitHub provider-acquisition
+slice**, GitHub App **installation auth only**, mocked/recorded. **NEW `protocol/provider_acquisition/
+github/`**: `auth.py` (`InstallationTokenProvider` Protocol + `MappingInstallationTokenProvider` —
+installation-only by construction, **no PAT/imported-token entry point**; `reject_control_chars`
+token-smuggling guard), `transport.py` (`GitHubTransport` seam + `RecordedTransport.from_dir`; live
+`urllib` transport deferred to cloud#7 — local seam, no `protocol→runtime` import), `mapping.py` (pure
+GitHub-REST-JSON→`ProviderResourceDescriptor`/`ProviderItemEnvelope`; untrusted-boundary coercion),
+`errors.py` (status→typed `DiscoveryErrorKind` taxonomy, factored out per the audit Razor note —
+connector.py 212 lines), `connector.py` (`GitHubDiscoveryConnector`: 4 methods, auth→transport→map→
+**screen-before-emit**; `create_provider_resource` **absent**). **NEW `protocol/provider_acquisition/
+screening.py`** — `screen_descriptor`/`screen_item` reuse the single `adapter.core.sensitive` catalog,
+fail-closed (ADR-0017 §3; shared w/ Drive #179). **NEW `fixtures/recorded/github/*.json`** (10 synthetic
+GitHub REST recordings incl. 403-denied/403-ratelimit/404/401/503/422 — auto-covered by the existing
+secret-guard `rglob fixtures/**`). **NEW `github/tests/test_github_discovery.py`** (28 behavioral tests:
+list/get/validate/fetch + every taxonomy row + installation-only + fail-closed screening + token-free
+errors + jsonschema conformance). **EDIT** ADR-0017 (Addendum 2026-06-23 resolves the open question:
+GitHub App installation only; PAT rejected; cloud#7 broker; screening reused; config block deferred to
+ADR-0015 fan-out), `provider_acquisition/README.md`, `FEATURE_INDEX.md` (FX-GH-DISC-001; 49→50).
+**Verification:** 977 tests pass (28 new); ruff clean; mypy clean (271 files); bandit CI-style exit 0;
+governance-gate OK (chain #1..#216 + FEATURE_INDEX + subject-locality). **Boundary held:** no
+SourceBinding/Source/evidence/candidate, no event-store/`.bicameral` mutation, no provider writes/egress,
+no schema promotion, no `connectors/github/config.json` change. **Review Boundary honored:** staged on
+`feat/180-github-installation-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#216 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*

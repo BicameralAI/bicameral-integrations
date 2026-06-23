@@ -1,0 +1,8 @@
+{
+  "_comment": "Recorded GitHub REST response: 403 with rate-limit exhausted (X-RateLimit-Remaining: 0).",
+  "method": "GET",
+  "path": "/repos/ratelimited-org/repo",
+  "status": 403,
+  "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1750800000"},
+  "json": {"message": "API rate limit exceeded for installation", "documentation_url": "https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"}
+}

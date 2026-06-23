@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded GitHub REST response: 503 provider unavailable.",
+  "method": "GET",
+  "path": "/repos/unavailable-org/repo",
+  "status": 503,
+  "json": {"message": "Service unavailable"}
+}
