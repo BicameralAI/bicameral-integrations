@@ -1,0 +1,22 @@
+{
+  "_comment": "Golden fixture: GitHub issue item envelope — a fetched issue from a repository issue stream.",
+  "_authority_boundary": "Provider fact only. Not Source, SourceSnapshot, SourceEvidence, DecisionCandidate, Decision, ToolRequest, ExternalIngestEnvelope, or event-store authority.",
+  "provider": "github",
+  "resource_id": "example-org/example-repo/issues",
+  "item_id": "issue-42",
+  "item_type": "issue",
+  "title": "Add health-check route for liveness probes",
+  "content": "We need a GET /healthz endpoint returning 200 for Kubernetes liveness probes. The current service has no health signal and restarts are blind.",
+  "uri": "https://github.com/example-org/example-repo/issues/42",
+  "content_hash": "c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+  "freshness": {
+    "last_modified": "2026-06-14T16:00:00Z"
+  },
+  "provider_metadata": {
+    "number": 42,
+    "state": "open",
+    "author_login": "octo-dev",
+    "labels": ["enhancement", "good first issue"]
+  },
+  "fetched_at": "2026-06-15T09:16:00Z"
+}

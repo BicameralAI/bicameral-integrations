@@ -74,6 +74,39 @@ Returned when the bot fetches a selected leaf. Built from the **screened** `Obse
 
 `ActionNeeded`: `{reason: str (typed), hint: str}` — a connect/retry hint; carries no secret.
 
+## Discovery outcome envelope
+
+Every discovery operation returns a typed result envelope rather than raising or returning a bare value —
+so a permission/access failure is a **first-class, screenable value**, not an exception that escapes the
+funnel. Defined in `protocol/provider_acquisition/types.py` (introduced by PR #183 / issue #178; promoted
+here per #185).
+
+**`DiscoveryErrorKind`** — the typed reason a discovery operation could not succeed:
+
+`PERMISSION_DENIED`, `ACTION_NEEDED`, `NOT_FOUND`, `UNSUPPORTED`, `PROVIDER_ERROR`
+
+**`DiscoveryError`** — a structured failure (no secret, no provider exception object):
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `kind` | `DiscoveryErrorKind` | yes | Typed failure reason. |
+| `message` | `str` | yes | Human-readable, non-secret summary. |
+| `permission_state` | `PermissionState \| None` | no | The connection state that produced the failure, when known. |
+| `action_hint` | `str \| None` | no | A connect/retry hint (mirrors `ActionNeeded.hint`); carries no secret. |
+
+**`DiscoveryOutcome[T]`** — the generic result envelope wrapping any discovery return type `T`
+(e.g. `ResourcePage`, `ProviderResourceDescriptor`, `AccessVerdict`, `list[Observation]`):
+
+| Field | Type | Required | Meaning |
+|---|---|---|---|
+| `value` | `T \| None` | no | The success payload. |
+| `error` | `DiscoveryError \| None` | no | The typed failure. |
+
+**Invariant:** exactly one of `value` / `error` is populated; the `ok` property is
+`error is None and value is not None`. An `INSUFFICIENT_SCOPE`/expired-grant result is returned as a
+populated `error` (never an empty success) — the same "honest failure, never silent" discipline the
+descriptor `permission_state` enforces.
+
 ## Operations (`DiscoveryConnector` Protocol)
 
 ```

@@ -1,0 +1,23 @@
+{
+  "_comment": "Golden fixture: GitHub pull-request item envelope — a fetched PR from a repository PR stream.",
+  "_authority_boundary": "Provider fact only. Not Source, SourceSnapshot, SourceEvidence, DecisionCandidate, Decision, ToolRequest, ExternalIngestEnvelope, or event-store authority.",
+  "provider": "github",
+  "resource_id": "example-org/example-repo/pulls",
+  "item_id": "pr-92",
+  "item_type": "pull_request",
+  "title": "Add health-check route",
+  "content": "Adds GET /healthz returning 200 for liveness probes. Includes integration test and k8s manifest update.",
+  "uri": "https://github.com/example-org/example-repo/pull/92",
+  "content_hash": "d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7",
+  "freshness": {
+    "last_modified": "2026-06-14T20:00:00Z"
+  },
+  "provider_metadata": {
+    "number": 92,
+    "state": "closed",
+    "merged": true,
+    "author_login": "octo-dev",
+    "base_branch": "main"
+  },
+  "fetched_at": "2026-06-15T09:16:30Z"
+}

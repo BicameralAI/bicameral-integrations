@@ -1,0 +1,16 @@
+{
+  "_comment": "Golden fixture: GitHub repository descriptor with denied permission state — the authenticated token lacks repo scope.",
+  "_authority_boundary": "Provider fact only. Not a SourceBinding, Source, evidence, candidate, review, signoff, compliance, or event-store authority object.",
+  "provider": "github",
+  "resource_id": "private-org/internal-tooling",
+  "display_name": "internal-tooling",
+  "resource_type": "repository",
+  "uri": "https://github.com/private-org/internal-tooling",
+  "capabilities": [],
+  "permission": "denied",
+  "provider_metadata": {
+    "action_needed_reason": "credential_expired",
+    "action_hint": "The installation token has expired. Regenerate or re-install the GitHub App."
+  },
+  "captured_at": "2026-06-15T09:12:00Z"
+}
