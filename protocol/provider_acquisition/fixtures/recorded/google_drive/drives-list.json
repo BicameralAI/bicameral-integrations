@@ -1,0 +1,12 @@
+{
+  "_comment": "Recorded GET /drive/v3/drives (drives.list) — one shared drive (synthetic).",
+  "method": "GET",
+  "path": "/drive/v3/drives",
+  "status": 200,
+  "json": {
+    "kind": "drive#driveList",
+    "drives": [
+      {"id": "0ABCdefGHIjklMNO", "name": "Engineering Decisions", "createdTime": "2026-06-13T11:00:00Z"}
+    ]
+  }
+}

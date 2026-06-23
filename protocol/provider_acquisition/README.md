@@ -13,6 +13,14 @@ Connectors:
   live `urllib` transport + App-key handling are hosted-side (cloud#7) and out of
   scope; recorded GitHub REST responses live under `fixtures/recorded/github/` (so
   the secret-guard's `rglob` covers them). See ADR-0017 Addendum 2026-06-23.
+- `google_drive/` — `GoogleDriveDiscoveryConnector`: shared-drive + `.bicameral`
+  project-folder discovery and document-leaf fetch (#179). Mocked/recorded slice —
+  the live `urllib` transport + OAuth refresh are operator-side
+  (`runtime.google_oauth.RefreshTokenSecretResolver`) and out of scope (factory#93).
+  Reuses the runtime `SecretResolver` as the token provider (no new type) and
+  `screening.py`; recorded Drive REST responses live under
+  `fixtures/recorded/google_drive/`. Local transport mirror of `github/` (unification
+  deferred). See ADR-0017 Addendum 2026-06-23 (#179).
 - `screening.py` — `screen_descriptor` / `screen_item`: fail-closed reuse of the
   single `adapter.core.sensitive` catalog before any object crosses the boundary
   (ADR-0017 §3; shared by the GitHub + Drive slices).

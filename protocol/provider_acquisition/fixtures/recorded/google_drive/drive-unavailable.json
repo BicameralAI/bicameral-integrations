@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded 503 — Drive provider unavailable.",
+  "method": "GET",
+  "path": "/drive/v3/drives/down503",
+  "status": 503,
+  "json": {"error": {"code": 503, "status": "UNAVAILABLE"}}
+}

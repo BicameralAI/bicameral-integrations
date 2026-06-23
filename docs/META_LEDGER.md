@@ -7418,7 +7418,140 @@ no schema promotion, no `connectors/github/config.json` change. **Review Boundar
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#216 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #217: RESEARCH BRIEF -- Google Drive resource discovery (mocked/recorded slice, #179)
+
+**Entry ID**: `research217drivediscovery`
+**Timestamp**: 2026-06-23T21:55:00-04:00
+**Phase**: RESEARCH (qor-auto-dev-1; chain start for the #179 cycle, rebased onto dev after #180 merged)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-179-drive-discovery-2026-06-23.md)
+= 9e465436a99aa913a55a4d6d934bdfdd237e7fa8693651f5d1fbb4fce8e5876e
+```
+
+**Previous Hash**: ffda9a66a50d744860c34ba897935386441a940d46a853038e42eb3d3743d6b0
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= cf4d2678a4012252f3aceac51960041536b40944a3aeb9e346712e7ab2f14129
+```
+
+**Decision**: Research grounding the #179 Drive discovery slice (mocked/recorded). **7 questions resolved,
+0 drift.** (OQ3 ledger-fork from the research/179 branch RESOLVED: #180 merged to dev (#215/#216), so this
+entry is renumbered #214→**#217** off dev's head — the linearization the brief predicted.) The slice is
+**mostly recombination of existing repo code** + one net-new external surface. **NEW surface VERIFIED**
+against Google Drive API v3 (2026-06-23): `drives.list` (`GET …/drive/v3/drives` →
+`{drives[],nextPageToken,kind}`) and `files.list` (`GET …/drive/v3/files`,
+`corpora=drive`+`driveId`+`includeItemsFromAllDrives`+`supportsAllDrives`, `pageSize` max 100 →
+`{files[],nextPageToken,incompleteSearch}`); `.bicameral` discovery via `q` on
+`mimeType='application/vnd.google-apps.folder'`. **ADR-0017 Finding 4 re-confirmed**
+(`drive.metadata.readonly` invalid for `documents.get`; `drive.readonly`+`documents.readonly` already in
+`config.json` — `poll_specs.py:334`). **Reuse map**: `RefreshTokenSecretResolver`/`SecretResolver` is the
+token provider (**no new type needed, unlike GitHub's `InstallationTokenProvider`**),
+`BearerAuth`/`HttpTransport`/`_pin_host`, `parse_document`, `DocFetchSpec`. The **#180 seam transfers**
+(injected transport + `RecordedTransport` + `screening.py`, now on dev). **Refined product scope** (issue
+6/18): shared drives + `.bicameral/<project>/` folders only; `.bicameral` creation is egress/ProposedAction
+— out of scope. F6 taxonomy mapped to the 5-value `DiscoveryErrorKind`. **Remaining open question:** OQ1
+live blocker factory#93 (open; mocked-only). **SG-2026-06-23-A:** the discovery transport/token seam is
+provider-agnostic — reuse, do not re-derive. Brief:
+`docs/research-brief-179-drive-discovery-2026-06-23.md`. **Required next action:** `/qor-plan`. **Review
+Boundary honored:** staged on `feat/179-drive-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #218: GATE TRIBUNAL -- AUDIT PASS: Google Drive discovery (mocked/recorded slice, #179)
+
+**Entry ID**: `audit218drivediscovery`
+**Timestamp**: 2026-06-23T22:05:00-04:00
+**Phase**: AUDIT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Judge
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/plan-179-drive-discovery-2026-06-23.md)
+= 76299de27f396a17c51aa1946343374851734ae6dd39a12635c1b23f0c793acf
+```
+
+**Previous Hash**: cf4d2678a4012252f3aceac51960041536b40944a3aeb9e346712e7ab2f14129
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c76344b51b06f5848babe1cf60b836776475aa0c151678bb8a5a2c4b97c4469f
+```
+
+**Decision**: **PASS** (solo; `option_b_required: false`). Audited the #179 Drive discovery plan
+(mocked/recorded; live deferred to factory#93). All passes clear: Security/L3 (OAuth token via
+`SecretResolver`, refresh operator-side, token-free errors, screening fail-closed), OWASP (pure JSON map +
+`urlencode`, `json.loads` only, no empty-success), Razor (mapping/errors/transport factored — discipline
+note: factor `_list_bicameral_folders`), Test Functionality (behavioral + jsonschema + secret-guard),
+Dependency (no new dep — reuses `adapter.core.sensitive` + `runtime.secrets.SecretResolver`), **Macro
+Architecture** (mirror-vs-unify transport reconsidered: a shared `params` Protocol would break #180's
+no-`params` `_OneShot`/connector mypy → forces merged-code edits; **local mirror chosen, unification
+deferred** — provider mechanics live with the provider), Filter-Stage (screen-before-emit), Orphan (opt-in,
+test-proven). **Infrastructure Alignment** grep-verified: `screening.py:57/96`, `SecretResolver`
+(`secrets.py:15/27`), `extract_document_text` (`google_drive/connector.py:110`), `DiscoveryErrorKind`
+5-value enum, golden `drive_`/`folder_`/`doc_` id prefixes, `drive.metadata.readonly` invalid for
+`documents.get` (`poll_specs.py:334`), secret-guard `rglob` vs conformance glob. **Zero edit to merged
+#180 code.** Report: `.agent/staging/AUDIT_REPORT.md`. **Required next action:** `/qor-implement`. **Review
+Boundary honored:** staged on `feat/179-drive-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #219: IMPLEMENTATION -- Google Drive discovery connector (mocked/recorded slice, #179)
+
+**Entry ID**: `impl219drivediscovery`
+**Timestamp**: 2026-06-23T22:25:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(protocol/provider_acquisition/google_drive/connector.py)
+= 73d17dc414585ebbe8cb8aa3063ec70693407eba6c43be7fafb46e88bbd5df0b
+```
+
+**Previous Hash**: c76344b51b06f5848babe1cf60b836776475aa0c151678bb8a5a2c4b97c4469f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 286f0ecb441646ac79a6bb071e982aa04b970b326f964a87f6e0704b61e077cc
+```
+
+**Decision**: Implemented the audited plan (#218 PASS) for #179 — the Google Drive discovery slice,
+mocked/recorded (live deferred to factory#93). **NEW `protocol/provider_acquisition/google_drive/`**:
+`auth.py` (`build_auth_headers` — **reuses the runtime `SecretResolver` as the token provider, no new
+type**; token-free, control-char screened), `transport.py` (`DriveTransport` seam + `RecordedTransport`,
+`route_key` over sorted params; **local mirror** of #180 — unification deferred to avoid changing GitHub's
+no-`params` shape / editing merged code), `mapping.py` (pure Drive-JSON → `shared_drive`/`folder`/`document`
+descriptors + `document` item; reuses `connectors.google_drive.connector.extract_document_text`), `errors.py`
+(status → typed `DiscoveryErrorKind` taxonomy; insufficient-scope carries `required_scope`), `connector.py`
+(`GoogleDriveDiscoveryConnector`: `list_resources` dispatches shared-drives vs `.bicameral` 2-step on
+`config.drive_id`; get/validate/fetch; **doc-id `fullmatch` URL-injection guard** mirroring
+`build_google_drive_spec`; `create_provider_resource` absent; screen-before-emit). **REUSE
+`screening.py`** unchanged. **NEW `fixtures/recorded/google_drive/*.json`** (14 synthetic recordings incl.
+401/403-scope/403-denied/404/400-stale/503) — secret-guard-covered via `rglob`. **NEW
+`google_drive/tests/test_drive_discovery.py`** (28 behavioral tests: list shared-drives + `.bicameral`
+folders + empty / get / validate / fetch + every taxonomy row + token-reuse + fail-closed screening +
+malformed-doc-id guard + jsonschema conformance). **EDIT** ADR-0017 (Addendum 2026-06-23 #179),
+`README.md`, `FEATURE_INDEX.md` (FX-GDRIVE-DISC-001; 50→51). **Refined product scope** (issue 6/18): shared
+drives + `.bicameral/<project>/` folders only; `.bicameral` creation is egress/ProposedAction — out of
+scope. **Verification:** 1061 tests pass (28 new + github regression intact); ruff clean; mypy clean (280
+files); bandit CI-style exit 0; governance-gate OK (chain #1..#219). **Zero edit to merged #180 code.**
+**Boundary held:** no SourceBinding/Source/evidence/candidate, no event-store/`.bicameral` mutation, no
+provider writes/egress, no schema promotion, no `connectors/google_drive/config.json` change. **Review
+Boundary honored:** staged on `feat/179-drive-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#219 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*

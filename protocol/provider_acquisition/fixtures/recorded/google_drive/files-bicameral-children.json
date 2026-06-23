@@ -1,0 +1,21 @@
+{
+  "_comment": "Recorded files.list step 2 — the project folders directly under .bicameral.",
+  "method": "GET",
+  "path": "/drive/v3/files",
+  "params": {
+    "q": "'1BIC0000bicameralfolder' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+    "driveId": "0ABCdefGHIjklMNO",
+    "corpora": "drive",
+    "includeItemsFromAllDrives": "true",
+    "supportsAllDrives": "true"
+  },
+  "status": 200,
+  "json": {
+    "kind": "drive#fileList",
+    "incompleteSearch": false,
+    "files": [
+      {"id": "1PRJ1111projectfolder", "name": "atlas-migration", "mimeType": "application/vnd.google-apps.folder", "modifiedTime": "2026-06-12T09:30:00Z", "driveId": "0ABCdefGHIjklMNO"},
+      {"id": "1PRJ2222otherproject", "name": "billing-rewrite", "mimeType": "application/vnd.google-apps.folder", "modifiedTime": "2026-06-11T14:00:00Z", "driveId": "0ABCdefGHIjklMNO"}
+    ]
+  }
+}
