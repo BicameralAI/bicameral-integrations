@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded Linear GraphQL: HTTP 200 with data.team = null (deleted/inaccessible node → NOT_FOUND).",
+  "operation": "Team",
+  "variables": {"id": "team-uuid-null"},
+  "status": 200,
+  "data": {"team": null}
+}

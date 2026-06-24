@@ -21,9 +21,18 @@ Connectors:
   `screening.py`; recorded Drive REST responses live under
   `fixtures/recorded/google_drive/`. Local transport mirror of `github/` (unification
   deferred). See ADR-0017 Addendum 2026-06-23 (#179).
+- `linear/` — `LinearDiscoveryConnector`: workspace → team → project → issue
+  discovery + issue/comment item fetch over Linear's **GraphQL** API (ADR-0017 alpha
+  3/3). Mocked/recorded — the live GraphQL POST is operator-side and deferred. Reuses
+  the runtime `SecretResolver` as the API-key provider (**raw `Authorization`, no
+  Bearer**) and `screening.py`; reuses `connectors.linear.connector.parse_issue_node`
+  for issue content. GraphQL fail-closed (200-with-`errors` never emits; rate-limit is
+  HTTP 400 + `RATELIMITED`). Third local transport mirror (GraphQL, routed on
+  operation+variables). Recorded responses under `fixtures/recorded/linear/`. See
+  ADR-0017 Addendum 2026-06-23 (Linear).
 - `screening.py` — `screen_descriptor` / `screen_item`: fail-closed reuse of the
   single `adapter.core.sensitive` catalog before any object crosses the boundary
-  (ADR-0017 §3; shared by the GitHub + Drive slices).
+  (ADR-0017 §3; shared by the GitHub + Drive + Linear slices).
 
 ## Authority boundary
 

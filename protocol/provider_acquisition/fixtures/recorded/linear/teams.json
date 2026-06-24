@@ -1,0 +1,16 @@
+{
+  "_comment": "Recorded Linear GraphQL: organization + teams (synthetic).",
+  "operation": "Teams",
+  "variables": {"first": 50},
+  "status": 200,
+  "data": {
+    "organization": {"id": "org-uuid-acme", "name": "Acme Corp", "urlKey": "acme"},
+    "teams": {
+      "nodes": [
+        {"id": "team-uuid-plat-0001", "key": "PLAT", "name": "Platform"},
+        {"id": "team-uuid-core-0002", "key": "CORE", "name": "Core"}
+      ],
+      "pageInfo": {"hasNextPage": false, "endCursor": null}
+    }
+  }
+}

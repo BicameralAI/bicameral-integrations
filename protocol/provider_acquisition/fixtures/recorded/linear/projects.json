@@ -1,0 +1,21 @@
+{
+  "_comment": "Recorded Linear GraphQL: projects under a team (synthetic).",
+  "operation": "Projects",
+  "variables": {"id": "team-uuid-plat-0001", "first": 50},
+  "status": 200,
+  "data": {
+    "organization": {"urlKey": "acme"},
+    "team": {
+      "id": "team-uuid-plat-0001",
+      "key": "PLAT",
+      "name": "Platform",
+      "projects": {
+        "nodes": [
+          {"id": "proj-uuid-q3-0001", "name": "Q3 Event Store Migration"},
+          {"id": "proj-uuid-obs-0002", "name": "Observability Rollout"}
+        ],
+        "pageInfo": {"hasNextPage": false, "endCursor": null}
+      }
+    }
+  }
+}

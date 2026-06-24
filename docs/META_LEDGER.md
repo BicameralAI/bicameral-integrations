@@ -7551,7 +7551,136 @@ Boundary honored:** staged on `feat/179-drive-discovery`, not pushed/merged at a
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#219 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #220: RESEARCH BRIEF -- Linear resource discovery (mocked/recorded slice, ADR-0017 alpha 3/3)
+
+**Entry ID**: `research220lineardiscovery`
+**Timestamp**: 2026-06-23T22:35:00-04:00
+**Phase**: RESEARCH (qor-auto-dev-1; chain start for the Linear discovery cycle)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-linear-discovery-2026-06-23.md)
+= 401b2b82aac7dde0dae28257ac7eed00ecd86d8bbdaace16e0202be77183086a
+```
+
+**Previous Hash**: 286f0ecb441646ac79a6bb071e982aa04b970b326f964a87f6e0704b61e077cc
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b3de0a05126473e55d8e661a540e471f59eb9d912cec42fcf2bc26179a960eb5
+```
+
+**Decision**: Research grounding the Linear discovery slice (3rd ADR-0017 alpha provider, after GitHub #180
++ Drive #179 both merged to dev). **7 questions resolved, 0 drift.** **No dedicated GH issue** — ADR-0017
+alpha-scope work grounded by the golden `linear-*` fixtures (#177). Mostly recombination of existing repo
+code. **VERIFIED** (repo + Linear docs): `POST https://api.linear.app/graphql`, API key in the **raw
+`Authorization` header (NO Bearer)** (`poll_specs.py:341`, host-pinned), GraphQL semantics — **200-with-
+`errors` must not emit** + **rate-limit is HTTP 400 + `code=="RATELIMITED"`** (`graphql_poll.py:69,104`),
+Relay `nodes`/`pageInfo`. Discovery hierarchy (NEW queries, extending the verified `_LINEAR_ISSUES_QUERY`):
+`organization`→workspace, `teams`→team, `team.projects`→project, `project.issues`→issue, `issue.comments`→
+comment item (matches golden `ws_`/`team_`/`proj_`/`issue_`/`comment_` fixtures). **Reuse map**:
+`SecretResolver`+`ApiKeyHeaderAuth` (the token provider — **no new type**), `parse_issue_node` (content,
+PII-safe), `screening.py`, the #180/#179 recorded-fixture+taxonomy pattern. **Transport = third variant**
+(GraphQL single-POST `{query,variables}`; local mirror routed on operation+variables; **do not touch
+#178/#179/#180**; unification deferred). F6 taxonomy → 5-value `DiscoveryErrorKind`
+(auth→ACTION_NEEDED, forbidden→PERMISSION_DENIED, not-found→NOT_FOUND, RATELIMITED/transport→PROVIDER_ERROR).
+**OQ1** exact field names confirmed at the live wire-gate (deferred; recordings define the mocked contract).
+**SG-2026-06-23-A extended:** token provider provider-agnostic; screening shared; transport provider-shaped.
+Brief: `docs/research-brief-linear-discovery-2026-06-23.md`. **Required next:** `/qor-plan`. **Review
+Boundary honored:** staged on `feat/linear-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #221: GATE TRIBUNAL -- AUDIT PASS: Linear discovery (mocked/recorded slice, ADR-0017 alpha 3/3)
+
+**Entry ID**: `audit221lineardiscovery`
+**Timestamp**: 2026-06-23T22:45:00-04:00
+**Phase**: AUDIT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Judge
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/plan-linear-discovery-2026-06-23.md)
+= 1373956b5051bb2ed8973d24de17c90bd7ed058bfdc5fa0e5122e14405a58bcd
+```
+
+**Previous Hash**: b3de0a05126473e55d8e661a540e471f59eb9d912cec42fcf2bc26179a960eb5
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 36e58b29be5585e15df883fe53495e85b31cf4c8e533eec389994efa2c21a5d9
+```
+
+**Decision**: **PASS** (solo; `option_b_required: false`). Audited the Linear discovery plan (mocked/
+recorded; live GraphQL POST deferred). All passes clear: Security/L3 (API key via `SecretResolver`, **raw
+Authorization no Bearer**, token-free errors, screening fail-closed), OWASP (ids in GraphQL **variables**
+not string-spliced + `fullmatch` guard; GraphQL fail-closed — 200-with-`errors` never emits, RATELIMITED is
+400 per `graphql_poll`), Razor (factor `_execute`; discipline note), Test Functionality (behavioral + 200-
+errors + RATELIMITED + jsonschema), Dependency (no new dep), **Macro Architecture** (third local transport
+mirror is provider-shaped GraphQL-POST; reuse of `parse_issue_node` is the `protocol → connectors` direction
+#179 already used for `extract_document_text`), Filter-Stage (screen-before-emit), Orphan (opt-in, test-
+proven). **Infrastructure Alignment** grep-verified: `ApiKeyHeaderAuth` (`poll_auth.py:45`), GraphQL
+200-errors + `RATELIMITED` (`graphql_poll.py:12,70`), `parse_issue_node` (`connector.py:91`),
+`SecretResolver` (`secrets.py:15,27`), `DiscoveryErrorKind` 5-value enum, golden workspace/team/project/issue
+resource_types, `screening.py:57/96`. **Zero edit to merged #178/#179/#180 code.** Report:
+`.agent/staging/AUDIT_REPORT.md`. **Required next:** `/qor-implement`. **Review Boundary honored:** staged on
+`feat/linear-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #222: IMPLEMENTATION -- Linear GraphQL discovery connector (mocked/recorded slice, ADR-0017 alpha 3/3)
+
+**Entry ID**: `impl222lineardiscovery`
+**Timestamp**: 2026-06-23T23:05:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(protocol/provider_acquisition/linear/connector.py)
+= 23e73d246b92c3a8d37dd6e59280ef00234fbaeeea8c0177689e4a877dc771d7
+```
+
+**Previous Hash**: 36e58b29be5585e15df883fe53495e85b31cf4c8e533eec389994efa2c21a5d9
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fb82a3a565d36d52aa6cad517dbbde1a700414379034f292f3063aae8a46f360
+```
+
+**Decision**: Implemented the audited plan (#221 PASS) for Linear discovery — the third ADR-0017 alpha
+provider (mocked/recorded; live GraphQL POST deferred), **completing the alpha discovery trio** (GitHub #180
++ Drive #179 merged to dev). **NEW `protocol/provider_acquisition/linear/`**: `auth.py` (reuses the runtime
+`SecretResolver`; **raw `Authorization`, NO Bearer**; token-free, control-char screened), `transport.py`
+(`LinearTransport` GraphQL seam + `RecordedTransport` routed on operation+variables — **third local mirror**,
+unification deferred), `queries.py` (pinned GraphQL ops; ids in variables), `mapping.py` (Linear nodes →
+workspace/team/project/issue descriptors + issue/comment items; reuses `connectors.linear.connector.
+parse_issue_node` PII-safe excerpt), `errors.py` (GraphQL error → typed `DiscoveryErrorKind`; **200-with-
+errors never success**, **RATELIMITED is HTTP 400** — `graphql_poll` precedent), `connector.py`
+(`LinearDiscoveryConnector`: `list_resources` dispatch; get/validate; fetch issue+comment; `_ID_RE`
+`fullmatch` guard; `create_provider_resource` absent; screen-before-emit; 250 lines). **REUSE
+`screening.py`** unchanged. **NEW `fixtures/recorded/linear/*.json`** (12 GraphQL recordings incl. 200-with-
+errors auth/forbidden, 400-RATELIMITED, null-node) — secret-guard-covered via `rglob`. **NEW
+`linear/tests/test_linear_discovery.py`** (29 behavioral tests: hierarchy list + get/validate + fetch issue/
+comment + every taxonomy row + raw-Authorization-no-Bearer + token reuse + fail-closed screening + malformed-
+id guard + jsonschema conformance). **EDIT** ADR-0017 (Addendum 2026-06-23 Linear — trio complete),
+`README.md`, `FEATURE_INDEX.md` (FX-LINEAR-DISC-001; 51→52). **Verification:** 1138 tests pass (29 new;
+github + drive regression intact); ruff clean; mypy clean (289 files); bandit CI-style exit 0; governance-
+gate OK (chain #1..#222). **Zero edit to merged #178/#179/#180 code.** **Boundary held:** no SourceBinding/
+Source/evidence/candidate, no event-store mutation, no provider writes/egress, no schema promotion, no
+`connectors/linear/config.json` change. **Review Boundary honored:** staged on `feat/linear-discovery`, not
+pushed/merged at authoring. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#222 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
