@@ -253,3 +253,32 @@ live deferred to factory#93 (Google live-connection baseline).
   audited `connectors.google_drive.connector.extract_document_text`. The transport seam is a **local mirror**
   of #180's (a shared `params` Protocol would have changed GitHub's no-`params` shape and forced edits to
   merged code; unification is explicitly deferred). **Zero edit to merged #180 code.**
+
+## Addendum 2026-06-23 (Linear): Linear discovery slice — BUILT (mocked/recorded) — completes the alpha trio
+
+Implements the §Alpha-scope Linear slice (team → project → issue + comment item); mocked/recorded, live
+GraphQL POST deferred (a mock never promotes to Live — §6). No dedicated GH issue (ADR-0017 alpha-scope).
+
+- **Surface.** `protocol/provider_acquisition/linear/` (`LinearDiscoveryConnector`): `list_resources`
+  dispatches by `config` — none → teams (under the workspace, one `organization`+`teams` query); `team_id`
+  → projects; `project_id` → issues. `get_resource`/`validate` → single-node gets (`ws_`/`team_`/`proj_`/
+  `issue_`); `fetch_provider_item` → issue or comment item. Descriptors mirror the golden `linear-workspace`/
+  `team`/`project`/`issue` fixtures (id prefixes `ws_`/`team_`/`proj_`/`issue_`/`comment_`).
+  `create_provider_resource` absent.
+- **GraphQL semantics** (honoring the `runtime.graphql_poll` precedent): a **HTTP 200 with a non-empty
+  `errors` array is never success**; **rate-limiting is HTTP 400 + `errors[].code == "RATELIMITED"`** (not
+  429); ids ride in **variables** (JSON-encoded, not string-spliced) with a `fullmatch` grammar guard.
+- **Auth — reuse, no new type.** The API key is resolved via the existing `SecretResolver`
+  (`resolve("linear")`) and sent in the **raw `Authorization` header with NO `Bearer` prefix** (verified;
+  distinct from Drive's Bearer), matching `runtime.poll_auth.ApiKeyHeaderAuth`. Token-free errors.
+- **Reuse-not-fork.** `screening.py` reused unchanged; issue-item content reuses the audited, PII-safe
+  `connectors.linear.connector.parse_issue_node` excerpt. The transport seam is a **third local mirror**
+  (GraphQL single-POST routed on operation+variables, vs the two REST seams) — unification still deferred;
+  **zero edit to merged #178/#179/#180 code**. No `connectors/linear/config.json` change (the `discovery`
+  block stays deferred to the ADR-0015 fan-out).
+
+**Alpha discovery trio complete:** GitHub (#180), Google Drive (#179), and Linear are all built on the merged
+#178 surface, each mocked/recorded with the live path operator-gated. The discovery seam is now proven across
+REST (path + path/params) and GraphQL providers; the token provider is provider-agnostic (`SecretResolver`
+for Drive/Linear; a dedicated installation type only for GitHub) and the screen + recorded-fixture pattern is
+shared.

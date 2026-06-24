@@ -1,0 +1,20 @@
+{
+  "_comment": "Recorded Linear GraphQL: issues under a project (synthetic).",
+  "operation": "Issues",
+  "variables": {"id": "proj-uuid-q3-0001", "first": 50},
+  "status": 200,
+  "data": {
+    "organization": {"urlKey": "acme"},
+    "project": {
+      "id": "proj-uuid-q3-0001",
+      "name": "Q3 Event Store Migration",
+      "team": {"id": "team-uuid-plat-0001", "key": "PLAT"},
+      "issues": {
+        "nodes": [
+          {"id": "issue-uuid-204-0001", "identifier": "PLAT-204", "title": "Adopt Postgres advisory locks for the watermark cursor", "url": "https://linear.app/acme/issue/PLAT-204", "updatedAt": "2026-06-14T18:42:11Z", "priority": 2, "state": {"name": "Todo"}}
+        ],
+        "pageInfo": {"hasNextPage": false, "endCursor": null}
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded Linear GraphQL: HTTP 400 + RATELIMITED (Linear rate-limits with 400, not 429).",
+  "operation": "Team",
+  "variables": {"id": "team-uuid-ratelimited"},
+  "status": 400,
+  "errors": [{"code": "RATELIMITED", "message": "rate limit exceeded"}]
+}
