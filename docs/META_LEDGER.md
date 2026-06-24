@@ -7680,7 +7680,140 @@ pushed/merged at authoring. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#222 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #223: RESEARCH BRIEF -- Target integration descriptors & projection profiles for governed egress (#200)
+
+**Entry ID**: `research223projectioncontract`
+**Timestamp**: 2026-06-23T23:40:00-04:00
+**Phase**: RESEARCH (qor-auto-dev-1; chain start for the #200 RFQ answer)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-200-projection-contract-2026-06-23.md)
+= d7b82cf86625d551ad09072f54318660c4c7f4c16d15d8dcab480a28d955955a
+```
+
+**Previous Hash**: fb82a3a565d36d52aa6cad517dbbde1a700414379034f292f3063aae8a46f360
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5a2c8e1373f7b7fb10f4f5864d7c2e2523f4f6c6905533ee12b28b82c180bfaa
+```
+
+**Decision**: Research grounding the #200 RFQ answer — the **egress/projection mirror of #173/ADR-0017**.
+**0 drift** against the authority anchors. **The crux:** #200 **refines** (does not contradict) the existing
+rule that "egress *execution* lives in sidecar/sdk, not here" (`CONNECTOR_AUTHORITY_LIMITS.md`) — integrations
+gains an egress **shape descriptor** (`ProjectionProfile` = metadata, the egress analogue of
+`ProviderResourceDescriptor`), while the bot/sidecar still owns policy/approval/`EgressProjection`/
+`EgressReceipt`/`EgressEligibilityCheck`/`ProjectionPolicy`/reconciliation interpretation. Ownership sentence:
+*"Integrations may describe what a target can read, render, or write. Bot decides whether Bicameral may
+project anything into that target."* **bot#528 attack surface answered structurally** (shape-only profiles +
+`required_canonical_ref` + `required_receipt`/`receipt_mapping` + forbidden canonical-mutation + no
+per-target truth model → external state can never launder into canonical Bicameral truth). **Shared target
+docs** ("same docs, opposite direction"): `TargetIntegrationDescriptor` unifies `connector_profiles` (ingress)
++ `projection_profiles` (egress) over one `api_docs_ref`/`auth_scopes`/`target_surfaces`. **First Linear
+family** reuses the just-built ingress facts (GraphQL, raw `Authorization` no Bearer, issue/comment surfaces):
+`linear.issue.summary.v1`/`linear.issue.work_item.v1`/`linear.comment.status.v1` (mutation capability
+*declared*, not exercised). Anchors: ADR-0008/0011/0015/0017§4. bot#527/#528 OPEN → ADR-0019 **Proposed**.
+**Deliverable:** ADR-0019 + `docs/PROJECTION_CONTRACT.md` (consumable spec) + a one-line clarification to
+`CONNECTOR_AUTHORITY_LIMITS.md` + follow-up issue identification. Brief:
+`docs/research-brief-200-projection-contract-2026-06-23.md`. **Required next:** `/qor-plan`. **Review
+Boundary honored:** staged on `feat/200-projection-contract`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #224: GATE TRIBUNAL -- AUDIT PASS: projection contract RFQ answer (#200, docs cycle)
+
+**Entry ID**: `audit224projectioncontract`
+**Timestamp**: 2026-06-23T23:50:00-04:00
+**Phase**: AUDIT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Judge
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/plan-200-projection-contract-2026-06-23.md)
+= 8e8e3cba4241f91870e35d1f4d3ffcb186a39145cef113e02a884dc568c1bd22
+```
+
+**Previous Hash**: 5a2c8e1373f7b7fb10f4f5864d7c2e2523f4f6c6905533ee12b28b82c180bfaa
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a62e423573d977dfd82329814b269772b1b1da24639fd34046c09a47ed1548ec
+```
+
+**Decision**: **PASS** (solo; `option_b_required: false`). Audited the #200 RFQ-answer plan (docs/contract:
+ADR-0019 Proposed + `PROJECTION_CONTRACT.md` + a one-line `CONNECTOR_AUTHORITY_LIMITS.md` clarification — the
+egress mirror of #173/ADR-0017). Code passes N/A (docs only). **Authority-boundary review** (the load-bearing
+check): the plan keeps integrations **metadata-only** — `ProjectionProfile` describes target shape/capability
+and must not grant permission/waive approval/decide eligibility/create authority (ADR-0008/0011); it
+**refines, not reverses** `CONNECTOR_AUTHORITY_LIMITS.md` (egress *execution* stays sidecar/sdk; only the
+egress *shape descriptor* is integrations-owned); **bot#528 answered structurally** (shape-only +
+`required_canonical_ref` + `required_receipt`/`receipt_mapping` + forbidden canonical-mutation + no per-target
+truth model); RFQ non-goals explicit (no `EgressProjection`/receipt/policy/Linear-mutation code). **Infra
+alignment**: 6/6 cross-link anchors verified (ADR-0008/0011/0015/0017, `CONNECTOR_AUTHORITY_LIMITS.md`,
+`PROVIDER_ACQUISITION_CONTRACT.md`); ADR-0019 free; bot#527/#528 OPEN → Proposed correct. **FEATURE_INDEX
+N/A** precedent-verified (the ADR-0017 docs cycle added no FX row; `verify_feature_index` only checks cited
+test paths). Macro: mirrors the sanctioned ADR-0017↔spec split; no new doc universe. Report:
+`.agent/staging/AUDIT_REPORT.md`. **Required next:** `/qor-implement`. **Review Boundary honored:** staged on
+`feat/200-projection-contract`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #225: IMPLEMENTATION -- projection contract RFQ answer: ADR-0019 + PROJECTION_CONTRACT.md (#200)
+
+**Entry ID**: `impl225projectioncontract`
+**Timestamp**: 2026-06-24T00:05:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/adr/0019-target-integration-projection-contract.md)
+= 3fda23ef3c0be3bcaeafa9c5cad70fdbc5d74f9c502e4ac06a64b4bef094bef9
+```
+
+**Previous Hash**: a62e423573d977dfd82329814b269772b1b1da24639fd34046c09a47ed1548ec
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 3854af61489a3103f70590ac36e65bb8d8113af83c694bf1a1776934e26cedc2
+```
+
+**Decision**: Implemented the audited plan (#224 PASS) for the **#200 RFQ answer** — the egress/projection
+mirror of #173/ADR-0017, **docs/contract only (no code, no egress mechanics)**. **(1)
+`docs/adr/0019-target-integration-projection-contract.md` (NEW; Proposed, L2)** — defines the three
+integrations-owned **metadata** objects (`TargetIntegrationDescriptor` unifying ingress+egress over one
+`api_docs_ref`; `ProjectionProfile` = target shape/capability ONLY; `TargetAdapter` = per-target write
+contract), the **hard authority boundary** ("Integrations may describe what a target can read, render, or
+write. Bot decides whether Bicameral may project anything into that target."), bot ownership of policy/
+approval/`EgressProjection`/`EgressReceipt`/`EgressEligibilityCheck`/`ProjectionPolicy`/reconciliation, and
+an explicit **bot#528 answer** (shape-only + `required_canonical_ref` + `required_receipt`/`receipt_mapping`
++ forbidden canonical-mutation + no per-target truth model → external state never launders into canonical
+Bicameral truth). Cross-links ADR-0008/0011/0015/0017§4; Consequences + Alternatives. **(2)
+`docs/PROJECTION_CONTRACT.md` (NEW)** — the consumable spec (projection counterpart of
+`PROVIDER_ACQUISITION_CONTRACT.md`): the connector(ingress)↔projection(egress) duality over one target
+boundary, object tables, allowed/forbidden lists, security (bot#528), and the **first Linear projection
+family** (`linear.issue.summary.v1`/`linear.issue.work_item.v1`/`linear.comment.status.v1`, full field-level
+spec; **mutation declared, not built**) — reusing the Linear ingress target facts (GraphQL, raw
+`Authorization`). **(3) EDIT `docs/CONNECTOR_AUTHORITY_LIMITS.md`** — one-line refinement: egress *execution*
+stays sidecar/sdk; the egress *shape descriptor* is integrations-owned + authority-free. **Follow-ups
+identified** (out of this RFQ): bot egress mechanics (bot#527/#528); an integrations projection-profile
+schema+validator (ADR-0015 analogue); Linear projection execution (sidecar). **FEATURE_INDEX N/A**
+(contract/docs cycle — no runtime feature/test path; precedent: the ADR-0017 docs cycle). **Verification:**
+no code touched — 1138 tests pass (unchanged); ruff clean; mypy clean (289 files); governance-gate OK (chain
+#1..#225). **Review Boundary honored:** staged on `feat/200-projection-contract`, not pushed/merged at
+authoring. **Proposed until bot#527/#528 sign-off.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#225 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
