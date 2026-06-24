@@ -7813,7 +7813,126 @@ authoring. **Proposed until bot#527/#528 sign-off.** L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#225 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #226: GATE TRIBUNAL -- AUDIT PASS: relocate egress execution home (sidecar/sdk → bot core)
+
+**Entry ID**: `audit226egresscorerelocation`
+**Timestamp**: 2026-06-24T10:20:00-04:00
+**Phase**: AUDIT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Judge
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/plan-egress-core-relocation-2026-06-24.md)
+= a7d7db654c89fec7ac7ed224c1c3122443079aaf6d53c3de9547ae8fe59ea22e
+```
+
+**Previous Hash**: 3854af61489a3103f70590ac36e65bb8d8113af83c694bf1a1776934e26cedc2
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 291382607ae4ae07ae0ed00a77e68a05a6a88ad964b87b57015d7b8256bffa21
+```
+
+**Decision**: **PASS** (solo; `option_b_required: false`). Audited the docs-only correction relocating the
+governed-egress **execution home** in the #200 docs from sidecar/sdk → **bicameral-bot core** (operator
+decision: `bicameral-sidecar` deprecated for alpha; egress is now a bot core function). The **ADR-0019
+shape/authority thesis is preserved** (integrations = shape-only; bot decides projection; bot#528 anti-drift
+answer unchanged) — only the execution-owner pointer moves. **Scope discipline confirmed:** the pre-existing
+non-egress sidecar reference (`CONNECTOR_AUTHORITY_LIMITS.md` 48–49, customer monitoring) is correctly scoped
+OUT + flagged (the broader sidecar-deprecation sweep is a separate effort); ADR-0019 `Status` stays Proposed.
+Relocation issues verified: **bot#536** OPEN (Linear projection execution — bot core), `bicameral-sidecar#26`
+CLOSED. Docs only — no code. Report: `.agent/staging/AUDIT_REPORT.md`. **Required next:** `/qor-implement`.
+**Review Boundary honored:** staged on `fix/egress-core-relocation`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #227: IMPLEMENTATION -- correct #200 projection-contract docs: egress-execution-home pointer (ADR-0019)
+
+**Entry ID**: `impl227egresscorerelocation`
+**Timestamp**: 2026-06-24T10:35:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/adr/0019-target-integration-projection-contract.md)
+= c6cf519074a3976b0ed24789677a9cb41b3c873cf98dc9b1e016ee1f13632ecc
+```
+
+**Previous Hash**: 291382607ae4ae07ae0ed00a77e68a05a6a88ad964b87b57015d7b8256bffa21
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 78ea7a8007cdbb46b0b9eda7c8181de68471ce7d11af97052a13a951647ee218
+```
+
+**Decision**: Implemented the audited (#226 PASS) docs-only correction. Operator decision:
+**`bicameral-sidecar` deprecated for alpha; governed egress is now a `bicameral-bot` CORE function.**
+Corrected every egress-**execution-home** reference in the #200 docs from sidecar/sdk → **bicameral-bot core**:
+**ADR-0019** (Context ownership split, the `CONNECTOR_AUTHORITY_LIMITS` refinement note, `TargetAdapter`
+"bot executes", `credential_scope`/secrets → "operator-side, bot-resolved at execution", Consequences
+clarification + follow-up (c) → bot#536, Alternatives "bot core function"); **`PROJECTION_CONTRACT.md`**
+(intro caveat, `credential_scope`/secrets, Conformance "bot core executes", open follow-up → bot#536 +
+integrations#205); **`CONNECTOR_AUTHORITY_LIMITS.md`** (egress refinement line → bicameral-bot core). The
+**ADR-0019 shape/authority thesis is UNCHANGED** (integrations = shape-only; bot decides projection; bot#528
+anti-drift answer intact) — only the execution-owner pointer moved; ADR `Status` stays Proposed.
+**Scope-bounded:** the pre-existing non-egress sidecar references (`CONNECTOR_AUTHORITY_LIMITS.md` line 3 SDK
+evidence contract + lines 49–50 customer monitoring) left untouched + flagged (the broader sidecar-deprecation
+sweep is a separate effort). Relocation: `bicameral-sidecar#26` CLOSED → **bot#536** (Linear projection
+execution, bot core). **Verification:** no code touched — 1138 tests pass (unchanged); ruff clean; mypy clean
+(289 files); governance-gate OK (chain #1..#227). **Review Boundary honored:** staged on
+`fix/egress-core-relocation`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #228: RESEARCH BRIEF -- existing-documentation alignment for egress-as-core
+
+**Entry ID**: `research228egresscorealignment`
+**Timestamp**: 2026-06-24T10:55:00-04:00
+**Phase**: RESEARCH (alignment audit of the existing doc corpus, before landing the #226/#227 correction)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-egress-core-doc-alignment-2026-06-24.md)
+= 14f054630abd0816d09d06116e50bb5f4f8a9e5206f9b5484c626f0505cf10c4
+```
+
+**Previous Hash**: 78ea7a8007cdbb46b0b9eda7c8181de68471ce7d11af97052a13a951647ee218
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 263292de1a62310b22511f627584aff1a5943ba1ab635f7de4fe844958c5f6f9
+```
+
+**Decision**: Alignment audit of the existing doc corpus vs the operator decision (`bicameral-sidecar`
+deprecated for alpha; governed egress = `bicameral-bot` core). **1 drift confirmed-and-fixed, 1 separate item
+flagged, 0 wrongful sweeps.** **F1 — the correction realigns to the canonical anchor:** ADR-0008:89 already
+says *"the bot governs and executes it as `Egress`"* — ADR-0008 never drifted; ADR-0019's "bot/sidecar" was
+the drift; the in-flight 3-doc correction restores ADR-0019 to ADR-0008. **The correction is correct +
+sufficient for egress alignment.** **F2 — "sidecar" is overloaded; avoid a false-positive sweep:** the
+deprecated `bicameral-sidecar` repo (egress — corrected; monitoring — F4) is DISTINCT from **AGT-as-a-sidecar-
+for-`bicameral-bot`** (microsoft AGT spike; BACKLOG B3; `agt-sidecar-evaluation.md`/`consuming-gates.md`/
+`SYSTEM_STATE`/`GOVERNANCE_INDEX`) — a different concept that must **NOT** be swept. **F3 —** other "egress"
+refs (`ADR-0016`, `CONNECTOR_BACKEND_SETUP`) are the evidence→gateway egress, already aligned. **F4 —** the
+only other live stale repo reference is `CONNECTOR_AUTHORITY_LIMITS.md:49–50` (customer **monitoring**, not
+egress) → a separate narrow follow-up + operator decision on monitoring's new home. **F5 —** sealed history
+(ledger/briefs/plans) not retroactively edited. **F6 —** stale memory `bicameral-ecosystem-repo-split` ("egress
+moved to sidecar/sdk") updated; **note `bicameral-sdk` (contracts) is NOT deprecated — only `bicameral-sidecar`**
+(don't over-collapse "sidecar/sdk"). Brief:
+`docs/research-brief-egress-core-doc-alignment-2026-06-24.md`. **Recommendation:** land the 3-doc correction
+as-is; file the monitoring follow-up separately; leave AGT-bot-sidecar + sealed history untouched. **Review
+Boundary honored:** staged on `fix/egress-core-relocation`, not pushed/merged at authoring. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#228 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*

@@ -35,10 +35,11 @@ A connector observes an external system and emits **raw evidence**. It never own
 - Surface a human actor's identity as the capturer — the capturer is the **connector**
   (`Attribution.actorType = "connector"`), carrying the source id (PII never surfaced; ADR-0008,
   SG-2026-06-11-D).
-- Execute external mutations. Egress (propose-only writes) **execution** lives in `bicameral-sidecar` /
-  `bicameral-sdk`, not here. *(Refinement, ADR-0019 / GH #200: integrations may own the egress **shape
-  descriptor** — `ProjectionProfile`, metadata only, authority-free — but never executes egress, holds
-  projection policy, or owns receipts. See `docs/PROJECTION_CONTRACT.md`.)*
+- Execute external mutations. Egress (governed projection writes) **execution** is a `bicameral-bot` **core
+  function**, not here (`bicameral-sidecar` is deprecated for alpha — egress is advanced as core). *(ADR-0019
+  / GH #200: integrations may own the egress **shape descriptor** — `ProjectionProfile`, metadata only,
+  authority-free — but never executes egress, holds projection policy, or owns receipts. See
+  `docs/PROJECTION_CONTRACT.md`.)*
 - Leak secret/PHI/PAN — the FX-SEC-001 screen (`pipeline._screen_sensitive`, and the export's own
   `sdk_evidence._screen`) hard-rejects sensitive data before it crosses any boundary.
 

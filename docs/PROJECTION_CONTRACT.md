@@ -14,7 +14,8 @@ build against (the same split as ADR-0015 ↔ `UI_RENDERING_SPEC.md`, and ADR-00
 `PROVIDER_ACQUISITION_CONTRACT.md`).
 
 > **Proposed, not built.** No projection is executed here, and no `EgressProjection`/`EgressReceipt`/
-> `ProjectionPolicy` exists in integrations — those are bot/sidecar-owned. The shapes below are offered for
+> `ProjectionPolicy` exists in integrations — those are `bicameral-bot` core (egress execution is a bot core
+> function; `bicameral-sidecar` is deprecated for alpha). The shapes below are offered for
 > the bot side (#527/#528) to consume or counter; nothing here is shipped behavior.
 
 ## Same target, opposite direction
@@ -93,7 +94,7 @@ Per-projection-kind, versioned. **Shape + capability metadata only — never aut
 | `target_system` | `str` | yes | Owning target. |
 | `supported_operations` | `list[str]` | yes | `create`/`update`/`comment`. |
 | `rendering_constraints` | `dict` | no | Hard target limits the renderer must respect. |
-| `credential_scope` | `str` | yes | Declared write scope — the secret stays operator/sidecar-side, never here. |
+| `credential_scope` | `str` | yes | Declared write scope — the secret stays operator-side (bot-resolved at execution), never here. |
 | `rate_limit_behavior` | `str` | no | How the target rate-limits writes (executor back-off). |
 | `receipt_mapping` | `dict` | yes | Maps a target write result → `{external_id, external_url, status}` for the bot. |
 
@@ -110,7 +111,7 @@ By construction, not policy:
    reconciliation; integrations never reads external state back as Bicameral authority.
 4. **`mutation_capability`** is a declaration; the bot decides whether Bicameral *may* project.
 5. **No per-target truth model** — one canonical truth, many renderings.
-6. **Secrets stay operator/sidecar-side** — `credential_scope` is declared, never resolved here.
+6. **Secrets stay operator-side (bot-resolved at execution)** — `credential_scope` is declared, never resolved here.
 
 ## First target — the Linear projection family
 
@@ -165,7 +166,7 @@ exercised** — no Linear write code ships here.
 
 A projection profile is proven offline with **golden pairs**: a canonical decision + profile → an expected
 **rendered payload** (no live write) and an expected **receipt-mapping** for a recorded target response. A
-passing fixture earns **Beta**; **Live** still requires the bot to govern + the sidecar to execute against
+passing fixture earns **Beta**; **Live** still requires the bot to govern + `bicameral-bot` (core) to execute against
 real credentials (ADR-0012). A mock never writes to a real target. *(Profiles are spec-only in this RFQ; the
 renderer/validator is a follow-up.)*
 
@@ -174,11 +175,12 @@ renderer/validator is a follow-up.)*
 1. **bot#527/#528** confirm consumption of `TargetIntegrationDescriptor`/`ProjectionProfile`/`TargetAdapter`
    in this shape, or counter the field set.
 2. A machine-readable **projection-profile descriptor schema + validator** (the ADR-0015 analogue) +
-   per-target `projection.json` exemplars — a follow-up build, not this RFQ.
+   per-target `projection.json` exemplars — a follow-up build, not this RFQ (integrations#205).
 3. Profile → bot-protocol/shared-schema promotion timing (integrations owns the mapping + pin, fails first on
    drift — mirrors ADR-0015 / ADR-0017).
 4. Bot-owned `EgressProjection`/`EgressReceipt`/`EgressEligibilityCheck`/`ProjectionPolicy` + the per-target
-   projection *execution* (sidecar/sdk) once governed.
+   projection *execution* — a **`bicameral-bot` core function** (bot#536; `bicameral-sidecar` deprecated for
+   alpha) once governed.
 
 ## Short form
 
