@@ -16,6 +16,7 @@ from adapter.core.emissions import (
     AdapterEmission,
     AdvisoryResult,
     ConfidenceSurface,
+    ProviderProvenance,
     RoutingHint,
     SourceEvidence,
     SourceRef,
@@ -105,6 +106,61 @@ def test_dimensional_confidence_not_collapsed_to_scalar():
         _emission(confidence=ConfidenceSurface(dimensions={"reliability": "high"}))
     )
     assert all("confidence" not in item for item in payload["evidence"])
+
+
+# --- provenance fields (#196) ---
+
+
+def test_provenance_webhook_mode_in_payload():
+    prov = ProviderProvenance(
+        delivery_mode="webhook",
+        verification="signed",
+        provider_event_id="d-123",
+        provider_resource_id="org/repo#42",
+    )
+    payload = emission_to_ingest_request(_emission(provenance=prov))
+    _assert_conforms(payload)
+    assert payload["delivery_mode"] == "webhook"
+    assert payload["verification"] == "signed"
+    assert payload["provider_event_id"] == "d-123"
+    assert payload["provider_resource_id"] == "org/repo#42"
+
+
+def test_provenance_poll_mode_in_payload():
+    prov = ProviderProvenance(
+        delivery_mode="poll",
+        verification="unsigned",
+    )
+    payload = emission_to_ingest_request(_emission(provenance=prov))
+    _assert_conforms(payload)
+    assert payload["delivery_mode"] == "poll"
+    assert payload["verification"] == "unsigned"
+    assert "provider_event_id" not in payload
+    assert "provider_resource_id" not in payload
+
+
+def test_provenance_active_fetch_mode_in_payload():
+    prov = ProviderProvenance(
+        delivery_mode="active-fetch",
+        verification="unsigned",
+        provider_resource_id="res-1",
+    )
+    payload = emission_to_ingest_request(_emission(provenance=prov))
+    _assert_conforms(payload)
+    assert payload["delivery_mode"] == "active-fetch"
+    assert payload["verification"] == "unsigned"
+    assert "provider_event_id" not in payload
+    assert payload["provider_resource_id"] == "res-1"
+
+
+def test_no_provenance_omits_fields():
+    payload = emission_to_ingest_request(_emission())
+    _assert_conforms(payload)
+    assert "delivery_mode" not in payload
+    assert "verification" not in payload
+    assert "provider_event_id" not in payload
+    assert "provider_resource_id" not in payload
+
 
 
 # --- #198: field classification — emission_type lane hint (non-authoritative) ---

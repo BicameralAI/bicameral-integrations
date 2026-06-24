@@ -133,6 +133,15 @@ def emission_to_ingest_request(emission: AdapterEmission) -> dict:
         "evidence": [{"excerpt": ev.excerpt} for ev in emission.evidence],
     }
 
+    # --- provenance (non-authoritative) ---
+    if emission.provenance is not None:
+        payload["delivery_mode"] = emission.provenance.delivery_mode
+        payload["verification"] = emission.provenance.verification
+        if emission.provenance.provider_event_id:
+            payload["provider_event_id"] = emission.provenance.provider_event_id
+        if emission.provenance.provider_resource_id:
+            payload["provider_resource_id"] = emission.provenance.provider_resource_id
+
     # --- hints (non-authoritative) ---
     if emission.emission_type in _EMISSION_TYPES:
         payload["label"] = f"emission_type:{emission.emission_type}"
