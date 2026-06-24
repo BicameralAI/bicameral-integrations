@@ -30,3 +30,5 @@ jobs:
         run: python scripts/validate_connector_config.py
       - name: Mod descriptors (validate + manifest-consistency + index freshness)
         run: python scripts/validate_mod_config.py
+      - name: Ingest schema pin + conformance gate
+        run: python scripts/validate_ingest_schema_pin.py
