@@ -14,8 +14,10 @@ import pytest
 
 from adapter.core.emissions import (
     AdapterEmission,
+    AdvisoryResult,
     ConfidenceSurface,
     ProviderProvenance,
+    RoutingHint,
     SourceEvidence,
     SourceRef,
 )
@@ -26,6 +28,7 @@ from runtime import (
     GatewaySink,
     emission_to_ingest_request,
 )
+from runtime.gateway_mapping import BOT_OWNED_FIELDS
 
 _SCHEMA = json.loads(
     (
@@ -78,6 +81,9 @@ def test_mapping_conforms_to_vendored_v1_schema():
     assert payload["source"] == "https://example.atlassian.net/browse/ENG-1"
     assert payload["source_type"] == "jira"
     assert payload["evidence"] == [{"excerpt": "Decided to adopt OAuth."}]
+    # default emission_type is "candidate" -> label + tags carry the lane hint
+    assert payload["label"] == "emission_type:candidate"
+    assert "emission_type:candidate" in payload["tags"]
 
 
 def test_required_fields_are_floored():
@@ -154,6 +160,194 @@ def test_no_provenance_omits_fields():
     assert "verification" not in payload
     assert "provider_event_id" not in payload
     assert "provider_resource_id" not in payload
+
+
+
+# --- #198: field classification — emission_type lane hint (non-authoritative) ---
+
+
+def test_evidence_emission_carries_lane_hint():
+    """An evidence emission carries emission_type as a non-authoritative lane hint."""
+    payload = emission_to_ingest_request(_emission(emission_type="evidence"))
+    _assert_conforms(payload)
+    assert payload["label"] == "emission_type:evidence"
+    assert "emission_type:evidence" in payload["tags"]
+    # The hint is advisory — no authority fields present
+    assert "level" not in payload
+    assert "snapshot_content" not in payload
+
+
+def test_hint_emission_carries_lane_hint():
+    """A hint emission carries emission_type as a non-authoritative lane hint."""
+    payload = emission_to_ingest_request(_emission(emission_type="hint"))
+    _assert_conforms(payload)
+    assert payload["label"] == "emission_type:hint"
+    assert "emission_type:hint" in payload["tags"]
+
+
+def test_advisory_emission_carries_lane_hint():
+    """An advisory emission carries emission_type as a non-authoritative lane hint."""
+    payload = emission_to_ingest_request(_emission(emission_type="advisory"))
+    _assert_conforms(payload)
+    assert payload["label"] == "emission_type:advisory"
+    assert "emission_type:advisory" in payload["tags"]
+
+
+def test_candidate_emission_is_non_authoritative():
+    """A candidate-like emission is mapped as a hint, never as an accepted candidate."""
+    payload = emission_to_ingest_request(_emission(emission_type="candidate"))
+    _assert_conforms(payload)
+    assert payload["label"] == "emission_type:candidate"
+    # Non-authoritative: no level, no accepted state, no bot-owned lifecycle
+    assert "level" not in payload
+    assert "snapshot_content" not in payload
+    # emission_type:candidate is a lane HINT, not an accepted decision
+    assert all(
+        not tag.startswith("accepted:") and not tag.startswith("binding:")
+        for tag in payload["tags"]
+    )
+
+
+# --- #198: routing hints — screened, non-authoritative ---
+
+
+def test_routing_hints_mapped_as_non_authoritative_tags():
+    """Routing hints are screened and mapped to tags; they never encode authority."""
+    hints = (
+        RoutingHint(role="security-reviewer", reason="Auth change", priority="high"),
+        RoutingHint(role="data-owner", reason="PII scope"),
+    )
+    payload = emission_to_ingest_request(_emission(routing_hints=hints))
+    _assert_conforms(payload)
+    assert "routing:security-reviewer:high" in payload["tags"]
+    assert "routing:data-owner:normal" in payload["tags"]
+    # Non-authoritative: no level, no authority claims
+    assert "level" not in payload
+
+
+def test_advisories_mapped_as_non_authoritative_tags():
+    """Advisory results are screened and mapped to tags; they never encode authority."""
+    advs = (
+        AdvisoryResult(kind="dependency-risk", message="Upgrade numpy"),
+        AdvisoryResult(kind="security-mention", message="Token rotation"),
+    )
+    payload = emission_to_ingest_request(_emission(advisories=advs))
+    _assert_conforms(payload)
+    assert "advisory:dependency-risk" in payload["tags"]
+    assert "advisory:security-mention" in payload["tags"]
+
+
+def test_combined_hints_all_non_authoritative():
+    """An emission with all hint types produces tags but no authority claims."""
+    payload = emission_to_ingest_request(
+        _emission(
+            emission_type="advisory",
+            routing_hints=(RoutingHint(role="arch-lead", reason="Boundary"),),
+            advisories=(AdvisoryResult(kind="drift-risk", message="ADR-0008"),),
+            confidence=ConfidenceSurface(dimensions={"relevance": "medium"}),
+        )
+    )
+    _assert_conforms(payload)
+    assert payload["label"] == "emission_type:advisory"
+    assert "emission_type:advisory" in payload["tags"]
+    assert "routing:arch-lead:normal" in payload["tags"]
+    assert "advisory:drift-risk" in payload["tags"]
+    # confidence is NOT collapsed
+    assert "confidence" not in payload
+    assert all("confidence" not in item for item in payload["evidence"])
+
+
+# --- #198: unscreened metadata stays off the wire ---
+
+
+def test_metadata_never_on_wire():
+    """Emission metadata is never forwarded — FX-SEC-001 does not screen it."""
+    payload = emission_to_ingest_request(
+        _emission(metadata={"internal_key": "secret-ish-value", "debug": True})
+    )
+    _assert_conforms(payload)
+    assert "metadata" not in payload
+    assert "internal_key" not in str(payload)
+    assert "secret-ish-value" not in str(payload)
+
+
+# --- #198: bot-owned fields are never sent ---
+
+
+def test_bot_owned_fields_never_in_payload():
+    """Bot-owned fields (level, snapshot_content, ActorContext, etc.) never appear."""
+    for et in ("evidence", "hint", "advisory", "candidate"):
+        payload = emission_to_ingest_request(_emission(emission_type=et))
+        for field in BOT_OWNED_FIELDS:
+            assert field not in payload, f"{field} leaked in {et} emission"
+
+
+def test_no_emission_can_produce_authority_claims():
+    """No combination of emission fields can produce accepted-state or binding tags."""
+    payload = emission_to_ingest_request(
+        _emission(
+            emission_type="candidate",
+            routing_hints=(
+                RoutingHint(role="approver", reason="Review", priority="high"),
+            ),
+            advisories=(
+                AdvisoryResult(kind="binding-suggestion", message="Bind to symbol"),
+            ),
+            confidence=ConfidenceSurface(dimensions={"authority": "high"}),
+        )
+    )
+    payload_str = json.dumps(payload)
+    # No accepted/canonical state
+    assert '"status"' not in payload_str or '"raw"' in payload_str
+    # No bot lifecycle fields
+    assert "ActorContext" not in payload_str
+    assert "SourceSnapshot" not in payload_str
+    assert "BindingEvidence" not in payload_str
+    assert "signoff" not in payload_str
+    assert "compliance" not in payload_str
+    assert "enforcement" not in payload_str
+
+
+# --- #198: routing/advisory hints are screened ---
+
+
+def test_routing_hint_role_is_screened():
+    """A routing hint role containing PII is redacted before mapping."""
+    hints = (RoutingHint(role="user@example.com", reason="Owner"),)
+    payload = emission_to_ingest_request(_emission(routing_hints=hints))
+    tags = payload.get("tags", [])
+    # Email in role is redacted
+    assert all("user@example.com" not in t for t in tags)
+    # But some routing tag still exists (redacted form)
+    assert any(t.startswith("routing:") for t in tags)
+
+
+def test_advisory_kind_is_screened():
+    """An advisory kind containing PII is redacted before mapping."""
+    advs = (AdvisoryResult(kind="alert-user@test.org", message="Notify"),)
+    payload = emission_to_ingest_request(_emission(advisories=advs))
+    tags = payload.get("tags", [])
+    assert all("user@test.org" not in t for t in tags)
+
+
+# --- #198: schema conformance for hint fields ---
+
+
+def _schema_allows_field(field: str) -> bool:
+    return field in _SCHEMA.get("properties", {})
+
+
+def test_label_and_tags_are_contract_supported():
+    """The vendored v1 schema supports label and tags (hint fields)."""
+    assert _schema_allows_field("label"), "label not in vendored schema"
+    assert _schema_allows_field("tags"), "tags not in vendored schema"
+
+
+def test_emission_without_hints_has_no_label_or_routing_tags():
+    """A bare evidence emission with no routing/advisory has only the lane tag."""
+    payload = emission_to_ingest_request(_emission(emission_type="evidence"))
+    assert payload["label"] == "emission_type:evidence"
+    assert payload["tags"] == ["emission_type:evidence"]
 
 
 # --- GatewaySink (injected opener) ---
