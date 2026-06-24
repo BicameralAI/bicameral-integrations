@@ -15,16 +15,24 @@ import pytest
 from adapter.core.emissions import (
     AdapterEmission,
     ConfidenceSurface,
+    ProviderProvenance,
     SourceEvidence,
     SourceRef,
 )
 from adapter.core.pipeline import EmissionContractError
-from runtime import GatewayEmissionError, GatewayEmissionGated, GatewaySink, emission_to_ingest_request
+from runtime import (
+    GatewayEmissionError,
+    GatewayEmissionGated,
+    GatewaySink,
+    emission_to_ingest_request,
+)
 
 _SCHEMA = json.loads(
-    (Path(__file__).resolve().parents[1] / "schemas" / "ingest_request_v1.schema.json").read_text(
-        encoding="utf-8"
-    )
+    (
+        Path(__file__).resolve().parents[1]
+        / "schemas"
+        / "ingest_request_v1.schema.json"
+    ).read_text(encoding="utf-8")
 )
 _TOKEN = "super-secret-operator-token"
 
@@ -32,7 +40,9 @@ _TOKEN = "super-secret-operator-token"
 def _emission(**kw) -> AdapterEmission:
     ev = SourceEvidence(
         source_ref=SourceRef(
-            source_id="jira", ref="ENG-1", url="https://example.atlassian.net/browse/ENG-1"
+            source_id="jira",
+            ref="ENG-1",
+            url="https://example.atlassian.net/browse/ENG-1",
         ),
         excerpt="Decided to adopt OAuth.",
     )
@@ -72,9 +82,12 @@ def test_mapping_conforms_to_vendored_v1_schema():
 
 def test_required_fields_are_floored():
     ev = SourceEvidence(
-        source_ref=SourceRef(source_id="jira", ref="ENG-9", url=""), excerpt="Fallback excerpt."
+        source_ref=SourceRef(source_id="jira", ref="ENG-9", url=""),
+        excerpt="Fallback excerpt.",
     )
-    e = AdapterEmission(source_id="jira", title="   ", body="", evidence=(ev,), adapter_version="x")
+    e = AdapterEmission(
+        source_id="jira", title="   ", body="", evidence=(ev,), adapter_version="x"
+    )
     payload = emission_to_ingest_request(e)
     _assert_conforms(payload)
     assert payload["title"] == "Fallback excerpt."
@@ -87,6 +100,60 @@ def test_dimensional_confidence_not_collapsed_to_scalar():
         _emission(confidence=ConfidenceSurface(dimensions={"reliability": "high"}))
     )
     assert all("confidence" not in item for item in payload["evidence"])
+
+
+# --- provenance fields (#196) ---
+
+
+def test_provenance_webhook_mode_in_payload():
+    prov = ProviderProvenance(
+        delivery_mode="webhook",
+        verification="signed",
+        provider_event_id="d-123",
+        provider_resource_id="org/repo#42",
+    )
+    payload = emission_to_ingest_request(_emission(provenance=prov))
+    _assert_conforms(payload)
+    assert payload["delivery_mode"] == "webhook"
+    assert payload["verification"] == "signed"
+    assert payload["provider_event_id"] == "d-123"
+    assert payload["provider_resource_id"] == "org/repo#42"
+
+
+def test_provenance_poll_mode_in_payload():
+    prov = ProviderProvenance(
+        delivery_mode="poll",
+        verification="unsigned",
+    )
+    payload = emission_to_ingest_request(_emission(provenance=prov))
+    _assert_conforms(payload)
+    assert payload["delivery_mode"] == "poll"
+    assert payload["verification"] == "unsigned"
+    assert "provider_event_id" not in payload
+    assert "provider_resource_id" not in payload
+
+
+def test_provenance_active_fetch_mode_in_payload():
+    prov = ProviderProvenance(
+        delivery_mode="active-fetch",
+        verification="unsigned",
+        provider_resource_id="res-1",
+    )
+    payload = emission_to_ingest_request(_emission(provenance=prov))
+    _assert_conforms(payload)
+    assert payload["delivery_mode"] == "active-fetch"
+    assert payload["verification"] == "unsigned"
+    assert "provider_event_id" not in payload
+    assert payload["provider_resource_id"] == "res-1"
+
+
+def test_no_provenance_omits_fields():
+    payload = emission_to_ingest_request(_emission())
+    _assert_conforms(payload)
+    assert "delivery_mode" not in payload
+    assert "verification" not in payload
+    assert "provider_event_id" not in payload
+    assert "provider_resource_id" not in payload
 
 
 # --- GatewaySink (injected opener) ---
@@ -118,7 +185,9 @@ def _capture_opener(captured: dict, status: int = 201):
 def test_gatewaysink_posts_conforming_request():
     captured: dict = {}
     sink = GatewaySink(
-        endpoint="https://gw.example/api/v1/ingest", token=_TOKEN, opener=_capture_opener(captured)
+        endpoint="https://gw.example/api/v1/ingest",
+        token=_TOKEN,
+        opener=_capture_opener(captured),
     )
     sink.emit([_emission()])
     assert captured["method"] == "POST"
@@ -135,14 +204,16 @@ def test_gatewaysink_no_endpoint_is_gated():
 
 def test_gatewaysink_no_token_sends_no_auth_header():
     captured: dict = {}
-    GatewaySink(endpoint="https://gw/api/v1/ingest", opener=_capture_opener(captured)).emit(
-        [_emission()]
-    )
+    GatewaySink(
+        endpoint="https://gw/api/v1/ingest", opener=_capture_opener(captured)
+    ).emit([_emission()])
     assert captured["authorization"] is None
 
 
 def test_gatewaysink_non_201_status_raises():
-    sink = GatewaySink(endpoint="https://gw/api/v1/ingest", opener=_capture_opener({}, status=200))
+    sink = GatewaySink(
+        endpoint="https://gw/api/v1/ingest", opener=_capture_opener({}, status=200)
+    )
     with pytest.raises(GatewayEmissionError) as exc:
         sink.emit([_emission()])
     assert exc.value.status == 200
@@ -150,7 +221,9 @@ def test_gatewaysink_non_201_status_raises():
 
 def _error_opener(code: int, body: bytes):
     def opener(request, timeout=None):
-        raise urllib.error.HTTPError(request.full_url, code, "err", {}, io.BytesIO(body))
+        raise urllib.error.HTTPError(
+            request.full_url, code, "err", {}, io.BytesIO(body)
+        )
 
     return opener
 
@@ -159,7 +232,9 @@ def test_gatewaysink_rejection_fixed_reason_no_body_reflection():
     # SECRET-LEAK-1 (purple-team 2026-06-11): the untrusted gateway response body is NOT
     # reflected into the error. A gateway that echoes the request (incl. the Authorization
     # header) into its rejection body must not leak the token; status still disambiguates.
-    leaky_body = b'{"reason":"' + _TOKEN.encode() + b'"}'  # gateway echoes the token back
+    leaky_body = (
+        b'{"reason":"' + _TOKEN.encode() + b'"}'
+    )  # gateway echoes the token back
     sink = GatewaySink(
         endpoint="https://gw/api/v1/ingest",
         token=_TOKEN,
@@ -167,9 +242,11 @@ def test_gatewaysink_rejection_fixed_reason_no_body_reflection():
     )
     with pytest.raises(GatewayEmissionError) as exc:
         sink.emit([_emission()])
-    assert exc.value.status == 429                  # status preserved (retryable vs terminal)
-    assert exc.value.reason == "gateway_rejected"   # fixed discriminator, body not reflected
-    assert _TOKEN not in str(exc.value)             # token never in the error, even if echoed
+    assert exc.value.status == 429  # status preserved (retryable vs terminal)
+    assert (
+        exc.value.reason == "gateway_rejected"
+    )  # fixed discriminator, body not reflected
+    assert _TOKEN not in str(exc.value)  # token never in the error, even if echoed
 
 
 def test_gatewaysink_transport_error_raises_without_token():
@@ -192,9 +269,13 @@ def _error_opener_url():
 
 def test_gatewaysink_revalidates_at_boundary():
     # F-1/F-2: a hand-built emission with no evidence is refused before any POST.
-    bad = AdapterEmission(source_id="jira", title="t", body="b", evidence=(), adapter_version="x")
+    bad = AdapterEmission(
+        source_id="jira", title="t", body="b", evidence=(), adapter_version="x"
+    )
     with pytest.raises(EmissionContractError):
-        GatewaySink(endpoint="https://gw/api/v1/ingest", opener=_capture_opener({})).emit([bad])
+        GatewaySink(
+            endpoint="https://gw/api/v1/ingest", opener=_capture_opener({})
+        ).emit([bad])
 
 
 # --- one real urllib round-trip through a stdlib http.server (proves the POST path) ---
@@ -235,7 +316,9 @@ def test_gatewaysink_real_http_roundtrip():
 
 def test_token_with_crlf_rejected_at_construction():
     with pytest.raises(ValueError) as exc:
-        GatewaySink(endpoint="https://gw/api/v1/ingest", token="SECRET-abc\r\nX-Evil: 1")
+        GatewaySink(
+            endpoint="https://gw/api/v1/ingest", token="SECRET-abc\r\nX-Evil: 1"
+        )
     assert "SECRET-abc" not in str(exc.value)  # message names the field, not the value
 
 

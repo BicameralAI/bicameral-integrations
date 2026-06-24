@@ -14,6 +14,7 @@ receipt + secret resolution stay in the operator runtime (see ``auth.md``).
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import time
 from collections.abc import Callable
@@ -58,7 +59,9 @@ def parse_message(payload: dict) -> Observation:
     # Message text is PII-dense human communication -> redact-and-pass (FX-SEC-001 alone does not
     # catch generic email/phone). The fallback locating string carries no PII. author is the OPAQUE
     # Slack user id (e.g. U0123ABC) -- pseudonymous, kept (SG-2026-06-05-D), like cursor's userId.
-    text = _first_str(msg.get("text"), inner.get("text")).strip()  # _first_str guards .strip()
+    text = _first_str(
+        msg.get("text"), inner.get("text")
+    ).strip()  # _first_str guards .strip()
     excerpt = redact(text) or f"(no text) {channel}:{ts}"
     return Observation(
         source_ref=SourceRef(source_id="slack", ref=f"{channel}:{ts}", kind="message"),
@@ -93,7 +96,9 @@ class SlackConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
-        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+        if not isinstance(
+            payload, dict
+        ):  # untrusted poll boundary: skip, don't crash (#59)
             return []
         return [parse_message(payload)]
 
@@ -115,21 +120,27 @@ class SlackConnector:
         """Best-effort delivery id (Events-API ``event_id``; '' when none)."""
         return str(payload.get("event_id") or "")
 
-    def normalize_event(self, *, headers: dict[str, str], body: bytes) -> list[Observation]:
+    def normalize_event(
+        self, *, headers: dict[str, str], body: bytes
+    ) -> list[Observation]:
         """Self-guard (re-verify), drop the handshake, dedup, parse. ``[]`` on reject."""
         if not self.verify(headers=headers, body=body):
             return []
         try:
             payload = json.loads(body)
-        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
+        except (
+            ValueError,
+            UnicodeDecodeError,
+        ):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
         if not isinstance(payload, dict):
             return []
         if payload.get("type") == "url_verification":  # signed handshake, no event
             return []
+        delivery_id = self._delivery_id(payload)
         if self._dedup is not None:
-            delivery_id = self._delivery_id(payload)
             if delivery_id and self._dedup.is_duplicate("slack", delivery_id):
                 return []
             self._dedup.mark_seen("slack", delivery_id)
-        return [parse_message(payload)]
+        obs = parse_message(payload)
+        return [dataclasses.replace(obs, provider_event_id=delivery_id)]

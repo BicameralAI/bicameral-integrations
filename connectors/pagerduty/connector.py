@@ -11,6 +11,7 @@ deferred ``verify()`` must do membership, not equality) are deferred (see
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import time
@@ -50,7 +51,10 @@ def parse_event(envelope: dict) -> Observation:
     title = redact(_text(data.get("title")) or _text(data.get("summary")))
     return Observation(
         source_ref=SourceRef(
-            source_id="pagerduty", ref=iid, url=data.get("html_url") or "", kind="incident"
+            source_id="pagerduty",
+            ref=iid,
+            url=data.get("html_url") or "",
+            kind="incident",
         ),
         excerpt=title or iid,
         mode=SourceMode.WEBHOOK,
@@ -90,7 +94,9 @@ class PagerDutyConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
-        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+        if not isinstance(
+            payload, dict
+        ):  # untrusted poll boundary: skip, don't crash (#59)
             return []
         return [parse_event(payload)]
 
@@ -111,19 +117,25 @@ class PagerDutyConnector:
         event = payload.get("event")
         return str(event.get("id") or "") if isinstance(event, dict) else ""
 
-    def normalize_event(self, *, headers: dict[str, str], body: bytes) -> list[Observation]:
+    def normalize_event(
+        self, *, headers: dict[str, str], body: bytes
+    ) -> list[Observation]:
         """Self-guard (re-verify), best-effort dedup, then parse. ``[]`` on reject."""
         if not self.verify(headers=headers, body=body):
             return []
         try:
             payload = json.loads(body)
-        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
+        except (
+            ValueError,
+            UnicodeDecodeError,
+        ):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
         if not isinstance(payload, dict):  # valid JSON but not an object
             return []
+        delivery_id = self._delivery_id(payload) or hashlib.sha256(body).hexdigest()
         if self._dedup is not None:
-            delivery_id = self._delivery_id(payload) or hashlib.sha256(body).hexdigest()  # body-hash fallback dedups id-less replays (#60)
             if self._dedup.is_duplicate("pagerduty", delivery_id):
                 return []
             self._dedup.mark_seen("pagerduty", delivery_id)
-        return [parse_event(payload)]
+        obs = parse_event(payload)
+        return [dataclasses.replace(obs, provider_event_id=delivery_id)]

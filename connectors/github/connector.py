@@ -14,6 +14,7 @@ secret resolution stay in the operator runtime (see ``auth.md``).
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import time
@@ -113,7 +114,9 @@ class GitHubConnector:
         return host == "github.com" or host.endswith(".github.com")
 
     def observations(self, payload: dict) -> list[Observation]:
-        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+        if not isinstance(
+            payload, dict
+        ):  # untrusted poll boundary: skip, don't crash (#59)
             return []
         return [parse_pull_request(payload)]
 
@@ -122,7 +125,7 @@ class GitHubConnector:
         try:
             sig = header_value(headers, "X-Hub-Signature-256")
             if isinstance(sig, str) and sig.lower().startswith("sha256="):
-                sig = sig[len("sha256="):]
+                sig = sig[len("sha256=") :]
             verify_hmac_hex(header_sig=sig, body=body, secret=self._secret)
             return True
         except (WebhookVerificationError, AttributeError, TypeError):
@@ -132,20 +135,23 @@ class GitHubConnector:
         """Best-effort delivery id ('' when none) — GitHub's per-delivery GUID."""
         return header_value(headers, "X-GitHub-Delivery") or ""
 
-    def normalize_event(self, *, headers: dict[str, str], body: bytes) -> list[Observation]:
+    def normalize_event(
+        self, *, headers: dict[str, str], body: bytes
+    ) -> list[Observation]:
         """Self-guard (re-verify), dedup, unwrap the PR envelope, parse. ``[]`` on reject."""
         if not self.verify(headers=headers, body=body):
             return []
         try:
             payload = json.loads(body)
-        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
+        except (
+            ValueError,
+            UnicodeDecodeError,
+        ):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
         if not isinstance(payload, dict):
             return []
+        delivery_id = self._delivery_id(headers) or hashlib.sha256(body).hexdigest()
         if self._dedup is not None:
-            # body-hash fallback: an empty/absent X-GitHub-Delivery header can no longer bypass
-            # dedup (the bare `if delivery_id` guard let id-less replays through) (deep-audit #60).
-            delivery_id = self._delivery_id(headers) or hashlib.sha256(body).hexdigest()
             if self._dedup.is_duplicate("github", delivery_id):
                 return []
             self._dedup.mark_seen("github", delivery_id)
@@ -156,4 +162,5 @@ class GitHubConnector:
         # nested, but `number` lives at the envelope top level (inject it).
         pr = dict(pull_request)
         pr.setdefault("number", payload.get("number"))
-        return [parse_pull_request(pr)]
+        obs = parse_pull_request(pr)
+        return [dataclasses.replace(obs, provider_event_id=delivery_id)]

@@ -53,10 +53,18 @@ def emission_to_ingest_request(emission: AdapterEmission) -> dict:
         or _first_excerpt(emission)
         or emission.source_id
     )
-    return {
+    payload: dict = {
         "title": title,
         "description": description,
         "source": _source(emission),
         "source_type": emission.source_id,
         "evidence": [{"excerpt": ev.excerpt} for ev in emission.evidence],
     }
+    if emission.provenance is not None:
+        payload["delivery_mode"] = emission.provenance.delivery_mode
+        payload["verification"] = emission.provenance.verification
+        if emission.provenance.provider_event_id:
+            payload["provider_event_id"] = emission.provenance.provider_event_id
+        if emission.provenance.provider_resource_id:
+            payload["provider_resource_id"] = emission.provenance.provider_resource_id
+    return payload
