@@ -1,0 +1,35 @@
+{
+  "_comment": "Golden conformance fixture: linear.comment.status.v1 — canonical decision + profile -> expected rendered payload + receipt-mapping. Offline only; no live write.",
+  "canonical_decision": {
+    "decision_id": "dec_001",
+    "title": "Adopt Postgres advisory locks for the watermark cursor",
+    "summary": "Implementation of advisory locks is complete. All poller instances now serialize watermark advancement; double-ingest race eliminated in integration tests.",
+    "status": "reflected",
+    "created_at": "2026-06-02T18:42:11.000Z",
+    "updated_at": "2026-06-05T14:30:00.000Z"
+  },
+  "profile_id": "linear.comment.status.v1",
+  "target_issue": {
+    "id": "b1e2c3d4-5678-49ab-9cde-0123456789ab",
+    "identifier": "PLAT-204",
+    "url": "https://linear.app/acme/issue/PLAT-204"
+  },
+  "expected_rendered_payload": {
+    "body": "**Governed Status Update** (canonical ref: dec_001)\n\nImplementation of advisory locks is complete. All poller instances now serialize watermark advancement; double-ingest race eliminated in integration tests.\n\nStatus: reflected\n\n---\n_Projected by Bicameral. Canonical decision: dec_001._",
+    "issueId": "b1e2c3d4-5678-49ab-9cde-0123456789ab"
+  },
+  "expected_mutation": {
+    "operation": "commentCreate",
+    "target_surface": "comment",
+    "parent_issue_id": "b1e2c3d4-5678-49ab-9cde-0123456789ab",
+    "fields_populated": ["body", "issueId"],
+    "fields_not_touched": ["assignee", "state", "status", "priority"]
+  },
+  "expected_receipt_mapping": {
+    "external_id": "<new-comment-id>",
+    "external_url": "https://linear.app/acme/issue/PLAT-204#comment-<id>",
+    "status": "created"
+  },
+  "canonical_ref_present": true,
+  "receipt_required": true
+}

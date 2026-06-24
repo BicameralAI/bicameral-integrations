@@ -1,0 +1,54 @@
+[
+  {
+    "profile_id": "linear.issue.summary.v1",
+    "target_system": "linear",
+    "target_surface": "issue",
+    "allowed_fields": ["description"],
+    "forbidden_fields": ["assignee", "state", "status", "priority", "team"],
+    "required_authority_label": "projection:issue:update",
+    "required_canonical_ref": true,
+    "required_receipt": true,
+    "rendering_constraints": {
+      "format": "linear-markdown",
+      "max_length": 10000,
+      "notes": "Linear markdown subset; description length cap enforced by target API."
+    },
+    "mutation_capability": "update",
+    "reconciliation_capability": "update-in-place"
+  },
+  {
+    "profile_id": "linear.issue.work_item.v1",
+    "target_system": "linear",
+    "target_surface": "issue",
+    "allowed_fields": ["title", "description", "teamId"],
+    "forbidden_fields": ["assignee", "state", "status", "priority"],
+    "required_authority_label": "projection:issue:create",
+    "required_canonical_ref": true,
+    "required_receipt": true,
+    "rendering_constraints": {
+      "format": "linear-markdown",
+      "max_title_length": 255,
+      "max_length": 10000,
+      "notes": "Linear markdown subset; title and description length caps enforced by target API."
+    },
+    "mutation_capability": "create",
+    "reconciliation_capability": "append-only"
+  },
+  {
+    "profile_id": "linear.comment.status.v1",
+    "target_system": "linear",
+    "target_surface": "comment",
+    "allowed_fields": ["body", "issueId"],
+    "forbidden_fields": ["assignee", "state", "status", "priority"],
+    "required_authority_label": "projection:comment:create",
+    "required_canonical_ref": true,
+    "required_receipt": true,
+    "rendering_constraints": {
+      "format": "linear-markdown",
+      "max_length": 10000,
+      "notes": "Linear markdown subset; body length cap enforced by target API."
+    },
+    "mutation_capability": "comment",
+    "reconciliation_capability": "append-only"
+  }
+]
