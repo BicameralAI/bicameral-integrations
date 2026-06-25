@@ -1,0 +1,29 @@
+{
+  "_comment": "Golden conformance fixture: linear.issue.work_item.v1 — canonical decision + profile -> expected rendered payload + receipt-mapping. Offline only; no live write.",
+  "canonical_decision": {
+    "decision_id": "dec_002",
+    "title": "Add rate-limit backoff to the Linear connector active fetch",
+    "summary": "Implement exponential backoff with jitter when the Linear GraphQL API returns 429. Scoped to the active poll path; webhook path is unaffected.",
+    "status": "accepted",
+    "created_at": "2026-06-03T10:15:00.000Z"
+  },
+  "profile_id": "linear.issue.work_item.v1",
+  "expected_rendered_payload": {
+    "title": "Add rate-limit backoff to the Linear connector active fetch",
+    "description": "**Governed Work Item** (canonical ref: dec_002)\n\nImplement exponential backoff with jitter when the Linear GraphQL API returns 429. Scoped to the active poll path; webhook path is unaffected.\n\n---\n_Projected by Bicameral. Canonical decision: dec_002._",
+    "teamId": "team_plat"
+  },
+  "expected_mutation": {
+    "operation": "issueCreate",
+    "target_surface": "issue",
+    "fields_populated": ["title", "description", "teamId"],
+    "fields_not_touched": ["assignee", "state", "status", "priority"]
+  },
+  "expected_receipt_mapping": {
+    "external_id": "<new-issue-id>",
+    "external_url": "<new-issue-url>",
+    "status": "created"
+  },
+  "canonical_ref_present": true,
+  "receipt_required": true
+}
