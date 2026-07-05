@@ -31,6 +31,10 @@
       {
         "excerpt": "Ship weekly instead of bi-weekly — aligns with sprint boundary."
       }
+    ],
+    "label": "emission_type:evidence",
+    "tags": [
+      "emission_type:evidence"
     ]
   }
 }

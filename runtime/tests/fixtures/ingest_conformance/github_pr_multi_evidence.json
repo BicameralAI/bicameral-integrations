@@ -47,6 +47,10 @@
       {
         "excerpt": "Webhook failures spike during deploys — need retry."
       }
+    ],
+    "label": "emission_type:candidate",
+    "tags": [
+      "emission_type:candidate"
     ]
   }
 }

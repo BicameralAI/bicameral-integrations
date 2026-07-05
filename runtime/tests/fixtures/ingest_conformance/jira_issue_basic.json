@@ -31,6 +31,10 @@
       {
         "excerpt": "Decided to adopt OAuth 2.0 for external APIs."
       }
+    ],
+    "label": "emission_type:candidate",
+    "tags": [
+      "emission_type:candidate"
     ]
   }
 }

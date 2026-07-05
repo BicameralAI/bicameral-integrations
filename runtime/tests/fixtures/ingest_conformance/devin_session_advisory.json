@@ -31,6 +31,10 @@
       {
         "excerpt": "aiohttp is imported in utils.py but no call site exists."
       }
+    ],
+    "label": "emission_type:advisory",
+    "tags": [
+      "emission_type:advisory"
     ]
   }
 }

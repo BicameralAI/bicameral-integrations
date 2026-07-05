@@ -31,6 +31,10 @@
       {
         "excerpt": "Migrate auth to SSO before Q3."
       }
+    ],
+    "label": "emission_type:candidate",
+    "tags": [
+      "emission_type:candidate"
     ]
   }
 }
