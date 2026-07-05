@@ -73,6 +73,4 @@ class RecordedTransport:
     def request(
         self, method: str, path: str, *, headers: dict[str, str]
     ) -> GitHubResponse:
-        return self._routes.get(
-            f"{method.upper()} {path}", GitHubResponse(status=404)
-        )
+        return self._routes.get(f"{method.upper()} {path}", GitHubResponse(status=404))
