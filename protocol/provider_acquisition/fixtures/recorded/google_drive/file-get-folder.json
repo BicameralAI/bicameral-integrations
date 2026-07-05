@@ -1,0 +1,15 @@
+{
+  "_comment": "Recorded GET /drive/v3/files/{id} for a project folder (files.get).",
+  "method": "GET",
+  "path": "/drive/v3/files/1PRJ1111projectfolder",
+  "params": {"supportsAllDrives": "true", "fields": "id,name,mimeType,modifiedTime,version,parents,driveId"},
+  "status": 200,
+  "json": {
+    "id": "1PRJ1111projectfolder",
+    "name": "atlas-migration",
+    "mimeType": "application/vnd.google-apps.folder",
+    "modifiedTime": "2026-06-12T09:30:00Z",
+    "driveId": "0ABCdefGHIjklMNO",
+    "parents": ["1BIC0000bicameralfolder"]
+  }
+}

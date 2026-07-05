@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded GET /drive/v3/drives/{id} (drives.get) — granted shared drive.",
+  "method": "GET",
+  "path": "/drive/v3/drives/0ABCdefGHIjklMNO",
+  "status": 200,
+  "json": {"id": "0ABCdefGHIjklMNO", "name": "Engineering Decisions", "createdTime": "2026-06-13T11:00:00Z"}
+}

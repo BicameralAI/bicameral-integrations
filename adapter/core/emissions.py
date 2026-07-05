@@ -56,6 +56,23 @@ class AdvisoryResult:
 
 
 @dataclass(frozen=True)
+class ProviderProvenance:
+    """Non-authoritative provider provenance facts attached to an emission.
+
+    These fields are evidence metadata only — they carry no Bicameral
+    governance authority, no bot-side ActorContext, and no accepted
+    SourceBinding.  Bot owns canonical identity; integrations surface
+    the raw provider-side delivery posture for dedup evidence and
+    diagnostic tracing.
+    """
+
+    delivery_mode: Literal["webhook", "poll", "active-fetch"]
+    verification: Literal["signed", "unsigned"]
+    provider_event_id: str = ""
+    provider_resource_id: str = ""
+
+
+@dataclass(frozen=True)
 class AdapterEmission:
     """Neutral object emitted by a source adapter."""
 
@@ -68,4 +85,5 @@ class AdapterEmission:
     confidence: ConfidenceSurface | None = None
     routing_hints: tuple[RoutingHint, ...] = ()
     advisories: tuple[AdvisoryResult, ...] = ()
+    provenance: ProviderProvenance | None = None
     metadata: dict[str, Any] = field(default_factory=dict)

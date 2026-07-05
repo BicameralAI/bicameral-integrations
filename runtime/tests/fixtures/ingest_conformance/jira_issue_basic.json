@@ -1,0 +1,40 @@
+{
+  "$comment": "Golden fixture: Jira issue emission -> IngestRequest. Exercises the happy path with all required fields populated.",
+  "emission": {
+    "source_id": "jira",
+    "title": "Adopt OAuth for external APIs",
+    "body": "The team decided to adopt OAuth 2.0 for all external API integrations.",
+    "evidence": [
+      {
+        "source_ref": {
+          "source_id": "jira",
+          "ref": "ENG-42",
+          "url": "https://example.atlassian.net/browse/ENG-42",
+          "kind": "issue"
+        },
+        "excerpt": "Decided to adopt OAuth 2.0 for external APIs.",
+        "author": "",
+        "timestamp": "",
+        "evidence_id": "",
+        "metadata": {}
+      }
+    ],
+    "emission_type": "candidate",
+    "adapter_version": "jira/0.1.0"
+  },
+  "expected_ingest_request": {
+    "title": "Adopt OAuth for external APIs",
+    "description": "The team decided to adopt OAuth 2.0 for all external API integrations.",
+    "source": "https://example.atlassian.net/browse/ENG-42",
+    "source_type": "jira",
+    "evidence": [
+      {
+        "excerpt": "Decided to adopt OAuth 2.0 for external APIs."
+      }
+    ],
+    "label": "emission_type:candidate",
+    "tags": [
+      "emission_type:candidate"
+    ]
+  }
+}

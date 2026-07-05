@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded GitHub REST response: GET on a non-existent repo (404).",
+  "method": "GET",
+  "path": "/repos/missing-org/missing-repo",
+  "status": 404,
+  "json": {"message": "Not Found", "documentation_url": "https://docs.github.com/rest"}
+}

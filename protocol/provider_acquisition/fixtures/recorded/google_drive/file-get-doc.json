@@ -1,0 +1,16 @@
+{
+  "_comment": "Recorded GET /drive/v3/files/{id} for a Google Doc (files.get).",
+  "method": "GET",
+  "path": "/drive/v3/files/1DOC2222documentid12345",
+  "params": {"supportsAllDrives": "true", "fields": "id,name,mimeType,modifiedTime,version,parents,driveId"},
+  "status": 200,
+  "json": {
+    "id": "1DOC2222documentid12345",
+    "name": "Event Store Substrate Decision",
+    "mimeType": "application/vnd.google-apps.document",
+    "modifiedTime": "2026-06-10T15:20:00Z",
+    "version": "42",
+    "driveId": "0ABCdefGHIjklMNO",
+    "parents": ["1PRJ1111projectfolder"]
+  }
+}

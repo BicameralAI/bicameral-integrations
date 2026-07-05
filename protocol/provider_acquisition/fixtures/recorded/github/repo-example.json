@@ -1,0 +1,17 @@
+{
+  "_comment": "Recorded GitHub REST response: GET /repos/example-org/example-repo (synthetic).",
+  "method": "GET",
+  "path": "/repos/example-org/example-repo",
+  "status": 200,
+  "json": {
+    "full_name": "example-org/example-repo",
+    "name": "example-repo",
+    "html_url": "https://github.com/example-org/example-repo",
+    "default_branch": "main",
+    "visibility": "private",
+    "language": "Rust",
+    "node_id": "R_kgDOExample1",
+    "updated_at": "2026-06-14T20:00:00Z",
+    "permissions": {"admin": false, "maintain": false, "push": true, "pull": true}
+  }
+}

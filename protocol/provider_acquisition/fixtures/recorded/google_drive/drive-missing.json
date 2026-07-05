@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded 404 — shared drive not found or deleted.",
+  "method": "GET",
+  "path": "/drive/v3/drives/missing404",
+  "status": 404,
+  "json": {"error": {"code": 404, "status": "NOT_FOUND", "errors": [{"reason": "notFound"}]}}
+}

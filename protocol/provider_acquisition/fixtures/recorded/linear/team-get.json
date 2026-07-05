@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded Linear GraphQL: team single-get.",
+  "operation": "Team",
+  "variables": {"id": "team-uuid-plat-0001"},
+  "status": 200,
+  "data": {"team": {"id": "team-uuid-plat-0001", "key": "PLAT", "name": "Platform", "organization": {"id": "org-uuid-acme", "name": "Acme Corp", "urlKey": "acme"}}}
+}

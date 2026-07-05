@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded 401 — Google credential expired/revoked.",
+  "method": "GET",
+  "path": "/drive/v3/drives/expired401",
+  "status": 401,
+  "json": {"error": {"code": 401, "status": "UNAUTHENTICATED", "errors": [{"reason": "authError"}]}}
+}

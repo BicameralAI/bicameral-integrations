@@ -1,0 +1,33 @@
+{
+  "_comment": "Golden conformance fixture: linear.issue.summary.v1 — canonical decision + profile -> expected rendered payload + receipt-mapping. Offline only; no live write.",
+  "canonical_decision": {
+    "decision_id": "dec_001",
+    "title": "Adopt Postgres advisory locks for the watermark cursor",
+    "summary": "Use Postgres advisory locks to serialize watermark advancement across pollers; avoids the double-ingest race. Approved by platform team; implementation scoped to the polling runtime.",
+    "status": "accepted",
+    "created_at": "2026-06-02T18:42:11.000Z"
+  },
+  "profile_id": "linear.issue.summary.v1",
+  "target_issue": {
+    "id": "b1e2c3d4-5678-49ab-9cde-0123456789ab",
+    "identifier": "PLAT-204",
+    "url": "https://linear.app/acme/issue/PLAT-204"
+  },
+  "expected_rendered_payload": {
+    "description": "**Governed Summary** (canonical ref: dec_001)\n\nUse Postgres advisory locks to serialize watermark advancement across pollers; avoids the double-ingest race. Approved by platform team; implementation scoped to the polling runtime.\n\n---\n_Projected by Bicameral. Canonical decision: dec_001._"
+  },
+  "expected_mutation": {
+    "operation": "issueUpdate",
+    "target_surface": "issue",
+    "target_id": "b1e2c3d4-5678-49ab-9cde-0123456789ab",
+    "fields_populated": ["description"],
+    "fields_not_touched": ["assignee", "state", "status", "priority", "team"]
+  },
+  "expected_receipt_mapping": {
+    "external_id": "b1e2c3d4-5678-49ab-9cde-0123456789ab",
+    "external_url": "https://linear.app/acme/issue/PLAT-204",
+    "status": "updated"
+  },
+  "canonical_ref_present": true,
+  "receipt_required": true
+}

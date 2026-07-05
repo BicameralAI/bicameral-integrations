@@ -19,6 +19,7 @@ sensitive screen (``FX-SEC-001``) is the guard.
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import time
@@ -61,13 +62,17 @@ def parse_issue(event: dict) -> Observation:
             source_id="jira",
             ref=key,
             url=_text(issue.get("self")),
-            kind=_text(event.get("issue_event_type_name")) or _text(event.get("webhookEvent")) or "issue",
+            kind=_text(event.get("issue_event_type_name"))
+            or _text(event.get("webhookEvent"))
+            or "issue",
         ),
         excerpt=summary or key,
         mode=SourceMode.WEBHOOK,
         title=summary or key,
         author="",  # PII-safe: the actor's displayName (a real name) is NOT surfaced (SG-2026-06-11-D)
-        timestamp=_text(fields.get("updated")) or _text(fields.get("created")) or str(event.get("timestamp") or ""),
+        timestamp=_text(fields.get("updated"))
+        or _text(fields.get("created"))
+        or str(event.get("timestamp") or ""),
         metadata={
             "event": _text(event.get("webhookEvent")),
             "status": _nested(fields, "status", "name"),
@@ -104,7 +109,9 @@ class JiraConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
-        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+        if not isinstance(
+            payload, dict
+        ):  # untrusted poll boundary: skip, don't crash (#59)
             return []
         return [parse_issue(payload)]
 
@@ -113,7 +120,7 @@ class JiraConnector:
         try:
             sig = header_value(headers, "X-Hub-Signature")
             if isinstance(sig, str) and sig.lower().startswith("sha256="):
-                sig = sig[len("sha256="):]
+                sig = sig[len("sha256=") :]
             verify_hmac_hex(header_sig=sig, body=body, secret=self._secret)
             return True
         except (WebhookVerificationError, AttributeError, TypeError):
@@ -127,19 +134,27 @@ class JiraConnector:
         issue = payload.get("issue")
         return str(issue.get("id") or "") if isinstance(issue, dict) else ""
 
-    def normalize_event(self, *, headers: dict[str, str], body: bytes) -> list[Observation]:
+    def normalize_event(
+        self, *, headers: dict[str, str], body: bytes
+    ) -> list[Observation]:
         """Self-guard (re-verify), best-effort dedup, then parse. ``[]`` on reject."""
         if not self.verify(headers=headers, body=body):
             return []
         try:
             payload = json.loads(body)
-        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
+        except (
+            ValueError,
+            UnicodeDecodeError,
+        ):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
         if not isinstance(payload, dict):
             return []
+        delivery_id = (
+            self._delivery_id(headers, payload) or hashlib.sha256(body).hexdigest()
+        )
         if self._dedup is not None:
-            delivery_id = self._delivery_id(headers, payload) or hashlib.sha256(body).hexdigest()  # body-hash fallback dedups id-less replays (#60)
             if self._dedup.is_duplicate("jira", delivery_id):
                 return []
             self._dedup.mark_seen("jira", delivery_id)
-        return [parse_issue(payload)]
+        obs = parse_issue(payload)
+        return [dataclasses.replace(obs, provider_event_id=delivery_id)]

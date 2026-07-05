@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded Linear GraphQL: issue single-get (descriptor + item).",
+  "operation": "Issue",
+  "variables": {"id": "issue-uuid-204-0001"},
+  "status": 200,
+  "data": {"issue": {"id": "issue-uuid-204-0001", "identifier": "PLAT-204", "title": "Adopt Postgres advisory locks for the watermark cursor", "description": "Decision: use Postgres advisory locks to serialize watermark advancement across pollers; avoids the double-ingest race.", "url": "https://linear.app/acme/issue/PLAT-204", "updatedAt": "2026-06-14T18:42:11Z", "priority": 2, "state": {"name": "Todo"}, "team": {"id": "team-uuid-plat-0001", "key": "PLAT"}}}
+}

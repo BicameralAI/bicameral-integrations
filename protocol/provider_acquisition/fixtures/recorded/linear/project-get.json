@@ -1,0 +1,7 @@
+{
+  "_comment": "Recorded Linear GraphQL: project single-get.",
+  "operation": "Project",
+  "variables": {"id": "proj-uuid-q3-0001"},
+  "status": 200,
+  "data": {"organization": {"urlKey": "acme"}, "project": {"id": "proj-uuid-q3-0001", "name": "Q3 Event Store Migration", "team": {"id": "team-uuid-plat-0001", "key": "PLAT"}}}
+}

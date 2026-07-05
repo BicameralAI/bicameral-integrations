@@ -7327,7 +7327,493 @@ authoring. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#214 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #215: GATE TRIBUNAL -- AUDIT PASS: GitHub App installation discovery (mocked/recorded slice, #180)
+
+**Entry ID**: `audit215githubinstallationdiscovery`
+**Timestamp**: 2026-06-23T20:50:00-04:00
+**Phase**: AUDIT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Judge
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/plan-180-github-installation-discovery-2026-06-23.md)
+= dc2833b21676d465b7df3c67d9a91cc3e5fe4dd9e230ae080e371eb97f6f4e03
+```
+
+**Previous Hash**: 54fc16cc5c83bb0d5ed3717ab5acfdd6034ba31e4d749baee1714d64ac899413
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 52b0d1490a90bf8737dfcebfeda190ad0c9e99e09bc3b7409aaefefdff99d7bd
+```
+
+**Decision**: **PASS** (solo; `audit_risk_score option_b_required: false`; codex-plugin shortfall recorded).
+Audited the plan for the GitHub App **installation-only** discovery slice (#180), mocked/recorded — live
+HTTP deferred to cloud#7. All adversarial passes clear: Security/L3 (installation token injected operator-
+side, App private key/client secret never enters the package, screening fail-closed), OWASP (pure JSON map,
+`json.loads` only, no fail-open/empty-success, token-free `DiscoveryError`), Razor (auth/transport/mapping/
+connector decomposition + error-map helper keeps <250/<40 — discipline note carried), Test Functionality
+(behavioral assertions on emitted descriptors/items + `DiscoveryErrorKind` per error row; existing secret-
+guard auto-extends via `fixtures/` location), Dependency (no new third-party dep), Macro Architecture
+(`protocol → adapter.core` established direction; local transport seam avoids `protocol → runtime` reverse
+import), Filter-Stage (screen-before-emit, no inversion), Orphan (opt-in surface proven by tests, same
+posture as merged `FixtureDiscoveryStub`). **Infrastructure Alignment**: every claim grep-verified —
+merged #178 `DiscoveryConnector` envelope sig (`contracts.py:72`), `DiscoveryErrorKind` 5-value enum
+(`types.py:39`), `detect_sensitive` (`sensitive.py:130`), secret-guard `rglob fixtures/**`
+(`test_fixture_secret_guard.py:20`), conformance globs only `descriptors/`+`items/`, config schema `modes`
+enum = webhook|active|passive (**discovery block correctly deferred** to the ADR-0015 config fan-out).
+**Authority boundary** intact (no `create_provider_resource`; no SourceBinding/Source/evidence/candidate).
+Report: `.agent/staging/AUDIT_REPORT.md`. **Required next action:** `/qor-implement`. **Review Boundary
+honored:** staged on `feat/180-github-installation-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #216: IMPLEMENTATION -- GitHub App installation discovery connector (mocked/recorded slice, #180)
+
+**Entry ID**: `impl216githubinstallationdiscovery`
+**Timestamp**: 2026-06-23T21:10:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(protocol/provider_acquisition/github/connector.py)
+= 017c59a0123304c178c8d6afd65cdd484dba612f37e4f05b1c4ff3b6282fb034
+```
+
+**Previous Hash**: 52b0d1490a90bf8737dfcebfeda190ad0c9e99e09bc3b7409aaefefdff99d7bd
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ffda9a66a50d744860c34ba897935386441a940d46a853038e42eb3d3743d6b0
+```
+
+**Decision**: Implemented the audited plan (#215 PASS) for #180 — the **first GitHub provider-acquisition
+slice**, GitHub App **installation auth only**, mocked/recorded. **NEW `protocol/provider_acquisition/
+github/`**: `auth.py` (`InstallationTokenProvider` Protocol + `MappingInstallationTokenProvider` —
+installation-only by construction, **no PAT/imported-token entry point**; `reject_control_chars`
+token-smuggling guard), `transport.py` (`GitHubTransport` seam + `RecordedTransport.from_dir`; live
+`urllib` transport deferred to cloud#7 — local seam, no `protocol→runtime` import), `mapping.py` (pure
+GitHub-REST-JSON→`ProviderResourceDescriptor`/`ProviderItemEnvelope`; untrusted-boundary coercion),
+`errors.py` (status→typed `DiscoveryErrorKind` taxonomy, factored out per the audit Razor note —
+connector.py 212 lines), `connector.py` (`GitHubDiscoveryConnector`: 4 methods, auth→transport→map→
+**screen-before-emit**; `create_provider_resource` **absent**). **NEW `protocol/provider_acquisition/
+screening.py`** — `screen_descriptor`/`screen_item` reuse the single `adapter.core.sensitive` catalog,
+fail-closed (ADR-0017 §3; shared w/ Drive #179). **NEW `fixtures/recorded/github/*.json`** (10 synthetic
+GitHub REST recordings incl. 403-denied/403-ratelimit/404/401/503/422 — auto-covered by the existing
+secret-guard `rglob fixtures/**`). **NEW `github/tests/test_github_discovery.py`** (28 behavioral tests:
+list/get/validate/fetch + every taxonomy row + installation-only + fail-closed screening + token-free
+errors + jsonschema conformance). **EDIT** ADR-0017 (Addendum 2026-06-23 resolves the open question:
+GitHub App installation only; PAT rejected; cloud#7 broker; screening reused; config block deferred to
+ADR-0015 fan-out), `provider_acquisition/README.md`, `FEATURE_INDEX.md` (FX-GH-DISC-001; 49→50).
+**Verification:** 977 tests pass (28 new); ruff clean; mypy clean (271 files); bandit CI-style exit 0;
+governance-gate OK (chain #1..#216 + FEATURE_INDEX + subject-locality). **Boundary held:** no
+SourceBinding/Source/evidence/candidate, no event-store/`.bicameral` mutation, no provider writes/egress,
+no schema promotion, no `connectors/github/config.json` change. **Review Boundary honored:** staged on
+`feat/180-github-installation-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #217: RESEARCH BRIEF -- Google Drive resource discovery (mocked/recorded slice, #179)
+
+**Entry ID**: `research217drivediscovery`
+**Timestamp**: 2026-06-23T21:55:00-04:00
+**Phase**: RESEARCH (qor-auto-dev-1; chain start for the #179 cycle, rebased onto dev after #180 merged)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-179-drive-discovery-2026-06-23.md)
+= 9e465436a99aa913a55a4d6d934bdfdd237e7fa8693651f5d1fbb4fce8e5876e
+```
+
+**Previous Hash**: ffda9a66a50d744860c34ba897935386441a940d46a853038e42eb3d3743d6b0
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= cf4d2678a4012252f3aceac51960041536b40944a3aeb9e346712e7ab2f14129
+```
+
+**Decision**: Research grounding the #179 Drive discovery slice (mocked/recorded). **7 questions resolved,
+0 drift.** (OQ3 ledger-fork from the research/179 branch RESOLVED: #180 merged to dev (#215/#216), so this
+entry is renumbered #214→**#217** off dev's head — the linearization the brief predicted.) The slice is
+**mostly recombination of existing repo code** + one net-new external surface. **NEW surface VERIFIED**
+against Google Drive API v3 (2026-06-23): `drives.list` (`GET …/drive/v3/drives` →
+`{drives[],nextPageToken,kind}`) and `files.list` (`GET …/drive/v3/files`,
+`corpora=drive`+`driveId`+`includeItemsFromAllDrives`+`supportsAllDrives`, `pageSize` max 100 →
+`{files[],nextPageToken,incompleteSearch}`); `.bicameral` discovery via `q` on
+`mimeType='application/vnd.google-apps.folder'`. **ADR-0017 Finding 4 re-confirmed**
+(`drive.metadata.readonly` invalid for `documents.get`; `drive.readonly`+`documents.readonly` already in
+`config.json` — `poll_specs.py:334`). **Reuse map**: `RefreshTokenSecretResolver`/`SecretResolver` is the
+token provider (**no new type needed, unlike GitHub's `InstallationTokenProvider`**),
+`BearerAuth`/`HttpTransport`/`_pin_host`, `parse_document`, `DocFetchSpec`. The **#180 seam transfers**
+(injected transport + `RecordedTransport` + `screening.py`, now on dev). **Refined product scope** (issue
+6/18): shared drives + `.bicameral/<project>/` folders only; `.bicameral` creation is egress/ProposedAction
+— out of scope. F6 taxonomy mapped to the 5-value `DiscoveryErrorKind`. **Remaining open question:** OQ1
+live blocker factory#93 (open; mocked-only). **SG-2026-06-23-A:** the discovery transport/token seam is
+provider-agnostic — reuse, do not re-derive. Brief:
+`docs/research-brief-179-drive-discovery-2026-06-23.md`. **Required next action:** `/qor-plan`. **Review
+Boundary honored:** staged on `feat/179-drive-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #218: GATE TRIBUNAL -- AUDIT PASS: Google Drive discovery (mocked/recorded slice, #179)
+
+**Entry ID**: `audit218drivediscovery`
+**Timestamp**: 2026-06-23T22:05:00-04:00
+**Phase**: AUDIT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Judge
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/plan-179-drive-discovery-2026-06-23.md)
+= 76299de27f396a17c51aa1946343374851734ae6dd39a12635c1b23f0c793acf
+```
+
+**Previous Hash**: cf4d2678a4012252f3aceac51960041536b40944a3aeb9e346712e7ab2f14129
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c76344b51b06f5848babe1cf60b836776475aa0c151678bb8a5a2c4b97c4469f
+```
+
+**Decision**: **PASS** (solo; `option_b_required: false`). Audited the #179 Drive discovery plan
+(mocked/recorded; live deferred to factory#93). All passes clear: Security/L3 (OAuth token via
+`SecretResolver`, refresh operator-side, token-free errors, screening fail-closed), OWASP (pure JSON map +
+`urlencode`, `json.loads` only, no empty-success), Razor (mapping/errors/transport factored — discipline
+note: factor `_list_bicameral_folders`), Test Functionality (behavioral + jsonschema + secret-guard),
+Dependency (no new dep — reuses `adapter.core.sensitive` + `runtime.secrets.SecretResolver`), **Macro
+Architecture** (mirror-vs-unify transport reconsidered: a shared `params` Protocol would break #180's
+no-`params` `_OneShot`/connector mypy → forces merged-code edits; **local mirror chosen, unification
+deferred** — provider mechanics live with the provider), Filter-Stage (screen-before-emit), Orphan (opt-in,
+test-proven). **Infrastructure Alignment** grep-verified: `screening.py:57/96`, `SecretResolver`
+(`secrets.py:15/27`), `extract_document_text` (`google_drive/connector.py:110`), `DiscoveryErrorKind`
+5-value enum, golden `drive_`/`folder_`/`doc_` id prefixes, `drive.metadata.readonly` invalid for
+`documents.get` (`poll_specs.py:334`), secret-guard `rglob` vs conformance glob. **Zero edit to merged
+#180 code.** Report: `.agent/staging/AUDIT_REPORT.md`. **Required next action:** `/qor-implement`. **Review
+Boundary honored:** staged on `feat/179-drive-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #219: IMPLEMENTATION -- Google Drive discovery connector (mocked/recorded slice, #179)
+
+**Entry ID**: `impl219drivediscovery`
+**Timestamp**: 2026-06-23T22:25:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(protocol/provider_acquisition/google_drive/connector.py)
+= 73d17dc414585ebbe8cb8aa3063ec70693407eba6c43be7fafb46e88bbd5df0b
+```
+
+**Previous Hash**: c76344b51b06f5848babe1cf60b836776475aa0c151678bb8a5a2c4b97c4469f
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 286f0ecb441646ac79a6bb071e982aa04b970b326f964a87f6e0704b61e077cc
+```
+
+**Decision**: Implemented the audited plan (#218 PASS) for #179 — the Google Drive discovery slice,
+mocked/recorded (live deferred to factory#93). **NEW `protocol/provider_acquisition/google_drive/`**:
+`auth.py` (`build_auth_headers` — **reuses the runtime `SecretResolver` as the token provider, no new
+type**; token-free, control-char screened), `transport.py` (`DriveTransport` seam + `RecordedTransport`,
+`route_key` over sorted params; **local mirror** of #180 — unification deferred to avoid changing GitHub's
+no-`params` shape / editing merged code), `mapping.py` (pure Drive-JSON → `shared_drive`/`folder`/`document`
+descriptors + `document` item; reuses `connectors.google_drive.connector.extract_document_text`), `errors.py`
+(status → typed `DiscoveryErrorKind` taxonomy; insufficient-scope carries `required_scope`), `connector.py`
+(`GoogleDriveDiscoveryConnector`: `list_resources` dispatches shared-drives vs `.bicameral` 2-step on
+`config.drive_id`; get/validate/fetch; **doc-id `fullmatch` URL-injection guard** mirroring
+`build_google_drive_spec`; `create_provider_resource` absent; screen-before-emit). **REUSE
+`screening.py`** unchanged. **NEW `fixtures/recorded/google_drive/*.json`** (14 synthetic recordings incl.
+401/403-scope/403-denied/404/400-stale/503) — secret-guard-covered via `rglob`. **NEW
+`google_drive/tests/test_drive_discovery.py`** (28 behavioral tests: list shared-drives + `.bicameral`
+folders + empty / get / validate / fetch + every taxonomy row + token-reuse + fail-closed screening +
+malformed-doc-id guard + jsonschema conformance). **EDIT** ADR-0017 (Addendum 2026-06-23 #179),
+`README.md`, `FEATURE_INDEX.md` (FX-GDRIVE-DISC-001; 50→51). **Refined product scope** (issue 6/18): shared
+drives + `.bicameral/<project>/` folders only; `.bicameral` creation is egress/ProposedAction — out of
+scope. **Verification:** 1061 tests pass (28 new + github regression intact); ruff clean; mypy clean (280
+files); bandit CI-style exit 0; governance-gate OK (chain #1..#219). **Zero edit to merged #180 code.**
+**Boundary held:** no SourceBinding/Source/evidence/candidate, no event-store/`.bicameral` mutation, no
+provider writes/egress, no schema promotion, no `connectors/google_drive/config.json` change. **Review
+Boundary honored:** staged on `feat/179-drive-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #220: RESEARCH BRIEF -- Linear resource discovery (mocked/recorded slice, ADR-0017 alpha 3/3)
+
+**Entry ID**: `research220lineardiscovery`
+**Timestamp**: 2026-06-23T22:35:00-04:00
+**Phase**: RESEARCH (qor-auto-dev-1; chain start for the Linear discovery cycle)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-linear-discovery-2026-06-23.md)
+= 401b2b82aac7dde0dae28257ac7eed00ecd86d8bbdaace16e0202be77183086a
+```
+
+**Previous Hash**: 286f0ecb441646ac79a6bb071e982aa04b970b326f964a87f6e0704b61e077cc
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= b3de0a05126473e55d8e661a540e471f59eb9d912cec42fcf2bc26179a960eb5
+```
+
+**Decision**: Research grounding the Linear discovery slice (3rd ADR-0017 alpha provider, after GitHub #180
++ Drive #179 both merged to dev). **7 questions resolved, 0 drift.** **No dedicated GH issue** — ADR-0017
+alpha-scope work grounded by the golden `linear-*` fixtures (#177). Mostly recombination of existing repo
+code. **VERIFIED** (repo + Linear docs): `POST https://api.linear.app/graphql`, API key in the **raw
+`Authorization` header (NO Bearer)** (`poll_specs.py:341`, host-pinned), GraphQL semantics — **200-with-
+`errors` must not emit** + **rate-limit is HTTP 400 + `code=="RATELIMITED"`** (`graphql_poll.py:69,104`),
+Relay `nodes`/`pageInfo`. Discovery hierarchy (NEW queries, extending the verified `_LINEAR_ISSUES_QUERY`):
+`organization`→workspace, `teams`→team, `team.projects`→project, `project.issues`→issue, `issue.comments`→
+comment item (matches golden `ws_`/`team_`/`proj_`/`issue_`/`comment_` fixtures). **Reuse map**:
+`SecretResolver`+`ApiKeyHeaderAuth` (the token provider — **no new type**), `parse_issue_node` (content,
+PII-safe), `screening.py`, the #180/#179 recorded-fixture+taxonomy pattern. **Transport = third variant**
+(GraphQL single-POST `{query,variables}`; local mirror routed on operation+variables; **do not touch
+#178/#179/#180**; unification deferred). F6 taxonomy → 5-value `DiscoveryErrorKind`
+(auth→ACTION_NEEDED, forbidden→PERMISSION_DENIED, not-found→NOT_FOUND, RATELIMITED/transport→PROVIDER_ERROR).
+**OQ1** exact field names confirmed at the live wire-gate (deferred; recordings define the mocked contract).
+**SG-2026-06-23-A extended:** token provider provider-agnostic; screening shared; transport provider-shaped.
+Brief: `docs/research-brief-linear-discovery-2026-06-23.md`. **Required next:** `/qor-plan`. **Review
+Boundary honored:** staged on `feat/linear-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #221: GATE TRIBUNAL -- AUDIT PASS: Linear discovery (mocked/recorded slice, ADR-0017 alpha 3/3)
+
+**Entry ID**: `audit221lineardiscovery`
+**Timestamp**: 2026-06-23T22:45:00-04:00
+**Phase**: AUDIT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Judge
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/plan-linear-discovery-2026-06-23.md)
+= 1373956b5051bb2ed8973d24de17c90bd7ed058bfdc5fa0e5122e14405a58bcd
+```
+
+**Previous Hash**: b3de0a05126473e55d8e661a540e471f59eb9d912cec42fcf2bc26179a960eb5
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 36e58b29be5585e15df883fe53495e85b31cf4c8e533eec389994efa2c21a5d9
+```
+
+**Decision**: **PASS** (solo; `option_b_required: false`). Audited the Linear discovery plan (mocked/
+recorded; live GraphQL POST deferred). All passes clear: Security/L3 (API key via `SecretResolver`, **raw
+Authorization no Bearer**, token-free errors, screening fail-closed), OWASP (ids in GraphQL **variables**
+not string-spliced + `fullmatch` guard; GraphQL fail-closed — 200-with-`errors` never emits, RATELIMITED is
+400 per `graphql_poll`), Razor (factor `_execute`; discipline note), Test Functionality (behavioral + 200-
+errors + RATELIMITED + jsonschema), Dependency (no new dep), **Macro Architecture** (third local transport
+mirror is provider-shaped GraphQL-POST; reuse of `parse_issue_node` is the `protocol → connectors` direction
+#179 already used for `extract_document_text`), Filter-Stage (screen-before-emit), Orphan (opt-in, test-
+proven). **Infrastructure Alignment** grep-verified: `ApiKeyHeaderAuth` (`poll_auth.py:45`), GraphQL
+200-errors + `RATELIMITED` (`graphql_poll.py:12,70`), `parse_issue_node` (`connector.py:91`),
+`SecretResolver` (`secrets.py:15,27`), `DiscoveryErrorKind` 5-value enum, golden workspace/team/project/issue
+resource_types, `screening.py:57/96`. **Zero edit to merged #178/#179/#180 code.** Report:
+`.agent/staging/AUDIT_REPORT.md`. **Required next:** `/qor-implement`. **Review Boundary honored:** staged on
+`feat/linear-discovery`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #222: IMPLEMENTATION -- Linear GraphQL discovery connector (mocked/recorded slice, ADR-0017 alpha 3/3)
+
+**Entry ID**: `impl222lineardiscovery`
+**Timestamp**: 2026-06-23T23:05:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(protocol/provider_acquisition/linear/connector.py)
+= 23e73d246b92c3a8d37dd6e59280ef00234fbaeeea8c0177689e4a877dc771d7
+```
+
+**Previous Hash**: 36e58b29be5585e15df883fe53495e85b31cf4c8e533eec389994efa2c21a5d9
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fb82a3a565d36d52aa6cad517dbbde1a700414379034f292f3063aae8a46f360
+```
+
+**Decision**: Implemented the audited plan (#221 PASS) for Linear discovery — the third ADR-0017 alpha
+provider (mocked/recorded; live GraphQL POST deferred), **completing the alpha discovery trio** (GitHub #180
++ Drive #179 merged to dev). **NEW `protocol/provider_acquisition/linear/`**: `auth.py` (reuses the runtime
+`SecretResolver`; **raw `Authorization`, NO Bearer**; token-free, control-char screened), `transport.py`
+(`LinearTransport` GraphQL seam + `RecordedTransport` routed on operation+variables — **third local mirror**,
+unification deferred), `queries.py` (pinned GraphQL ops; ids in variables), `mapping.py` (Linear nodes →
+workspace/team/project/issue descriptors + issue/comment items; reuses `connectors.linear.connector.
+parse_issue_node` PII-safe excerpt), `errors.py` (GraphQL error → typed `DiscoveryErrorKind`; **200-with-
+errors never success**, **RATELIMITED is HTTP 400** — `graphql_poll` precedent), `connector.py`
+(`LinearDiscoveryConnector`: `list_resources` dispatch; get/validate; fetch issue+comment; `_ID_RE`
+`fullmatch` guard; `create_provider_resource` absent; screen-before-emit; 250 lines). **REUSE
+`screening.py`** unchanged. **NEW `fixtures/recorded/linear/*.json`** (12 GraphQL recordings incl. 200-with-
+errors auth/forbidden, 400-RATELIMITED, null-node) — secret-guard-covered via `rglob`. **NEW
+`linear/tests/test_linear_discovery.py`** (29 behavioral tests: hierarchy list + get/validate + fetch issue/
+comment + every taxonomy row + raw-Authorization-no-Bearer + token reuse + fail-closed screening + malformed-
+id guard + jsonschema conformance). **EDIT** ADR-0017 (Addendum 2026-06-23 Linear — trio complete),
+`README.md`, `FEATURE_INDEX.md` (FX-LINEAR-DISC-001; 51→52). **Verification:** 1138 tests pass (29 new;
+github + drive regression intact); ruff clean; mypy clean (289 files); bandit CI-style exit 0; governance-
+gate OK (chain #1..#222). **Zero edit to merged #178/#179/#180 code.** **Boundary held:** no SourceBinding/
+Source/evidence/candidate, no event-store mutation, no provider writes/egress, no schema promotion, no
+`connectors/linear/config.json` change. **Review Boundary honored:** staged on `feat/linear-discovery`, not
+pushed/merged at authoring. L2.
+
+---
+
+### Entry #223: RESEARCH BRIEF -- Target integration descriptors & projection profiles for governed egress (#200)
+
+**Entry ID**: `research223projectioncontract`
+**Timestamp**: 2026-06-23T23:40:00-04:00
+**Phase**: RESEARCH (qor-auto-dev-1; chain start for the #200 RFQ answer)
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-200-projection-contract-2026-06-23.md)
+= d7b82cf86625d551ad09072f54318660c4c7f4c16d15d8dcab480a28d955955a
+```
+
+**Previous Hash**: fb82a3a565d36d52aa6cad517dbbde1a700414379034f292f3063aae8a46f360
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5a2c8e1373f7b7fb10f4f5864d7c2e2523f4f6c6905533ee12b28b82c180bfaa
+```
+
+**Decision**: Research grounding the #200 RFQ answer — the **egress/projection mirror of #173/ADR-0017**.
+**0 drift** against the authority anchors. **The crux:** #200 **refines** (does not contradict) the existing
+rule that "egress *execution* lives in sidecar/sdk, not here" (`CONNECTOR_AUTHORITY_LIMITS.md`) — integrations
+gains an egress **shape descriptor** (`ProjectionProfile` = metadata, the egress analogue of
+`ProviderResourceDescriptor`), while the bot/sidecar still owns policy/approval/`EgressProjection`/
+`EgressReceipt`/`EgressEligibilityCheck`/`ProjectionPolicy`/reconciliation interpretation. Ownership sentence:
+*"Integrations may describe what a target can read, render, or write. Bot decides whether Bicameral may
+project anything into that target."* **bot#528 attack surface answered structurally** (shape-only profiles +
+`required_canonical_ref` + `required_receipt`/`receipt_mapping` + forbidden canonical-mutation + no
+per-target truth model → external state can never launder into canonical Bicameral truth). **Shared target
+docs** ("same docs, opposite direction"): `TargetIntegrationDescriptor` unifies `connector_profiles` (ingress)
++ `projection_profiles` (egress) over one `api_docs_ref`/`auth_scopes`/`target_surfaces`. **First Linear
+family** reuses the just-built ingress facts (GraphQL, raw `Authorization` no Bearer, issue/comment surfaces):
+`linear.issue.summary.v1`/`linear.issue.work_item.v1`/`linear.comment.status.v1` (mutation capability
+*declared*, not exercised). Anchors: ADR-0008/0011/0015/0017§4. bot#527/#528 OPEN → ADR-0019 **Proposed**.
+**Deliverable:** ADR-0019 + `docs/PROJECTION_CONTRACT.md` (consumable spec) + a one-line clarification to
+`CONNECTOR_AUTHORITY_LIMITS.md` + follow-up issue identification. Brief:
+`docs/research-brief-200-projection-contract-2026-06-23.md`. **Required next:** `/qor-plan`. **Review
+Boundary honored:** staged on `feat/200-projection-contract`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #224: GATE TRIBUNAL -- AUDIT PASS: projection contract RFQ answer (#200, docs cycle)
+
+**Entry ID**: `audit224projectioncontract`
+**Timestamp**: 2026-06-23T23:50:00-04:00
+**Phase**: AUDIT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Judge
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/plan-200-projection-contract-2026-06-23.md)
+= 8e8e3cba4241f91870e35d1f4d3ffcb186a39145cef113e02a884dc568c1bd22
+```
+
+**Previous Hash**: 5a2c8e1373f7b7fb10f4f5864d7c2e2523f4f6c6905533ee12b28b82c180bfaa
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= a62e423573d977dfd82329814b269772b1b1da24639fd34046c09a47ed1548ec
+```
+
+**Decision**: **PASS** (solo; `option_b_required: false`). Audited the #200 RFQ-answer plan (docs/contract:
+ADR-0019 Proposed + `PROJECTION_CONTRACT.md` + a one-line `CONNECTOR_AUTHORITY_LIMITS.md` clarification — the
+egress mirror of #173/ADR-0017). Code passes N/A (docs only). **Authority-boundary review** (the load-bearing
+check): the plan keeps integrations **metadata-only** — `ProjectionProfile` describes target shape/capability
+and must not grant permission/waive approval/decide eligibility/create authority (ADR-0008/0011); it
+**refines, not reverses** `CONNECTOR_AUTHORITY_LIMITS.md` (egress *execution* stays sidecar/sdk; only the
+egress *shape descriptor* is integrations-owned); **bot#528 answered structurally** (shape-only +
+`required_canonical_ref` + `required_receipt`/`receipt_mapping` + forbidden canonical-mutation + no per-target
+truth model); RFQ non-goals explicit (no `EgressProjection`/receipt/policy/Linear-mutation code). **Infra
+alignment**: 6/6 cross-link anchors verified (ADR-0008/0011/0015/0017, `CONNECTOR_AUTHORITY_LIMITS.md`,
+`PROVIDER_ACQUISITION_CONTRACT.md`); ADR-0019 free; bot#527/#528 OPEN → Proposed correct. **FEATURE_INDEX
+N/A** precedent-verified (the ADR-0017 docs cycle added no FX row; `verify_feature_index` only checks cited
+test paths). Macro: mirrors the sanctioned ADR-0017↔spec split; no new doc universe. Report:
+`.agent/staging/AUDIT_REPORT.md`. **Required next:** `/qor-implement`. **Review Boundary honored:** staged on
+`feat/200-projection-contract`, not pushed/merged at authoring. L2.
+
+---
+
+### Entry #225: IMPLEMENTATION -- projection contract RFQ answer: ADR-0019 + PROJECTION_CONTRACT.md (#200)
+
+**Entry ID**: `impl225projectioncontract`
+**Timestamp**: 2026-06-24T00:05:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT pushed/merged at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/adr/0019-target-integration-projection-contract.md)
+= 3fda23ef3c0be3bcaeafa9c5cad70fdbc5d74f9c502e4ac06a64b4bef094bef9
+```
+
+**Previous Hash**: a62e423573d977dfd82329814b269772b1b1da24639fd34046c09a47ed1548ec
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 3854af61489a3103f70590ac36e65bb8d8113af83c694bf1a1776934e26cedc2
+```
+
+**Decision**: Implemented the audited plan (#224 PASS) for the **#200 RFQ answer** — the egress/projection
+mirror of #173/ADR-0017, **docs/contract only (no code, no egress mechanics)**. **(1)
+`docs/adr/0019-target-integration-projection-contract.md` (NEW; Proposed, L2)** — defines the three
+integrations-owned **metadata** objects (`TargetIntegrationDescriptor` unifying ingress+egress over one
+`api_docs_ref`; `ProjectionProfile` = target shape/capability ONLY; `TargetAdapter` = per-target write
+contract), the **hard authority boundary** ("Integrations may describe what a target can read, render, or
+write. Bot decides whether Bicameral may project anything into that target."), bot ownership of policy/
+approval/`EgressProjection`/`EgressReceipt`/`EgressEligibilityCheck`/`ProjectionPolicy`/reconciliation, and
+an explicit **bot#528 answer** (shape-only + `required_canonical_ref` + `required_receipt`/`receipt_mapping`
++ forbidden canonical-mutation + no per-target truth model → external state never launders into canonical
+Bicameral truth). Cross-links ADR-0008/0011/0015/0017§4; Consequences + Alternatives. **(2)
+`docs/PROJECTION_CONTRACT.md` (NEW)** — the consumable spec (projection counterpart of
+`PROVIDER_ACQUISITION_CONTRACT.md`): the connector(ingress)↔projection(egress) duality over one target
+boundary, object tables, allowed/forbidden lists, security (bot#528), and the **first Linear projection
+family** (`linear.issue.summary.v1`/`linear.issue.work_item.v1`/`linear.comment.status.v1`, full field-level
+spec; **mutation declared, not built**) — reusing the Linear ingress target facts (GraphQL, raw
+`Authorization`). **(3) EDIT `docs/CONNECTOR_AUTHORITY_LIMITS.md`** — one-line refinement: egress *execution*
+stays sidecar/sdk; the egress *shape descriptor* is integrations-owned + authority-free. **Follow-ups
+identified** (out of this RFQ): bot egress mechanics (bot#527/#528); an integrations projection-profile
+schema+validator (ADR-0015 analogue); Linear projection execution (sidecar). **FEATURE_INDEX N/A**
+(contract/docs cycle — no runtime feature/test path; precedent: the ADR-0017 docs cycle). **Verification:**
+no code touched — 1138 tests pass (unchanged); ruff clean; mypy clean (289 files); governance-gate OK (chain
+#1..#225). **Review Boundary honored:** staged on `feat/200-projection-contract`, not pushed/merged at
+authoring. **Proposed until bot#527/#528 sign-off.** L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#225 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
