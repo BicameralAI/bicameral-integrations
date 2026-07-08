@@ -152,3 +152,21 @@ def test_graphql_missing_data_fails_closed():
     with pytest.raises(PollError) as exc:
         poll_graphql(_spec(), transport, CollectingSink())
     assert exc.value.reason == "missing_data"
+
+
+# --- #101-2: aggregate BYTE cap across pages (few-huge-items walk) ---
+
+def test_graphql_aggregate_bytes_cap(monkeypatch):
+    import runtime.graphql_poll as gp
+
+    monkeypatch.setattr(gp, "_MAX_TOTAL_BYTES", 500)  # small cap: guard logic, not 64 MiB fixtures
+    pages = [
+        _page([_issue("ENG-1", desc="p" * 300)], has_next=True, end_cursor="c1"),
+        _page([_issue("ENG-2", desc="p" * 300)], has_next=False, end_cursor=None),
+    ]
+    transport = _RecordingTransport(pages)
+    sink = CollectingSink()
+    with pytest.raises(PollError) as exc:
+        poll_graphql(_spec(), transport, sink)
+    assert "aggregate_bytes_exceeded" in str(exc.value)
+    assert sink.emissions == []
