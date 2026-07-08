@@ -8408,7 +8408,46 @@ gate green; governance-gate OK. L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#241 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #242: RECONCILIATION -- #226 v2 migration merged with main's #196/#198 lane-mapping drop
+
+**Entry ID**: `recon242lanemapping`
+**Timestamp**: 2026-07-09T02:10:00-04:00
+**Phase**: IMPLEMENT (merge reconciliation; operator "proceed" directive)
+**Author**: Specialist/Governor
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(runtime/gateway_mapping.py)
+= cafc047670a5f3875ff43f1d79e09b3b16479f504b7a925de62df01d8f4f19f6
+```
+
+**Previous Hash**: 57a78f8229f923f00012b73086365cf4660ac911927569946a0aab53c642677e
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 34fe342bf080332f1418bff1ed9a1272a0c3fb1d863aadbb16af8dbf10165798
+```
+
+**Decision**: **RECONCILED.** During the merge train, PR #231 surfaced CONFLICTING — main had received the
+#196 provenance + #198 field-classification/lane-mapping drop (PR #208, merged 2026-07-05 by Jin) AFTER this
+session's stack base was cut; the #226 cycle had unknowingly rewritten `gateway_mapping.py` from a stale
+base. Synthesis (none of either side's guarantees dropped): the v2 `ExternalIngestEnvelope` migration now
+carries every #196/#198 signal in the schema-legal slot — `candidate_hints[0].labels` gets the lane hint
+(`emission_type:*`), routing/advisory tags, and provenance descriptors (`delivery:*`/`verification:*`/
+screened provider ids); `BOT_OWNED_FIELDS` retained (+`content_hash`); the #195 schema-pin gate
+(`validate_ingest_schema_pin.py` + `ingest_schema_pin.json`) migrated to the v2 schema (upstream commit
+`5c24c60f`, hash recomputed); the 5 golden conformance fixtures regenerated to `expected_envelope`; all
+#196/#198 tests ported to labels — none weakened. Stack propagated (226 → 101 → tip; one conflict: main's
+pre-fix notion reformat vs the B14 floor — fix kept). Swept-in `docs/roadmap/` untracked by corrective
+commit. **Process lesson (SG-candidate): fetch + diff origin/main at EVERY cycle start, not once per
+session — a 3-day-old fork cost a full reconciliation pass.** Verification at tip: 920 tests; ruff; mypy
+(247 files); pin gate OK; blocking header gate OK; governance-gate OK. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#242 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #237 (`d13963ef`; L2)** -- #226 v2 external-ingest migration complete (FX-RUNTIME-002 retargeted; B15 closed). Prior seal #233: #227 configure CLI (FX-RUNTIME-007) + #228 enablement verified.*
 *Next required action: operator merges the stack (#215 → PR #230 → #226 PR) + posts the drafted #228 comment + runs the live 201 tests per `docs/runbooks/` (now against `/api/v1/external-ingest`) to flip Linear + Google Drive Live. Then: #101 hardening close-out + hygiene batch (B14/B11/B2/B10). KNOWN: `qor-logic verify-ledger` cross-tool hash-markup flags on #123+ remain non-gating (/qor-remediate candidate).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
