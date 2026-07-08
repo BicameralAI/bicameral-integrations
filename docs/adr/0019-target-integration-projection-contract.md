@@ -14,7 +14,8 @@ as **provider facts** (`ProviderResourceDescriptor` / `ProviderItemEnvelope`), n
 (ADR-0008). bot#527 now asks for the **egress** edge — *governed projections* that render canonical
 Bicameral decisions into external execution surfaces (a Linear issue, a comment, later Jira/GitHub-Issues/
 Slack/docs/email/CI). The ownership split places the **target-specific projection *shape*** in
-`bicameral-integrations`, while the bot/sidecar retains the **governed execution**.
+`bicameral-integrations`, while `bicameral-bot` retains the **governed execution** — a bot **core function**
+(`bicameral-sidecar` is deprecated for alpha; egress is advanced as core, not a sidecar concern).
 
 The product boundary:
 
@@ -34,9 +35,9 @@ Projection profile:  Bicameral → target system   (render / create / comment / 
 Shared target docs:  one source of API truth for both directions
 ```
 
-**Tension resolved (research F2).** `docs/CONNECTOR_AUTHORITY_LIMITS.md` states egress *execution* lives in
-`bicameral-sidecar`/`bicameral-sdk`, "not here." This ADR **refines, not reverses** that: integrations gains
-an egress **shape descriptor** (metadata only — the egress analogue of a `ProviderResourceDescriptor`); it
+**Tension resolved (research F2; updated 2026-06-24).** `docs/CONNECTOR_AUTHORITY_LIMITS.md` states egress
+*execution* does not live in integrations. This ADR **refines, not reverses** that: integrations gains an
+egress **shape descriptor** (metadata only — the egress analogue of a `ProviderResourceDescriptor`); it
 still does **not** execute egress, hold policy, or own receipts. A one-line clarification is added to the
 authority-limits doc.
 
@@ -88,13 +89,13 @@ surface*. **It must not grant permission, waive approval, decide eligibility, or
 | `target_system` | `str` | Owning target. |
 | `supported_operations` | `list[str]` | The target write operations available (`create`/`update`/`comment`). |
 | `rendering_constraints` | `dict` | Hard target limits the renderer must respect. |
-| `credential_scope` | `str` | The write scope required (declared; the secret stays operator/sidecar-side — never here). |
+| `credential_scope` | `str` | The write scope required (declared; the secret stays operator-side, resolved bot-side at the governed execution — never here). |
 | `rate_limit_behavior` | `str` | How the target rate-limits writes (so the executor can back off). |
 | `receipt_mapping` | `dict` | How a target write result maps to a receipt `{external_id, external_url, status}` handed back to the bot. |
 
 **Restrictions (TargetAdapter MUST NOT):** execute a mutation; hold or resolve a write credential; decide
 whether a projection is eligible/approved; interpret a receipt as canonical truth. It *describes* the target
-write contract; the bot/sidecar executes against it.
+write contract; `bicameral-bot` executes against it (egress execution is a bot core function).
 
 ### 4. The authority boundary (the load-bearing rule)
 
@@ -132,7 +133,7 @@ prevents this **by construction**, not by policy:
    decides whether Bicameral *may* (`EgressEligibilityCheck` / `ProjectionPolicy`, bot-owned).
 5. **No per-target truth model.** Profiles map *to* target shape; they never define a target-specific truth
    model (RFQ non-goal). One canonical truth (Bicameral); many target renderings.
-6. **Secrets stay operator/sidecar-side** — `credential_scope` is *declared*; the write credential is never
+6. **Secrets stay operator-side (bot-resolved at execution)** — `credential_scope` is *declared*; the write credential is never
    resolved or held in integrations (the same `SecretResolver`-stays-operator-side discipline as ingress).
 
 ### 6. First target — the Linear projection family
@@ -163,14 +164,15 @@ documentation universe"); a target's API truth is declared once and consumed by 
 - The integrations↔bot boundary is now a **symmetric pair**: ingress `ProviderResourceDescriptor` (facts in)
   and egress `ProjectionProfile` (shape out); both metadata-only, both routing authority to the bot
   (discovery → `SourceBinding` proposal; projection → `EgressProjection` proposal).
-- `CONNECTOR_AUTHORITY_LIMITS.md` gains a one-line clarification: egress *execution* stays sidecar/sdk; the
-  egress *shape descriptor* is integrations-owned + authority-free.
+- `CONNECTOR_AUTHORITY_LIMITS.md` gains a one-line clarification: egress *execution* is a `bicameral-bot`
+  core function (not integrations); the egress *shape descriptor* is integrations-owned + authority-free.
 - The change is **additive and metadata-only** — no `EgressProjection`/receipt/policy/mutation code ships
   here; no connector or runtime is touched.
 - **Follow-ups (NOT this RFQ):** (a) bot-owned `EgressProjection`/`EgressReceipt`/`EgressEligibilityCheck`/
   `ProjectionPolicy` (bot#527/#528); (b) an integrations-side **projection-profile descriptor schema +
-  validator** (the ADR-0015 analogue for projections) + the per-target `projection.json` exemplars; (c)
-  Linear projection *execution* (sidecar/sdk) once the bot governs it.
+  validator** (the ADR-0015 analogue for projections) + the per-target `projection.json` exemplars
+  (integrations#205); (c) Linear projection *execution* — a **`bicameral-bot` core function** (bot#536;
+  `bicameral-sidecar` deprecated for alpha) once the bot governs it.
 - **Open / cross-repo (not decided here):** bot#527/#528 must confirm consumption of these three objects in
   this shape (or counter the field set); the projection-profile → shared-schema promotion timing
   (integrations owns the mapping + pin, fails first on drift — mirrors ADR-0015/ADR-0017).
@@ -178,7 +180,7 @@ documentation universe"); a target's API truth is declared once and consumed by 
 ## Alternatives considered
 
 - **Put egress execution in integrations.** Rejected: violates ADR-0008 + `CONNECTOR_AUTHORITY_LIMITS.md`;
-  bot#527 explicitly keeps governed execution bot/sidecar-side. Integrations owns *shape*, not *action*.
+  governed egress execution is a `bicameral-bot` core function (bot#527). Integrations owns *shape*, not *action*.
 - **Let `ProjectionProfile` carry approval/eligibility** (a "ready-to-project" flag). Rejected: that is an
   authority decision (ADR-0008/0011); it would also reopen the bot#528 drift surface. Profiles are facts.
 - **A standalone egress documentation tree.** Rejected: RFQ non-goal; projections share the target-boundary
