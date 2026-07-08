@@ -715,3 +715,17 @@ never asserted by the connector. This also reconciles the PII-drop: the *capture
 (a `'connector'` actor), not the human author — so provenance attribution is the connector/source id and a human
 identity is still never surfaced. Conformance is a mapping + provenance build proven Beta on fixtures; Live
 stays bot-gated (the bot consumes the evidence). Pairs with [[connector-priorities-and-pattern]] and ADR-0008.
+
+## SG-2026-07-08-A — a Locked Decision that freezes a fail-closed gate must be diffed against every other LD's write-set
+
+Plan #227 (configure CLI) VETO'd at audit cycle 1: LD5 persisted a google_drive refresh triple as new flat
+secret keys while LD4 froze `assert_runnable` as "reused unmodified" — but `assert_runnable` hard-rejects
+undeclared secret keys (`runtime/local_config.py:119-122`) AND its required-credential check resolves through
+the plain resolver (`:133-136`), so the gate rejects exactly the config the plan's own consent flow writes.
+Four locked decisions were pairwise-plausible and jointly impossible; the contradiction survived the author's
+own review and all ten pre-audit lints (it is a semantic write-set/gate intersection, not a text pattern).
+**Rule:** for every LD that introduces a new persisted artifact (key, file, row), enumerate every fail-closed
+gate on that artifact's read path and check the plan names a compatible change or an explicit exemption for
+each — before audit. Caught only by the mandatory Option B independent reviewer (SG-007 author momentum:
+the author-Judge verified citations but not cross-LD composition). Companion: SG-2026-06-12-F (enforce
+contract at the shared input boundary — the remediation home for the aux-key rule is one shared helper).

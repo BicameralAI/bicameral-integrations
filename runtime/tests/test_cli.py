@@ -165,3 +165,37 @@ def test_run_mods_registry_resolves_batch1():
     for mod_id in ("dependency_risk", "noisy_source_gate", "security_mentions"):
         mod, manifest = load_mod(mod_id)
         assert mod.id == manifest.id  # cls.id mirrors the pinned manifest
+
+
+# --- #227 LD5/LD5a: build_resolver — durable refresh triple on the run path ---
+
+def test_build_resolver_wraps_on_refresh_triple(monkeypatch):
+    from runtime.cli import build_resolver
+    from runtime.google_oauth import RefreshTokenSecretResolver
+    for var in ("BICAMERAL_GOOGLE_DRIVE", "BICAMERAL_GOOGLE_DRIVE_REFRESH_TOKEN",
+                "BICAMERAL_GOOGLE_DRIVE_CLIENT_ID", "BICAMERAL_GOOGLE_DRIVE_CLIENT_SECRET"):
+        monkeypatch.delenv(var, raising=False)
+    triple = {"google_drive_refresh_token": "1//rt", "google_drive_client_id": "cid",
+              "google_drive_client_secret": "cs"}
+    cfg = LocalConfig(connectors={"google_drive": {"enabled": True, "secrets": triple}},
+                      mods={}, gateway={}, secret_map=dict(triple))
+    transport = _RecordingTransport([HttpResponse(
+        200, json.dumps({"access_token": "ya29.minted", "expires_in": 3600}).encode())])
+    resolver = build_resolver(cfg, transport)
+    assert isinstance(resolver, RefreshTokenSecretResolver)
+    assert resolver.resolve("google_drive") == "ya29.minted"  # minted via the stub token endpoint
+    assert resolver.resolve("google_drive_client_secret") == "cs"  # non-target keys delegate
+
+
+def test_build_resolver_plain_without_triple():
+    from runtime.cli import build_resolver
+    from runtime.local_config import FileSecretResolver
+    resolver = build_resolver(_linear_config(), _RecordingTransport([]))
+    assert isinstance(resolver, FileSecretResolver)  # nothing changes for non-oauth connectors
+
+
+def test_configure_subcommand_parses():
+    from runtime.cli import _parser
+    args = _parser().parse_args(["configure", "linear", "--modes", "active", "--paste-token"])
+    assert args.command == "configure" and args.connector == "linear"
+    assert args.modes == "active" and args.paste_token is True

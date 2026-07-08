@@ -7932,7 +7932,204 @@ Boundary honored:** staged on `fix/egress-core-relocation`, not pushed/merged at
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#228 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #229: RESEARCH BRIEF -- #227 configure CLI (config-on-rails) + Linear/GDrive go-live readiness
+
+**Entry ID**: `research229configurecli`
+**Timestamp**: 2026-07-08T14:52:22-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-227-configure-cli-2026-07-08.md)
+= 92fb36e39ad63cdeddf053bc506a07b893d8e9f951151fcd911112e7087c640a
+```
+
+**Previous Hash**: 263292de1a62310b22511f627584aff1a5943ba1ab635f7de4fe844958c5f6f9
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 4be2675534b55327254ea953c68fc1ab99e2ecad591bc6c05aca74fb0edf88b3
+```
+
+**Decision**: Research for GH #227 (`runtime.cli configure <connector>` — CLI go-live path for mcp#572;
+acceptance = Linear + Google Drive). **All primitives verified in-repo**: argparse slot-in (cli.py:116-147),
+descriptor loader + six-action schema enum confirmed, `assert_runnable` mode-scoping (FX-RUNTIME-005) reusable
+as-is, `run_connector` harness for `verify`. **3 drifts found, 0 blockers**: (D1) `local_config.py` is
+READ-ONLY — the atomic config writer is net-new; (D2) `google_oauth.py` has NO authorization-code grant /
+loopback catcher — `oauth_consent` flow is net-new (PKCE + 127.0.0.1 ephemeral catcher + code→refresh
+exchange); (D3) **`resolver_from` never wires `RefreshTokenSecretResolver`** (tests-only today) — persisting a
+refresh triple without run-path wiring would send the refresh token as Bearer and fail `verify`; wiring is in
+scope. Readiness verdict for the priority pair: **flip-ready, NOT Live (ADR-0012)** — code/tests/runbooks
+complete, purple-teamed (#133); every remaining gap is the operator credential/config step #227 automates,
+plus the human-reviewed live 201 test. Known non-gating: `qor-logic verify-ledger` hash-markup flags on #123+
+are a cross-tool mismatch (repo `governance_gate.py` re-derives clean). Brief:
+`docs/research-brief-227-configure-cli-2026-07-08.md`. Next: `/qor-plan`. **Review Boundary honored:** local
+artifacts only; nothing pushed. L2.
+
+---
+
+### Entry #230: GATE TRIBUNAL -- VETO (cycle 1): #227 configure CLI plan
+
+**Entry ID**: `audit230configurecliveto`
+**Timestamp**: 2026-07-08T15:20:00-04:00
+**Phase**: GATE
+**Author**: Judge (Option B mandatory: independent architect-reviewer; `audit_risk_score` high-citation-surface)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(.agent/staging/AUDIT_REPORT.md)
+= 5176f59e82e6e515a7c6a8780018cc65d5b7d255e001b47eaf22ed001e16aa8f
+```
+
+**Previous Hash**: 4be2675534b55327254ea953c68fc1ab99e2ecad591bc6c05aca74fb0edf88b3
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= bf65482c480df78348e8da6829eeb46c1a9817efeefaa493064c48a552d7129d
+```
+
+**Decision**: **VETO** (`specification-drift`, plan-text). Blocking F1: LD5's refresh-triple keys are
+hard-rejected by `assert_runnable` (undeclared-key guard local_config.py:119-122 + plain-resolver required
+check :133-136, called unconditionally at cli.py:46) while LD4 freezes that gate as "unmodified" — the plan's
+own post-write gate VETOes the config its consent flow writes; Phase 2 D1/D4 unreachable as written.
+Six advisories (loopback `log_message` secret leak; example-seed placeholder values pass the truthiness gate;
+±1 citations; Windows `NamedTemporaryFile` semantics + failure-path secret temp file; aux-key rule needs one
+shared helper per SG-2026-06-12-F; configure.py razor watch). LD3 binding rule verified deterministic across
+all 26 descriptors. Shadow Genome: SG-2026-07-08-A (freeze-vs-write-set composition check). Required next:
+Governor amends LD4/LD5 to name the `assert_runnable` aux-key + refresh-aware change, absorbs advisories,
+re-runs `/qor-audit`. Report: `.agent/staging/AUDIT_REPORT.md`. **Review Boundary honored:** local only. L2.
+
+---
+
+### Entry #231: GATE TRIBUNAL -- PASS (cycle 2): #227 configure CLI plan (amended)
+
+**Entry ID**: `audit231configureclipass`
+**Timestamp**: 2026-07-08T16:05:00-04:00
+**Phase**: GATE
+**Author**: Judge (Option B: independent architect-reviewer re-audit)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(.agent/staging/AUDIT_REPORT.md)
+= 5493b3e3828af3e4a4df37f921a96b17d1b384b2e63c84aea087cf538e191de5
+```
+
+**Previous Hash**: bf65482c480df78348e8da6829eeb46c1a9817efeefaa493064c48a552d7129d
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5aa33c735e9f0e0d13408f14ae1320f02e3d9879bf6d19986cd7e890e72a8a94
+```
+
+**Decision**: **PASS**. All #230 findings closed: F1 resolved via LD5a (`oauth_aux_keys` single-source helper;
+`assert_runnable` aux-key acceptance + either/or refresh-aware required check; LD4 freeze explicitly lifted) —
+adversarial probes confirm no fail-closed weakening (aux widening scoped to exactly one credential across 26
+descriptors; partial triple fails closed; no gate-pass/resolver-dead-end configuration). F2-F7
+absorbed/corrected. Two NEW advisories carried as implementation-time obligations checked at seal: **A1**
+temp-file naming must match a gitignore glob (crash between write and `os.replace` must not leave a
+secret-bearing git-visible file); **A2** `configure` enforces non-empty `required` runtime keys at the prompt.
+Next: `/qor-implement` on `feat/227-configure-cli`. Report: `.agent/staging/AUDIT_REPORT.md`.
+**Review Boundary honored:** local only. L2.
+
+---
+
+### Entry #232: IMPLEMENTATION -- #227 configure CLI (config-on-rails) + durable-OAuth run-path wiring (FX-RUNTIME-007)
+
+**Entry ID**: `impl232configurecli`
+**Timestamp**: 2026-07-08T17:45:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; Review Boundary = staged local, NOT committed/pushed at authoring)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(runtime/configure.py)
+= 231f5fa4306c362cc01211cfbd3c22ffffe74e0f3f9ffe25fdb8709b24527f70
+```
+
+**Previous Hash**: 5aa33c735e9f0e0d13408f14ae1320f02e3d9879bf6d19986cd7e890e72a8a94
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= bc4fd8ff74de4032c4bf9957c26e9f7efc06513cf52cff3f4089bdf0dc35cfe6
+```
+
+**Decision**: Implemented plan #231-PASS. **New**: `runtime/configure.py` (walk engine, six actions, LD3
+binding + LD4 mode scoping, A2 required-key re-prompt), `runtime/config_write.py` (atomic writer; A1
+gitignore-glob temp name + failure-path unlink; fail-closed seed with emptied secret values; write-side
+runtime-key allowlist), `runtime/oauth_consent.py` (PKCE S256 + state + no-op-`log_message` loopback catcher +
+code→refresh exchange, `_mint` token-free discipline). **Modified**: `runtime/local_config.py` (LD5a
+`oauth_aux_keys` single source; `assert_runnable` aux-key acceptance + either/or refresh-aware required check;
+advisory check quiet on aux keys), `runtime/cli.py` (`configure` subparser dispatched BEFORE `load_config`;
+`build_resolver` wires `RefreshTokenSecretResolver` onto the run path — research D3 closed; `ConsentError`/
+`OAuthRefreshError` in the exit-2 catch). **Devil's-advocate review found 3 blocking findings, all fixed +
+regression-locked**: F1 consent/oauth errors escaped the exit-2 discipline; F2 LD3 register_webhook→
+paste_secret adjacency unimplemented (zendesk-class `--modes active` would bind the pasted webhook secret to
+the api_key slot — probe test added); F3 dual-mode connectors without a CLI runner hard-failed verify (cli
+edge now passes `verify_fn=None` → guidance branch). Advisories absorbed: F8 int-coercion re-prompt; F6 linear
+verify-pass now asserts transport drive + PASSED output. **Deviations from plan text (recorded, not silent)**:
+DoD D4's `test_oauth_consent.py::test_exchange_persists_refresh_triple_only` lives as
+`test_configure.py::test_google_drive_oauth_consent_walk_persists_refresh_triple` (persistence is configure's
+job, not oauth_consent's); the "state absent from stdout" plan assertion was self-contradictory (LD6 prints
+the consent URL which carries state — the auth CODE + secrets are leak-tested instead); register_webhook
+defers signing-secret collection to the adjacent paste_secret (holds for all 26 current descriptors).
+**Verification**: 794 tests pass (+6 net new files: test_configure 13, test_config_write 7, test_oauth_consent 7,
++ extensions); ruff clean; mypy clean (243 files); both descriptor validators OK; governance-gate OK.
+**Docs**: FEATURE_INDEX FX-RUNTIME-007 row; runbooks golive-linear/google_drive step 0 (guided setup);
+CONNECTOR_BACKEND_SETUP §0 config-on-rails. Acceptance (issue #227): Linear + Google Drive full walks proven
+over recorded transports incl. OAuth consent → refresh triple → minted-Bearer verify (a mock does NOT promote
+to Live — ADR-0012; the live 201 test remains the operator's). **Review Boundary honored.** L2.
+
+---
+
+### Entry #233: SESSION SEAL -- #227 configure CLI cycle complete (FX-RUNTIME-007) + #228 enablement verified
+
+**Entry ID**: `seal233configurecli`
+**Timestamp**: 2026-07-08T18:05:00-04:00
+**Phase**: SUBSTANTIATE (repo-convention seal; SKIPs disclosed in the seal report)
+**Author**: Governor
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(.agent/staging/SEAL_REPORT-227.md)
+= bd18638087def499245331cdee9f486a581a828789bc4fc25049a344152cac4d
+```
+
+**Previous Hash**: bc4fd8ff74de4032c4bf9957c26e9f7efc06513cf52cff3f4089bdf0dc35cfe6
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= fb8b74f29beb66911e0c05c5ab98c6c161160dfde91005e2e4656290e1b666e6
+```
+
+**Decision**: **SEALED.** Full governed cycle for GH #227 on `feat/227-configure-cli`: research #229 →
+plan → audit VETO #230 → amended plan PASS #231 (Option B both cycles) → implement #232 (devil's-advocate
+3 blocking findings fixed) → seal. Reality equals Promise (all D1-D4 MET; 2 disclosed test-name deviations).
+Verification at seal: 794 tests / ruff / mypy / validators / governance-gate all green; staged-diff
+secret-shape scan clean. **Companion (#228)**: all 11 verifiable claims in the GUI enablement package
+verified against the three local checkouts (`.agent/staging/issue-228-verification-2026-07-08.md`); the one
+addendum for Jin — the GUI must honor the LD5a refresh-triple persistence shape via
+`runtime.local_config.oauth_aux_keys` — is drafted for operator review, NOT posted. **Go-live posture
+(operator ask):** Linear + Google Drive remain flip-ready NOT Live (ADR-0012); with #227, the machine-side
+credential/config gap is CLOSED — remaining before Live is solely the operator's human-reviewed live 201
+test per the runbooks (now with the guided `configure` step 0). **Review Boundary honored:** staged local
+only; commit/push/PR + the #228 comment await operator approval. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#233 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **SEALED at #233 (`fb8b74f2`; L2)** -- #227 configure config-on-rails CLI complete (FX-RUNTIME-007): guided Linear + Google Drive setup incl. OAuth consent → durable refresh triple wired into the run path; #228 enablement package verified for Jin.*
+*Next required action: operator review of `feat/227-configure-cli` (commit/push/PR — stacked on PR #215) + post the drafted #228 comment + run the live 201 tests per `docs/runbooks/` to flip Linear + Google Drive Live. KNOWN: `qor-logic verify-ledger` cross-tool hash-markup flags on #123+ remain non-gating (/qor-remediate candidate).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*
