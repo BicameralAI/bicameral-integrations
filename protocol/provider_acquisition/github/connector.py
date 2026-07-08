@@ -104,7 +104,9 @@ class GitHubDiscoveryConnector:
     ) -> DiscoveryError | None:
         """Run the fail-closed screen; return a value-free error on a hit."""
         try:
-            screen_item(obj) if isinstance(obj, ProviderItemEnvelope) else screen_descriptor(obj)
+            screen_item(obj) if isinstance(
+                obj, ProviderItemEnvelope
+            ) else screen_descriptor(obj)
         except DiscoveryScreenError as exc:
             return DiscoveryError(
                 kind=DiscoveryErrorKind.PROVIDER_ERROR,
@@ -204,9 +206,12 @@ class GitHubDiscoveryConnector:
         owner_repo: str, item_id: str, resource_id: str
     ) -> tuple[str | None, Any]:
         if item_id.startswith("issue-"):
-            number = item_id[len("issue-"):]
+            number = item_id[len("issue-") :]
             return f"/repos/{owner_repo}/issues/{number}", mapping.map_issue
         if item_id.startswith("pr-"):
-            number = item_id[len("pr-"):]
+            number = item_id[len("pr-") :]
             return f"/repos/{owner_repo}/pulls/{number}", mapping.map_pull_request
+        if item_id.startswith("file-"):
+            path = item_id[len("file-") :]
+            return f"/repos/{owner_repo}/contents/{path}", mapping.map_file_content
         return None, None

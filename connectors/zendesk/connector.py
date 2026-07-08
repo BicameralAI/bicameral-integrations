@@ -19,6 +19,7 @@ writes (ADR-0008); ``redact()`` scrubs the body and the producer sensitive scree
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import time
@@ -54,7 +55,7 @@ def _ticket_id(detail: dict, event: dict) -> str:
         return direct
     subject = _text(event.get("subject"))
     if subject.startswith("zen:ticket:"):
-        return subject[len("zen:ticket:"):] or "zendesk-ticket"
+        return subject[len("zen:ticket:") :] or "zendesk-ticket"
     return "zendesk-ticket"
 
 
@@ -80,7 +81,9 @@ def parse_ticket(event: dict) -> Observation:
         excerpt=excerpt,
         mode=SourceMode.WEBHOOK,
         title=subject or tid,
-        author=redact(_text(detail.get("requester_id"))),  # opaque numeric id passes unchanged; an email/phone is scrubbed (purple-team #170)
+        author=redact(
+            _text(detail.get("requester_id"))
+        ),  # opaque numeric id passes unchanged; an email/phone is scrubbed (purple-team #170)
         timestamp=_text(detail.get("updated_at")) or _text(event.get("time")),
         metadata={
             "event_type": _text(event.get("type")) or _nested(event, "event", "type"),
@@ -118,7 +121,9 @@ class ZendeskConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
-        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+        if not isinstance(
+            payload, dict
+        ):  # untrusted poll boundary: skip, don't crash (#59)
             return []
         return [parse_ticket(payload)]
 
@@ -127,7 +132,9 @@ class ZendeskConnector:
         try:
             verify_zendesk_signature(
                 signature=header_value(headers, "X-Zendesk-Webhook-Signature"),
-                timestamp=header_value(headers, "X-Zendesk-Webhook-Signature-Timestamp"),
+                timestamp=header_value(
+                    headers, "X-Zendesk-Webhook-Signature-Timestamp"
+                ),
                 body=body,
                 secret=self._secret,
             )
@@ -139,19 +146,25 @@ class ZendeskConnector:
         """Best-effort delivery id ('' when none) — envelope ``id`` then ``detail.id``."""
         return _text(payload.get("id")) or _nested(payload, "detail", "id")
 
-    def normalize_event(self, *, headers: dict[str, str], body: bytes) -> list[Observation]:
+    def normalize_event(
+        self, *, headers: dict[str, str], body: bytes
+    ) -> list[Observation]:
         """Self-guard (re-verify), best-effort dedup, then parse. ``[]`` on reject."""
         if not self.verify(headers=headers, body=body):
             return []
         try:
             payload = json.loads(body)
-        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
+        except (
+            ValueError,
+            UnicodeDecodeError,
+        ):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
         if not isinstance(payload, dict):
             return []
+        delivery_id = self._delivery_id(payload) or hashlib.sha256(body).hexdigest()
         if self._dedup is not None:
-            delivery_id = self._delivery_id(payload) or hashlib.sha256(body).hexdigest()  # body-hash fallback dedups id-less replays (#60)
             if self._dedup.is_duplicate("zendesk", delivery_id):
                 return []
             self._dedup.mark_seen("zendesk", delivery_id)
-        return [parse_ticket(payload)]
+        obs = parse_ticket(payload)
+        return [dataclasses.replace(obs, provider_event_id=delivery_id)]

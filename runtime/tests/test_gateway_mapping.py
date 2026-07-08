@@ -3,9 +3,11 @@
 
 The vendored schema ``runtime/schemas/external_ingest_request_v2.schema.json`` is a byte-exact copy
 of ``bicameral-bot:protocol/schemas/v2/external-ingest-request.schema.json`` pinned at schema commit
-``5c24c60fcba8ed9d04ab5dd6fd0977dcddd9bd57`` (bot HEAD ``22806ac21125b497370786f2ad400b8ba44365cf``).
-The forbidden-authority list mirrors ``bicameral-bot:crates/bicameral-gateway/src/routes.rs:500-521``
-(18 names; the gateway 403s any of them at the top level).
+``5c24c60fcba8ed9d04ab5dd6fd0977dcddd9bd57`` (bot HEAD ``22806ac21125b497370786f2ad400b8ba44365cf``;
+pin metadata in ``runtime/schemas/ingest_schema_pin.json``). The forbidden-authority list mirrors
+``bicameral-bot:crates/bicameral-gateway/src/routes.rs:500-521`` (18 names; 403 at the top level).
+The #196 provenance + #198 field-classification disciplines are carried into the v2 envelope as
+``candidate_hints[].labels`` and re-asserted here in full.
 """
 
 from __future__ import annotations
@@ -21,12 +23,16 @@ import pytest
 
 from adapter.core.emissions import (
     AdapterEmission,
+    AdvisoryResult,
     ConfidenceSurface,
+    ProviderProvenance,
+    RoutingHint,
     SourceEvidence,
     SourceRef,
 )
 from adapter.core.pipeline import EmissionContractError
 from runtime import GatewayEmissionError, GatewayEmissionGated, GatewaySink, emission_to_external_envelope
+from runtime.gateway_mapping import BOT_OWNED_FIELDS
 
 _SCHEMA = json.loads(
     (Path(__file__).resolve().parents[1] / "schemas" / "external_ingest_request_v2.schema.json").read_text(
@@ -62,6 +68,10 @@ def _emission(**kw) -> AdapterEmission:
     return AdapterEmission(**defaults)
 
 
+def _labels(payload: dict) -> list[str]:
+    return payload["candidate_hints"][0].get("labels", [])
+
+
 def _assert_conforms(payload: dict) -> None:
     """Emitter-side strict conformance against the vendored v2 schema. NOTE: the gateway itself
     IGNORES unknown non-forbidden top-level keys (the schema carries no additionalProperties
@@ -87,7 +97,7 @@ def _assert_conforms(payload: dict) -> None:
             assert k in hint and isinstance(hint[k], str) and hint[k]
 
 
-# --- mapping ---
+# --- mapping: source facts ---
 
 
 def test_mapping_conforms_to_vendored_v2_schema():
@@ -97,9 +107,8 @@ def test_mapping_conforms_to_vendored_v2_schema():
     assert payload["source_uri"] == "https://example.atlassian.net/browse/ENG-1"
     assert payload["content"] == "The team decided to adopt OAuth."
     assert payload["evidence"] == [{"excerpt": "Decided to adopt OAuth."}]
-    assert payload["candidate_hints"] == [
-        {"title": "Adopt OAuth", "body": "The team decided to adopt OAuth."}
-    ]
+    hint = payload["candidate_hints"][0]
+    assert hint["title"] == "Adopt OAuth" and hint["body"] == payload["content"]
 
 
 def test_no_forbidden_authority_field_emitted():
@@ -128,11 +137,156 @@ def test_dimensional_confidence_not_collapsed_to_scalar():
     assert "confidence" not in json.dumps(payload)
 
 
-def test_hints_never_carry_level_or_labels():
+def test_hints_never_carry_level():
     # the daemon classifies level itself (bot ADR-0024); the emitter stays advisory-minimal.
     payload = emission_to_external_envelope(_emission())
-    hint = payload["candidate_hints"][0]
-    assert "level" not in hint and "labels" not in hint
+    assert "level" not in payload["candidate_hints"][0]
+
+
+# --- provenance fields (#196) -> candidate_hints[].labels ---
+
+
+def test_provenance_webhook_mode_in_labels():
+    prov = ProviderProvenance(
+        delivery_mode="webhook",
+        verification="signed",
+        provider_event_id="d-123",
+        provider_resource_id="org/repo#42",
+    )
+    payload = emission_to_external_envelope(_emission(provenance=prov))
+    _assert_conforms(payload)
+    labels = _labels(payload)
+    assert "delivery:webhook" in labels
+    assert "verification:signed" in labels
+    assert "provider_event_id:d-123" in labels
+    assert "provider_resource_id:org/repo#42" in labels
+
+
+def test_provenance_poll_mode_in_labels():
+    prov = ProviderProvenance(delivery_mode="poll", verification="unsigned")
+    payload = emission_to_external_envelope(_emission(provenance=prov))
+    _assert_conforms(payload)
+    labels = _labels(payload)
+    assert "delivery:poll" in labels and "verification:unsigned" in labels
+    assert not any(lbl.startswith("provider_event_id:") for lbl in labels)
+    assert not any(lbl.startswith("provider_resource_id:") for lbl in labels)
+
+
+def test_no_provenance_omits_provenance_labels():
+    payload = emission_to_external_envelope(_emission())
+    labels = _labels(payload)
+    assert not any(lbl.startswith(("delivery:", "verification:", "provider_")) for lbl in labels)
+
+
+# --- #198: emission_type lane hint (non-authoritative) ---
+
+
+@pytest.mark.parametrize("et", ["evidence", "hint", "advisory", "candidate"])
+def test_emission_type_carries_lane_label(et):
+    payload = emission_to_external_envelope(_emission(emission_type=et))
+    _assert_conforms(payload)
+    assert f"emission_type:{et}" in _labels(payload)
+    # The hint is advisory — no authority/lifecycle fields anywhere
+    assert "level" not in payload["candidate_hints"][0]
+    assert not (set(payload) & _FORBIDDEN_EXTERNAL_FIELDS)
+
+
+def test_routing_hints_mapped_as_non_authoritative_labels():
+    hints = (
+        RoutingHint(role="security-reviewer", reason="Auth change", priority="high"),
+        RoutingHint(role="data-owner", reason="PII scope"),
+    )
+    payload = emission_to_external_envelope(_emission(routing_hints=hints))
+    _assert_conforms(payload)
+    labels = _labels(payload)
+    assert "routing:security-reviewer:high" in labels
+    assert "routing:data-owner:normal" in labels
+
+
+def test_advisories_mapped_as_non_authoritative_labels():
+    advs = (
+        AdvisoryResult(kind="dependency-risk", message="Upgrade numpy"),
+        AdvisoryResult(kind="security-mention", message="Token rotation"),
+    )
+    payload = emission_to_external_envelope(_emission(advisories=advs))
+    _assert_conforms(payload)
+    labels = _labels(payload)
+    assert "advisory:dependency-risk" in labels
+    assert "advisory:security-mention" in labels
+
+
+def test_combined_hints_all_non_authoritative():
+    payload = emission_to_external_envelope(
+        _emission(
+            emission_type="advisory",
+            routing_hints=(RoutingHint(role="arch-lead", reason="Boundary"),),
+            advisories=(AdvisoryResult(kind="drift-risk", message="ADR-0008"),),
+            confidence=ConfidenceSurface(dimensions={"relevance": "medium"}),
+        )
+    )
+    _assert_conforms(payload)
+    labels = _labels(payload)
+    assert "emission_type:advisory" in labels
+    assert "routing:arch-lead:normal" in labels
+    assert "advisory:drift-risk" in labels
+    assert "confidence" not in json.dumps(payload)  # never collapsed
+
+
+def test_metadata_never_on_wire():
+    payload = emission_to_external_envelope(
+        _emission(metadata={"internal_key": "secret-ish-value", "debug": True})
+    )
+    _assert_conforms(payload)
+    assert "metadata" not in payload
+    assert "secret-ish-value" not in json.dumps(payload)
+
+
+def test_bot_owned_fields_never_in_payload():
+    for et in ("evidence", "hint", "advisory", "candidate"):
+        payload = emission_to_external_envelope(_emission(emission_type=et))
+        for field in BOT_OWNED_FIELDS:
+            assert field not in payload, f"{field} leaked in {et} emission"
+            assert field not in payload["candidate_hints"][0], f"{field} leaked in hint ({et})"
+
+
+def test_no_emission_can_produce_authority_claims():
+    payload = emission_to_external_envelope(
+        _emission(
+            emission_type="candidate",
+            routing_hints=(RoutingHint(role="approver", reason="Review", priority="high"),),
+            advisories=(AdvisoryResult(kind="binding-suggestion", message="Bind to symbol"),),
+            confidence=ConfidenceSurface(dimensions={"authority": "high"}),
+        )
+    )
+    payload_str = json.dumps(payload)
+    assert not (set(payload) & _FORBIDDEN_EXTERNAL_FIELDS)
+    for marker in ("ActorContext", "SourceSnapshot", "BindingEvidence", "signoff",
+                   "compliance", "enforcement"):
+        assert marker not in payload_str
+
+
+def test_routing_hint_role_is_screened():
+    hints = (RoutingHint(role="user@example.com", reason="Owner"),)
+    payload = emission_to_external_envelope(_emission(routing_hints=hints))
+    labels = _labels(payload)
+    assert all("user@example.com" not in lbl for lbl in labels)
+    assert any(lbl.startswith("routing:") for lbl in labels)  # redacted form survives
+
+
+def test_advisory_kind_is_screened():
+    advs = (AdvisoryResult(kind="alert-user@test.org", message="Notify"),)
+    payload = emission_to_external_envelope(_emission(advisories=advs))
+    assert all("user@test.org" not in lbl for lbl in _labels(payload))
+
+
+def test_labels_are_contract_supported():
+    # the v2 schema's advisory-string surface: ExternalCandidateHint.labels
+    assert "labels" in _SCHEMA["definitions"]["ExternalCandidateHint"]["properties"]
+
+
+def test_emission_without_hints_has_only_lane_label():
+    payload = emission_to_external_envelope(_emission(emission_type="evidence"))
+    assert _labels(payload) == ["emission_type:evidence"]
 
 
 # --- GatewaySink (injected opener) ---

@@ -1,0 +1,44 @@
+{
+  "$comment": "Golden fixture: Devin session emission typed as advisory. Verifies non-candidate emission types map correctly; source from URL.",
+  "emission": {
+    "source_id": "devin",
+    "title": "Session identified unused dependency",
+    "body": "The aiohttp dependency is imported but never used at runtime.",
+    "evidence": [
+      {
+        "source_ref": {
+          "source_id": "devin",
+          "ref": "session-abc123",
+          "url": "https://app.devin.ai/sessions/abc123",
+          "kind": "session"
+        },
+        "excerpt": "aiohttp is imported in utils.py but no call site exists.",
+        "author": "",
+        "timestamp": "2026-06-15T08:00:00Z",
+        "evidence_id": "ev-devin-001",
+        "metadata": {}
+      }
+    ],
+    "emission_type": "advisory",
+    "adapter_version": "devin/0.1.0"
+  },
+  "expected_envelope": {
+    "source_system": "devin",
+    "source_uri": "https://app.devin.ai/sessions/abc123",
+    "content": "The aiohttp dependency is imported but never used at runtime.",
+    "evidence": [
+      {
+        "excerpt": "aiohttp is imported in utils.py but no call site exists."
+      }
+    ],
+    "candidate_hints": [
+      {
+        "title": "Session identified unused dependency",
+        "body": "The aiohttp dependency is imported but never used at runtime.",
+        "labels": [
+          "emission_type:advisory"
+        ]
+      }
+    ]
+  }
+}

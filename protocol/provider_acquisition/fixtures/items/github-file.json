@@ -1,0 +1,22 @@
+{
+  "_comment": "Golden fixture: GitHub file item envelope — a fetched file from a repository contents stream.",
+  "_authority_boundary": "Provider fact only. Not Source, SourceSnapshot, SourceEvidence, DecisionCandidate, Decision, ToolRequest, ExternalIngestEnvelope, or event-store authority.",
+  "provider": "github",
+  "resource_id": "example-org/example-repo/contents",
+  "item_id": "file-README.md",
+  "item_type": "file",
+  "title": "README.md",
+  "content": "# Example Repo\n\nThis repository demonstrates the health-check route for Kubernetes liveness probes.\n",
+  "uri": "https://github.com/example-org/example-repo/blob/main/README.md",
+  "content_hash": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+  "freshness": {
+    "etag": "abc123def456789"
+  },
+  "provider_metadata": {
+    "path": "README.md",
+    "sha": "abc123def456789",
+    "size": 142,
+    "encoding": "base64"
+  },
+  "fetched_at": "2026-06-15T09:16:45Z"
+}
