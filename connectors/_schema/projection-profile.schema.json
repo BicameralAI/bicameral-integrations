@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bicameral.ai/schemas/projection-profile.schema.json",
+  "title": "Projection profile descriptor",
+  "description": "Machine-readable per-projection profile contract describing how a governed projection fits a target surface. Shape + capability metadata ONLY — never permission, approval, eligibility, authority, secret, or canonical-state mutation. The egress mirror of the connector config descriptor (ADR-0015); see ADR-0019 and docs/PROJECTION_CONTRACT.md. Structural rules live here; semantic rules (id == target == family; authority-free discipline; required_canonical_ref/required_receipt enforcement) are enforced by scripts/validate_projection_profile.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile_id",
+    "target_system",
+    "target_surface",
+    "allowed_fields",
+    "forbidden_fields",
+    "required_authority_label",
+    "required_canonical_ref",
+    "required_receipt",
+    "mutation_capability"
+  ],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "description": "Stable, versioned id, e.g. 'linear.issue.summary.v1'. Format: <target>.<surface>.<kind>.v<N>."
+    },
+    "target_system": {
+      "type": "string",
+      "description": "Owning target system, e.g. 'linear', 'github', 'jira', 'slack'."
+    },
+    "target_surface": {
+      "type": "string",
+      "description": "The surface this profile projects onto, e.g. 'issue', 'comment', 'channel'."
+    },
+    "allowed_fields": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Fields a projection of this kind MAY populate on the target surface."
+    },
+    "forbidden_fields": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Fields the projection MUST NOT touch (e.g. assignee, status-of-record, canonical-authority fields)."
+    },
+    "required_authority_label": {
+      "type": "string",
+      "description": "The authority label the BOT must attach for this projection to be eligible — named here, decided bot-side. This is a declaration, not a grant."
+    },
+    "required_canonical_ref": {
+      "type": "boolean",
+      "description": "Whether the projection MUST carry a back-reference to the canonical decision it renders (anti-drift). True for all profiles."
+    },
+    "required_receipt": {
+      "type": "boolean",
+      "description": "Whether the external write MUST return a receipt mapped back to the bot. True for all mutating profiles."
+    },
+    "rendering_constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Target rendering limits the renderer must respect.",
+      "properties": {
+        "format": {
+          "type": "string",
+          "description": "Target markup format, e.g. 'linear-markdown', 'github-markdown', 'plain-text'."
+        },
+        "max_length": {
+          "type": "integer",
+          "description": "Maximum character length for the primary rendered field."
+        },
+        "max_title_length": {
+          "type": "integer",
+          "description": "Maximum character length for title fields (when applicable)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional rendering notes or constraints."
+        }
+      }
+    },
+    "mutation_capability": {
+      "type": "string",
+      "enum": ["create", "update", "comment"],
+      "description": "The target operation this profile CAN drive — a declaration of target capability, NOT a grant of permission."
+    },
+    "approval_class_hint": {
+      "type": "string",
+      "description": "A non-binding hint to the bot's approval routing — never an approval itself."
+    },
+    "reconciliation_capability": {
+      "type": "string",
+      "enum": ["update-in-place", "append-only"],
+      "description": "What reconciliation the target supports (e.g. update-in-place vs append-only) — capability metadata, not interpretation."
+    }
+  }
+}

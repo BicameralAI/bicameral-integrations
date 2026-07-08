@@ -222,6 +222,12 @@ Resolving the Consequences open question for GitHub (owner decision on #173):
   cloud#7 — a mock never promotes to Live (§6). Descriptor/item screening reuses the single
   `adapter.core.sensitive` catalog via `protocol/provider_acquisition/screening.py` (§3; shared with the
   Drive slice #179). `create_provider_resource` remains absent (§4 / ADR-0008).
+- **File/path content support.** `fetch_provider_item` routes `file-<path>` item ids through the GitHub
+  Contents API (`GET /repos/{owner}/{repo}/contents/{path}`), base64-decodes the file content, and emits
+  a screened `ProviderItemEnvelope` with `item_type="file"`. This completes the §Alpha-scope GitHub item
+  trio (issue, pull request, file/path) declared in §Decision. Recorded fixture
+  `fixtures/recorded/github/file-readme.json` + golden fixture `fixtures/items/github-file.json` prove
+  the path offline; schema conformance is tested alongside issues and PRs.
 - **Config-descriptor block deferred.** §5's `discovery` block in `connectors/github/config.json` is
   **not** added here: the `connector-config.schema.json` `modes` enum is `webhook|active|passive`, so a
   `discovery` mode + block is an additive ADR-0015 config-contract change owned by that fan-out, not #180.

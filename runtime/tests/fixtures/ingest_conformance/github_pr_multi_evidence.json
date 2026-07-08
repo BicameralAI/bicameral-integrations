@@ -1,0 +1,60 @@
+{
+  "$comment": "Golden fixture: GitHub PR emission with multiple evidence items. Verifies that all evidence items are mapped and the first URL is used as source.",
+  "emission": {
+    "source_id": "github",
+    "title": "Add retry logic to webhook delivery",
+    "body": "Implements exponential back-off for failed webhook deliveries.",
+    "evidence": [
+      {
+        "source_ref": {
+          "source_id": "github",
+          "ref": "PR-128",
+          "url": "https://github.com/acme/repo/pull/128",
+          "kind": "pull_request"
+        },
+        "excerpt": "Added exponential back-off with jitter for webhook retries.",
+        "author": "",
+        "timestamp": "2026-06-10T09:30:00Z",
+        "evidence_id": "ev-gh-pr-128",
+        "metadata": {}
+      },
+      {
+        "source_ref": {
+          "source_id": "github",
+          "ref": "ISSUE-95",
+          "url": "https://github.com/acme/repo/issues/95",
+          "kind": "issue"
+        },
+        "excerpt": "Webhook failures spike during deploys \u2014 need retry.",
+        "author": "",
+        "timestamp": "2026-06-08T14:00:00Z",
+        "evidence_id": "ev-gh-issue-95",
+        "metadata": {}
+      }
+    ],
+    "emission_type": "candidate",
+    "adapter_version": "github/0.1.0"
+  },
+  "expected_envelope": {
+    "source_system": "github",
+    "source_uri": "https://github.com/acme/repo/pull/128",
+    "content": "Implements exponential back-off for failed webhook deliveries.",
+    "evidence": [
+      {
+        "excerpt": "Added exponential back-off with jitter for webhook retries."
+      },
+      {
+        "excerpt": "Webhook failures spike during deploys \u2014 need retry."
+      }
+    ],
+    "candidate_hints": [
+      {
+        "title": "Add retry logic to webhook delivery",
+        "body": "Implements exponential back-off for failed webhook deliveries.",
+        "labels": [
+          "emission_type:candidate"
+        ]
+      }
+    ]
+  }
+}
