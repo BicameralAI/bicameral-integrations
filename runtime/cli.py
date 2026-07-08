@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: MIT
-"""Headless operator runner: ``python -m runtime.cli list|run|run-mods`` (ADR-0016 / FX-RUNTIME-004).
+"""Headless operator runner: ``python -m runtime.cli list|configure|run|run-mods`` (ADR-0016).
 
-Drives connectors + mods from the operator-local config WITHOUT the mcp UI. Default sink is a local
-``CollectingSink`` (prints screened emissions — never a secret); ``--sink gateway`` does a real POST
-(default-gated). The testable core (`run_connector`/`run_mods`) takes an injected transport+sink so
-tests drive a ``RecordedTransport`` (a mock does NOT promote to Live — ADR-0012). Stdlib-only.
+Drives connectors + mods from the operator-local config WITHOUT the mcp UI. ``configure <connector>``
+walks the descriptor's ``instructions[]`` to populate the gitignored local config (FX-RUNTIME-005/006,
+see ``configure.py``). Default ``run`` sink is a local ``CollectingSink`` (prints screened emissions —
+never a secret); ``--sink gateway`` does a real POST (default-gated). The testable core
+(`run_connector`/`run_mods`) takes an injected transport+sink so tests drive a ``RecordedTransport``
+(a mock does NOT promote to Live — ADR-0012). Stdlib-only.
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ import sys
 
 from mods.contract import run_mod
 
+from .configure import ConfigureIO, Configurator
 from .local_config import (
     ConfigError,
     DEFAULT_CONFIG,
@@ -43,16 +46,26 @@ def run_connector(
     runner = RUNNERS.get(connector_id)
     if runner is None:
         raise ConfigError(f"unknown or not-runnable connector: {connector_id!r}")
-    assert_runnable(config, connector_id, mode="active")  # the CLI run path is always the active fetch
+    assert_runnable(
+        config, connector_id, mode="active"
+    )  # the CLI run path is always the active fetch
     runtime = (config.connectors.get(connector_id) or {}).get("runtime", {})
     count = runner(resolver_from(config), runtime, document_id, transport, sink)
-    if limit is not None and isinstance(sink, CollectingSink) and len(sink.emissions) > limit:
-        del sink.emissions[limit:]  # --limit caps PRINTED emissions (the fetch still walks fully)
+    if (
+        limit is not None
+        and isinstance(sink, CollectingSink)
+        and len(sink.emissions) > limit
+    ):
+        del sink.emissions[
+            limit:
+        ]  # --limit caps PRINTED emissions (the fetch still walks fully)
         count = limit
     return count
 
 
-def run_mods(connector_id: str, config: LocalConfig, transport: HttpTransport, mods: list[str]) -> dict:
+def run_mods(
+    connector_id: str, config: LocalConfig, transport: HttpTransport, mods: list[str]
+) -> dict:
     """Run a connector to a local sink, then pipe its emissions through each mod. {mod_id: emissions}."""
     sink = CollectingSink()
     run_connector(connector_id, config, transport, sink)
@@ -70,13 +83,19 @@ def _enabled_mods(config: LocalConfig) -> list[str]:
 def _print_emissions(sink: CollectingSink) -> None:
     for em in sink.emissions:  # screened by FX-SEC-001 before emit — no secret here
         excerpt = em.evidence[0].excerpt if em.evidence else ""
-        print(json.dumps({"source_id": em.source_id, "title": em.title, "excerpt": excerpt}))
+        print(
+            json.dumps(
+                {"source_id": em.source_id, "title": em.title, "excerpt": excerpt}
+            )
+        )
 
 
 def _cmd_list(config: LocalConfig) -> int:
     for cid, blk in config.connectors.items():
-        flags = ("enabled" if (blk or {}).get("enabled") else "disabled",
-                 "runnable" if cid in RUNNERS else "not-runnable")
+        flags = (
+            "enabled" if (blk or {}).get("enabled") else "disabled",
+            "runnable" if cid in RUNNERS else "not-runnable",
+        )
         print(f"connector {cid}: {', '.join(flags)}")
     for mid in _enabled_mods(config):
         print(f"mod {mid}: enabled")
@@ -94,12 +113,28 @@ def _make_sink(kind: str, config: LocalConfig) -> EmissionSink:
 
 def _cmd_run(config: LocalConfig, args: argparse.Namespace) -> int:
     sink = _make_sink(args.sink, config)
-    count = run_connector(args.connector, config, UrllibTransport(), sink,
-                          document_id=args.document_id or "", limit=args.limit)
+    count = run_connector(
+        args.connector,
+        config,
+        UrllibTransport(),
+        sink,
+        document_id=args.document_id or "",
+        limit=args.limit,
+    )
     if isinstance(sink, CollectingSink):
         _print_emissions(sink)
     print(f"emitted {count}", file=sys.stderr)
     return 0
+
+
+def _cmd_configure(args: argparse.Namespace) -> int:
+    modes = (
+        [m.strip() for m in args.mode.split(",") if m.strip()] if args.mode else None
+    )
+    io = ConfigureIO(transport=UrllibTransport())
+    return Configurator(io).configure(
+        args.connector, args.config, modes=modes, paste_token=args.paste_token
+    )
 
 
 def _cmd_run_mods(config: LocalConfig, args: argparse.Namespace) -> int:
@@ -108,16 +143,43 @@ def _cmd_run_mods(config: LocalConfig, args: argparse.Namespace) -> int:
     for mod_id, emissions in results.items():
         for me in emissions:
             art = me.advisory or me.routing_hint
-            print(json.dumps({"mod": mod_id, "output_type": me.output_type,
-                              "message": getattr(art, "message", getattr(art, "reason", ""))}))
+            print(
+                json.dumps(
+                    {
+                        "mod": mod_id,
+                        "output_type": me.output_type,
+                        "message": getattr(art, "message", getattr(art, "reason", "")),
+                    }
+                )
+            )
     return 0
 
 
 def _parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="runtime.cli", description="Headless connector/mod runner")
+    p = argparse.ArgumentParser(
+        prog="runtime.cli", description="Headless connector/mod runner"
+    )
     p.add_argument("--config", default=str(DEFAULT_CONFIG))
     sub = p.add_subparsers(dest="command", required=True)
     sub.add_parser("list")
+    cfg = sub.add_parser("configure")
+    cfg.add_argument("connector")
+    cfg.add_argument(
+        "--config",
+        dest="config",
+        default=str(DEFAULT_CONFIG),
+        help="operator-local config path (default: config/bicameral.local.json)",
+    )
+    cfg.add_argument(
+        "--mode",
+        default="",
+        help="comma-separated run modes to set up (default: all the connector supports)",
+    )
+    cfg.add_argument(
+        "--paste-token",
+        action="store_true",
+        help="oauth_consent escape hatch: paste a ~1h access token instead of the durable consent flow",
+    )
     run = sub.add_parser("run")
     run.add_argument("connector")
     run.add_argument("--document-id", default="")
@@ -132,6 +194,10 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        if args.command == "configure":
+            return _cmd_configure(
+                args
+            )  # creates the local config if absent — no pre-load
         config = load_config(args.config)
         if args.command == "list":
             return _cmd_list(config)
@@ -139,7 +205,9 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_run(config, args)
         return _cmd_run_mods(config, args)
     except (ConfigError, PollError, GatewayEmissionGated, FileNotFoundError) as exc:
-        print(f"error: {exc}", file=sys.stderr)  # str(exc) only — NEVER repr(config)/gateway (token)
+        print(
+            f"error: {exc}", file=sys.stderr
+        )  # str(exc) only — NEVER repr(config)/gateway (token)
         return 2
 
 
