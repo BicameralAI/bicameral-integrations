@@ -1,5 +1,14 @@
 # SPDX-License-Identifier: MIT
-"""Tests for the Live emission seam: AdapterEmission -> v1 IngestRequest + GatewaySink."""
+"""Tests for the Live emission seam: AdapterEmission -> v2 ExternalIngestEnvelope + GatewaySink (#226).
+
+The vendored schema ``runtime/schemas/external_ingest_request_v2.schema.json`` is a byte-exact copy
+of ``bicameral-bot:protocol/schemas/v2/external-ingest-request.schema.json`` pinned at schema commit
+``5c24c60fcba8ed9d04ab5dd6fd0977dcddd9bd57`` (bot HEAD ``22806ac21125b497370786f2ad400b8ba44365cf``;
+pin metadata in ``runtime/schemas/ingest_schema_pin.json``). The forbidden-authority list mirrors
+``bicameral-bot:crates/bicameral-gateway/src/routes.rs:500-521`` (18 names; 403 at the top level).
+The #196 provenance + #198 field-classification disciplines are carried into the v2 envelope as
+``candidate_hints[].labels`` and re-asserted here in full.
+"""
 
 from __future__ import annotations
 
@@ -22,30 +31,29 @@ from adapter.core.emissions import (
     SourceRef,
 )
 from adapter.core.pipeline import EmissionContractError
-from runtime import (
-    GatewayEmissionError,
-    GatewayEmissionGated,
-    GatewaySink,
-    emission_to_ingest_request,
-)
+from runtime import GatewayEmissionError, GatewayEmissionGated, GatewaySink, emission_to_external_envelope
 from runtime.gateway_mapping import BOT_OWNED_FIELDS
 
 _SCHEMA = json.loads(
-    (
-        Path(__file__).resolve().parents[1]
-        / "schemas"
-        / "ingest_request_v1.schema.json"
-    ).read_text(encoding="utf-8")
+    (Path(__file__).resolve().parents[1] / "schemas" / "external_ingest_request_v2.schema.json").read_text(
+        encoding="utf-8"
+    )
 )
 _TOKEN = "super-secret-operator-token"
+
+# bicameral-bot routes.rs:500-521 — FORBIDDEN_EXTERNAL_FIELDS (authority-injection 403 set)
+_FORBIDDEN_EXTERNAL_FIELDS = frozenset({
+    "authority", "auth_method", "actor_id", "session_id", "policy_scope",
+    "review_command", "tool_command", "approve_signoff", "reject_signoff",
+    "resolve_compliance", "compliance_verdict", "policy_grant", "governance_override",
+    "canonical_decision", "signoff_state", "decision_id", "compliance_state", "tracking_state",
+})
 
 
 def _emission(**kw) -> AdapterEmission:
     ev = SourceEvidence(
         source_ref=SourceRef(
-            source_id="jira",
-            ref="ENG-1",
-            url="https://example.atlassian.net/browse/ENG-1",
+            source_id="jira", ref="ENG-1", url="https://example.atlassian.net/browse/ENG-1"
         ),
         excerpt="Decided to adopt OAuth.",
     )
@@ -60,186 +68,155 @@ def _emission(**kw) -> AdapterEmission:
     return AdapterEmission(**defaults)
 
 
+def _labels(payload: dict) -> list[str]:
+    return payload["candidate_hints"][0].get("labels", [])
+
+
 def _assert_conforms(payload: dict) -> None:
-    for key in _SCHEMA["required"]:  # title, description, source
+    """Emitter-side strict conformance against the vendored v2 schema. NOTE: the gateway itself
+    IGNORES unknown non-forbidden top-level keys (the schema carries no additionalProperties
+    guard) — the key-set restriction here is the EMITTER's own discipline, locked so an
+    accidental extra field can never drift toward the 403'd authority set."""
+    assert set(payload) <= set(_SCHEMA["properties"]), "extra top-level key vs emitter discipline"
+    for key in _SCHEMA["required"]:  # content, source_system, source_uri
         assert key in payload and isinstance(payload[key], str) and payload[key]
+    # gateway 422s only when evidence AND candidate_hints are BOTH empty (routes.rs:716);
+    # the emitter guarantees non-empty evidence regardless (boundary invariant, LD2).
     assert isinstance(payload["evidence"], list) and payload["evidence"]
-    item_required = _SCHEMA["definitions"]["IngestEvidenceItem"]["required"]  # excerpt
+    ev_required = _SCHEMA["definitions"]["ExternalEvidenceItem"]["required"]  # excerpt
+    ev_props = set(_SCHEMA["definitions"]["ExternalEvidenceItem"]["properties"])
     for item in payload["evidence"]:
-        for k in item_required:
-            assert k in item and isinstance(item[k], str) and item[k]
+        assert set(item) <= ev_props
+        for k in ev_required:
+            assert k in item and isinstance(item[k], str) and item[k]  # non-empty excerpt
+    hint_required = set(_SCHEMA["definitions"]["ExternalCandidateHint"]["required"])  # body, title
+    hint_props = set(_SCHEMA["definitions"]["ExternalCandidateHint"]["properties"])
+    for hint in payload.get("candidate_hints", []):
+        assert set(hint) <= hint_props
+        for k in hint_required:
+            assert k in hint and isinstance(hint[k], str) and hint[k]
 
 
-# --- mapping ---
+# --- mapping: source facts ---
 
 
-def test_mapping_conforms_to_vendored_v1_schema():
-    payload = emission_to_ingest_request(_emission())
+def test_mapping_conforms_to_vendored_v2_schema():
+    payload = emission_to_external_envelope(_emission())
     _assert_conforms(payload)
-    assert payload["title"] == "Adopt OAuth"
-    assert payload["description"] == "The team decided to adopt OAuth."
-    assert payload["source"] == "https://example.atlassian.net/browse/ENG-1"
-    assert payload["source_type"] == "jira"
+    assert payload["source_system"] == "jira"
+    assert payload["source_uri"] == "https://example.atlassian.net/browse/ENG-1"
+    assert payload["content"] == "The team decided to adopt OAuth."
     assert payload["evidence"] == [{"excerpt": "Decided to adopt OAuth."}]
-    # default emission_type is "candidate" -> label + tags carry the lane hint
-    assert payload["label"] == "emission_type:candidate"
-    assert "emission_type:candidate" in payload["tags"]
+    hint = payload["candidate_hints"][0]
+    assert hint["title"] == "Adopt OAuth" and hint["body"] == payload["content"]
+
+
+def test_no_forbidden_authority_field_emitted():
+    # routes.rs authority-injection 403 set: the emitter must be disjoint BY CONSTRUCTION.
+    payload = emission_to_external_envelope(_emission())
+    assert not (set(payload) & _FORBIDDEN_EXTERNAL_FIELDS)
 
 
 def test_required_fields_are_floored():
     ev = SourceEvidence(
-        source_ref=SourceRef(source_id="jira", ref="ENG-9", url=""),
-        excerpt="Fallback excerpt.",
+        source_ref=SourceRef(source_id="jira", ref="ENG-9", url=""), excerpt="Fallback excerpt."
     )
-    e = AdapterEmission(
-        source_id="jira", title="   ", body="", evidence=(ev,), adapter_version="x"
-    )
-    payload = emission_to_ingest_request(e)
+    e = AdapterEmission(source_id="jira", title="   ", body="", evidence=(ev,), adapter_version="x")
+    payload = emission_to_external_envelope(e)
     _assert_conforms(payload)
-    assert payload["title"] == "Fallback excerpt."
-    assert payload["description"] == "Fallback excerpt."
-    assert payload["source"] == "jira:ENG-9"  # no url -> source_id:ref
+    assert payload["content"] == "Fallback excerpt."
+    assert payload["source_uri"] == "jira:ENG-9"  # no url -> source_id:ref
+    assert payload["candidate_hints"][0]["title"] == "Fallback excerpt."
 
 
 def test_dimensional_confidence_not_collapsed_to_scalar():
-    payload = emission_to_ingest_request(
+    # SG-2026-06-02-B: dimensional ConfidenceSurface never becomes a wire scalar anywhere.
+    payload = emission_to_external_envelope(
         _emission(confidence=ConfidenceSurface(dimensions={"reliability": "high"}))
     )
-    assert all("confidence" not in item for item in payload["evidence"])
+    assert "confidence" not in json.dumps(payload)
 
 
-# --- provenance fields (#196) ---
+def test_hints_never_carry_level():
+    # the daemon classifies level itself (bot ADR-0024); the emitter stays advisory-minimal.
+    payload = emission_to_external_envelope(_emission())
+    assert "level" not in payload["candidate_hints"][0]
 
 
-def test_provenance_webhook_mode_in_payload():
+# --- provenance fields (#196) -> candidate_hints[].labels ---
+
+
+def test_provenance_webhook_mode_in_labels():
     prov = ProviderProvenance(
         delivery_mode="webhook",
         verification="signed",
         provider_event_id="d-123",
         provider_resource_id="org/repo#42",
     )
-    payload = emission_to_ingest_request(_emission(provenance=prov))
+    payload = emission_to_external_envelope(_emission(provenance=prov))
     _assert_conforms(payload)
-    assert payload["delivery_mode"] == "webhook"
-    assert payload["verification"] == "signed"
-    assert payload["provider_event_id"] == "d-123"
-    assert payload["provider_resource_id"] == "org/repo#42"
+    labels = _labels(payload)
+    assert "delivery:webhook" in labels
+    assert "verification:signed" in labels
+    assert "provider_event_id:d-123" in labels
+    assert "provider_resource_id:org/repo#42" in labels
 
 
-def test_provenance_poll_mode_in_payload():
-    prov = ProviderProvenance(
-        delivery_mode="poll",
-        verification="unsigned",
-    )
-    payload = emission_to_ingest_request(_emission(provenance=prov))
+def test_provenance_poll_mode_in_labels():
+    prov = ProviderProvenance(delivery_mode="poll", verification="unsigned")
+    payload = emission_to_external_envelope(_emission(provenance=prov))
     _assert_conforms(payload)
-    assert payload["delivery_mode"] == "poll"
-    assert payload["verification"] == "unsigned"
-    assert "provider_event_id" not in payload
-    assert "provider_resource_id" not in payload
+    labels = _labels(payload)
+    assert "delivery:poll" in labels and "verification:unsigned" in labels
+    assert not any(lbl.startswith("provider_event_id:") for lbl in labels)
+    assert not any(lbl.startswith("provider_resource_id:") for lbl in labels)
 
 
-def test_provenance_active_fetch_mode_in_payload():
-    prov = ProviderProvenance(
-        delivery_mode="active-fetch",
-        verification="unsigned",
-        provider_resource_id="res-1",
-    )
-    payload = emission_to_ingest_request(_emission(provenance=prov))
+def test_no_provenance_omits_provenance_labels():
+    payload = emission_to_external_envelope(_emission())
+    labels = _labels(payload)
+    assert not any(lbl.startswith(("delivery:", "verification:", "provider_")) for lbl in labels)
+
+
+# --- #198: emission_type lane hint (non-authoritative) ---
+
+
+@pytest.mark.parametrize("et", ["evidence", "hint", "advisory", "candidate"])
+def test_emission_type_carries_lane_label(et):
+    payload = emission_to_external_envelope(_emission(emission_type=et))
     _assert_conforms(payload)
-    assert payload["delivery_mode"] == "active-fetch"
-    assert payload["verification"] == "unsigned"
-    assert "provider_event_id" not in payload
-    assert payload["provider_resource_id"] == "res-1"
+    assert f"emission_type:{et}" in _labels(payload)
+    # The hint is advisory — no authority/lifecycle fields anywhere
+    assert "level" not in payload["candidate_hints"][0]
+    assert not (set(payload) & _FORBIDDEN_EXTERNAL_FIELDS)
 
 
-def test_no_provenance_omits_fields():
-    payload = emission_to_ingest_request(_emission())
-    _assert_conforms(payload)
-    assert "delivery_mode" not in payload
-    assert "verification" not in payload
-    assert "provider_event_id" not in payload
-    assert "provider_resource_id" not in payload
-
-
-
-# --- #198: field classification — emission_type lane hint (non-authoritative) ---
-
-
-def test_evidence_emission_carries_lane_hint():
-    """An evidence emission carries emission_type as a non-authoritative lane hint."""
-    payload = emission_to_ingest_request(_emission(emission_type="evidence"))
-    _assert_conforms(payload)
-    assert payload["label"] == "emission_type:evidence"
-    assert "emission_type:evidence" in payload["tags"]
-    # The hint is advisory — no authority fields present
-    assert "level" not in payload
-    assert "snapshot_content" not in payload
-
-
-def test_hint_emission_carries_lane_hint():
-    """A hint emission carries emission_type as a non-authoritative lane hint."""
-    payload = emission_to_ingest_request(_emission(emission_type="hint"))
-    _assert_conforms(payload)
-    assert payload["label"] == "emission_type:hint"
-    assert "emission_type:hint" in payload["tags"]
-
-
-def test_advisory_emission_carries_lane_hint():
-    """An advisory emission carries emission_type as a non-authoritative lane hint."""
-    payload = emission_to_ingest_request(_emission(emission_type="advisory"))
-    _assert_conforms(payload)
-    assert payload["label"] == "emission_type:advisory"
-    assert "emission_type:advisory" in payload["tags"]
-
-
-def test_candidate_emission_is_non_authoritative():
-    """A candidate-like emission is mapped as a hint, never as an accepted candidate."""
-    payload = emission_to_ingest_request(_emission(emission_type="candidate"))
-    _assert_conforms(payload)
-    assert payload["label"] == "emission_type:candidate"
-    # Non-authoritative: no level, no accepted state, no bot-owned lifecycle
-    assert "level" not in payload
-    assert "snapshot_content" not in payload
-    # emission_type:candidate is a lane HINT, not an accepted decision
-    assert all(
-        not tag.startswith("accepted:") and not tag.startswith("binding:")
-        for tag in payload["tags"]
-    )
-
-
-# --- #198: routing hints — screened, non-authoritative ---
-
-
-def test_routing_hints_mapped_as_non_authoritative_tags():
-    """Routing hints are screened and mapped to tags; they never encode authority."""
+def test_routing_hints_mapped_as_non_authoritative_labels():
     hints = (
         RoutingHint(role="security-reviewer", reason="Auth change", priority="high"),
         RoutingHint(role="data-owner", reason="PII scope"),
     )
-    payload = emission_to_ingest_request(_emission(routing_hints=hints))
+    payload = emission_to_external_envelope(_emission(routing_hints=hints))
     _assert_conforms(payload)
-    assert "routing:security-reviewer:high" in payload["tags"]
-    assert "routing:data-owner:normal" in payload["tags"]
-    # Non-authoritative: no level, no authority claims
-    assert "level" not in payload
+    labels = _labels(payload)
+    assert "routing:security-reviewer:high" in labels
+    assert "routing:data-owner:normal" in labels
 
 
-def test_advisories_mapped_as_non_authoritative_tags():
-    """Advisory results are screened and mapped to tags; they never encode authority."""
+def test_advisories_mapped_as_non_authoritative_labels():
     advs = (
         AdvisoryResult(kind="dependency-risk", message="Upgrade numpy"),
         AdvisoryResult(kind="security-mention", message="Token rotation"),
     )
-    payload = emission_to_ingest_request(_emission(advisories=advs))
+    payload = emission_to_external_envelope(_emission(advisories=advs))
     _assert_conforms(payload)
-    assert "advisory:dependency-risk" in payload["tags"]
-    assert "advisory:security-mention" in payload["tags"]
+    labels = _labels(payload)
+    assert "advisory:dependency-risk" in labels
+    assert "advisory:security-mention" in labels
 
 
 def test_combined_hints_all_non_authoritative():
-    """An emission with all hint types produces tags but no authority claims."""
-    payload = emission_to_ingest_request(
+    payload = emission_to_external_envelope(
         _emission(
             emission_type="advisory",
             routing_hints=(RoutingHint(role="arch-lead", reason="Boundary"),),
@@ -248,106 +225,68 @@ def test_combined_hints_all_non_authoritative():
         )
     )
     _assert_conforms(payload)
-    assert payload["label"] == "emission_type:advisory"
-    assert "emission_type:advisory" in payload["tags"]
-    assert "routing:arch-lead:normal" in payload["tags"]
-    assert "advisory:drift-risk" in payload["tags"]
-    # confidence is NOT collapsed
-    assert "confidence" not in payload
-    assert all("confidence" not in item for item in payload["evidence"])
-
-
-# --- #198: unscreened metadata stays off the wire ---
+    labels = _labels(payload)
+    assert "emission_type:advisory" in labels
+    assert "routing:arch-lead:normal" in labels
+    assert "advisory:drift-risk" in labels
+    assert "confidence" not in json.dumps(payload)  # never collapsed
 
 
 def test_metadata_never_on_wire():
-    """Emission metadata is never forwarded — FX-SEC-001 does not screen it."""
-    payload = emission_to_ingest_request(
+    payload = emission_to_external_envelope(
         _emission(metadata={"internal_key": "secret-ish-value", "debug": True})
     )
     _assert_conforms(payload)
     assert "metadata" not in payload
-    assert "internal_key" not in str(payload)
-    assert "secret-ish-value" not in str(payload)
-
-
-# --- #198: bot-owned fields are never sent ---
+    assert "secret-ish-value" not in json.dumps(payload)
 
 
 def test_bot_owned_fields_never_in_payload():
-    """Bot-owned fields (level, snapshot_content, ActorContext, etc.) never appear."""
     for et in ("evidence", "hint", "advisory", "candidate"):
-        payload = emission_to_ingest_request(_emission(emission_type=et))
+        payload = emission_to_external_envelope(_emission(emission_type=et))
         for field in BOT_OWNED_FIELDS:
             assert field not in payload, f"{field} leaked in {et} emission"
+            assert field not in payload["candidate_hints"][0], f"{field} leaked in hint ({et})"
 
 
 def test_no_emission_can_produce_authority_claims():
-    """No combination of emission fields can produce accepted-state or binding tags."""
-    payload = emission_to_ingest_request(
+    payload = emission_to_external_envelope(
         _emission(
             emission_type="candidate",
-            routing_hints=(
-                RoutingHint(role="approver", reason="Review", priority="high"),
-            ),
-            advisories=(
-                AdvisoryResult(kind="binding-suggestion", message="Bind to symbol"),
-            ),
+            routing_hints=(RoutingHint(role="approver", reason="Review", priority="high"),),
+            advisories=(AdvisoryResult(kind="binding-suggestion", message="Bind to symbol"),),
             confidence=ConfidenceSurface(dimensions={"authority": "high"}),
         )
     )
     payload_str = json.dumps(payload)
-    # No accepted/canonical state
-    assert '"status"' not in payload_str or '"raw"' in payload_str
-    # No bot lifecycle fields
-    assert "ActorContext" not in payload_str
-    assert "SourceSnapshot" not in payload_str
-    assert "BindingEvidence" not in payload_str
-    assert "signoff" not in payload_str
-    assert "compliance" not in payload_str
-    assert "enforcement" not in payload_str
-
-
-# --- #198: routing/advisory hints are screened ---
+    assert not (set(payload) & _FORBIDDEN_EXTERNAL_FIELDS)
+    for marker in ("ActorContext", "SourceSnapshot", "BindingEvidence", "signoff",
+                   "compliance", "enforcement"):
+        assert marker not in payload_str
 
 
 def test_routing_hint_role_is_screened():
-    """A routing hint role containing PII is redacted before mapping."""
     hints = (RoutingHint(role="user@example.com", reason="Owner"),)
-    payload = emission_to_ingest_request(_emission(routing_hints=hints))
-    tags = payload.get("tags", [])
-    # Email in role is redacted
-    assert all("user@example.com" not in t for t in tags)
-    # But some routing tag still exists (redacted form)
-    assert any(t.startswith("routing:") for t in tags)
+    payload = emission_to_external_envelope(_emission(routing_hints=hints))
+    labels = _labels(payload)
+    assert all("user@example.com" not in lbl for lbl in labels)
+    assert any(lbl.startswith("routing:") for lbl in labels)  # redacted form survives
 
 
 def test_advisory_kind_is_screened():
-    """An advisory kind containing PII is redacted before mapping."""
     advs = (AdvisoryResult(kind="alert-user@test.org", message="Notify"),)
-    payload = emission_to_ingest_request(_emission(advisories=advs))
-    tags = payload.get("tags", [])
-    assert all("user@test.org" not in t for t in tags)
+    payload = emission_to_external_envelope(_emission(advisories=advs))
+    assert all("user@test.org" not in lbl for lbl in _labels(payload))
 
 
-# --- #198: schema conformance for hint fields ---
+def test_labels_are_contract_supported():
+    # the v2 schema's advisory-string surface: ExternalCandidateHint.labels
+    assert "labels" in _SCHEMA["definitions"]["ExternalCandidateHint"]["properties"]
 
 
-def _schema_allows_field(field: str) -> bool:
-    return field in _SCHEMA.get("properties", {})
-
-
-def test_label_and_tags_are_contract_supported():
-    """The vendored v1 schema supports label and tags (hint fields)."""
-    assert _schema_allows_field("label"), "label not in vendored schema"
-    assert _schema_allows_field("tags"), "tags not in vendored schema"
-
-
-def test_emission_without_hints_has_no_label_or_routing_tags():
-    """A bare evidence emission with no routing/advisory has only the lane tag."""
-    payload = emission_to_ingest_request(_emission(emission_type="evidence"))
-    assert payload["label"] == "emission_type:evidence"
-    assert payload["tags"] == ["emission_type:evidence"]
+def test_emission_without_hints_has_only_lane_label():
+    payload = emission_to_external_envelope(_emission(emission_type="evidence"))
+    assert _labels(payload) == ["emission_type:evidence"]
 
 
 # --- GatewaySink (injected opener) ---
@@ -376,16 +315,16 @@ def _capture_opener(captured: dict, status: int = 201):
     return opener
 
 
-def test_gatewaysink_posts_conforming_request():
+def test_gatewaysink_posts_conforming_envelope():
     captured: dict = {}
     sink = GatewaySink(
-        endpoint="https://gw.example/api/v1/ingest",
+        endpoint="https://gw.example/api/v1/external-ingest",
         token=_TOKEN,
         opener=_capture_opener(captured),
     )
     sink.emit([_emission()])
     assert captured["method"] == "POST"
-    assert captured["url"].endswith("/api/v1/ingest")
+    assert captured["url"].endswith("/api/v1/external-ingest")
     assert captured["content_type"] == "application/json"
     assert captured["authorization"] == f"Bearer {_TOKEN}"
     _assert_conforms(captured["body"])
@@ -398,15 +337,15 @@ def test_gatewaysink_no_endpoint_is_gated():
 
 def test_gatewaysink_no_token_sends_no_auth_header():
     captured: dict = {}
-    GatewaySink(
-        endpoint="https://gw/api/v1/ingest", opener=_capture_opener(captured)
-    ).emit([_emission()])
+    GatewaySink(endpoint="https://gw/api/v1/external-ingest", opener=_capture_opener(captured)).emit(
+        [_emission()]
+    )
     assert captured["authorization"] is None
 
 
 def test_gatewaysink_non_201_status_raises():
     sink = GatewaySink(
-        endpoint="https://gw/api/v1/ingest", opener=_capture_opener({}, status=200)
+        endpoint="https://gw/api/v1/external-ingest", opener=_capture_opener({}, status=200)
     )
     with pytest.raises(GatewayEmissionError) as exc:
         sink.emit([_emission()])
@@ -415,37 +354,53 @@ def test_gatewaysink_non_201_status_raises():
 
 def _error_opener(code: int, body: bytes):
     def opener(request, timeout=None):
-        raise urllib.error.HTTPError(
-            request.full_url, code, "err", {}, io.BytesIO(body)
-        )
+        raise urllib.error.HTTPError(request.full_url, code, "err", {}, io.BytesIO(body))
 
     return opener
 
 
+def test_gatewaysink_403_fail_closed_token_free():
+    # the gateway's authority-injection rejection surfaces as a terminal, token-free error.
+    rejection = b'{"reason":"AuthorityInjection","message":"cannot carry authority fields"}'
+    sink = GatewaySink(
+        endpoint="https://gw/api/v1/external-ingest", token=_TOKEN,
+        opener=_error_opener(403, rejection),
+    )
+    with pytest.raises(GatewayEmissionError) as exc:
+        sink.emit([_emission()])
+    assert exc.value.status == 403
+    assert exc.value.reason == "gateway_rejected"
+    assert _TOKEN not in str(exc.value)
+
+
+def test_gatewaysink_422_status_preserved():
+    sink = GatewaySink(
+        endpoint="https://gw/api/v1/external-ingest", opener=_error_opener(422, b"{}")
+    )
+    with pytest.raises(GatewayEmissionError) as exc:
+        sink.emit([_emission()])
+    assert exc.value.status == 422
+
+
 def test_gatewaysink_rejection_fixed_reason_no_body_reflection():
     # SECRET-LEAK-1 (purple-team 2026-06-11): the untrusted gateway response body is NOT
-    # reflected into the error. A gateway that echoes the request (incl. the Authorization
-    # header) into its rejection body must not leak the token; status still disambiguates.
-    leaky_body = (
-        b'{"reason":"' + _TOKEN.encode() + b'"}'
-    )  # gateway echoes the token back
+    # reflected into the error, even when it echoes the token back.
+    leaky_body = b'{"reason":"' + _TOKEN.encode() + b'"}'
     sink = GatewaySink(
-        endpoint="https://gw/api/v1/ingest",
+        endpoint="https://gw/api/v1/external-ingest",
         token=_TOKEN,
         opener=_error_opener(429, leaky_body),
     )
     with pytest.raises(GatewayEmissionError) as exc:
         sink.emit([_emission()])
-    assert exc.value.status == 429  # status preserved (retryable vs terminal)
-    assert (
-        exc.value.reason == "gateway_rejected"
-    )  # fixed discriminator, body not reflected
-    assert _TOKEN not in str(exc.value)  # token never in the error, even if echoed
+    assert exc.value.status == 429
+    assert exc.value.reason == "gateway_rejected"
+    assert _TOKEN not in str(exc.value)
 
 
 def test_gatewaysink_transport_error_raises_without_token():
     sink = GatewaySink(
-        endpoint="https://gw/api/v1/ingest",
+        endpoint="https://gw/api/v1/external-ingest",
         token=_TOKEN,
         opener=_error_opener_url(),
     )
@@ -462,14 +417,11 @@ def _error_opener_url():
 
 
 def test_gatewaysink_revalidates_at_boundary():
-    # F-1/F-2: a hand-built emission with no evidence is refused before any POST.
-    bad = AdapterEmission(
-        source_id="jira", title="t", body="b", evidence=(), adapter_version="x"
-    )
+    # F-1/F-2 + LD2: an evidence-less emission is refused BEFORE mapping/POST — which is also
+    # what keeps the gateway's empty-evidence 422 unreachable from this path.
+    bad = AdapterEmission(source_id="jira", title="t", body="b", evidence=(), adapter_version="x")
     with pytest.raises(EmissionContractError):
-        GatewaySink(
-            endpoint="https://gw/api/v1/ingest", opener=_capture_opener({})
-        ).emit([bad])
+        GatewaySink(endpoint="https://gw/api/v1/external-ingest", opener=_capture_opener({})).emit([bad])
 
 
 # --- one real urllib round-trip through a stdlib http.server (proves the POST path) ---
@@ -482,11 +434,12 @@ def test_gatewaysink_real_http_roundtrip():
         def do_POST(self):
             length = int(self.headers.get("Content-Length", 0))
             received["body"] = json.loads(self.rfile.read(length).decode("utf-8"))
+            received["path"] = self.path
             received["content_type"] = self.headers.get("Content-Type")
             self.send_response(201)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
-            self.wfile.write(b'{"candidate_id":"c-1"}')
+            self.wfile.write(b'{"source_id":"s-1","advisory_results":[]}')
 
         def log_message(self, *_a):
             pass
@@ -496,12 +449,13 @@ def test_gatewaysink_real_http_roundtrip():
     thread.start()
     try:
         host, port = server.server_address
-        sink = GatewaySink(endpoint=f"http://{host}:{port}/api/v1/ingest", timeout=5.0)
+        sink = GatewaySink(endpoint=f"http://{host}:{port}/api/v1/external-ingest", timeout=5.0)
         sink.emit([_emission()])  # success on 201, no exception
     finally:
         thread.join(timeout=5)
         server.server_close()
     _assert_conforms(received["body"])
+    assert received["path"] == "/api/v1/external-ingest"
     assert received["content_type"] == "application/json"
 
 
@@ -510,15 +464,13 @@ def test_gatewaysink_real_http_roundtrip():
 
 def test_token_with_crlf_rejected_at_construction():
     with pytest.raises(ValueError) as exc:
-        GatewaySink(
-            endpoint="https://gw/api/v1/ingest", token="SECRET-abc\r\nX-Evil: 1"
-        )
+        GatewaySink(endpoint="https://gw/api/v1/external-ingest", token="SECRET-abc\r\nX-Evil: 1")
     assert "SECRET-abc" not in str(exc.value)  # message names the field, not the value
 
 
 def test_header_with_crlf_rejected_at_construction():
     with pytest.raises(ValueError) as exc:
-        GatewaySink(endpoint="https://gw/api/v1/ingest", headers={"X-Trace": "a\nb"})
+        GatewaySink(endpoint="https://gw/api/v1/external-ingest", headers={"X-Trace": "a\nb"})
     assert "a\nb" not in str(exc.value)
 
 
@@ -529,7 +481,7 @@ def test_post_unexpected_error_is_token_free():
     def opener(request, timeout=None):
         raise ValueError(f"Invalid header value b'Bearer {token}'")
 
-    sink = GatewaySink(endpoint="https://gw/api/v1/ingest", token=token, opener=opener)
+    sink = GatewaySink(endpoint="https://gw/api/v1/external-ingest", token=token, opener=opener)
     with pytest.raises(GatewayEmissionError) as exc:
         sink.emit([_emission()])
     assert token not in str(exc.value)

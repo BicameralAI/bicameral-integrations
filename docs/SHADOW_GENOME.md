@@ -729,3 +729,17 @@ gate on that artifact's read path and check the plan names a compatible change o
 each — before audit. Caught only by the mandatory Option B independent reviewer (SG-007 author momentum:
 the author-Judge verified citations but not cross-LD composition). Companion: SG-2026-06-12-F (enforce
 contract at the shared input boundary — the remediation home for the aux-key rule is one shared helper).
+
+## SG-2026-07-08-B — a subagent's "faithful reproduction" of an artifact can fabricate load-bearing detail; grep the artifact, not the reproduction
+
+During #226 research, an Explore agent asked to "reproduce the ENTIRE schema faithfully" returned the bot's
+v2 external-ingest schema WITH an `"additionalProperties": false` line that does not exist in the file (nor
+does the Rust type carry `deny_unknown_fields`). The fabricated strictness claim propagated brief → plan LD →
+module docstring → FEATURE_INDEX/BACKLOG before the implementation devil's-advocate refuted it by re-reading
+the file. Consequence class: docs asserting an enforcement property the receiver does not have (here benign —
+the emitter's own key-set discipline is stricter than the real contract — but the same failure inverted would
+be a false-security claim). **Rule:** any single load-bearing schema/contract property cited from a subagent
+report (required fields, additionalProperties, enum members, status codes) must be re-verified by a direct
+grep/parse of the artifact before it enters a Locked Decision — a reproduction is a claim, not evidence.
+Companion: verify-before-cite (wire gates) and SG-2026-07-08-A (compose gates against write-sets); the
+independent-reviewer pattern caught it, same as #230 F1.

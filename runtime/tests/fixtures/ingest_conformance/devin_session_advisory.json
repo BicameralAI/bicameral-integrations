@@ -22,19 +22,23 @@
     "emission_type": "advisory",
     "adapter_version": "devin/0.1.0"
   },
-  "expected_ingest_request": {
-    "title": "Session identified unused dependency",
-    "description": "The aiohttp dependency is imported but never used at runtime.",
-    "source": "https://app.devin.ai/sessions/abc123",
-    "source_type": "devin",
+  "expected_envelope": {
+    "source_system": "devin",
+    "source_uri": "https://app.devin.ai/sessions/abc123",
+    "content": "The aiohttp dependency is imported but never used at runtime.",
     "evidence": [
       {
         "excerpt": "aiohttp is imported in utils.py but no call site exists."
       }
     ],
-    "label": "emission_type:advisory",
-    "tags": [
-      "emission_type:advisory"
+    "candidate_hints": [
+      {
+        "title": "Session identified unused dependency",
+        "body": "The aiohttp dependency is imported but never used at runtime.",
+        "labels": [
+          "emission_type:advisory"
+        ]
+      }
     ]
   }
 }

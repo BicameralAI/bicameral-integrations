@@ -8127,9 +8127,157 @@ only; commit/push/PR + the #228 comment await operator approval. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#233 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
-*Status: **SEALED at #233 (`fb8b74f2`; L2)** -- #227 configure config-on-rails CLI complete (FX-RUNTIME-007): guided Linear + Google Drive setup incl. OAuth consent → durable refresh triple wired into the run path; #228 enablement package verified for Jin.*
-*Next required action: operator review of `feat/227-configure-cli` (commit/push/PR — stacked on PR #215) + post the drafted #228 comment + run the live 201 tests per `docs/runbooks/` to flip Linear + Google Drive Live. KNOWN: `qor-logic verify-ledger` cross-tool hash-markup flags on #123+ remain non-gating (/qor-remediate candidate).*
+### Entry #234: RESEARCH BRIEF -- #226 external-ingest migration (integrations leg of RFQ 4 / bot#218)
+
+**Entry ID**: `research234externalingest`
+**Timestamp**: 2026-07-08T20:55:00-04:00
+**Phase**: RESEARCH
+**Author**: Analyst
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(docs/research-brief-226-external-ingest-2026-07-08.md)
+= 9b9faa10cac1e5f7a30f0619b2268664d7a466f3ec71fac72cef0cb31a44a0d5
+```
+
+**Previous Hash**: fb8b74f29beb66911e0c05c5ab98c6c161160dfde91005e2e4656290e1b666e6
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5e45e8f0ea628389d0a6c698c01f2be61dd1ea4426601acf4da06f57cc740d78
+```
+
+**Decision**: Bot side complete + waiting (verified at bot HEAD `22806ac2`, schema commit `5c24c60f`):
+`POST /api/v1/external-ingest` (routes.rs:469-471/:632-636), strict v2 `ExternalIngestEnvelope`
+(`additionalProperties:false`; required content/source_system/source_uri), 18 forbidden authority fields →
+403 (raw-JSON **top-level only**, routes.rs:591-616), **201 success** (matches GatewaySink's 201-only
+discipline — transport layer needs NO change). Deltas the plan must handle: gateway **422s on empty
+evidence** (v1 tolerated empty → floor ≥1 excerpt); v1 title/description map to ONE advisory
+`candidate_hints` entry (bot ADR-0024: hints are signal, never authority); spans/confidence/content_hash
+omitted (SG-2026-06-02-B + daemon-computed). Migration spec: `/api/v1/ingest` is local/MCP-actor ONLY →
+the v1 emitter (`emission_to_ingest_request` + vendored `ingest_request_v1.schema.json`) has no remaining
+consumer — **remove it; B15 closes as superseded-by-removal**. Cross-process 403 conformance restated for
+this repo's suite: schema-validate emitted envelope + forbidden-key disjointness + mocked-403 fail-closed.
+Brief: `docs/research-brief-226-external-ingest-2026-07-08.md`. Next: `/qor-plan` on
+`feat/226-external-ingest` (stacked on `feat/227-configure-cli`). **Review Boundary: operator granted full
+ownership incl. push/PR (2026-07-08); merges stay operator-gated.** L2.
+
+---
+
+### Entry #235: GATE TRIBUNAL -- PASS (cycle 1): #226 external-ingest migration plan
+
+**Entry ID**: `audit235externalingestpass`
+**Timestamp**: 2026-07-08T21:20:00-04:00
+**Phase**: GATE
+**Author**: Judge (solo; `option_b_required: false`)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(.agent/staging/AUDIT_REPORT.md)
+= 7f8f37fbfe61f13a0376aa3ff253dd20b54f0322b80d7efa1c249f9a34660a1f
+```
+
+**Previous Hash**: 5e45e8f0ea628389d0a6c698c01f2be61dd1ea4426601acf4da06f57cc740d78
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= e842bff35484ded839b1054dd38a7406bd536804743db124feb5dfc009dbb6cd
+```
+
+**Decision**: **PASS**, first cycle. All passes clean; grep-verified citations exact; the fourth
+`emission_to_ingest_request` importer (`tests/redteam/test_redteam_gates.py:146-149`, the PII-4 wire-source
+redaction gate) was caught by pre-audit enumeration and folded into LD6 BEFORE audit — the red-team property
+migrates to `source_uri` field-for-field, never weakened. Adversarial probes found no fail-open path:
+empty-evidence 422 unreachable (boundary re-screen precedes mapping, regression-locked); candidate hints
+advisory-only per bot ADR-0024; `change_class: breaking` honestly declared with the removed function's blast
+radius fully enumerated. Next: `/qor-implement` on `feat/226-external-ingest`. Report:
+`.agent/staging/AUDIT_REPORT.md`. L2.
+
+---
+
+### Entry #236: IMPLEMENTATION -- #226 v2 external-ingest emission migration (FX-RUNTIME-002 retarget) + B15 closed
+
+**Entry ID**: `impl236externalingest`
+**Timestamp**: 2026-07-08T22:30:00-04:00
+**Phase**: IMPLEMENT (qor-auto-dev-1; operator granted standing publish ownership 2026-07-08)
+**Author**: Specialist
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(runtime/gateway_mapping.py)
+= 9b1a3dd841cc98c062cd1c070dcfd5efc4a68242d618c77b261b40e679e96cb4
+```
+
+**Previous Hash**: e842bff35484ded839b1054dd38a7406bd536804743db124feb5dfc009dbb6cd
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 7990ca0db953e1468d3a7dcefffbab400b23f4295d88f2c0c1512e88f4e72816
+```
+
+**Decision**: Implemented plan #235-PASS. `emission_to_external_envelope` (source_system/source_uri[redacted,
+url→ref→id]/content-floor/1:1 evidence/ONE advisory candidate hint) replaces `emission_to_ingest_request`;
+`GatewaySink` POSTs the envelope (dead `schema_version` knob removed — review A3); v2 schema vendored
+byte-exact @ bot `5c24c60f`; v1 mapping+schema REMOVED (B15 closed superseded); PII-4 red-team gate migrated
+to `source_uri` field-for-field. **Devil's-advocate review: 3 blocking findings (all stale-doc leftovers —
+golive-devin.md, runbooks/README.md, runtime/README.md still directing at `/api/v1/ingest`/the removed
+symbol) FIXED**, plus advisories absorbed (A2 excerpt truthiness in conformance; A4 FEATURE_INDEX
+self-contradiction; A5 README/SYSTEM_STATE/ADR-0014/WHATS_NEXT freshness; A6 422-condition precision).
+**A1 — corrected fabrication**: the research agent's schema "reproduction" invented
+`additionalProperties:false`; the file has NO such guard (gateway IGNORES unknown non-forbidden keys) —
+docstrings/tests/governance rows corrected to name the key-set restriction as EMITTER discipline;
+**SG-2026-07-08-B** recorded (grep the artifact, not the reproduction). Disclosed Affected-Files additions
+beyond plan: `runtime/tests/test_runtime.py` (consumes the wire shape without importing the mapping — LD6's
+symbol-grep blind spot) + the A5 doc set. Also this cycle: repaired double-encoded UTF-8 comments in
+`runtime/tests/test_configure.py` (PowerShell Get-Content re-encode; committed f72f33f on
+feat/227-configure-cli) and reverted an accidental v1-schema deletion from that branch (5d61bf6) — PR #230
+scope restored. **Verification**: 798 tests pass; ruff clean; mypy clean (243 files); both validators OK;
+governance-gate OK. L2.
+
+---
+
+### Entry #237: SESSION SEAL -- #226 external-ingest migration complete; B15 closed
+
+**Entry ID**: `seal237externalingest`
+**Timestamp**: 2026-07-08T22:45:00-04:00
+**Phase**: SUBSTANTIATE (repo-convention seal; SKIPs as #233)
+**Author**: Governor
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(.agent/staging/SEAL_REPORT-226.md)
+= 0c7add539a9a490915cb797bafc6d039b19bf4f1b5feab75265daba4754ae304
+```
+
+**Previous Hash**: 7990ca0db953e1468d3a7dcefffbab400b23f4295d88f2c0c1512e88f4e72816
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= d13963efd4087a5a17dcc27e9bca31aa61f06f7b56a7358d130e8bd1e99da98c
+```
+
+**Decision**: **SEALED.** Governed cycle for GH #226 (integrations leg of RFQ 4 / bot#218) on
+`feat/226-external-ingest`: research #234 → plan → audit PASS #235 (solo; cycle 1) → implement #236
+(devil's-advocate: 3 blocking doc leftovers fixed; A1 fabrication corrected → SG-2026-07-08-B) → seal.
+The Live emission seam now targets the authority-stripped `POST /api/v1/external-ingest` with the v2
+`ExternalIngestEnvelope`; the legacy v1 emitter is gone (B15 closed superseded-by-removal). End-to-end
+external path (mcp#623 + bot#218 + this) is now code-complete across all three repos — the operator live
+201 test (runbooks, unchanged gate) is what proves it on the wire. Publishing under the operator's standing
+full-ownership grant (PR stacked on #230); merges operator-gated. L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#237 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+*Status: **SEALED at #237 (`d13963ef`; L2)** -- #226 v2 external-ingest migration complete (FX-RUNTIME-002 retargeted; B15 closed). Prior seal #233: #227 configure CLI (FX-RUNTIME-007) + #228 enablement verified.*
+*Next required action: operator merges the stack (#215 → PR #230 → #226 PR) + posts the drafted #228 comment + runs the live 201 tests per `docs/runbooks/` (now against `/api/v1/external-ingest`) to flip Linear + Google Drive Live. Then: #101 hardening close-out + hygiene batch (B14/B11/B2/B10). KNOWN: `qor-logic verify-ledger` cross-tool hash-markup flags on #123+ remain non-gating (/qor-remediate candidate).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
 *The platform is end-to-end + deep-audit + mod-purple-team-hardened: 26 flip-ready connectors + 13 advisory mods, all UI-renderable with per-component version + uniform channel:beta. Secrets never committed nor printed.*
 *Next required action: **bot #405 sign-off** on ADR-0017 + the contract spec, then `/qor-plan` the discovery code build (Drive `files.list` critical path). Remaining issues: #40 ADR-0011 reframe, #42 boundary RFQ, #93 Linear stress test, #101 accepted-risk hardening. **@jinhongkuan** live-flips per `docs/runbooks/`. Backlog: branch protection (B5); bot #73. KNOWN: `qor-logic verify-ledger` flags #123-205 "canonical hash markup" (cross-tool mismatch vs repo `governance_gate.py`, non-gating -> /qor-remediate candidate).*

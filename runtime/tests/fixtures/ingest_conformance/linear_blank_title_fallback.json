@@ -1,5 +1,5 @@
 {
-  "$comment": "Golden fixture: Linear emission with blank title and body. Exercises the floor logic — title and description must fall back to the first excerpt, then source_id.",
+  "$comment": "Golden fixture: Linear emission with blank title and body. Exercises the floor logic \u2014 title and description must fall back to the first excerpt, then source_id.",
   "emission": {
     "source_id": "linear",
     "title": "   ",
@@ -22,19 +22,23 @@
     "emission_type": "candidate",
     "adapter_version": "linear/0.1.0"
   },
-  "expected_ingest_request": {
-    "title": "Migrate auth to SSO before Q3.",
-    "description": "Migrate auth to SSO before Q3.",
-    "source": "linear:PLAT-7",
-    "source_type": "linear",
+  "expected_envelope": {
+    "source_system": "linear",
+    "source_uri": "linear:PLAT-7",
+    "content": "Migrate auth to SSO before Q3.",
     "evidence": [
       {
         "excerpt": "Migrate auth to SSO before Q3."
       }
     ],
-    "label": "emission_type:candidate",
-    "tags": [
-      "emission_type:candidate"
+    "candidate_hints": [
+      {
+        "title": "Migrate auth to SSO before Q3.",
+        "body": "Migrate auth to SSO before Q3.",
+        "labels": [
+          "emission_type:candidate"
+        ]
+      }
     ]
   }
 }
