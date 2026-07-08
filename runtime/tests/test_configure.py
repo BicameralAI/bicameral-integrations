@@ -1,8 +1,8 @@
 ﻿# SPDX-License-Identifier: MIT
 """Behavior tests for the config-on-rails walk (#227; FX-RUNTIME-007).
 
-Scripted IO seams drive the full Linear + Google Drive walks against recorded transports â€”
-no live network, no real secret (a mock does NOT promote to Live â€” ADR-0012). Asserts the
+Scripted IO seams drive the full Linear + Google Drive walks against recorded transports —
+no live network, no real secret (a mock does NOT promote to Live — ADR-0012). Asserts the
 acceptance criteria: mode-scoped credential collection, validation re-prompt, config round-trip,
 env-mask warning, verify pass/fail, and the durable-OAuth refresh-triple persistence.
 """
@@ -118,7 +118,7 @@ def test_env_mask_warning_names_key_only(tmp_path, capsys, monkeypatch):
     assert rc == 0
     out = capsys.readouterr()
     assert "BICAMERAL_LINEAR" in out.err and "OVERRIDES" in out.err
-    for stream in (out.out, out.err):  # key NAME only â€” never a value
+    for stream in (out.out, out.err):  # key NAME only — never a value
         assert "lin_api_filevalue" not in stream and "lin_api_envmask" not in stream
 
 
@@ -150,7 +150,7 @@ def test_google_drive_paste_token_path_warns_not_durable(tmp_path, capsys):
     block = load_config(p).connectors["google_drive"]
     assert block["secrets"]["google_drive"] == "ya29.tok1h"
     assert block["runtime"]["document_id"] == _DOC_ID
-    assert "ya29.tok1h" not in out  # masked input â€” never echoed
+    assert "ya29.tok1h" not in out  # masked input — never echoed
 
 
 def _consenting_browser(io: _ScriptedIO):
@@ -234,7 +234,7 @@ def test_zendesk_active_walk_never_binds_webhook_paste_to_api_key(tmp_path, caps
 
 
 def test_dual_mode_connector_without_runner_verify_prints_guidance(tmp_path, capsys):
-    # F3: a declared-active connector with no CLI runner (zendesk) must not fail verify â€”
+    # F3: a declared-active connector with no CLI runner (zendesk) must not fail verify —
     # the cli edge passes verify_fn=None and the walk prints receiver-side guidance.
     p = tmp_path / "bicameral.local.json"
     io = _ScriptedIO(inputs=[""] * 8, secrets=["ztok"] * 4)
