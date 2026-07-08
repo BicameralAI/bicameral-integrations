@@ -7,5 +7,5 @@
   "local_path": "runtime/schemas/external_ingest_request_v2.schema.json",
   "schema_title": "ExternalIngestEnvelope",
   "schema_version": "v2",
-  "content_sha256": "3cf899c84172b80f4dd8aabeaa7a63f42038f10ca5139c7f8f24984b2d1090da"
+  "content_sha256": "336bfadee0ea4e5dcb26493d116cbb829e01fa20b9746b726e192a8a6088db78"
 }
