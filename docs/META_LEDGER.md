@@ -8338,7 +8338,39 @@ evidence-matrix comment. Publishing under standing ownership grant (PR stacked o
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#239 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #240: IMPLEMENTATION + SEAL -- backlog B14/B11 close-out (verified-stale + one notion floor)
+
+**Entry ID**: `seal240b14b11`
+**Timestamp**: 2026-07-08T23:55:00-04:00
+**Phase**: IMPLEMENT+SUBSTANTIATE (micro-cycle; L1-scale change, L2 discipline retained)
+**Author**: Specialist/Governor
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(connectors/notion/connector.py)
+= c08e5a97eb5d9efecbb844a176b9f649a27b5c627dba5a8ef49efd223b119831
+```
+
+**Previous Hash**: ca966985d824d3917eb5a4290e8fe6757d1afbf7f9202eb445c6381e0312a51a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= c2017a83852deffc1c9dd02a975f8fdd3ce5706b2da8d131a77d3ccb6a3b556a
+```
+
+**Decision**: **SEALED.** Verification-first close-out: B14's github half and B11 were ALREADY fixed by
+red-team Cycle B (#56 `_d` guard github/connector.py:35-38; #57 fathom widened catch fathom/connector.py:119)
+— stale backlog entries closed with citations. One live residual fixed: notion `parse_page` floors a
+present-but-non-dict `created_by` to `""` (was AttributeError) + regression test. **Deferred with reason**:
+B2 (SPDX sweep) + B10 (docstring freshness) touch many files — running them on a 5-deep PR stack guarantees
+conflicts; queue them for after the stack merges. Verification: 801 tests; ruff; mypy; governance-gate OK.
+Publishing under standing grant (PR stacked on #232). L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#240 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #237 (`d13963ef`; L2)** -- #226 v2 external-ingest migration complete (FX-RUNTIME-002 retargeted; B15 closed). Prior seal #233: #227 configure CLI (FX-RUNTIME-007) + #228 enablement verified.*
 *Next required action: operator merges the stack (#215 → PR #230 → #226 PR) + posts the drafted #228 comment + runs the live 201 tests per `docs/runbooks/` (now against `/api/v1/external-ingest`) to flip Linear + Google Drive Live. Then: #101 hardening close-out + hygiene batch (B14/B11/B2/B10). KNOWN: `qor-logic verify-ledger` cross-tool hash-markup flags on #123+ remain non-gating (/qor-remediate candidate).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*
