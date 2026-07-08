@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behavior tests for the local-directory connector and normalization."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behavior tests for the sensitive-data detector (secret / PHI / PAN)."""
 
 from __future__ import annotations

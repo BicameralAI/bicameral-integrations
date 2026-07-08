@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Schema conformance tests for provider acquisition golden fixtures.
 
 Validates that all golden descriptor and item-envelope fixtures conform to the

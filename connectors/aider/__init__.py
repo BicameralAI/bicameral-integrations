@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Aider connector package."""
 
 from .connector import AiderConnector, parse_commit

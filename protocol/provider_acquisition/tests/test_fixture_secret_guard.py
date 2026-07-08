@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Secret and authority-boundary guard tests for provider acquisition fixtures.
 
 Proves that golden fixtures:

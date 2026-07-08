@@ -72,3 +72,9 @@ def test_end_to_end_normalizes():
     out = normalize(NotionConnector().observations(_page()), adapter_version="notion/0.1.0")
     assert len(out) == 1
     assert isinstance(out[0], AdapterEmission) and out[0].source_id == "notion"
+
+
+def test_parse_page_non_dict_created_by_floors():
+    # B14 residual: a present-but-non-dict created_by must floor to "", never AttributeError.
+    obs = parse_page({"id": "p-1", "created_by": "not-a-dict", "properties": {}})
+    assert obs.author == ""

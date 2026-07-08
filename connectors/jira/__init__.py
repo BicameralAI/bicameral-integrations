@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Jira connector package."""
 
 from .connector import JiraConnector, parse_issue

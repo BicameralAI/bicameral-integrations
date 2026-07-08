@@ -3,10 +3,11 @@
 
 A PagerDuty v3 webhook envelope (`{event: {event_type, occurred_at, data}}`)
 for an incident maps to one provider-neutral Observation (trust tier T1,
-incident/on-call evidence). The live webhook receipt and `X-PagerDuty-Signature`
-verification (which carries multiple comma-separated rotating signatures — the
-deferred ``verify()`` must do membership, not equality) are deferred (see
-``auth.md``); this is the parse surface only. Read-only evidence (ADR-0008).
+incident/on-call evidence). ``verify()`` is IMPLEMENTED: `X-PagerDuty-Signature`
+multi-signature membership (comma-separated rotating ``v1=<hex>`` HMAC-SHA256
+over the raw body — accept if ANY matches, constant-time, fail-closed;
+doc-confirmed first-party 2026-07-08, see ``auth.md``). The live HTTP receipt +
+secret resolution stay in the operator runtime. Read-only evidence (ADR-0008).
 """
 
 from __future__ import annotations

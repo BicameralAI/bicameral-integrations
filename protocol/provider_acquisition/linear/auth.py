@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # Copyright 2026 Bicameral AI — MIT License
 """Linear API-key auth for discovery (ADR-0017 alpha 3/3).
 

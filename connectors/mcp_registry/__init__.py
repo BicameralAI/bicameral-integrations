@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """MCP Registry connector package."""
 
 from .connector import McpRegistryConnector, parse_server

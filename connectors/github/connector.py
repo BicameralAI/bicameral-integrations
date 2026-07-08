@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """GitHub pull-request connector: provider payloads into neutral Observations.
 
 A GitHub ``pull_request`` webhook is an envelope — ``{action, number,

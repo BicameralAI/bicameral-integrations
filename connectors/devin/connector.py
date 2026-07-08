@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Devin connector: agentic-session evidence into neutral Observations.
 
 The Devin v3 API (``GET /v3/organizations/{org}/sessions``, Bearer ``cog_`` key) wraps

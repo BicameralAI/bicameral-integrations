@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """GitLab connector: merge-request / issue webhook events into neutral Observations.
 
 A GitLab webhook delivers an envelope whose event kind is named by ``object_kind``

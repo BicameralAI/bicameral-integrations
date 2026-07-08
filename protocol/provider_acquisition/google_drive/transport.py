@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # Copyright 2026 Bicameral AI — MIT License
 """Transport seam for Drive discovery (mocked/recorded; live deferred to factory#93).
 

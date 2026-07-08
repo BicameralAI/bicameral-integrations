@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """SARIF 2.1.0 connector package."""
 
 from .connector import SarifConnector, parse_result, parse_sarif

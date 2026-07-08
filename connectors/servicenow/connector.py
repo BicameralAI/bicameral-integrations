@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """ServiceNow connector: ITSM incident records into neutral Observations.
 
 The Table API (``GET /api/now/table/incident``, basic/OAuth) returns incident records.

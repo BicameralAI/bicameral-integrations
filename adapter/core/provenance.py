@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Provenance attribution for captured evidence (SDK conformance, bicameral-sdk #7).
 
 Mirrors `bicameral-sdk/src/provenance/index.ts` so a connector's output can carry the

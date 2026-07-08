@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Sensitive-data detector — secret / PHI / PAN catalog for adapter emissions.
 
 Faithful port of bicameral-mcp's `handlers/sensitive_patterns.py` (catalog v1):

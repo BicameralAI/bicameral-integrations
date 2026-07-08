@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Local-directory connector package."""
 
 from .connector import LocalDirectoryConnector, parse_file
