@@ -8275,7 +8275,70 @@ full-ownership grant (PR stacked on #230); merges operator-gated. L2.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#237 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #238: GATE TRIBUNAL -- PASS (cycle 1): #101-2 aggregate byte cap plan
+
+**Entry ID**: `audit238bytecappass`
+**Timestamp**: 2026-07-08T23:20:00-04:00
+**Phase**: GATE
+**Author**: Judge (solo; `option_b_required: false`)
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(.agent/staging/AUDIT_REPORT.md)
+= 6a8597113f171f3971dfc02323e2a496cf0401908bc74566cda09de57d334070
+```
+
+**Previous Hash**: d13963efd4087a5a17dcc27e9bca31aa61f06f7b56a7358d130e8bd1e99da98c
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 5dd9770cf43a865e04364f4882c3b60e9ef4655923debd90c065f12f3144ce13
+```
+
+**Decision**: **PASS.** #101 verification matrix: items 1 (runtime-key allowlist load+write side +
+`_require_https_endpoint` host-pin, poll_specs.py:77-91) and 3 (author/timestamp in the FX-SEC-001 scan set,
+pipeline.py:127-139 + redteam CONFIG-3 test) verified LANDED; item 4 = recorded accepted-risk disposition.
+Item 2 residual identified: the 50k item cap leaves a few-huge-items walk able to retain ~100×8 MiB — plan
+adds `_MAX_TOTAL_BYTES` (64 MiB) to both paginated loops. `_fetch_page` widening's callers enumerated
+(redteam raise-only lambdas unaffected). L2.
+
+---
+
+### Entry #239: IMPLEMENTATION + SESSION SEAL -- #101 closed (aggregate byte cap; FX-RUNTIME-003 hardened)
+
+**Entry ID**: `seal239bytecap`
+**Timestamp**: 2026-07-08T23:30:00-04:00
+**Phase**: IMPLEMENT+SUBSTANTIATE (compact cycle; repo-convention seal, SKIPs as #233)
+**Author**: Specialist/Governor
+**Risk Grade**: L2
+
+**Content Hash**:
+```
+SHA256(runtime/poll_client.py)
+= 0ab8d39e0120b13f94ecac40b42cd02af5e9c1190c3f7e546c1c38f9646c419c
+```
+
+**Previous Hash**: 5dd9770cf43a865e04364f4882c3b60e9ef4655923debd90c065f12f3144ce13
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= ca966985d824d3917eb5a4290e8fe6757d1afbf7f9202eb445c6381e0312a51a
+```
+
+**Decision**: **SEALED.** `_MAX_TOTAL_BYTES = 64 MiB` guard in `poll_client.poll` (via `_fetch_page ->
+(parsed, nbytes)`) and `poll_graphql` — `aggregate_bytes_exceeded` fails closed before the overflowing
+page's items are retained; token-free. Tests: over-cap walk raises + empty sink in both loops (cap
+monkeypatched — guard logic, not 64 MiB fixtures); under-cap behavior = existing suites untouched.
+**Verification**: 800 tests; ruff; mypy (243 files); governance-gate OK. **#101 fully dispositioned**
+(1/3 landed-verified, 2 closed by this cycle, 4 recorded accepted-risk) — PR carries `Closes #101` +
+evidence-matrix comment. Publishing under standing ownership grant (PR stacked on #231). L2.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#239 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #237 (`d13963ef`; L2)** -- #226 v2 external-ingest migration complete (FX-RUNTIME-002 retargeted; B15 closed). Prior seal #233: #227 configure CLI (FX-RUNTIME-007) + #228 enablement verified.*
 *Next required action: operator merges the stack (#215 → PR #230 → #226 PR) + posts the drafted #228 comment + runs the live 201 tests per `docs/runbooks/` (now against `/api/v1/external-ingest`) to flip Linear + Google Drive Live. Then: #101 hardening close-out + hygiene batch (B14/B11/B2/B10). KNOWN: `qor-logic verify-ledger` cross-tool hash-markup flags on #123+ remain non-gating (/qor-remediate candidate).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*

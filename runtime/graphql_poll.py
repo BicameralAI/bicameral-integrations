@@ -34,6 +34,7 @@ from .sinks import EmissionSink
 from .versioning import adapter_version_for
 
 _MAX_RESPONSE = 8 * 1024 * 1024  # cap a hostile/huge provider body before parse (local; not poll_client's)
+_MAX_TOTAL_BYTES = 64 * 1024 * 1024  # aggregate BYTE cap across all pages (#101-2; mirrors poll_client)
 _MAX_PAGES = 100  # bound a runaway/cyclic pager (fail-safe)
 _MAX_TOTAL_ITEMS = 50_000  # aggregate cap across all pages (purple-team DOS-1, 2026-06-11)
 
@@ -137,10 +138,14 @@ def poll_graphql(
     observations: list[Observation] = []
     cursor: str | None = None
     seen_cursors: set[str] = set()  # detect a repeating/cyclic cursor (A8) — don't re-fetch a page
+    total_bytes = 0
     for _ in range(_MAX_PAGES):
         variables = {"first": spec.page_size, "after": cursor}
         body = json.dumps({"query": spec.query, "variables": variables}).encode("utf-8")
         response = transport.request("POST", spec.endpoint, headers=headers, body=body)
+        total_bytes += len(response.body)
+        if total_bytes > _MAX_TOTAL_BYTES:  # aggregate byte cap (#101-2: few-huge-items walk)
+            raise PollError(0, "aggregate_bytes_exceeded")
         page = _decode_page(response.status, response.body)
         nodes = _dig(page, spec.nodes_path)
         if not isinstance(nodes, list):
