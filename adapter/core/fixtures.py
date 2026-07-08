@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Fixture helpers placeholder for connector and adapter conformance tests."""
 
 from __future__ import annotations

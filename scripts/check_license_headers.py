@@ -48,12 +48,12 @@ def main(argv: list[str] | None = None) -> int:
         files.extend(root.rglob("*.py") if root.is_dir() else [root])
     missing = scan(files)
     if missing:
-        print(f"license-headers: {len(missing)} file(s) missing SPDX header (advisory):")
+        print(f"license-headers: {len(missing)} file(s) missing SPDX header:")
         for m in missing:
             print(f"  - {m}")
-    else:
-        print("license-headers: all scanned files carry an SPDX header")
-    return 0  # advisory this cycle — never blocks
+        return 1  # BLOCKING since 2026-07-08 (B2 backfill complete; gate ramped per its own note)
+    print("license-headers: all scanned files carry an SPDX header")
+    return 0
 
 
 if __name__ == "__main__":

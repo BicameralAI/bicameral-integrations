@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """OpenAI Admin connector: organization audit-log events into neutral Observations.
 
 The Admin audit-logs API (``GET /v1/organization/audit_logs``, Bearer admin key) returns

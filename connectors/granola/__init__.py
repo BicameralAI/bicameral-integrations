@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Granola connector package."""
 
 from .connector import GranolaConnector, parse_transcript

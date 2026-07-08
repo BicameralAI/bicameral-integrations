@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Local-directory connector: dropped files into neutral Observations.
 
 A file captured from a watched local directory — represented as a

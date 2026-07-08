@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Provider-neutral observations produced by connectors before normalization."""
 
 from __future__ import annotations

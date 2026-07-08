@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Webhook signature verification + delivery dedup (provider-neutral primitives).
 
 Two verification schemes and a replay-dedup cache, ported in discipline from

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Google Drive connector package."""
 
 from .connector import (

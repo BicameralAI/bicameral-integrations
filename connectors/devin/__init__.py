@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Devin connector package."""
 
 from .connector import DevinConnector, parse_session

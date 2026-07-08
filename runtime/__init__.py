@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Operator-runtime boundary layer (ADR-0012).
 
 A thin, framework-free layer the operator's host (HTTP receiver / cron — not this

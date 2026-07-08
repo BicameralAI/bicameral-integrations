@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Shared filter vocabulary for connector-facing configuration."""
 
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """GitHub Copilot connector: aggregate usage-metrics days into neutral Observations.
 
 The Copilot metrics API (``GET /orgs/{org}/copilot/metrics``, also enterprise/team

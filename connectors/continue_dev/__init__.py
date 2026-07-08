@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Continue connector package."""
 
 from .connector import ContinueConnector, parse_event

@@ -1,11 +1,15 @@
+# SPDX-License-Identifier: MIT
 """Fathom meeting connector: provider payloads into neutral Observations.
 
 A Fathom meeting object — a REST `GET /meetings` list item or a
 `new-meeting-content-ready` webhook payload (same shape) — maps to one
 provider-neutral Observation. Provider field knowledge stays here; the
 universal adapter (`pipeline.normalize`) turns it into an AdapterEmission
-(ADR-0004). The live REST poll, API-key resolution, and Svix webhook
-signature verification are deferred (no live API this cycle); see ``auth.md``.
+(ADR-0004). ``verify()`` is IMPLEMENTED: Svix-style webhook signature
+verification via ``adapter.core.webhook_security.verify_standard_webhook``
+(freshness window; malformed header types fail closed — #57). The live REST
+poll transport + API-key/secret resolution stay in the operator runtime; see
+``auth.md``.
 """
 
 from __future__ import annotations

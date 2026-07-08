@@ -8370,7 +8370,45 @@ Publishing under standing grant (PR stacked on #232). L1.
 
 ---
 
-*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#240 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
+### Entry #241: IMPLEMENTATION + SEAL -- backlog B2/B8/B10 batch (headers blocking; PagerDuty doc-confirmed; docstrings fresh)
+
+**Entry ID**: `seal241b2b8b10`
+**Timestamp**: 2026-07-09T00:40:00-04:00
+**Phase**: IMPLEMENT+SUBSTANTIATE (hygiene batch; operator "proceed" directive)
+**Author**: Specialist/Governor
+**Risk Grade**: L1
+
+**Content Hash**:
+```
+SHA256(scripts/check_license_headers.py)
+= 5e16fdbb1902d101898b3b05b2addf7ef9ddb80d2fcf0e65dc0cd8e225193c51
+```
+
+**Previous Hash**: c2017a83852deffc1c9dd02a975f8fdd3ce5706b2da8d131a77d3ccb6a3b556a
+
+**Chain Hash**:
+```
+SHA256(content_hash + previous_hash)
+= 57a78f8229f923f00012b73086365cf4660ac911927569946a0aab53c642677e
+```
+
+**Decision**: **SEALED.** **B2**: 103 SPDX headers backfilled (69 CI-scanned + 34 mods/tests/protocol);
+`check_license_headers.py` exits 1 on a miss; quality.yml job "SPDX headers (blocking)" with scan widened to
+all seven trees. **B8**: PagerDuty signature scheme CONFIRMED first-party in a real browser render — the doc
+moved to `developer.pagerduty.com/docs/verifying-webhook-signatures` (old slug 404s); every implemented
+detail matches (comma-separated `v1=` multi-sig, HMAC-SHA256 raw-body hex, any-match, constant-time);
+`connectors/pagerduty/auth.md` carries the citation — the last unconfirmed scheme is now doc-confirmed.
+**B10**: pagerduty + fathom module docstrings no longer claim `verify()` deferred (both implemented); sentry
+verified already-current. Also this operator-directed session: stack merge train started (#215 merged; #230
+auto-closed by base deletion — superseded by #234, merged; #231 retargeted to main + close/reopened to
+trigger CI); five dependabot PRs merged (#219/#222-225; #223 carried stale June check runs — merged
+deliberately to keep the codeql-action trio consistent); #228 verification comment POSTED; **B5 attempted
+and confirmed admin-gated** (404 — token push-only). Verification: 801 tests; ruff; mypy; blocking header
+gate green; governance-gate OK. L1.
+
+---
+
+*Chain integrity: VALID (`scripts/governance_gate.py` re-derives #1..#241 clean; bare-hex Previous Hash + `sha256(content+previous)`, SG-2026-06-11-C).*
 *Status: **SEALED at #237 (`d13963ef`; L2)** -- #226 v2 external-ingest migration complete (FX-RUNTIME-002 retargeted; B15 closed). Prior seal #233: #227 configure CLI (FX-RUNTIME-007) + #228 enablement verified.*
 *Next required action: operator merges the stack (#215 → PR #230 → #226 PR) + posts the drafted #228 comment + runs the live 201 tests per `docs/runbooks/` (now against `/api/v1/external-ingest`) to flip Linear + Google Drive Live. Then: #101 hardening close-out + hygiene batch (B14/B11/B2/B10). KNOWN: `qor-logic verify-ledger` cross-tool hash-markup flags on #123+ remain non-gating (/qor-remediate candidate).*
 *Status: **SEALED at #205 (`a2f12790`; L1)** -- provider-acquisition documentation cycle complete: ADR-0017 (Proposed) + consumable spec `docs/PROVIDER_ACQUISITION_CONTRACT.md` + 5 cross-linked ADRs answer #173. Repo-convention seal (no tag/badge; SKIPs disclosed). Prior: #204 IMPLEMENT; #203 AUDIT PASS; #202 DESIGN; #201 RESEARCH; #200 adapter_version single-sourcing.*

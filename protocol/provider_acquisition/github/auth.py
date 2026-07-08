@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # Copyright 2026 Bicameral AI — MIT License
 """GitHub App installation auth for the discovery surface (#180; ADR-0017 §3/§6).
 

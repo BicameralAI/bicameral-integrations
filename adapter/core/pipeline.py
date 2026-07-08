@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Universal adapter pipeline: normalize observations and validate emissions."""
 
 from __future__ import annotations

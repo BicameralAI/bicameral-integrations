@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """PagerDuty connector package."""
 
 from .connector import PagerDutyConnector, parse_event

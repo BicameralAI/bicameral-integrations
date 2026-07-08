@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behavioral tests for LinearConnector webhook verify + dedup (Linear-Signature)."""
 
 from __future__ import annotations

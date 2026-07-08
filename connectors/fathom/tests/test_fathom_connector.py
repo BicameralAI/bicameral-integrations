@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behavior tests for the Fathom connector and end-to-end normalization."""
 
 from __future__ import annotations

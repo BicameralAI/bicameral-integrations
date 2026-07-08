@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Connector capability declarations."""
 
 from __future__ import annotations
