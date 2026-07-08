@@ -125,3 +125,63 @@ def test_two_active_credentials_both_required(monkeypatch):
     with pytest.raises(lc.ConfigError) as exc:  # A4: relax only off-mode — both active creds required
         lc.assert_runnable(_cfg("c", {"a": "v"}), "c", mode="active")
     assert "b" in str(exc.value)
+
+
+# --- #227 LD5a: durable-OAuth refresh triple (oauth_aux_keys + refresh-aware gate) ---
+
+_GD_ENV = ("BICAMERAL_GOOGLE_DRIVE", "BICAMERAL_GOOGLE_DRIVE_REFRESH_TOKEN",
+           "BICAMERAL_GOOGLE_DRIVE_CLIENT_ID", "BICAMERAL_GOOGLE_DRIVE_CLIENT_SECRET")
+
+_TRIPLE = {"google_drive_refresh_token": "1//rt", "google_drive_client_id": "cid",
+           "google_drive_client_secret": "cs"}
+
+
+def _no_gd_env(monkeypatch) -> None:
+    for var in _GD_ENV:
+        monkeypatch.delenv(var, raising=False)
+
+
+def test_oauth_aux_keys_only_for_operator_refresh_oauth2():
+    oauth = {"key": "google_drive", "type": "oauth2", "refresh_owner": "operator"}
+    assert lc.oauth_aux_keys(oauth) == ("google_drive_refresh_token", "google_drive_client_id",
+                                        "google_drive_client_secret")
+    assert lc.oauth_aux_keys({"key": "linear", "type": "api_key"}) == ()
+    assert lc.oauth_aux_keys({"key": "x", "type": "oauth2"}) == ()  # no operator refresh_owner
+
+
+def test_assert_runnable_accepts_refresh_triple(monkeypatch):
+    # real google_drive descriptor: required oauth2 credential satisfied by the FULL triple alone
+    _no_gd_env(monkeypatch)
+    cfg = _cfg("google_drive", dict(_TRIPLE))
+    lc.assert_runnable(cfg, "google_drive", mode="active")  # PASSES with no direct key
+
+
+def test_assert_runnable_partial_triple_fails_closed(monkeypatch):
+    _no_gd_env(monkeypatch)
+    partial = {k: v for k, v in _TRIPLE.items() if k != "google_drive_client_secret"}
+    with pytest.raises(lc.ConfigError) as exc:
+        lc.assert_runnable(_cfg("google_drive", partial), "google_drive", mode="active")
+    assert "missing required" in str(exc.value) and "google_drive" in str(exc.value)
+
+
+def test_assert_runnable_none_of_four_fails_closed(monkeypatch):
+    _no_gd_env(monkeypatch)
+    with pytest.raises(lc.ConfigError) as exc:
+        lc.assert_runnable(_cfg("google_drive", {}), "google_drive", mode="active")
+    assert "missing required" in str(exc.value)
+
+
+def test_assert_runnable_still_rejects_truly_unknown_key(monkeypatch):
+    _no_gd_env(monkeypatch)
+    secrets = dict(_TRIPLE, google_drive_totally_bogus="v")
+    with pytest.raises(lc.ConfigError) as exc:
+        lc.assert_runnable(_cfg("google_drive", secrets), "google_drive", mode="active")
+    assert "google_drive_totally_bogus" in str(exc.value)
+
+
+def test_validate_against_descriptors_quiet_for_aux_keys(monkeypatch):
+    _no_gd_env(monkeypatch)
+    cfg = _cfg("google_drive", dict(_TRIPLE, unknown_thing="v"))
+    warns = lc.validate_against_descriptors(cfg)
+    assert not [w for w in warns if "refresh_token" in w or "client_id" in w or "client_secret" in w]
+    assert any("unknown_thing" in w for w in warns)  # a genuinely unknown key still warns

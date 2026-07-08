@@ -15,19 +15,45 @@ import sys
 
 from mods.contract import run_mod
 
+from .google_oauth import OAuthRefreshError, RefreshTokenSecretResolver
+from .oauth_consent import ConsentError
 from .local_config import (
     ConfigError,
     DEFAULT_CONFIG,
     LocalConfig,
+    _descriptor,
     assert_runnable,
     load_config,
+    oauth_aux_keys,
     resolver_from,
     validate_against_descriptors,
 )
 from .poll_auth import PollError
 from .poll_client import HttpTransport, UrllibTransport
 from .runner_registry import RUNNERS, load_mod
+from .secrets import SecretResolver
 from .sinks import CollectingSink, EmissionSink, GatewayEmissionGated, GatewaySink
+
+
+def build_resolver(config: LocalConfig, transport: HttpTransport) -> SecretResolver:
+    """The run-path resolver (#227 LD5/LD5a). When a connector's oauth2/operator-refresh credential
+    has its full aux triple persisted (``oauth_aux_keys``), wrap the file resolver with a
+    ``RefreshTokenSecretResolver`` so the durable refresh token — not a pasted ~1h access token —
+    backs the credential. Plain ``FileSecretResolver`` otherwise (nothing else changes)."""
+    resolver: SecretResolver = resolver_from(config)
+    for cid in config.connectors:
+        for cred in (_descriptor(cid) or {}).get("credentials", []):
+            aux = oauth_aux_keys(cred)
+            if aux and all(resolver.resolve(k) for k in aux):
+                resolver = RefreshTokenSecretResolver(
+                    target_key=cred["key"],
+                    refresh_token=resolver.resolve(aux[0]),
+                    client_id=resolver.resolve(aux[1]),
+                    client_secret=resolver.resolve(aux[2]),
+                    transport=transport,
+                    base=resolver,
+                )
+    return resolver
 
 
 def run_connector(
@@ -45,7 +71,7 @@ def run_connector(
         raise ConfigError(f"unknown or not-runnable connector: {connector_id!r}")
     assert_runnable(config, connector_id, mode="active")  # the CLI run path is always the active fetch
     runtime = (config.connectors.get(connector_id) or {}).get("runtime", {})
-    count = runner(resolver_from(config), runtime, document_id, transport, sink)
+    count = runner(build_resolver(config, transport), runtime, document_id, transport, sink)
     if limit is not None and isinstance(sink, CollectingSink) and len(sink.emissions) > limit:
         del sink.emissions[limit:]  # --limit caps PRINTED emissions (the fetch still walks fully)
         count = limit
@@ -126,19 +152,42 @@ def _parser() -> argparse.ArgumentParser:
     rm = sub.add_parser("run-mods")
     rm.add_argument("connector")
     rm.add_argument("--mods", default="")
+    cfg = sub.add_parser("configure")
+    cfg.add_argument("connector")
+    cfg.add_argument("--modes", default="")
+    cfg.add_argument("--paste-token", action="store_true")
     return p
+
+
+def _cmd_configure(args: argparse.Namespace) -> int:
+    """Guided descriptor walk (#227). Runs BEFORE load_config — the config file may not exist yet."""
+    import getpass
+    import webbrowser
+
+    from .configure import ConfigureIO, run_configure
+
+    io = ConfigureIO(input_fn=input, getpass_fn=getpass.getpass, open_url_fn=webbrowser.open)
+    # verify_fn only when the connector HAS a CLI-runnable active fetch — otherwise the walk's
+    # verify step prints receiver-side guidance instead of a misleading "not-runnable" failure.
+    verify_fn = run_connector if args.connector in RUNNERS else None
+    return run_configure(args.connector, args.config, modes=args.modes, io=io,
+                         transport=UrllibTransport(), verify_fn=verify_fn,
+                         paste_token=args.paste_token)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
+        if args.command == "configure":  # before load_config — configure CREATES the file (LD2)
+            return _cmd_configure(args)
         config = load_config(args.config)
         if args.command == "list":
             return _cmd_list(config)
         if args.command == "run":
             return _cmd_run(config, args)
         return _cmd_run_mods(config, args)
-    except (ConfigError, PollError, GatewayEmissionGated, FileNotFoundError) as exc:
+    except (ConfigError, PollError, GatewayEmissionGated, FileNotFoundError,
+            ConsentError, OAuthRefreshError) as exc:
         print(f"error: {exc}", file=sys.stderr)  # str(exc) only — NEVER repr(config)/gateway (token)
         return 2
 

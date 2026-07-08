@@ -4,6 +4,24 @@ How to stand up the **backend** for any connector (and run mods) **without the m
 specifics live in each `connectors/<id>/SETUP.md` (generated from that connector's `config.json`); this
 doc explains the mechanics those runbooks assume. The UI is optional — this is the headless path.
 
+## 0. Config-on-rails (recommended): `configure` (#227, FX-RUNTIME-007)
+
+The guided path — no manual JSON editing. The CLI walks the connector's descriptor
+`instructions[]` (the same steps the UI renders), collects credentials with **masked input** and
+format validation, runs the connection test, and writes the local config atomically:
+
+```bash
+python -m runtime.cli configure linear                  # both modes (active + webhook)
+python -m runtime.cli configure linear --modes active   # active-only: skips the webhook secret
+python -m runtime.cli configure google_drive            # OAuth consent -> durable refresh token
+python -m runtime.cli configure google_drive --paste-token  # ~1h test token (NOT durable)
+```
+
+For Google Drive the consent flow persists the **refresh triple**
+(`google_drive_refresh_token` / `_client_id` / `_client_secret`); the run path detects it and
+mints fresh access tokens automatically (FX-RUNTIME-006). Everything below remains valid as the
+manual equivalent — and is what `configure` does under the hood.
+
 ## 1. The config model
 
 Operator config lives in **`config/bicameral.local.json`** — a **gitignored** file (the glob block in

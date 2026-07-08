@@ -84,6 +84,21 @@ def resolver_from(config: LocalConfig) -> FileSecretResolver:
     return FileSecretResolver(config.secret_map)
 
 
+def oauth_aux_keys(credential: dict) -> tuple[str, ...]:
+    """The durable-OAuth aux secret keys for one descriptor credential (single source — #227 LD5a).
+
+    For an ``oauth2`` credential whose refresh is operator-owned (``refresh_owner: "operator"``,
+    e.g. google_drive) the durable persistence shape is THREE flat secret keys derived from the
+    credential key: ``<key>_refresh_token`` + ``<key>_client_id`` + ``<key>_client_secret``
+    (consumed by ``RefreshTokenSecretResolver`` — FX-RUNTIME-006). Every consumer (gate below,
+    advisory check, ``cli.build_resolver``, the consent writer) derives the names HERE; none
+    restates the suffixes (SG-2026-06-12-F). Any other credential returns ``()``."""
+    if credential.get("type") == "oauth2" and credential.get("refresh_owner") == "operator":
+        key = credential["key"]
+        return (f"{key}_refresh_token", f"{key}_client_id", f"{key}_client_secret")
+    return ()
+
+
 def _descriptor(connector_id: str) -> dict | None:
     path = _CONNECTORS_DIR / connector_id / "config.json"
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
@@ -98,6 +113,8 @@ def validate_against_descriptors(config: LocalConfig) -> list[str]:
             warns.append(f"{cid}: no config.json descriptor")
             continue
         declared = {c["key"] for c in desc.get("credentials", [])}
+        for cred in desc.get("credentials", []):
+            declared.update(oauth_aux_keys(cred))  # durable-OAuth triple is a known shape, not a typo
         for key in set(block.get("secrets") or {}) - declared:
             warns.append(f"{cid}: secret under unknown credential key {key!r}")
     return warns
@@ -117,6 +134,8 @@ def assert_runnable(config: LocalConfig, connector_id: str, *, mode: str = "acti
     if desc is None:
         raise ConfigError(f"{connector_id}: no config.json descriptor")
     declared = {c["key"] for c in desc.get("credentials", [])}
+    for cred in desc.get("credentials", []):
+        declared.update(oauth_aux_keys(cred))  # LD5a: the refresh triple is declared shape (audit #230 F1)
     unknown = set(block.get("secrets") or {}) - declared
     if unknown:
         raise ConfigError(f"{connector_id}: secret(s) under unknown credential key(s): {sorted(unknown)}")
@@ -131,9 +150,16 @@ def assert_runnable(config: LocalConfig, connector_id: str, *, mode: str = "acti
             f"{sorted(unknown_runtime)}"
         )
     resolver = resolver_from(config)
-    missing = [c["key"] for c in desc.get("credentials", [])
-               if c.get("required") and mode in (c.get("modes") or [mode])
-               and not resolver.resolve(c["key"])]
+    missing = []
+    for c in desc.get("credentials", []):
+        if not (c.get("required") and mode in (c.get("modes") or [mode])):
+            continue
+        if resolver.resolve(c["key"]):
+            continue  # direct value (pasted token / api key) satisfies
+        aux = oauth_aux_keys(c)
+        if aux and all(resolver.resolve(k) for k in aux):
+            continue  # durable path: full refresh triple satisfies (LD5a; partial triple fails closed)
+        missing.append(c["key"])
     if missing:
         raise ConfigError(f"{connector_id}: missing required credential(s): {sorted(missing)} "
                           f"(set in config or BICAMERAL_<KEY>)")
