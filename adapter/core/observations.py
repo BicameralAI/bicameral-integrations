@@ -25,4 +25,5 @@ class Observation:
     title: str = ""
     author: str = ""
     timestamp: str = ""
+    provider_event_id: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)

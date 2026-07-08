@@ -14,6 +14,7 @@ free-text scalars are normalized to ``str`` before they reach the screen.
 
 from __future__ import annotations
 
+import base64
 import hashlib
 from typing import Any
 
@@ -42,7 +43,9 @@ def _content_hash(content: str) -> str:
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
-def map_repository(repo: dict[str, Any], *, captured_at: str) -> ProviderResourceDescriptor:
+def map_repository(
+    repo: dict[str, Any], *, captured_at: str
+) -> ProviderResourceDescriptor:
     """Map a GitHub repository object into a ``repository`` descriptor."""
     full_name = _text(repo.get("full_name"))
     perms = _d(repo.get("permissions"))
@@ -64,7 +67,9 @@ def map_repository(repo: dict[str, Any], *, captured_at: str) -> ProviderResourc
         uri=_text(repo.get("html_url")) or None,
         capabilities=_repo_capabilities(perms),
         permission=PermissionState.GRANTED,
-        freshness=_freshness(last_modified=repo.get("updated_at"), etag=repo.get("node_id")),
+        freshness=_freshness(
+            last_modified=repo.get("updated_at"), etag=repo.get("node_id")
+        ),
         provider_metadata=provider_metadata,
     )
 
@@ -141,6 +146,47 @@ def map_pull_request(
         uri=_text(pr.get("html_url")) or None,
         content_hash=_content_hash(content),
         freshness=_freshness(last_modified=pr.get("updated_at")),
+        provider_metadata=provider_metadata,
+    )
+
+
+def map_file_content(
+    file: dict[str, Any], *, resource_id: str, fetched_at: str
+) -> ProviderItemEnvelope:
+    """Map a GitHub contents-API file object into a ``file`` item envelope.
+
+    The GitHub ``GET /repos/{owner}/{repo}/contents/{path}`` response encodes
+    file content as base64; we decode it here. Non-file entries (directories,
+    symlinks, submodules) are routed before this function is called and never
+    reach it.
+    """
+    file_path = _text(file.get("path"))
+    raw_b64 = _text(file.get("content")).replace("\n", "")
+    try:
+        content = base64.b64decode(raw_b64).decode("utf-8", errors="replace")
+    except Exception:
+        content = ""
+    provider_metadata = {
+        k: v
+        for k, v in {
+            "path": file_path or None,
+            "sha": file.get("sha"),
+            "size": file.get("size"),
+            "encoding": file.get("encoding"),
+        }.items()
+        if v is not None
+    }
+    return ProviderItemEnvelope(
+        provider=_PROVIDER,
+        resource_id=resource_id,
+        item_id=f"file-{file_path}",
+        item_type="file",
+        content=content,
+        fetched_at=fetched_at,
+        title=_text(file.get("name")) or None,
+        uri=_text(file.get("html_url")) or None,
+        content_hash=_content_hash(content),
+        freshness=_freshness(etag=file.get("sha")),
         provider_metadata=provider_metadata,
     )
 

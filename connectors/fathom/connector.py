@@ -14,6 +14,7 @@ poll transport + API-key/secret resolution stay in the operator runtime; see
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import time
 from collections.abc import Callable
@@ -63,8 +64,14 @@ def parse_meeting(meeting: dict) -> Observation:
     non-empty-excerpt rule always holds.
     """
     recording_id = meeting.get("recording_id", "")
-    title = redact(_s(meeting.get("meeting_title")) or _s(meeting.get("title")) or str(recording_id))
-    ds = meeting.get("default_summary")  # isinstance guard: a truthy non-dict must floor, not crash
+    title = redact(
+        _s(meeting.get("meeting_title"))
+        or _s(meeting.get("title"))
+        or str(recording_id)
+    )
+    ds = meeting.get(
+        "default_summary"
+    )  # isinstance guard: a truthy non-dict must floor, not crash
     summary = _s(ds.get("markdown_formatted")) if isinstance(ds, dict) else ""
     excerpt = redact(_flatten_transcript(meeting.get("transcript")) or summary) or title
     return Observation(
@@ -78,7 +85,8 @@ def parse_meeting(meeting: dict) -> Observation:
         mode=SourceMode.PASSIVE,
         title=title,
         author="",  # recorded_by.name (real-name PII) dropped (SG-2026-06-11-D); speaker names too (-H)
-        timestamp=_s(meeting.get("recording_end_time")) or _s(meeting.get("created_at")),
+        timestamp=_s(meeting.get("recording_end_time"))
+        or _s(meeting.get("created_at")),
     )
 
 
@@ -109,7 +117,9 @@ class FathomConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
-        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+        if not isinstance(
+            payload, dict
+        ):  # untrusted poll boundary: skip, don't crash (#59)
             return []
         return [parse_meeting(payload)]
 
@@ -120,7 +130,11 @@ class FathomConnector:
                 headers=headers, body=body, secret=self._secret, now=self._clock()
             )
             return True
-        except (WebhookVerificationError, AttributeError, TypeError):  # malformed header types fail closed (#57)
+        except (
+            WebhookVerificationError,
+            AttributeError,
+            TypeError,
+        ):  # malformed header types fail closed (#57)
             return False
 
     def normalize_event(
@@ -129,15 +143,21 @@ class FathomConnector:
         """Self-guard (re-verify), dedup on webhook-id, then parse. ``[]`` on reject."""
         if not self.verify(headers=headers, body=body):
             return []
+        delivery_id = header_value(headers, "webhook-id") or ""
         if self._dedup is not None:
-            delivery_id = header_value(headers, "webhook-id") or ""
             if not delivery_id or self._dedup.is_duplicate("fathom", delivery_id):
                 return []
             self._dedup.mark_seen("fathom", delivery_id)
         try:
             payload = json.loads(body)
-        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
+        except (
+            ValueError,
+            UnicodeDecodeError,
+        ):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
-        # route through observations() so the dict-guard is shared by both modes: a signed body that
-        # decodes to a non-dict (list/scalar) is skipped, not crashed (purple-team parse_robustness).
-        return self.observations(payload)
+        obs_list = self.observations(payload)
+        if delivery_id:
+            obs_list = [
+                dataclasses.replace(o, provider_event_id=delivery_id) for o in obs_list
+            ]
+        return obs_list

@@ -14,6 +14,7 @@ operator-run (see ``auth.md``).
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import time
 from collections.abc import Callable
@@ -141,7 +142,9 @@ class LinearConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
-        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+        if not isinstance(
+            payload, dict
+        ):  # untrusted poll boundary: skip, don't crash (#59)
             return []
         if not _is_issue_event(payload):  # fail-closed receiver guard (SG-2026-06-18-A)
             return []
@@ -161,7 +164,14 @@ class LinearConnector:
             )
             data = json.loads(body)
             return self._timestamp_ok(data, self._clock() * 1000)
-        except (WebhookVerificationError, json.JSONDecodeError, UnicodeDecodeError, KeyError, ValueError, TypeError):
+        except (
+            WebhookVerificationError,
+            json.JSONDecodeError,
+            UnicodeDecodeError,
+            KeyError,
+            ValueError,
+            TypeError,
+        ):
             return False
 
     def normalize_event(
@@ -171,11 +181,14 @@ class LinearConnector:
         if not self.verify(headers=headers, body=body):
             return []
         payload = json.loads(body)
-        if not _is_issue_event(payload):  # subscribed != enforced: skip non-Issue/remove/shapeless (SG-2026-06-18-A)
+        if not _is_issue_event(
+            payload
+        ):  # subscribed != enforced: skip non-Issue/remove/shapeless (SG-2026-06-18-A)
             return []
+        delivery_id = str(payload.get("webhookId") or "")
         if self._dedup is not None:
-            delivery_id = str(payload.get("webhookId") or "")
             if not delivery_id or self._dedup.is_duplicate("linear", delivery_id):
                 return []
             self._dedup.mark_seen("linear", delivery_id)
-        return [parse_event(payload)]
+        obs = parse_event(payload)
+        return [dataclasses.replace(obs, provider_event_id=delivery_id)]

@@ -1,0 +1,17 @@
+{
+  "_comment": "Recorded GitHub REST response: GET /repos/example-org/example-repo/contents/README.md (synthetic, secret-free).",
+  "method": "GET",
+  "path": "/repos/example-org/example-repo/contents/README.md",
+  "status": 200,
+  "json": {
+    "name": "README.md",
+    "path": "README.md",
+    "sha": "abc123def456789",
+    "size": 142,
+    "type": "file",
+    "content": "IyBFeGFtcGxlIFJlcG8KClRoaXMgcmVwb3NpdG9yeSBkZW1vbnN0cmF0ZXMgdGhlIGhlYWx0aC1jaGVjayByb3V0ZSBmb3IgS3ViZXJuZXRlcyBsaXZlbmVzcyBwcm9iZXMuCg==",
+    "encoding": "base64",
+    "html_url": "https://github.com/example-org/example-repo/blob/main/README.md",
+    "download_url": "https://raw.githubusercontent.com/example-org/example-repo/main/README.md"
+  }
+}

@@ -23,8 +23,14 @@ from protocol.provider_acquisition.github import (
     MappingInstallationTokenProvider,
     RecordedTransport,
 )
-from protocol.provider_acquisition.github.auth import reject_control_chars, GitHubAuthError
-from protocol.provider_acquisition.github.transport import GitHubResponse, GitHubTransport
+from protocol.provider_acquisition.github.auth import (
+    reject_control_chars,
+    GitHubAuthError,
+)
+from protocol.provider_acquisition.github.transport import (
+    GitHubResponse,
+    GitHubTransport,
+)
 from protocol.provider_acquisition.screening import (
     DiscoveryScreenError,
     screen_descriptor,
@@ -38,9 +44,7 @@ from protocol.provider_acquisition.types import (
     ProviderResourceDescriptor,
 )
 
-_RECORDED_DIR = (
-    Path(__file__).resolve().parents[2] / "fixtures" / "recorded" / "github"
-)
+_RECORDED_DIR = Path(__file__).resolve().parents[2] / "fixtures" / "recorded" / "github"
 _SCHEMAS_DIR = Path(__file__).resolve().parents[2] / "schemas"
 _FIXED_CLOCK = "2026-06-23T00:00:00+00:00"
 _INSTALL_ID = "inst-1"
@@ -162,7 +166,9 @@ class TestListResources:
         result = _connector().list_resources(config=_config())
         assert result.value is not None
         for desc in result.value:
-            errors = [e.message for e in validator.iter_errors(_descriptor_to_dict(desc))]
+            errors = [
+                e.message for e in validator.iter_errors(_descriptor_to_dict(desc))
+            ]
             assert not errors, f"{desc.resource_id}: {errors}"
 
 
@@ -304,6 +310,33 @@ class TestFetchProviderItem:
         assert result.value.item_type == "pull_request"
         assert result.value.provider_metadata.get("merged") is True
 
+    def test_fetch_file_content(self) -> None:
+        result = _connector().fetch_provider_item(
+            config=_config(),
+            resource_id="example-org/example-repo/contents",
+            item_id="file-README.md",
+        )
+        assert result.ok
+        assert result.value is not None
+        assert isinstance(result.value, ProviderItemEnvelope)
+        assert result.value.item_type == "file"
+        assert result.value.item_id == "file-README.md"
+        assert "Example Repo" in result.value.content
+        assert result.value.content_hash
+        assert result.value.provider_metadata.get("path") == "README.md"
+        assert result.value.provider_metadata.get("sha") == "abc123def456789"
+        assert result.value.provider_metadata.get("size") == 142
+
+    def test_fetch_missing_file_not_found(self) -> None:
+        result = _connector().fetch_provider_item(
+            config=_config(),
+            resource_id="example-org/example-repo/contents",
+            item_id="file-nonexistent.txt",
+        )
+        assert not result.ok
+        assert result.error is not None
+        assert result.error.kind == DiscoveryErrorKind.NOT_FOUND
+
     def test_unsupported_item_kind(self) -> None:
         result = _connector().fetch_provider_item(
             config=_config(),
@@ -326,19 +359,20 @@ class TestFetchProviderItem:
 
     @pytest.mark.skipif(not _HAS_JSONSCHEMA, reason="jsonschema not installed")
     def test_items_conform_to_schema(self) -> None:
-        validator = Draft7Validator(
-            _load_schema("provider-item-envelope.schema.json")
-        )
+        validator = Draft7Validator(_load_schema("provider-item-envelope.schema.json"))
         conn = _connector()
         for resource_id, item_id in (
             ("example-org/example-repo/issues", "issue-42"),
             ("example-org/example-repo/pulls", "pr-92"),
+            ("example-org/example-repo/contents", "file-README.md"),
         ):
             result = conn.fetch_provider_item(
                 config=_config(), resource_id=resource_id, item_id=item_id
             )
             assert result.value is not None
-            errors = [e.message for e in validator.iter_errors(_item_to_dict(result.value))]
+            errors = [
+                e.message for e in validator.iter_errors(_item_to_dict(result.value))
+            ]
             assert not errors, f"{item_id}: {errors}"
 
 
@@ -433,6 +467,11 @@ def test_all_operations_offline() -> None:
         config=_config(),
         resource_id="example-org/example-repo/issues",
         item_id="issue-42",
+    ).ok
+    assert conn.fetch_provider_item(
+        config=_config(),
+        resource_id="example-org/example-repo/contents",
+        item_id="file-README.md",
     ).ok
 
 

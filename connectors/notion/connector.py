@@ -24,6 +24,7 @@ stay in the operator runtime (see ``auth.md``).
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import time
@@ -67,7 +68,8 @@ def parse_event(envelope: dict) -> Observation:
     return Observation(
         source_ref=SourceRef(
             source_id="notion",
-            ref=page_id or "notion-page",  # subject = page entity.id, never the event id
+            ref=page_id
+            or "notion-page",  # subject = page entity.id, never the event id
             kind="page",
         ),
         excerpt=f"{label} ({page_id})" if page_id else label,
@@ -88,7 +90,9 @@ def parse_page(page: dict) -> Observation:
     # email/name in a title). Terminal non-empty floor: an untitled page without a usable id
     # (partial objects / webhook envelopes) falls through to a literal (SARIF/MCP-Registry pattern).
     # author is the OPAQUE created_by.id (a Notion user UUID) -- pseudonymous, kept (SG-2026-06-05-D).
-    title = redact(_page_title(page.get("properties") or {})) or page_id or "notion-page"
+    title = (
+        redact(_page_title(page.get("properties") or {})) or page_id or "notion-page"
+    )
     return Observation(
         source_ref=SourceRef(
             source_id="notion",
@@ -130,7 +134,9 @@ class NotionConnector:
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
-        if not isinstance(payload, dict):  # untrusted poll boundary: skip, don't crash (#59)
+        if not isinstance(
+            payload, dict
+        ):  # untrusted poll boundary: skip, don't crash (#59)
             return []
         return [parse_page(payload)]
 
@@ -144,7 +150,9 @@ class NotionConnector:
             sig = header_value(headers, "X-Notion-Signature")
             if not isinstance(sig, str) or not sig.lower().startswith("sha256="):
                 return False
-            verify_hmac_hex(header_sig=sig[len("sha256="):], body=body, secret=self._secret)
+            verify_hmac_hex(
+                header_sig=sig[len("sha256=") :], body=body, secret=self._secret
+            )
             return True
         except (WebhookVerificationError, AttributeError, TypeError):
             return False
@@ -157,20 +165,25 @@ class NotionConnector:
         """
         return str(payload.get("id") or "")
 
-    def normalize_event(self, *, headers: dict[str, str], body: bytes) -> list[Observation]:
+    def normalize_event(
+        self, *, headers: dict[str, str], body: bytes
+    ) -> list[Observation]:
         """Self-guard (re-verify), dedup (body-hash fallback), then parse the envelope. ``[]`` on reject."""
         if not self.verify(headers=headers, body=body):
             return []
         try:
             payload = json.loads(body)
-        except (ValueError, UnicodeDecodeError):  # ValueError covers JSONDecodeError + huge-int (#55)
+        except (
+            ValueError,
+            UnicodeDecodeError,
+        ):  # ValueError covers JSONDecodeError + huge-int (#55)
             return []
         if not isinstance(payload, dict):
             return []
+        delivery_id = self._delivery_id(payload) or hashlib.sha256(body).hexdigest()
         if self._dedup is not None:
-            # body-hash fallback: a signed id-less body cannot bypass dedup (deep-audit; #60 pattern).
-            delivery_id = self._delivery_id(payload) or hashlib.sha256(body).hexdigest()
             if self._dedup.is_duplicate("notion", delivery_id):
                 return []
             self._dedup.mark_seen("notion", delivery_id)
-        return [parse_event(payload)]  # webhook body is the EVENT envelope, not a full page object
+        obs = parse_event(payload)
+        return [dataclasses.replace(obs, provider_event_id=delivery_id)]

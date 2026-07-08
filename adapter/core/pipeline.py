@@ -7,12 +7,23 @@ import re
 import unicodedata
 from collections.abc import Iterable
 
-from .emissions import AdapterEmission, SourceEvidence, SourceRef
+from .capabilities import SourceMode
+from .emissions import AdapterEmission, ProviderProvenance, SourceEvidence, SourceRef
 from .observations import Observation
+from .redaction import redact
 from .sensitive import detect_sensitive
 
+_DELIVERY_MODE: dict[SourceMode, str] = {
+    SourceMode.WEBHOOK: "webhook",
+    SourceMode.ACTIVE: "poll",
+    SourceMode.PASSIVE: "active-fetch",
+    SourceMode.DISCOVERY: "poll",
+}
+
 _SOURCE_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
-_MAX_SOURCE_ID = 128  # a degenerate long source_id must not become the wire `source_type` (#61)
+_MAX_SOURCE_ID = (
+    128  # a degenerate long source_id must not become the wire `source_type` (#61)
+)
 _EMISSION_TYPES = frozenset({"candidate", "evidence", "hint", "advisory"})
 
 
@@ -49,12 +60,16 @@ def _assert_emission_types(emission: AdapterEmission) -> None:
     _require_str(emission.title, "title")
     _require_str(emission.body, "body")
     if not isinstance(emission.evidence, (list, tuple)):
-        raise EmissionContractError(f"evidence_not_sequence: {type(emission.evidence).__name__}")
+        raise EmissionContractError(
+            f"evidence_not_sequence: {type(emission.evidence).__name__}"
+        )
     for ev in emission.evidence:
         if not isinstance(ev, SourceEvidence):
             raise EmissionContractError(f"evidence_item_invalid: {type(ev).__name__}")
         if not isinstance(ev.source_ref, SourceRef):
-            raise EmissionContractError(f"source_ref_invalid: {type(ev.source_ref).__name__}")
+            raise EmissionContractError(
+                f"source_ref_invalid: {type(ev.source_ref).__name__}"
+            )
         _require_str(ev.excerpt, "excerpt")
         _require_str(ev.author, "author")
         _require_str(ev.timestamp, "timestamp")
@@ -78,7 +93,9 @@ def validate_emissions(emissions: Iterable[AdapterEmission]) -> list[AdapterEmis
     """
     validated = list(emissions)
     for emission in validated:
-        _assert_emission_types(emission)  # uniform fail-closed boundary (SG-2026-06-12-F)
+        _assert_emission_types(
+            emission
+        )  # uniform fail-closed boundary (SG-2026-06-12-F)
         if not _SOURCE_ID_RE.match(emission.source_id):
             raise EmissionContractError(f"source_id_invalid: {emission.source_id!r}")
         if len(emission.source_id) > _MAX_SOURCE_ID:
@@ -136,8 +153,17 @@ def _screen_sensitive(emission: AdapterEmission) -> None:
     """
     core = [emission.title, emission.body, emission.source_id]
     for ev in emission.evidence:
-        core.extend([ev.excerpt, ev.source_ref.url, ev.source_ref.ref, ev.source_ref.source_id,
-                     ev.source_ref.kind, ev.author, ev.timestamp])
+        core.extend(
+            [
+                ev.excerpt,
+                ev.source_ref.url,
+                ev.source_ref.ref,
+                ev.source_ref.source_id,
+                ev.source_ref.kind,
+                ev.author,
+                ev.timestamp,
+            ]
+        )
     # Scan EACH wire-bound field as its own unit (NOT one joined blob): a trailing ID-label
     # in one field (e.g. excerpt ending `ref=`) must not fabricate `_is_id_preceded` PAN
     # suppression for a Luhn-valid PAN at the start of an adjacent field (purple-team PII-1,
@@ -168,6 +194,20 @@ def normalize(
     return validate_emissions(emissions)
 
 
+def _provenance_from(obs: Observation) -> ProviderProvenance:
+    """Derive non-authoritative provider provenance from an Observation."""
+    mode = _DELIVERY_MODE.get(obs.mode, "poll")
+    verification = "signed" if obs.mode == SourceMode.WEBHOOK else "unsigned"
+    resource_id = redact(obs.source_ref.ref) if obs.source_ref.ref else ""
+    event_id = redact(obs.provider_event_id) if obs.provider_event_id else ""
+    return ProviderProvenance(
+        delivery_mode=mode,  # type: ignore[arg-type]
+        verification=verification,  # type: ignore[arg-type]
+        provider_event_id=event_id,
+        provider_resource_id=resource_id,
+    )
+
+
 def _emission_from(obs: Observation, adapter_version: str) -> AdapterEmission:
     """Build one AdapterEmission from an Observation, preserving its evidence."""
     evidence = SourceEvidence(
@@ -186,5 +226,8 @@ def _emission_from(obs: Observation, adapter_version: str) -> AdapterEmission:
         # GH #187). `"candidate"` stays a valid hand-built type; the connector default is `"evidence"`.
         emission_type="evidence",
         adapter_version=adapter_version,
-        metadata=dict(obs.metadata),  # preserve connector metadata (ADR-0014); defensive copy
+        provenance=_provenance_from(obs),
+        metadata=dict(
+            obs.metadata
+        ),  # preserve connector metadata (ADR-0014); defensive copy
     )
