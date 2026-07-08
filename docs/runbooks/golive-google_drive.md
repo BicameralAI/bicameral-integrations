@@ -33,7 +33,7 @@ Token options (in order of durability):
        "secrets": { "google_drive": "<OAuth access token>" },
        "runtime": { "document_id": "<a Google Doc id>" }
      }},
-     "gateway": { "endpoint": "https://<your-bot>/api/v1/ingest", "token": "<ingest token>" }
+     "gateway": { "endpoint": "https://<your-bot>/api/v1/external-ingest", "token": "<ingest token>" }
    }
    ```
    (or `BICAMERAL_GOOGLE_DRIVE`). The doc id can also be passed as `--document-id <id>`.

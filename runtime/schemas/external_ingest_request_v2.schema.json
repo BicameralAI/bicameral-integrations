@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExternalIngestEnvelope",
+  "description": "External/source-system evidence submission contract.\n\nExternal integrations (Jira, Linear, Slack, GitHub webhooks, etc.) use this envelope to submit evidence, candidates, hints, and signals.  The envelope is **not** a `ToolRequest` — it enters the daemon through a separate validation path (the external ingest gate) and cannot carry or trigger:\n\n- Review commands (`accept_candidate`, `reject_candidate`, `approve_signoff`, etc.) - Canonical decisions or event-store writes - Signoff approval or compliance resolution - Policy grants or local actor/session authority - Blocking governance results\n\nThe daemon validates the envelope, projects candidates/evidence through policy, and returns only advisory governance results.",
+  "type": "object",
+  "required": [
+    "content",
+    "source_system",
+    "source_uri"
+  ],
+  "properties": {
+    "candidate_hints": {
+      "description": "Candidate suggestions — advisory only, not canonical authority.",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ExternalCandidateHint"
+      }
+    },
+    "content": {
+      "description": "Captured content snapshot.",
+      "type": "string"
+    },
+    "content_hash": {
+      "description": "Content hash (SHA-256). Daemon verifies if provided, computes if omitted.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence": {
+      "description": "Evidence excerpts within the content.",
+      "default": [],
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ExternalEvidenceItem"
+      }
+    },
+    "source_system": {
+      "description": "Source system identifier (e.g. `jira`, `linear`, `slack`, `github`).",
+      "type": "string"
+    },
+    "source_uri": {
+      "description": "Source URI for provenance.",
+      "type": "string"
+    }
+  },
+  "definitions": {
+    "ExternalCandidateHint": {
+      "description": "A candidate hint from an external source — advisory, not authority.",
+      "type": "object",
+      "required": [
+        "body",
+        "title"
+      ],
+      "properties": {
+        "body": {
+          "type": "string"
+        },
+        "labels": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "level": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "ExternalEvidenceItem": {
+      "description": "An evidence excerpt from an external source.",
+      "type": "object",
+      "required": [
+        "excerpt"
+      ],
+      "properties": {
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "excerpt": {
+          "type": "string"
+        },
+        "span_end": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint",
+          "minimum": 0.0
+        },
+        "span_start": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint",
+          "minimum": 0.0
+        }
+      }
+    }
+  }
+}

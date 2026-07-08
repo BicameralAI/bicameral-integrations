@@ -5,7 +5,7 @@ library) calls to drive a connector's ingest → verify → normalize → emit p
 """
 
 from .delivery import PollConnector, WebhookConnector, deliver_poll, deliver_webhook
-from .gateway_mapping import emission_to_ingest_request
+from .gateway_mapping import emission_to_external_envelope
 from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, NoAuth, PollError
 from .poll_client import (
     HttpTransport,
@@ -53,7 +53,7 @@ __all__ = [
     "GatewaySink",
     "GatewayEmissionGated",
     "GatewayEmissionError",
-    "emission_to_ingest_request",
+    "emission_to_external_envelope",
     "SecretResolver",
     "MappingSecretResolver",
     "FileSecretResolver",

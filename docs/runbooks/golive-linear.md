@@ -30,7 +30,7 @@ Linear is a two-credential connector: the **active GraphQL fetch** and the **web
        "secrets": { "linear": "<Personal API key>", "linear_webhook": "<Webhook signing secret>" },
        "runtime": { "page_size": 50 }
      }},
-     "gateway": { "endpoint": "https://<your-bot>/api/v1/ingest", "token": "<ingest token>" }
+     "gateway": { "endpoint": "https://<your-bot>/api/v1/external-ingest", "token": "<ingest token>" }
    }
    ```
    (or `BICAMERAL_LINEAR` / `BICAMERAL_LINEAR_WEBHOOK`). An active run requires only `linear` (mode-scoped, FX-RUNTIME-005).
