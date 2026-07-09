@@ -45,7 +45,7 @@ bicameral-integrations/
 |-- runtime/  (operator-runtime boundary, ADR-0012: sinks, secrets, delivery,
 |              poll_client + poll_auth + poll_specs + tests — EmissionSink/SecretResolver
 |              Protocols, deliver_webhook/deliver_poll, GatewaySink real Live emission seam
-|              (POST /api/v1/ingest), poll_client live-poll fetch half
+|              (POST /api/v1/external-ingest), poll_client live-poll fetch half
 |              (HttpTransport-injected; object|array pages; PageToken + OffsetPager pagination;
 |              GET + POST body), poll_auth (ApiKeyHeader/Bearer/Basic), poll_specs per-connector
 |              wiring (anthropic/openai/copilot/devin/granola/cursor/servicenow);
@@ -87,7 +87,7 @@ bicameral-integrations/
 | Source connector packages (with `connector.py`) | 26 (+ openai_admin, anthropic_admin; devin, servicenow, copilot, cursor, gitlab, confluence, zendesk, github, fathom, linear, granola, local_directory, google_drive, sarif, slack, notion, mcp_registry, continue_dev, aider, claude_code, osv, sentry, pagerduty, jira) |
 | Readiness ladder (ADR-0012) | **Beta: 26 (ALL connectors)** — every connector earned Beta via a real runtime-harness proof · **Prototype: 0** · **Live: 0 connectors** (the **Live seam is implemented + operator-actionable** now bot #109 landed — Live is earned by an operator wiring `GatewaySink` against a real gateway, not by the repo) |
 | PII handling | FX-SEC-001 hard screen (secret/PHI/PAN reject) + **`adapter/core/redaction.py::redact` redact-and-pass** (scrubs secret/PHI/PAN value-consuming + email/phone; invariant `detect_sensitive(redact(x))==[]`; composes with, never replaces, the screen). Used by devin/servicenow/**zendesk** (ticket body now redact-and-pass); openai_admin/copilot drop-at-parse (openai_admin drops actor email/IP). **Cursor**: email/name dropped, opaque `userId` surfaced for per-developer attribution (SG-2026-06-05-D; residual re-id risk = operator holds id→identity mapping, accepted) |
-| Runtime boundary | `runtime/` library layer (sinks + secrets + delivery + **gateway_mapping**); **GatewaySink = real Live emission** (v1 IngestRequest → `POST /api/v1/ingest`, default-safe + fail-closed + secret-safe) |
+| Runtime boundary | `runtime/` library layer (sinks + secrets + delivery + **gateway_mapping**); **GatewaySink = real Live emission** (v1 IngestRequest → `POST /api/v1/external-ingest`, default-safe + fail-closed + secret-safe) |
 | Total Test Files | 40 (adapter/core + connectors + runtime + scripts) |
 | Pytest | 361 passed (adapter/core/tests + connectors + runtime + scripts/tests) |
 | Webhook verify wired | fathom, linear, sentry, pagerduty, jira, github, slack, notion, zendesk, gitlab (Svix/HMAC/multi-sig/sha256=/v0/Base64/plaintext-token + dedup, fail-closed) |
@@ -103,7 +103,7 @@ bicameral-integrations/
 |--------|-------|
 | Delivered | Adapter seam + **17 source connectors** + producer secret screen + L3 webhook signature verification (Svix/Fathom, Linear, Sentry, PagerDuty hex/multi-sig, Jira `sha256=`) + replay dedup + **CI governance/security gate ecosystem** (10 gates + 6 reusable templates) + compliance control mappings — per ADR-0004..0010 |
 | Unplanned | 0 |
-| Missing | 0. **Gateway emission is now implemented** — `GatewaySink` maps to the pinned v1 `IngestRequest` and POSTs to `/api/v1/ingest`; bot **#109 CLOSED/COMPLETED** (PR #131 ingest guards: body-size/rate/sensitive-data). What remains operator-owned (per connector `auth.md`, not "missing"): the live HTTP receiver/poller + secret/keyring resolution + configuring `GatewaySink(endpoint=…, token=…)` against a real gateway — i.e. the operator deployment that earns a connector **Live**. |
+| Missing | 0. **Gateway emission is now implemented** — `GatewaySink` maps to the pinned v1 `IngestRequest` and POSTs to `/api/v1/external-ingest`; bot **#109 CLOSED/COMPLETED** (PR #131 ingest guards: body-size/rate/sensitive-data). What remains operator-owned (per connector `auth.md`, not "missing"): the live HTTP receiver/poller + secret/keyring resolution + configuring `GatewaySink(endpoint=…, token=…)` against a real gateway — i.e. the operator deployment that earns a connector **Live**. |
 
 **Compliance**: aligned with `ARCHITECTURE_PLAN.md` and ADR-0004..0010.
 
@@ -207,7 +207,7 @@ bicameral-integrations/
 - [x] `mods/` **ownership transferred to this track (2026-06-08)** — Codex's in-flight scaffolds adopted (PR #76); the ADR-0013 execution contract (`mods/contract.py` + `_manifest.py`) is built; 13 mods Scoped, dependency_risk is the first to get logic (next cycle).
 - [ ] BACKLOG B3: ecosystem gate rollout to bot/mcp/cloud + AGT sidecar spike (cross-repo). B4: enable Dependency Graph. B5/B6: branch protection + Scorecard Actions-token permission (repo-admin).
 - [ ] adapter→gateway emission: map `AdapterEmission` to the **published** v1 ingest schema (bot PR #95, `protocol/schemas/v1/`) + a conformance test. The schema is NOT a blocker; *safe* live emission gates on the cross-repo deps below.
-- [x] Cross-repo deps (verified 2026-06-05): bot **#109 CLOSED/COMPLETED** (PR #131 — gateway `/api/v1/ingest` ingest guards landed: body-size/rate/sensitive-data). The Live-emission gate is **lifted**; `GatewaySink` is now real (Entry #71). Remaining bot context: **#73** OPEN (release signing/trust posture); MCP→ToolRequest refactor ongoing. #108 CLOSED. (Prior "bot #99 v1-schema blocker" was a misattribution — SG-2026-06-04-N.)
+- [x] Cross-repo deps (verified 2026-06-05): bot **#109 CLOSED/COMPLETED** (PR #131 — gateway `/api/v1/external-ingest` ingest guards landed: body-size/rate/sensitive-data). The Live-emission gate is **lifted**; `GatewaySink` is now real (Entry #71). Remaining bot context: **#73** OPEN (release signing/trust posture); MCP→ToolRequest refactor ongoing. #108 CLOSED. (Prior "bot #99 v1-schema blocker" was a misattribution — SG-2026-06-04-N.)
 - [ ] **Live operator-actionable (next)**: an operator configures `GatewaySink(endpoint, token)` against a real gateway to promote a connector to **Live** (the repo delivers the verified seam; the deployment earns Live).
 - [x] **Linear + Google Drive → flip-ready, NOT yet Live (2026-06-08, Entry #128)**: each descriptor's `live_readiness` + a closing `wire_gates` entry + `references.md` readiness record the explicit pre-Live gate — code-complete and harness-proven against a reference sink, but unverified against the live API with real secrets. `status` stays `live-ready` (no `live` enum; Live = operator wires real secrets + verifies). The flip is operator-gated (PR #90).
 - [x] **mcp UI handoff opened**: BicameralAI/bicameral-mcp#572 — build the Linear/GDrive connector config UI against the FX-CFG-001 descriptor contract; `docs/UI_RENDERING_SPEC.md` back-references it (PR #89).

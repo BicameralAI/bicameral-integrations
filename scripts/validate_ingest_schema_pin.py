@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""Ingest schema drift gate — validates vendored IngestRequest schema integrity (#195).
+"""Ingest schema drift gate — validates vendored ExternalIngestEnvelope schema integrity (#195/#226).
 
 Checks performed (all offline, no live credentials):
 
@@ -8,10 +8,10 @@ Checks performed (all offline, no live credentials):
 2. **Pin metadata completeness**: upstream_repo, upstream_commit (40-char SHA),
    upstream_path, local_path, and content_sha256 are all present and non-empty.
 3. **Structural smoke-test**: the vendored schema is valid JSON, declares the
-   expected ``required`` fields (title, description, source), and defines
-   ``IngestEvidenceItem``.
+   expected ``required`` fields (content, source_system, source_uri), and defines
+   ``ExternalEvidenceItem`` + ``ExternalCandidateHint``.
 4. **Golden-fixture schema conformance**: every golden conformance fixture's
-   ``expected_ingest_request`` satisfies the vendored schema structurally.
+   ``expected_envelope`` satisfies the vendored schema structurally.
 
 Exit 0 on success, exit 1 on any drift/integrity failure. Designed to run in CI
 as a contract gate that fails integrations on stale mapping/schema incompatibility.
@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parents[1]
-_SCHEMA_PATH = _ROOT / "runtime" / "schemas" / "ingest_request_v1.schema.json"
+_SCHEMA_PATH = _ROOT / "runtime" / "schemas" / "external_ingest_request_v2.schema.json"
 _PIN_PATH = _ROOT / "runtime" / "schemas" / "ingest_schema_pin.json"
 _FIXTURES_DIR = _ROOT / "runtime" / "tests" / "fixtures" / "ingest_conformance"
 
@@ -70,12 +70,13 @@ def _check_content_hash(pin: dict) -> list[str]:
 def _check_schema_structure(schema: dict) -> list[str]:
     errors: list[str] = []
     required = schema.get("required", [])
-    for field in ("title", "description", "source"):
+    for field in ("content", "source_system", "source_uri"):
         if field not in required:
             errors.append(f"schema missing required field: {field!r}")
     defs = schema.get("definitions", {})
-    if "IngestEvidenceItem" not in defs:
-        errors.append("schema missing definition: IngestEvidenceItem")
+    for name in ("ExternalEvidenceItem", "ExternalCandidateHint"):
+        if name not in defs:
+            errors.append(f"schema missing definition: {name}")
     return errors
 
 
@@ -90,16 +91,16 @@ def _check_fixture_conformance(schema: dict) -> list[str]:
         return errors
     required_keys = set(schema.get("required", []))
     evidence_required = set(
-        schema.get("definitions", {}).get("IngestEvidenceItem", {}).get("required", [])
+        schema.get("definitions", {}).get("ExternalEvidenceItem", {}).get("required", [])
     )
     for path in fixtures:
         fixture = json.loads(path.read_text(encoding="utf-8"))
-        expected = fixture.get("expected_ingest_request", {})
+        expected = fixture.get("expected_envelope", {})
         for key in required_keys:
             val = expected.get(key)
             if not isinstance(val, str) or not val:
                 errors.append(
-                    f"{path.name}: expected_ingest_request missing required {key!r}"
+                    f"{path.name}: expected_envelope missing required {key!r}"
                 )
         for i, item in enumerate(expected.get("evidence", [])):
             for key in evidence_required:

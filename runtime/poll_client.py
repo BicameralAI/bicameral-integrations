@@ -33,6 +33,8 @@ _MAX_RESPONSE = 8 * 1024 * 1024  # cap a hostile/huge provider body before parse
 _MAX_PAGES = 100  # cap a runaway/cyclic pager (fail-safe)
 _MAX_TOTAL_ITEMS = 50_000  # aggregate cap across all pages: closes the per-page x _MAX_PAGES
 #                            resident-memory multiplier (purple-team DOS-1, 2026-06-11)
+_MAX_TOTAL_BYTES = 64 * 1024 * 1024  # aggregate BYTE cap across all pages (#101-2): the item cap
+#                            alone leaves a few-huge-items walk able to retain ~_MAX_PAGES x 8 MiB
 _OK_STATUS = 200
 
 
@@ -208,8 +210,9 @@ class UrllibTransport:
             raise PollError(0, "unexpected_error") from None
 
 
-def _fetch_page(transport: HttpTransport, spec: PollSpec, url: str) -> object:
+def _fetch_page(transport: HttpTransport, spec: PollSpec, url: str) -> tuple[object, int]:
     """Fetch + parse one page; fail-closed on non-200 / unparseable / non-object body.
+    Returns ``(parsed, body_bytes)`` so the caller can enforce the aggregate byte cap (#101-2).
 
     A page is a JSON **object or array** (some providers, e.g. Copilot metrics, return
     a top-level array); a scalar/``null`` fails closed. ``spec.items`` unwraps it.
@@ -223,7 +226,7 @@ def _fetch_page(transport: HttpTransport, spec: PollSpec, url: str) -> object:
         raise PollError(0, "unparseable_body") from None
     if not isinstance(parsed, (dict, list)):
         raise PollError(0, "non_object_body")
-    return parsed
+    return parsed, len(response.body)
 
 
 def _items_of(spec: PollSpec, page: object) -> list:
@@ -254,11 +257,15 @@ def poll(
     payloads: list = []
     url: str | None = spec.base_url
     pages = 0
+    total_bytes = 0
     while url is not None:
         pages += 1
         if pages > _MAX_PAGES:
             raise PollError(0, "max_pages_exceeded")
-        page = _fetch_page(transport, spec, url)
+        page, nbytes = _fetch_page(transport, spec, url)
+        total_bytes += nbytes
+        if total_bytes > _MAX_TOTAL_BYTES:  # aggregate byte cap (#101-2: few-huge-items walk)
+            raise PollError(0, "aggregate_bytes_exceeded")
         items = _items_of(spec, page)
         if len(payloads) + len(items) > _MAX_TOTAL_ITEMS:  # aggregate cap (DOS-1)
             raise PollError(0, "aggregate_items_exceeded")

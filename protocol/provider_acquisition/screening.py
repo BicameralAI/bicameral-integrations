@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # Copyright 2026 Bicameral AI — MIT License
 """Fail-closed screening for discovery descriptors / items (ADR-0017 §3).
 

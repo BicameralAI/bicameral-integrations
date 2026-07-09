@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip "pyyaml==6.0.2"
@@ -40,20 +40,20 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
       - run: python -m pip install --upgrade pip codespell==2.4.1
       - run: codespell adapter connectors runtime scripts docs --skip='*.json,*.lock' || true
 
   license-headers:
-    name: SPDX headers (advisory)
+    name: SPDX headers (blocking)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
-      - name: License-header scan (advisory; ramps to blocking once backfilled)
-        run: python scripts/check_license_headers.py adapter connectors runtime scripts
+      - name: License-header scan (blocking since 2026-07-08 — B2 backfill complete)
+        run: python scripts/check_license_headers.py adapter connectors runtime scripts mods tests protocol
         # Note: scripts/tests run (blocking) in governance-gate.yml — not duplicated here.

@@ -140,13 +140,14 @@ def test_author_timestamp_are_screened():
         validate_emissions([em])
 
 
-# --- PII-4 (#95): wire `source` url/ref is redacted for email/phone ------------------
+# --- PII-4 (#95): wire `source_uri` url/ref is redacted for email/phone --------------
 
 def test_gateway_source_redacts_email_in_url():
-    from runtime.gateway_mapping import emission_to_ingest_request
+    # #226: the wire field is now the v2 envelope's `source_uri`; the PII-4 property is identical.
+    from runtime.gateway_mapping import emission_to_external_envelope
     em = _emission(excerpt="ok", url="https://git.example/x/pull/1#alice@personal.com")
-    req = emission_to_ingest_request(em)
-    assert "alice@personal.com" not in req["source"]
+    envelope = emission_to_external_envelope(em)
+    assert "alice@personal.com" not in envelope["source_uri"]
 
 
 # --- SSRF-4 (#99): servicenow instance/fields cannot inject host/path/query ----------

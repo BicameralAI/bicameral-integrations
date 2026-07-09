@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Anthropic Admin connector package."""
 
 from .connector import AnthropicAdminConnector, parse_usage

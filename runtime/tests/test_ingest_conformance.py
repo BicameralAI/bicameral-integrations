@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-"""Cross-repo ingest conformance: golden AdapterEmission -> IngestRequest fixtures (#195).
+"""Cross-repo ingest conformance: golden AdapterEmission -> ExternalIngestEnvelope fixtures (#195/#226).
 
 Each JSON fixture under ``fixtures/ingest_conformance/`` encodes a realistic
-``AdapterEmission`` and the exact ``IngestRequest`` the gateway mapping must
+``AdapterEmission`` and the exact ``ExternalIngestEnvelope`` the gateway mapping must
 produce. The fixtures lock the emission-to-ingest contract so integrations
 fails first on mapping drift — no live provider or bot credentials required.
 
@@ -19,14 +19,14 @@ from pathlib import Path
 import pytest
 
 from adapter.core.emissions import AdapterEmission, SourceEvidence, SourceRef
-from runtime.gateway_mapping import emission_to_ingest_request
+from runtime.gateway_mapping import emission_to_external_envelope
 
 _FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures" / "ingest_conformance"
 _SCHEMA = json.loads(
     (
         Path(__file__).resolve().parents[1]
         / "schemas"
-        / "ingest_request_v1.schema.json"
+        / "external_ingest_request_v2.schema.json"
     ).read_text(encoding="utf-8")
 )
 _PIN = json.loads(
@@ -77,13 +77,13 @@ def _emission_from_fixture(raw: dict) -> AdapterEmission:
 
 
 def _assert_schema_conforms(payload: dict) -> None:
-    """Structural validation against the vendored IngestRequest schema (house pattern)."""
+    """Structural validation against the vendored ExternalIngestEnvelope schema (house pattern)."""
     for key in _SCHEMA["required"]:
         assert key in payload and isinstance(payload[key], str) and payload[key], (
             f"required field {key!r} missing or empty"
         )
     assert isinstance(payload.get("evidence"), list), "evidence must be a list"
-    item_required = _SCHEMA["definitions"]["IngestEvidenceItem"]["required"]
+    item_required = _SCHEMA["definitions"]["ExternalEvidenceItem"]["required"]
     for item in payload["evidence"]:
         for k in item_required:
             assert k in item and isinstance(item[k], str), (
@@ -98,10 +98,10 @@ _FIXTURE_CASES = _load_fixtures()
     "name,fixture", _FIXTURE_CASES, ids=[c[0] for c in _FIXTURE_CASES]
 )
 def test_golden_fixture_matches_expected_output(name: str, fixture: dict) -> None:
-    """Each golden fixture's emission maps to exactly the expected IngestRequest."""
+    """Each golden fixture's emission maps to exactly the expected envelope."""
     emission = _emission_from_fixture(fixture["emission"])
-    actual = emission_to_ingest_request(emission)
-    expected = fixture["expected_ingest_request"]
+    actual = emission_to_external_envelope(emission)
+    expected = fixture["expected_envelope"]
     assert actual == expected, (
         f"fixture {name!r}: mapping output differs from golden expectation"
     )
@@ -111,9 +111,9 @@ def test_golden_fixture_matches_expected_output(name: str, fixture: dict) -> Non
     "name,fixture", _FIXTURE_CASES, ids=[c[0] for c in _FIXTURE_CASES]
 )
 def test_golden_fixture_conforms_to_schema(name: str, fixture: dict) -> None:
-    """Each golden fixture's mapped output satisfies the vendored v1 schema."""
+    """Each golden fixture's mapped output satisfies the vendored v2 schema."""
     emission = _emission_from_fixture(fixture["emission"])
-    payload = emission_to_ingest_request(emission)
+    payload = emission_to_external_envelope(emission)
     _assert_schema_conforms(payload)
 
 
@@ -129,7 +129,7 @@ def test_pin_content_hash_matches_vendored_schema() -> None:
     schema_path = (
         Path(__file__).resolve().parents[1]
         / "schemas"
-        / "ingest_request_v1.schema.json"
+        / "external_ingest_request_v2.schema.json"
     )
     actual_hash = hashlib.sha256(schema_path.read_bytes()).hexdigest()
     assert actual_hash == _PIN["content_sha256"], (

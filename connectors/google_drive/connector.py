@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Google Docs/Drive connector: document payloads into neutral Observations.
 
 Provider-specific knowledge lives here: the Docs/Drive URL grammar and the

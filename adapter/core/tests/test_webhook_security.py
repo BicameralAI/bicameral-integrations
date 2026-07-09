@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behavioral tests for webhook signature verification + delivery dedup.
 
 Signatures are computed here with stdlib hmac/base64 — independently of the

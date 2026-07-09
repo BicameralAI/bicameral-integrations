@@ -17,6 +17,11 @@ Linear is a two-credential connector: the **active GraphQL fetch** and the **web
 
 ## Live-flip steps
 
+0. **Guided setup (recommended, #227):** `python -m runtime.cli configure linear` walks the
+   descriptor's instructions — collects both secrets (masked, `lin_api_` format-checked), the
+   webhook receiver URL, runs the verify fetch, and writes the gitignored local config with
+   `enabled: true`. Active-only setup: `--modes active` (skips the webhook credential,
+   FX-RUNTIME-005). Steps 1-2 below are the manual equivalent; step 3-4 still apply.
 1. **Place the secrets** (gitignored `config/bicameral.local.json`, or env):
    ```json
    {
@@ -25,7 +30,7 @@ Linear is a two-credential connector: the **active GraphQL fetch** and the **web
        "secrets": { "linear": "<Personal API key>", "linear_webhook": "<Webhook signing secret>" },
        "runtime": { "page_size": 50 }
      }},
-     "gateway": { "endpoint": "https://<your-bot>/api/v1/ingest", "token": "<ingest token>" }
+     "gateway": { "endpoint": "https://<your-bot>/api/v1/external-ingest", "token": "<ingest token>" }
    }
    ```
    (or `BICAMERAL_LINEAR` / `BICAMERAL_LINEAR_WEBHOOK`). An active run requires only `linear` (mode-scoped, FX-RUNTIME-005).

@@ -11,8 +11,8 @@ live HTTP listener. This layer is the seam an operator wires their host into.
 |---|---|
 | `EmissionSink` (Protocol) | `emit(emissions)` — where normalized `AdapterEmission`s go. |
 | `CollectingSink` | Reference sink: accumulates into `.emissions` (tests + Beta). |
-| `GatewaySink` | **Live emission** — maps each emission to the v1 `IngestRequest` (`gateway_mapping.py`) and POSTs to a configured `/api/v1/ingest` (stdlib `urllib`). Default-safe (no endpoint → `GatewayEmissionGated`), fail-closed (re-screens at the boundary; only HTTP 201 succeeds; else `GatewayEmissionError`), secret-safe (operator token never logged). |
-| `emission_to_ingest_request` | Map an `AdapterEmission` → the pinned v1 `IngestRequest` dict (vendored schema in `runtime/schemas/`). |
+| `GatewaySink` | **Live emission** — maps each emission to the v2 `ExternalIngestEnvelope` (`gateway_mapping.py`; #226 authority-stripped external path) and POSTs to a configured `/api/v1/external-ingest` (stdlib `urllib`). Default-safe (no endpoint → `GatewayEmissionGated`), fail-closed (re-screens at the boundary; only HTTP 201 succeeds; else `GatewayEmissionError`), secret-safe (operator token never logged). |
+| `emission_to_external_envelope` | Map an `AdapterEmission` → the pinned v2 `ExternalIngestEnvelope` dict (vendored schema in `runtime/schemas/`, bot schema commit `5c24c60f`). |
 | `SecretResolver` (Protocol) | `resolve(connector_id) -> str` — operator supplies the real keyring-backed one. |
 | `MappingSecretResolver` | Reference resolver over an injected mapping (`""` for unknown ids). |
 | `deliver_webhook(connector, *, headers, body, sink, …)` | Verify + normalize a webhook delivery, emit, return the emission count (0 on reject/dedup). |
@@ -45,7 +45,7 @@ from connectors.linear.connector import LinearConnector
 sink = CollectingSink()
 # Live: POST each emission to the (now-guarded) gateway. Default-safe + fail-closed;
 # the token is operator-injected and never logged.
-sink = GatewaySink(endpoint="https://gateway.internal/api/v1/ingest",
+sink = GatewaySink(endpoint="https://gateway.internal/api/v1/external-ingest",
                    token=resolver.resolve("bicameral-gateway"))
 
 conn = LinearConnector(secret=resolver.resolve("linear"))

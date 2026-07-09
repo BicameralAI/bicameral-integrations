@@ -118,7 +118,7 @@ def test_deliver_webhook_into_gateway_sink_raises_gated():
 
 
 def test_full_path_signed_webhook_to_configured_gateway_sink():
-    # D1: ingest -> verify -> normalize -> emit -> POST a conforming v1 IngestRequest.
+    # D1: ingest -> verify -> normalize -> emit -> POST a conforming v2 ExternalIngestEnvelope (#226).
     captured: dict = {}
 
     class _R:
@@ -136,14 +136,13 @@ def test_full_path_signed_webhook_to_configured_gateway_sink():
         return _Ctx()
 
     conn, body, sig = _signed_sentry()
-    sink = GatewaySink(endpoint="https://gw.example/api/v1/ingest", opener=_opener)
-    n = deliver_webhook(
-        conn, headers={"Sentry-Hook-Signature": sig}, body=body, sink=sink
-    )
+    sink = GatewaySink(endpoint="https://gw.example/api/v1/external-ingest", opener=_opener)
+    n = deliver_webhook(conn, headers={"Sentry-Hook-Signature": sig}, body=body, sink=sink)
     assert n == 1
-    assert captured["body"]["source_type"] == "sentry"
-    assert captured["body"]["title"] and captured["body"]["description"]
+    assert captured["body"]["source_system"] == "sentry"
+    assert captured["body"]["content"] and captured["body"]["source_uri"]
     assert captured["body"]["evidence"][0]["excerpt"]
+    assert captured["body"]["candidate_hints"][0]["title"]
 
 
 def test_deliver_poll_over_osv():

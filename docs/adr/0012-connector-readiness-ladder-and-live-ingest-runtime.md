@@ -31,7 +31,7 @@ Two facts constrain the design:
 | **Candidate** | catalogued; no `connector.py` | — |
 | **Prototype** | parse surface (+ `verify()` where the provider signs) implemented, tested against synthetic fixtures; no live boundary | parse + tests green |
 | **Beta** | wired into the runtime harness — a tested `ingest → verify → normalize → emit(sink)` path with injected secret + dedup + a reference sink; still no production gateway emission | runtime harness test green end-to-end |
-| **Live** | emitting to the deployed bicameral-bot gateway (`/api/v1/ingest`, v1 schema) from an operator runtime | **bot #109** (gateway ingest guards) + a pinned v1 mapping + operator deployment |
+| **Live** | emitting to the deployed bicameral-bot gateway (`/api/v1/external-ingest`, v2 `ExternalIngestEnvelope` — amended 2026-07-08, #226) from an operator runtime | a pinned v2 mapping + operator deployment (bot #109 guards landed; external-ingest handler adds authority-stripping) |
 
 ### 2. The repo stays a library; a thin `runtime/` layer is the boundary adapter
 
@@ -52,12 +52,17 @@ ADR-0006 / `auth.md` "operator runtime owns the live HTTP boundary" convention).
   `deliver_poll(connector, payloads, sink)` for ACTIVE connectors. The actual
   HTTP server / cron stays in the operator runtime, which calls these.
 
-### 3. Gateway emission — implemented (bot #109 landed 2026-06-05)
+### 3. Gateway emission — implemented (bot #109 landed 2026-06-05; retargeted to external-ingest 2026-07-08, #226)
 
-`GatewaySink` is now the real **Live** seam. It maps each `AdapterEmission` to the
-v1 `IngestRequest` (the mapping is pinned in `runtime/gateway_mapping.py` against
-a vendored copy of `bicameral-bot:protocol/schemas/v1/ingest-request.schema.json`)
-and `POST`s it to a configured `/api/v1/ingest` with stdlib `urllib`. It is:
+`GatewaySink` is the real **Live** seam. It maps each `AdapterEmission` to the
+v2 `ExternalIngestEnvelope` (the mapping is pinned in `runtime/gateway_mapping.py`
+against a vendored copy of `bicameral-bot:protocol/schemas/v2/external-ingest-request.schema.json`,
+schema commit `5c24c60f`) and `POST`s it to a configured `/api/v1/external-ingest`
+with stdlib `urllib` — the **authority-stripped external path** ("Integrations
+acquire. Bot materializes. MCP routes."; the legacy `/api/v1/ingest` is the
+local/MCP-actor contract and is no longer used from this repo). The gateway 403s
+18 forbidden authority fields; the envelope is authority-free by construction and
+regression-locked. It is:
 - **default-safe** — with no endpoint, `emit` still raises `GatewayEmissionGated`
   (the operator opts in by configuring `GatewaySink(endpoint=…)`);
 - **fail-closed** — `emit` re-runs the producer contract + secret/PII/PAN screen
@@ -69,7 +74,9 @@ and `POST`s it to a configured `/api/v1/ingest` with stdlib `urllib`. It is:
 
 Bot **#109** (gateway ingest guards: body-size / rate / sensitive-data) merged
 (PR #131), so the endpoint is hardened. Dimensional confidence is deliberately
-not collapsed into the v1 scalar `confidence` (SG-2026-06-02-B). Promoting a
+not collapsed into a wire scalar (SG-2026-06-02-B); the envelope's advisory
+`candidate_hints` carry the title/body signal only — the daemon classifies
+`level` itself (bot ADR-0024). Promoting a
 connector to **Live** = an operator wiring a configured `GatewaySink` against a
 real gateway — the repo delivers the verified seam; the operator deployment is
 what earns Live (a mock test does not promote a connector to Live).

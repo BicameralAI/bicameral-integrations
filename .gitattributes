@@ -14,3 +14,6 @@ mods/index.json text eol=lf
 mods/*/config.json text eol=lf
 mods/_schema/*.json text eol=lf
 mods/*/SETUP.md text eol=lf
+# Vendored bot schemas are hash-pinned (validate_ingest_schema_pin.py): pin to LF so the
+# content_sha256 matches the committed blob on every OS (the gate is byte-exact).
+runtime/schemas/*.json text eol=lf

@@ -82,9 +82,10 @@ def parse_event(envelope: dict) -> Observation:
 
 def parse_page(page: dict) -> Observation:
     """Map a full Notion page object (the deferred active-fetch shape) into an Observation."""
-    page_id = str(
-        page.get("id") or ""
-    )  # str-guard: a non-string id must not crash _is_blank
+    page_id = str(page.get("id") or "")  # str-guard: a non-string id must not crash _is_blank
+    # SG-I/#56 discipline (B14): a present-but-non-dict created_by must floor, not AttributeError.
+    created_by = page.get("created_by")
+    author = (created_by.get("id") or "") if isinstance(created_by, dict) else ""
     # The page title is free-text -> redact-and-pass (FX-SEC-001 alone does not catch a generic
     # email/name in a title). Terminal non-empty floor: an untitled page without a usable id
     # (partial objects / webhook envelopes) falls through to a literal (SARIF/MCP-Registry pattern).
@@ -102,7 +103,7 @@ def parse_page(page: dict) -> Observation:
         excerpt=title,
         mode=SourceMode.ACTIVE,
         title=title,
-        author=(page.get("created_by") or {}).get("id") or "",
+        author=author,
         timestamp=page.get("last_edited_time") or page.get("created_time") or "",
     )
 

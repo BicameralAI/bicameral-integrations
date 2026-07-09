@@ -12,13 +12,14 @@ surface** only.
   - **No replay-timestamp window** is documented, so best-effort delivery dedup
     (on the envelope `event.id` when present — never drops an id-less event) is
     the only replay guard.
-  - **Spot-check pending (re-attempted 2026-06-08)**: the official
-    `developer.pagerduty.com/docs/webhooks/webhook-signatures` page is **JS-rendered and
-    machine-unfetchable** — automated verification could not capture an authoritative quote.
-    The scheme (`X-PagerDuty-Signature`, `v1=` multi-sig, HMAC-SHA256 hex over the raw body)
-    matches multiple non-authoritative corroborating sources but remains **UNVERIFIED against
-    provider docs**. Confirm in a real browser before production reliance (BACKLOG; the one
-    connector whose signature scheme is not doc-confirmed).
+  - **Spot-check CONFIRMED first-party (2026-07-08, real-browser render; closes BACKLOG B8)**:
+    the official page — now at `developer.pagerduty.com/docs/verifying-webhook-signatures`
+    (the old `/docs/verifying-signatures` slug 404s) — confirms every implemented detail:
+    `X-PagerDuty-Signature` carries one or MORE comma-separated signatures (zero-downtime
+    secret rotation), current version `v1=` + HMAC-SHA256 of the **raw body** with the shared
+    secret, **Base16 (hex)** encoded, accept if **at least one** matches, compare in
+    **constant time**, verify against the unaltered raw body with UTF-8 encoding. The scheme
+    is now doc-confirmed like every other connector.
 
 ## Deferred live paths
 

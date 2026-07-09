@@ -45,7 +45,7 @@ mod) and the whole planned mod suite from using structured provider data.
 
 ADR-0005's stance — *evidence carries only an excerpt; the gateway/daemon owns judgment; the wire
 envelope stays minimal* — is preserved. Metadata is kept **in-process for mods only**; it is **not**
-wire-forwarded (`runtime/gateway_mapping.emission_to_ingest_request` builds title/description/source/
+wire-forwarded (`runtime/gateway_mapping.emission_to_external_envelope (nee emission_to_ingest_request; #226)` builds title/description/source/
 evidence and does not include metadata, and `GatewaySink.emit` re-screens at its own boundary). So the
 minimal-wire contract is unchanged; metadata is screened because mods are an in-process consumer, not
 because it reaches the wire.

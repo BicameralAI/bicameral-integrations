@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """PII redaction-and-pass: scrub free-text so it can be emitted as evidence.
 
 ``redact(text)`` scrubs the FX-SEC-001 catalog classes (secret / PHI / PAN) AND the

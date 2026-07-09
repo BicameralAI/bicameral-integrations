@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # Copyright 2026 Bicameral AI — MIT License
 """Tests for the fixture-backed discovery emitter stub.
 

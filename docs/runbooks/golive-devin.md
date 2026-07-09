@@ -20,7 +20,7 @@ Polls the Devin **v3 enterprise** sessions API (`GET /v3/organizations/{org_id}/
     "secrets": { "devin": "<cog_ Service-User key>" },
     "runtime": { "base_url": "https://api.devin.ai/v3/organizations/<org_id>/sessions" }
   }},
-  "gateway": { "endpoint": "https://<your-bot>/api/v1/ingest", "token": "<ingest token>" }
+  "gateway": { "endpoint": "https://<your-bot>/api/v1/external-ingest", "token": "<ingest token>" }
 }
 ```
 (or `BICAMERAL_DEVIN` for the key). `base_url` must be **https** (enforced).

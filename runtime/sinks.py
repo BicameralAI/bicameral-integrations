@@ -4,8 +4,9 @@
 A connector's normalized ``AdapterEmission`` list is handed to an
 ``EmissionSink``. ``CollectingSink`` (in-memory) serves tests + the **Beta**
 readiness stage. ``GatewaySink`` is the **Live** seam: it maps each emission to
-the gateway v1 ``IngestRequest`` (``runtime/gateway_mapping.py``) and POSTs it to
-a configured ``/api/v1/ingest`` with stdlib ``urllib``. Default-safe — with no
+the bot's v2 ``ExternalIngestEnvelope`` (``runtime/gateway_mapping.py``; #226 —
+the authority-stripped external path) and POSTs it to a configured
+``/api/v1/external-ingest`` with stdlib ``urllib``. Default-safe — with no
 endpoint it raises ``GatewayEmissionGated`` (the operator opts in by configuring
 one) — and fail-closed: it re-runs the producer screen at the emission boundary,
 accepts only HTTP 201, and raises ``GatewayEmissionError`` on any other status or
@@ -24,9 +25,9 @@ from adapter.core.emissions import AdapterEmission
 from adapter.core.pipeline import validate_emissions
 from adapter.core.sdk_evidence import emission_to_sdk_evidence
 
-from .gateway_mapping import emission_to_ingest_request
+from .gateway_mapping import emission_to_external_envelope
 
-_SUCCESS_STATUS = 201  # the gateway's only success code (v0.2 ingest contract)
+_SUCCESS_STATUS = 201  # the gateway's only success code (external-ingest handler returns 201 Created)
 
 
 class _NoFollowRedirect(urllib.request.HTTPRedirectHandler):
@@ -97,15 +98,18 @@ class SdkEvidenceSink:
 
 
 class GatewaySink:
-    """The **Live** seam: POST each emission as a v1 ``IngestRequest`` to the gateway.
+    """The **Live** seam: POST each emission as a v2 ``ExternalIngestEnvelope`` to the
+    bot's ``/api/v1/external-ingest`` (authority-stripped external path; #226 — the
+    legacy ``/api/v1/ingest`` is the local/MCP-actor contract and is no longer used here).
 
-    The gateway ingest guards landed (bicameral-bot #109 / PR #131). Configure an
-    ``endpoint`` to opt in; with none, ``emit`` raises ``GatewayEmissionGated``
-    (default-safe). Auth is operator-injected (``token`` → ``Authorization:
-    Bearer``, plus any ``headers``); the token never enters an error or log. Each
-    ``emit`` re-runs the producer contract+sensitive screen at the boundary
+    Configure an ``endpoint`` (the FULL external-ingest URL) to opt in; with none,
+    ``emit`` raises ``GatewayEmissionGated`` (default-safe). Auth is operator-injected
+    (``token`` → ``Authorization: Bearer``, plus any ``headers``; the handler itself is
+    perimeter-authed and ignores extra auth); the token never enters an error or log.
+    Each ``emit`` re-runs the producer contract+sensitive screen at the boundary
     (fail-closed regardless of caller), accepts only HTTP 201, and raises
-    ``GatewayEmissionError`` on any other status or transport fault.
+    ``GatewayEmissionError`` on any other status or transport fault — 403 = authority
+    rejection, 422 = envelope/canary/PII rejection, 429 = retryable.
     """
 
     def __init__(
@@ -114,12 +118,10 @@ class GatewaySink:
         endpoint: str = "",
         token: str = "",
         headers: dict[str, str] | None = None,
-        schema_version: str = "v1",
         opener: Callable[..., Any] | None = None,
         timeout: float = 10.0,
     ) -> None:
         self.endpoint = endpoint
-        self.schema_version = schema_version
         self._token = token
         self._headers = dict(headers or {})
         self._opener = opener or _NO_FOLLOW_OPENER
@@ -141,7 +143,7 @@ class GatewaySink:
                 "GatewaySink(endpoint=...) to opt in to Live emission)"
             )
         for emission in emissions:
-            self._post(emission_to_ingest_request(emission))
+            self._post(emission_to_external_envelope(emission))
 
     def _post(self, payload: dict) -> None:
         data = json.dumps(payload).encode("utf-8")

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Zendesk connector package."""
 
 from .connector import ZendeskConnector, parse_ticket

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """GitHub Copilot connector package."""
 
 from .connector import CopilotConnector, parse_metrics_day

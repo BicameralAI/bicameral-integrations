@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # Copyright 2026 Bicameral AI — MIT License
 """Pure Google-Drive-JSON → neutral discovery object mapping (#179).
 

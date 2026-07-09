@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Shared universal adapter contracts and data objects."""
 
 from .capabilities import SourceCapabilities, SourceMode

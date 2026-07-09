@@ -503,3 +503,20 @@ def test_mcp_registry_unwrap_tolerates_malformed_entries() -> None:
                  transport=RecordedTransport([_json_resp(body)]), sink=sink)
     assert count == 1
     assert sink.emissions[0].title == "ok"
+
+
+# --- #101-2: aggregate BYTE cap across pages (few-huge-items walk) ---
+
+def test_poll_aggregate_bytes_cap(monkeypatch):
+    import runtime.poll_client as pc
+
+    page1 = _fixture_bytes("anthropic_admin_usage_page1.json")
+    monkeypatch.setattr(pc, "_MAX_TOTAL_BYTES", len(page1) + 10)  # page 2 crosses the cap
+    transport = RecordedTransport([_resp("anthropic_admin_usage_page1.json"),
+                                   _resp("anthropic_admin_usage_page2.json")])
+    sink = CollectingSink()
+    with pytest.raises(PollError) as exc:
+        poll(AnthropicAdminConnector(), _spec(), transport=transport, sink=sink)
+    assert "aggregate_bytes_exceeded" in str(exc.value)
+    assert sink.emissions == []  # nothing emitted on an over-cap walk
+    assert _SECRET not in str(exc.value)  # token-free, as every PollError

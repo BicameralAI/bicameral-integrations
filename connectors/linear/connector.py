@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Linear webhook connector: event payloads into neutral Observations.
 
 A Linear webhook event envelope (``{action, type, actor, data, ...}``) for an

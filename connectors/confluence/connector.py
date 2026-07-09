@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Confluence connector: page content objects into neutral Observations.
 
 The Confluence Cloud REST content shape is ``{id, type, title, body: {storage:

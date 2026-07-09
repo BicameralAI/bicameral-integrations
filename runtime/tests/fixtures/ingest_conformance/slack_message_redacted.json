@@ -12,7 +12,7 @@
           "url": "",
           "kind": "message"
         },
-        "excerpt": "Ship weekly instead of bi-weekly — aligns with sprint boundary.",
+        "excerpt": "Ship weekly instead of bi-weekly \u2014 aligns with sprint boundary.",
         "author": "",
         "timestamp": "2026-06-01T12:00:00Z",
         "evidence_id": "ev-slack-001",
@@ -22,19 +22,23 @@
     "emission_type": "evidence",
     "adapter_version": "slack/0.1.0"
   },
-  "expected_ingest_request": {
-    "title": "Channel discussion on deployment cadence",
-    "description": "We should ship weekly instead of bi-weekly.",
-    "source": "slack:msg-C04Q7U9-ts42",
-    "source_type": "slack",
+  "expected_envelope": {
+    "source_system": "slack",
+    "source_uri": "slack:msg-C04Q7U9-ts42",
+    "content": "We should ship weekly instead of bi-weekly.",
     "evidence": [
       {
-        "excerpt": "Ship weekly instead of bi-weekly — aligns with sprint boundary."
+        "excerpt": "Ship weekly instead of bi-weekly \u2014 aligns with sprint boundary."
       }
     ],
-    "label": "emission_type:evidence",
-    "tags": [
-      "emission_type:evidence"
+    "candidate_hints": [
+      {
+        "title": "Channel discussion on deployment cadence",
+        "body": "We should ship weekly instead of bi-weekly.",
+        "labels": [
+          "emission_type:evidence"
+        ]
+      }
     ]
   }
 }

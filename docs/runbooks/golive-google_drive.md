@@ -18,6 +18,13 @@ Token options (in order of durability):
 
 ## Live-flip steps
 
+0. **Guided setup (recommended, #227):** `python -m runtime.cli configure google_drive` runs the
+   OAuth consent flow in your browser (PKCE + loopback catcher on 127.0.0.1) and persists the
+   **durable refresh triple** (`google_drive_refresh_token`/`_client_id`/`_client_secret`) — the
+   run path then mints access tokens automatically (`cli.build_resolver` → FX-RUNTIME-006), so
+   step 4's manual wiring is no longer needed. It also prompts the `document_id` and runs the
+   verify fetch. `--paste-token` instead stores a raw ~1h access token (test only, NOT durable).
+   Steps 1 + 4 below are the manual equivalent.
 1. **Place the credential + doc id:**
    ```json
    {
@@ -26,7 +33,7 @@ Token options (in order of durability):
        "secrets": { "google_drive": "<OAuth access token>" },
        "runtime": { "document_id": "<a Google Doc id>" }
      }},
-     "gateway": { "endpoint": "https://<your-bot>/api/v1/ingest", "token": "<ingest token>" }
+     "gateway": { "endpoint": "https://<your-bot>/api/v1/external-ingest", "token": "<ingest token>" }
    }
    ```
    (or `BICAMERAL_GOOGLE_DRIVE`). The doc id can also be passed as `--document-id <id>`.

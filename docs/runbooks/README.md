@@ -17,7 +17,7 @@ operator-run live test does.** The repo carries no `live` status value — "Live
 1. **Obtain the credential(s)** from the provider (see each runbook's Credentials table).
 2. **Place secrets** in the gitignored `config/bicameral.local.json` under
    `connectors.<id>.secrets.<key>`, **or** export `BICAMERAL_<KEY>` env vars (env wins). **Never commit a secret** — the file is gitignored and `runtime` never logs/echoes a value.
-3. **Configure the gateway** once: `gateway.endpoint` = your bicameral-bot `/api/v1/ingest` URL, `gateway.token` = the ingest auth token. With no endpoint, `GatewaySink` is **default-gated** (raises `GatewayEmissionGated`) — so you cannot accidentally emit Live.
+3. **Configure the gateway** once: `gateway.endpoint` = your bicameral-bot `/api/v1/external-ingest` URL, `gateway.token` = the ingest auth token. With no endpoint, `GatewaySink` is **default-gated** (raises `GatewayEmissionGated`) — so you cannot accidentally emit Live.
 4. **Dry-run with the local sink first** (no network egress of evidence):
    `python -m runtime.cli run <id>` — prints the screened emissions (never a secret). Confirm count, titles, and that nothing sensitive appears.
 5. **Live test**: `python -m runtime.cli run <id> --sink gateway` — a real POST. Expect the gateway to return **201**; `GatewaySink` re-runs the FX-SEC-001 screen at the boundary and accepts only 201.

@@ -24,7 +24,7 @@
 
 | | |
 |---|---|
-| **Maturity** | Beta — 26 connectors harness-proven end-to-end, **all 26 flip-ready** (config descriptor + adversarially hardened, ready for an operator to flip Live), and **13 EM-safe advisory mods** are built; a PII redaction-and-pass model lets PII-dense free-text be emitted safely; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/ingest`) and operator-actionable |
+| **Maturity** | Beta — 26 connectors harness-proven end-to-end, **all 26 flip-ready** (config descriptor + adversarially hardened, ready for an operator to flip Live), and **13 EM-safe advisory mods** are built; a PII redaction-and-pass model lets PII-dense free-text be emitted safely; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/external-ingest`) and operator-actionable |
 | **Footprint** | Zero third-party **runtime** dependencies (Python stdlib only) |
 | **Safety model** | Read-only evidence adapters ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)); fail-closed webhook signature verification; a producer-side secret/PII hard-screen on every emission |
 | **Assurance** | Hash-chained governance ledger + machine-verified CI gate; SHA-pinned Actions; CodeQL, Bandit, OpenSSF Scorecard, SBOM |
@@ -64,7 +64,7 @@ flowchart TD
     screen -->|"reject"| drop["✗ Dropped — never leaves the boundary"]
     screen -->|"redact-and-pass<br/>email · phone · PII"| emit["AdapterEmission<br/>(reviewable evidence)"]
     emit --> mods["Advisory Mods<br/>annotations · routing hints · review questions"]
-    emit --> sink["GatewaySink → bicameral-bot<br/>POST /api/v1/ingest"]
+    emit --> sink["GatewaySink → bicameral-bot<br/>POST /api/v1/external-ingest"]
     mods --> sink
 ```
 
@@ -92,7 +92,7 @@ flowchart LR
 
 ## Connectors
 
-Each connector is a provider-facing **parse surface** — `parse_*(payload) -> Observation` plus a `<Provider>Connector` class — feeding the [universal adapter](adapter/README.md) (`pipeline.normalize()`). All connectors are read-only evidence adapters; they never write canonical state ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)). Readiness follows the [connector readiness ladder](docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md) (`Candidate → Prototype → Beta → Live`); **Beta** = proven end-to-end through the [`runtime/`](runtime/README.md) harness against a reference sink (signed webhook → verify → normalize → emit), with no cross-repo dependency. **Live** (gateway emission) is now operator-actionable — the `GatewaySink` seam maps each emission to the v1 `IngestRequest` and POSTs it to `/api/v1/ingest` (bot ingest guards landed); a connector goes Live when an operator wires `GatewaySink(endpoint, token)` against a real gateway. See [`connectors/README.md`](connectors/README.md) for the full index.
+Each connector is a provider-facing **parse surface** — `parse_*(payload) -> Observation` plus a `<Provider>Connector` class — feeding the [universal adapter](adapter/README.md) (`pipeline.normalize()`). All connectors are read-only evidence adapters; they never write canonical state ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)). Readiness follows the [connector readiness ladder](docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md) (`Candidate → Prototype → Beta → Live`); **Beta** = proven end-to-end through the [`runtime/`](runtime/README.md) harness against a reference sink (signed webhook → verify → normalize → emit), with no cross-repo dependency. **Live** (gateway emission) is now operator-actionable — the `GatewaySink` seam maps each emission to the v2 `ExternalIngestEnvelope` and POSTs it to `/api/v1/external-ingest` (bot ingest guards landed); a connector goes Live when an operator wires `GatewaySink(endpoint, token)` against a real gateway. See [`connectors/README.md`](connectors/README.md) for the full index.
 
 ### Flip-ready — capability matrix
 

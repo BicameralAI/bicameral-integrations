@@ -27,8 +27,8 @@ is distributed in-sync to the repo agents. No connector was promoted to Live.
 - **Mod fan-out** — 10 Scoped mods remain (3 of 13 built).
 - **Connector fan-out** — 24 connectors still need `config.json` + `SETUP.md` + a
   `RUNNERS` wire to match the Linear/Google Drive exemplars.
-- Selected BACKLOG: B5 (branch protection on `main`), B15 (vendored v1 ingest schema
-  drift-recheck), B10 (connector module-docstring freshness).
+- Selected BACKLOG: B5 (branch protection on `main`), B10 (connector module-docstring
+  freshness). B15 CLOSED 2026-07-08 (superseded by the #226 v2 external-ingest migration).
 
 ## Known Issues
 - **No connector is Live yet.** All 26 are Beta; Linear + Google Drive are flip-ready

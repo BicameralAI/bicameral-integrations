@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 """Behavior tests for the data_classification mod + EM-safe contract compliance."""
 
 from __future__ import annotations

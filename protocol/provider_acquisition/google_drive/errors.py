@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 # Copyright 2026 Bicameral AI — MIT License
 """Google Drive status/reason → typed ``DiscoveryError`` taxonomy (#179).
 
