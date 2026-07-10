@@ -210,3 +210,11 @@ live in [`docs/compliance/`](docs/compliance/) — control alignment, not certif
 - [Contributing](CONTRIBUTING.md)
 - [Security Policy](SECURITY.md)
 - [Changelog](CHANGELOG.md)
+
+## Governed by the Bicameral Factory
+
+This repository is part of the BicameralAI organization and is governed by the [Bicameral Factory](https://github.com/BicameralAI/bicameral-factory), the org's governance control plane. The factory aggregates each repo's declared governance facts (classification, visibility, required checks) into an org-wide governance dashboard. Governance is evidence-first: status is read from hard evidence such as CI runs, file presence, and branch protection, never inferred.
+
+## Trust & Compliance
+
+BicameralAI is pursuing SOC 2 Type II and ISO 27001. Framework-level status and evidence are available through our [Vanta Trust Center](https://app.vanta.com/bicameral-ai.com/trust/g4wnw551zp5l8jr88ig70); access to detailed reports is provided under a non-disclosure agreement. This summary is framework-level by design; detailed control and test posture is maintained internally and is not published here.
