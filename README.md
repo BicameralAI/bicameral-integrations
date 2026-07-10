@@ -16,7 +16,7 @@
 [![Lint: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-fe5196.svg)](https://www.conventionalcommits.org)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: BSL 1.1](https://img.shields.io/badge/License-BSL_1.1-orange.svg)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 [![Security policy](https://img.shields.io/badge/security-policy-blue.svg)](SECURITY.md)
 
@@ -218,3 +218,7 @@ This repository is part of the BicameralAI organization and is governed by the [
 ## Trust & Compliance
 
 BicameralAI is pursuing SOC 2 Type II and ISO 27001. Framework-level status and evidence are available through our [Vanta Trust Center](https://app.vanta.com/bicameral-ai.com/trust/g4wnw551zp5l8jr88ig70); access to detailed reports is provided under a non-disclosure agreement. This summary is framework-level by design; detailed control and test posture is maintained internally and is not published here.
+
+## License
+
+Bicameral Integrations is licensed under the [Business Source License 1.1](LICENSE) (BSL 1.1). You may copy, modify, and make non-production use freely; production use is permitted except for offering the software as a hosted or embedded service that competes with BicameralAI's paid offerings, including Bicameral Cloud. Each released version converts to the Apache License 2.0 on its Change Date, four years after that version's release. For commercial or alternative licensing, contact licensing@bicameral.ai.
