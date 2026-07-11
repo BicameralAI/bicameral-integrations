@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-Please report security vulnerabilities to security@bicameral.ai. Do not disclose
+Please report security vulnerabilities to security@bicameral-ai.com. Do not disclose
 suspected vulnerabilities publicly until maintainers have had a reasonable
 opportunity to investigate and coordinate remediation.
 
