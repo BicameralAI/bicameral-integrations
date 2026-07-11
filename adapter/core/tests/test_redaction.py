@@ -121,5 +121,5 @@ def test_redact_email_linear_on_pathological():
 
 def test_redact_email_match_set_preserved():
     for e in ["jane@example.com", "jane.doe@example.com", "user@example.com", "a@b.com",
-              "x+tag@sub.example.co.uk", "noreply@aider.chat", "security@bicameral.ai", "ops@a.io"]:
+              "x+tag@sub.example.co.uk", "noreply@aider.chat", "security@bicameral-ai.com", "ops@a.io"]:
         assert "[redacted:email]" in redact(f"contact {e} now"), e
