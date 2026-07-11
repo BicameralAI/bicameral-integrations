@@ -221,4 +221,4 @@ BicameralAI is pursuing SOC 2 Type II and ISO 27001. Framework-level status and 
 
 ## License
 
-Bicameral Integrations is licensed under the [Business Source License 1.1](LICENSE) (BSL 1.1). You may copy, modify, and make non-production use freely; production use is permitted except for offering the software as a hosted or embedded service that competes with BicameralAI's paid offerings, including Bicameral Cloud. Each released version converts to the Apache License 2.0 on its Change Date, four years after that version's release. For commercial or alternative licensing, contact licensing@bicameral.ai.
+Bicameral Integrations is licensed under the [Business Source License 1.1](LICENSE) (BSL 1.1). You may copy, modify, and make non-production use freely; production use is permitted except for offering the software as a hosted or embedded service that competes with BicameralAI's paid offerings, including Bicameral Cloud. Each released version converts to the Apache License 2.0 on its Change Date, four years after that version's release. For commercial or alternative licensing, contact licensing@bicameral-ai.com.
