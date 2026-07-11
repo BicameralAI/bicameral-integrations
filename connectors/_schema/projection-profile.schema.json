@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://bicameral.ai/schemas/projection-profile.schema.json",
+  "$id": "https://bicameral-ai.com/schemas/projection-profile.schema.json",
   "title": "Projection profile descriptor",
   "description": "Machine-readable per-projection profile contract describing how a governed projection fits a target surface. Shape + capability metadata ONLY — never permission, approval, eligibility, authority, secret, or canonical-state mutation. The egress mirror of the connector config descriptor (ADR-0015); see ADR-0019 and docs/PROJECTION_CONTRACT.md. Structural rules live here; semantic rules (id == target == family; authority-free discipline; required_canonical_ref/required_receipt enforcement) are enforced by scripts/validate_projection_profile.py.",
   "type": "object",
