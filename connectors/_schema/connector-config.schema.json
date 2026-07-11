@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://bicameral.ai/schemas/connector-config.schema.json",
+  "$id": "https://bicameral-ai.com/schemas/connector-config.schema.json",
   "title": "Connector config descriptor",
   "description": "Machine-readable per-connector configuration contract consumed by the mcp UI. Holds requirements/permissions/instructions only — never secret values (secrets stay in the operator runtime via SecretResolver). Structural rules live here; the semantic rules (id==source_id, modes subset of capabilities, conditional instructions[].ref) are enforced by scripts/validate_connector_config.py.",
   "type": "object",
