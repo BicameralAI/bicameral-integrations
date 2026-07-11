@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://bicameral.ai/schemas/mod-descriptor.schema.json",
+  "$id": "https://bicameral-ai.com/schemas/mod-descriptor.schema.json",
   "title": "Mod descriptor (UI contract)",
   "description": "Machine-readable per-mod descriptor consumed by the mcp UI — the EM-safe-mod parity of the connector config descriptor (FX-CFG-001). Holds UI-rendering + disclosure data only: what evidence the mod CONSUMES, what advisory artifacts it EMITS, the EM-safe forbidden_actions boundary (the trust-disclosure surface), and enablement knobs. A mod has NO credentials and NO live network — it is an advisory post-processor over the neutral evidence stream (ADR-0008/0013). Structural rules live here; the semantic rules (id == folder; emits + forbidden_actions consistent with the enforced manifest.yaml; index/SETUP freshness) are enforced by scripts/validate_mod_config.py.",
   "type": "object",
