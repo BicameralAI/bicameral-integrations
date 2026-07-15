@@ -1,6 +1,11 @@
 # Repo-local governance facts for bicameral-integrations (supply-chain/governance template).
 # Validated by bicameral-factory schemas/repo-governance.schema.json; aggregated into the org
 # dashboard (#106, #113). Initial classification/runtime_role are proposals — adjust in review.
+#
+# This is a machine-readable DEVELOPMENT declaration. It is an allowed tracked path
+# (bicameral-factory#243) but is NOT part of the customer release artifact — see
+# `customer_distribution` below, `.gitattributes` export-ignore, and
+# `scripts/check_release_inventory.py`.
 schema_version: 1
 repo: BicameralAI/bicameral-integrations
 classification: infrastructure
@@ -27,13 +32,88 @@ shadow_genome_sources:
   - correction_records
   - repeated_review_findings
 public_exposure:
+  # Narrowed from the broad "governance doctrine" allowance (#251): only stable,
+  # customer-relevant trust metadata may be exposed publicly.
   allowed:
-    - governance doctrine
+    - product authority boundary
+    - security-control summary
+    - required-check names
+    - connector trust tiers
     - schemas
     - redacted examples
   prohibited:
+    - internal development-governance procedures
+    - factory runtime content or private factory links
+    - internal sibling-tool inventories
     - live dashboard data
     - shadow genome output
+    - roadmap and review queues
     - risk register
-    - review queues
     - security posture deltas
+
+# Development-governance boundary (bicameral-factory#243 §1): how this repo is developed.
+development_governance:
+  factory_managed: true
+  allowed_tracked_paths:
+    - .bicameral/repo-governance.yaml
+    - AGENTS.md
+    - CONTRIBUTING.md
+    - docs/governance/BOUNDARY.md
+    - docs/governance/SIBLINGS.md
+    - docs/governance/README.md
+    - docs/governance/PIN.json
+    - .github/
+  local_only_paths:
+    - .bicameral/factory-attestations/
+    - .bicameral/factory-context.local.json
+    - .qor/
+    - .claude/
+    - .cursor/
+    - .windsurf/
+    - .failsafe/
+  attestation_required: true
+  # Attestation is generated and validated out-of-tree; committing attestations under
+  # .bicameral/factory-attestations/ is an open governance-owner decision (integrations#249).
+  attestation_tracked: false
+
+# Customer-distribution boundary (bicameral-factory#243 §1): what ships to customers.
+customer_distribution:
+  artifact_roots:
+    - adapter/
+    - connectors/
+    - mods/
+    - runtime/
+    - protocol/
+    - config/
+  forbidden_paths:
+    - .bicameral/
+    - .github/
+    - AGENTS.md
+    - docs/governance/
+    - docs/META_LEDGER.md
+    - docs/SHADOW_GENOME.md
+    - docs/GOVERNANCE_INDEX.md
+    - docs/compliance/
+    - docs/research-brief-*.md
+    - "**/tests/"
+    - scripts/
+  forbidden_references:
+    - private Factory repository links
+    - internal sibling-tool names (Qor-logic, FailSafe, MythologIQ)
+    - stale bic-logic terminology
+    - Shadow Genome data
+  factory_runtime_dependency: prohibited
+  validation_workflow: release-inventory
+
+# Observed live state vs desired policy above (bicameral-factory#243 acceptance criteria).
+# Observed values are NOT claimed effective until backed by live ruleset/check evidence.
+observed_state:
+  verification_status: unverified
+  last_verified: null
+  evidence: null
+  notes: >-
+    Desired branch_protection and required_checks are declared above; live org-ruleset
+    and required-check evidence has not yet been captured for this descriptor. The
+    artifact-boundary check (scripts/check_release_inventory.py) runs deterministically at
+    exact HEAD; wiring it as a required status check and capturing branch/ruleset evidence
+    is a follow-up for the governance owner.

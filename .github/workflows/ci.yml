@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: ["main", "dev"]
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
 
 permissions:
   contents: read
@@ -32,3 +32,7 @@ jobs:
         run: python scripts/validate_mod_config.py
       - name: Ingest schema pin + conformance gate
         run: python scripts/validate_ingest_schema_pin.py
+      - name: Inter-repo contract provenance + drift gate
+        run: python scripts/validate_governance_pin.py
+      - name: Release-artifact inventory boundary (deterministic, fail-closed)
+        run: python scripts/check_release_inventory.py --manifest

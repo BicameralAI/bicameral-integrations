@@ -17,3 +17,29 @@ mods/*/SETUP.md text eol=lf
 # Vendored bot schemas are hash-pinned (validate_ingest_schema_pin.py): pin to LF so the
 # content_sha256 matches the committed blob on every OS (the gate is byte-exact).
 runtime/schemas/*.json text eol=lf
+
+# Customer-distribution boundary (#251 / bicameral-factory#243): keep Factory-internal and
+# contributor-only development material OUT of the released source archive. `export-ignore`
+# is what `git archive` (the published integration format) honors, and
+# `scripts/check_release_inventory.py` enforces the same set fail-closed.
+.bicameral/** export-ignore
+.github/** export-ignore
+.pre-commit-config.yaml export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+AGENTS.md export-ignore
+docs/governance/** export-ignore
+docs/META_LEDGER.md export-ignore
+docs/SHADOW_GENOME.md export-ignore
+docs/GOVERNANCE_INDEX.md export-ignore
+docs/SYSTEM_STATE.md export-ignore
+docs/BACKLOG.md export-ignore
+docs/WHATS_NEXT.md export-ignore
+docs/compliance/** export-ignore
+docs/ecosystem/** export-ignore
+docs/research-brief-*.md export-ignore
+docs/rfq-*.md export-ignore
+docs/scope-*.md export-ignore
+docs/connector-verification-*.md export-ignore
+scripts/** export-ignore
+**/tests/** export-ignore

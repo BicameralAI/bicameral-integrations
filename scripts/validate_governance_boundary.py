@@ -6,6 +6,14 @@ Keeps local-process and sibling-tool artifacts out of commits. The boundary is
 defined by the tracked sibling registry (``docs/governance/SIBLINGS.md``) plus a
 built-in default floor of common agent-scratch roots.
 
+Two narrow allowlists carve out explicitly-tracked governance declarations:
+``docs/governance/`` permits only ``BOUNDARY.md``/``SIBLINGS.md``/``README.md``/``PIN.json``,
+and ``.bicameral/`` permits only ``repo-governance.yaml`` (the machine-readable repo-local
+governance facts, an allowed tracked path per bicameral-factory#243). All other ``.bicameral/``
+paths — factory context, copied skills, run manifests, receipts, and factory attestations —
+remain forbidden; attestation storage is a separate open governance-owner decision
+(integrations#249).
+
 By default (pre-commit / CI) this checks only what a change *introduces* — staged
 files and the PR diff — matching the proposal's "is staged" contract, so it does
 not retroactively fail on pre-existing tracked files. Use ``--audit`` to scan the
@@ -50,6 +58,16 @@ GOVERNANCE_ALLOWLIST = {
     "docs/governance/SIBLINGS.md",
     "docs/governance/README.md",
     "docs/governance/PIN.json",
+}
+
+# The only paths commit-permitted under `.bicameral/`. The repo-local governance-facts
+# declaration is an explicitly-allowed tracked file (bicameral-factory#243 lists it as an
+# allowed tracked path); every other `.bicameral/` path — factory context, copied skills,
+# run manifests, receipts, and factory attestations — stays local/gitignored. This is a
+# precise allowance, not a relaxation of the leak guard: attestation storage remains an open
+# governance-owner decision (integrations#249) and is intentionally NOT permitted here.
+BICAMERAL_ALLOWLIST = {
+    ".bicameral/repo-governance.yaml",
 }
 
 
@@ -119,7 +137,7 @@ def match_root(path: str, root: str) -> bool:
 
 
 def forbidding_root(path: str, roots: list[str]) -> str | None:
-    if path in GOVERNANCE_ALLOWLIST:
+    if path in GOVERNANCE_ALLOWLIST or path in BICAMERAL_ALLOWLIST:
         return None
     for root in roots:
         if match_root(path, root):

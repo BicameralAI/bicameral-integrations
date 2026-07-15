@@ -47,7 +47,8 @@ payload`, `docs(connectors): mark Linear flip-ready`.
 ## Bring your own tools — the sibling registry
 
 You are **not** required to adopt the maintainer's process tooling. The only thing your
-PR must satisfy is the shared **bic-logic** contract plus a clean working tree. Everything
+PR must satisfy is the **shared Factory process contract** (the factory-owned development
+doctrine consumed by this repo) plus a clean working tree. Everything
 you run *locally* — a governance system, an AI assistant, an IDE plugin, or a homegrown
 framework — is welcome as a **registered sibling**: leak-guarded, never tracked, never
 referenced.
