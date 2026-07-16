@@ -56,15 +56,16 @@ development_governance:
   factory_managed: true
   allowed_tracked_paths:
     - .bicameral/repo-governance.yaml
+    - .bicameral/factory-attestations/*.json
     - AGENTS.md
     - CONTRIBUTING.md
     - docs/governance/BOUNDARY.md
     - docs/governance/SIBLINGS.md
     - docs/governance/README.md
     - docs/governance/PIN.json
+    - docs/governance/factory-attestation.schema.json
     - .github/
   local_only_paths:
-    - .bicameral/factory-attestations/
     - .bicameral/factory-context.local.json
     - .qor/
     - .claude/
@@ -72,9 +73,12 @@ development_governance:
     - .windsurf/
     - .failsafe/
   attestation_required: true
-  # Attestation is generated and validated out-of-tree; committing attestations under
-  # .bicameral/factory-attestations/ is an open governance-owner decision (integrations#249).
-  attestation_tracked: false
+  # Governance-owner decision (integrations#249): factory attestations are tracked in-repo
+  # under .bicameral/factory-attestations/*.json and validated fail-closed by
+  # scripts/validate_factory_attestation.py (filename + schema + factory-commit reconciliation
+  # + roadmap reconciliation + state refinement). They remain excluded from customer release
+  # artifacts (.gitattributes export-ignore + scripts/check_release_inventory.py).
+  attestation_tracked: true
 
 # Customer-distribution boundary (bicameral-factory#243 §1): what ships to customers.
 customer_distribution:

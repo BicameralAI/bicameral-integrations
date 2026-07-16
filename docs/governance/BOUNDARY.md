@@ -46,12 +46,14 @@ PR-diff) path:
 1. falls under a **registered sibling root** — from [`SIBLINGS.md`](SIBLINGS.md) unioned with a
    built-in default floor of common agent-scratch roots;
 2. is a non-allowlisted file under `docs/governance/` — only `BOUNDARY.md`, `SIBLINGS.md`,
-   `README.md`, and `PIN.json` are commit-permitted there;
+   `README.md`, `PIN.json`, and `factory-attestation.schema.json` are commit-permitted there;
 3. is a non-allowlisted file under `.bicameral/` — only `repo-governance.yaml` (the
    machine-readable repo-local governance facts, an allowed tracked path per
-   bicameral-factory#243) is commit-permitted; factory context, copied skills, run
-   manifests, receipts, and **factory attestations** stay local/gitignored (attestation
-   storage is a separate open governance-owner decision, integrations#249);
+   bicameral-factory#243) and `factory-attestations/*.json` (tracked factory attestations
+   per the integrations#249 governance-owner decision, validated fail-closed by
+   `scripts/validate_factory_attestation.py`) are commit-permitted; all other `.bicameral/`
+   content — factory context, copied skills, run manifests, and receipts — stays
+   local/gitignored, and `.bicameral/**` stays excluded from customer release artifacts;
 4. or when a registered sibling root is **not** covered by `.gitignore` (registry ⇔
    `.gitignore` must agree).
 

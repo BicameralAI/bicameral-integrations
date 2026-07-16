@@ -7,12 +7,14 @@ defined by the tracked sibling registry (``docs/governance/SIBLINGS.md``) plus a
 built-in default floor of common agent-scratch roots.
 
 Two narrow allowlists carve out explicitly-tracked governance declarations:
-``docs/governance/`` permits only ``BOUNDARY.md``/``SIBLINGS.md``/``README.md``/``PIN.json``,
-and ``.bicameral/`` permits only ``repo-governance.yaml`` (the machine-readable repo-local
-governance facts, an allowed tracked path per bicameral-factory#243). All other ``.bicameral/``
-paths — factory context, copied skills, run manifests, receipts, and factory attestations —
-remain forbidden; attestation storage is a separate open governance-owner decision
-(integrations#249).
+``docs/governance/`` permits only ``BOUNDARY.md``/``SIBLINGS.md``/``README.md``/``PIN.json``/
+``factory-attestation.schema.json``, and ``.bicameral/`` permits only ``repo-governance.yaml``
+(the machine-readable repo-local governance facts, an allowed tracked path per
+bicameral-factory#243) plus ``factory-attestations/*.json`` (tracked factory attestations,
+per the integrations#249 governance-owner decision — validated fail-closed by
+``scripts/validate_factory_attestation.py``). All other ``.bicameral/`` paths — factory
+context, copied skills, run manifests, and receipts — remain forbidden, and ``.bicameral/**``
+stays excluded from customer release artifacts.
 
 By default (pre-commit / CI) this checks only what a change *introduces* — staged
 files and the PR diff — matching the proposal's "is staged" contract, so it does
@@ -58,17 +60,35 @@ GOVERNANCE_ALLOWLIST = {
     "docs/governance/SIBLINGS.md",
     "docs/governance/README.md",
     "docs/governance/PIN.json",
+    "docs/governance/factory-attestation.schema.json",
 }
 
-# The only paths commit-permitted under `.bicameral/`. The repo-local governance-facts
+# The only exact path commit-permitted under `.bicameral/`. The repo-local governance-facts
 # declaration is an explicitly-allowed tracked file (bicameral-factory#243 lists it as an
-# allowed tracked path); every other `.bicameral/` path — factory context, copied skills,
-# run manifests, receipts, and factory attestations — stays local/gitignored. This is a
-# precise allowance, not a relaxation of the leak guard: attestation storage remains an open
-# governance-owner decision (integrations#249) and is intentionally NOT permitted here.
+# allowed tracked path).
 BICAMERAL_ALLOWLIST = {
     ".bicameral/repo-governance.yaml",
 }
+
+# Tracked factory attestations are commit-permitted under `.bicameral/factory-attestations/`
+# per the integrations#249 governance-owner decision: only `*.json` directly under that
+# directory, each validated fail-closed by `scripts/validate_factory_attestation.py`. This is
+# a precise allowance, not a relaxation of the leak guard — every other `.bicameral/` path
+# (factory context, copied skills, run manifests, receipts) stays local/gitignored, and
+# `.bicameral/**` remains excluded from customer release artifacts.
+BICAMERAL_ALLOWLIST_DIRS = {
+    ".bicameral/factory-attestations/": (".json",),
+}
+
+
+def _in_bicameral_allowlist_dir(path: str) -> bool:
+    for prefix, suffixes in BICAMERAL_ALLOWLIST_DIRS.items():
+        if not path.startswith(prefix):
+            continue
+        remainder = path[len(prefix) :]
+        if remainder and "/" not in remainder and remainder.endswith(suffixes):
+            return True
+    return False
 
 
 def git_lines(args: list[str]) -> list[str]:
@@ -137,7 +157,11 @@ def match_root(path: str, root: str) -> bool:
 
 
 def forbidding_root(path: str, roots: list[str]) -> str | None:
-    if path in GOVERNANCE_ALLOWLIST or path in BICAMERAL_ALLOWLIST:
+    if (
+        path in GOVERNANCE_ALLOWLIST
+        or path in BICAMERAL_ALLOWLIST
+        or _in_bicameral_allowlist_dir(path)
+    ):
         return None
     for root in roots:
         if match_root(path, root):

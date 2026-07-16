@@ -34,5 +34,7 @@ jobs:
         run: python scripts/validate_ingest_schema_pin.py
       - name: Inter-repo contract provenance + drift gate
         run: python scripts/validate_governance_pin.py
+      - name: Tracked factory-attestation gate (deterministic, fail-closed)
+        run: python scripts/validate_factory_attestation.py
       - name: Release-artifact inventory boundary (deterministic, fail-closed)
         run: python scripts/check_release_inventory.py --manifest

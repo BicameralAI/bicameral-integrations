@@ -40,6 +40,19 @@
       "local_path": null,
       "content_sha256": null,
       "note": "Consumed by reference (no local mirror). The development_governance/customer_distribution/observed_state extension (bicameral-factory#243) merged in bicameral-factory#250 at the pinned reviewed commit; .bicameral/repo-governance.yaml now validates against it upstream."
+    },
+    {
+      "contract_id": "factory-attestation-schema",
+      "producer": "BicameralAI/bicameral-factory",
+      "consumer": "BicameralAI/bicameral-integrations",
+      "role": "consumer",
+      "upstream_repo": "BicameralAI/bicameral-factory",
+      "upstream_path": "schemas/factory-attestation.schema.json",
+      "upstream_commit": "12d16bd12e06c6bb3296c529d47fa90f0c86755f",
+      "local_path": "docs/governance/factory-attestation.schema.json",
+      "content_sha256": "2eedc015d697002cd78fb601fe9fb41d5c9d436f5860dd96739c4c50319ac420",
+      "drift_gate": "scripts/validate_governance_pin.py",
+      "note": "Pinned mirror of the Factory attestation schema. Tracked attestations under .bicameral/factory-attestations/*.json are validated against this mirror by scripts/validate_factory_attestation.py (integrations#249 owner decision)."
     }
   ]
 }

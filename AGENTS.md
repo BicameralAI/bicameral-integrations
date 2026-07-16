@@ -46,16 +46,28 @@ python scripts/check_release_inventory.py --manifest # exact-head release invent
 ## Factory attestation & evidence
 
 Factory-run PRs follow the `Bicameral Factory Run` playbook. A factory attestation records
-which `bicameral-factory` commit and context were relied on, and is validated with the
-factory's `scripts/validate-factory-attestation.py`.
+which `bicameral-factory` commit and context were relied on.
 
-> **Attestation storage (governance-owner decision, tracked in integrations#249):** this
-> repo's `scripts/validate_governance_boundary.py` keeps `.bicameral/` development scratch out
-> of commits. The single machine-readable declaration `.bicameral/repo-governance.yaml` is an
-> explicitly-allowed tracked exception; committing `.bicameral/factory-attestations/*.json`
-> is **not** currently allowed. Until the governance owner (`bicameral-factory`) authorizes a
-> tracked-attestation path, generate and validate attestations **out-of-tree** and link them
-> from the PR — do not weaken the boundary guard to force an in-repo attestation.
+> **Attestation storage (governance-owner decision, integrations#249):** factory attestations
+> **are tracked in-repo** under `.bicameral/factory-attestations/*.json`. The boundary guard
+> (`scripts/validate_governance_boundary.py`) permits exactly two `.bicameral/` paths — the
+> `repo-governance.yaml` declaration and `factory-attestations/*.json` — and forbids all other
+> `.bicameral/` content. Each tracked attestation is validated **fail-closed** by
+> `scripts/validate_factory_attestation.py` on: **filename** (`<factory_commit>.<run-id>.json`),
+> **schema** (against the pinned mirror `docs/governance/factory-attestation.schema.json`),
+> **factory commit** (a 40-char SHA reconciled with `docs/governance/PIN.json`
+> `factory_governance.commit`), **roadmap reconciliation**, and **state refinement**.
+> Attestations stay **excluded from customer release artifacts** (`.gitattributes`
+> `export-ignore` + `scripts/check_release_inventory.py`), so `.bicameral/**` never ships.
+>
+> Add one for a factory-run PR:
+>
+> ```bash
+> # <factory_commit> must equal PIN.json factory_governance.commit
+> $EDITOR .bicameral/factory-attestations/<factory_commit>.<run-id>.json
+> git add -f .bicameral/factory-attestations/<factory_commit>.<run-id>.json  # .bicameral/ is gitignored
+> python scripts/validate_factory_attestation.py
+> ```
 
 ## Local checks
 
@@ -67,6 +79,7 @@ python scripts/validate_connector_config.py
 python scripts/validate_mod_config.py
 python scripts/validate_ingest_schema_pin.py
 python scripts/validate_governance_pin.py
+python scripts/validate_factory_attestation.py
 python scripts/governance_gate.py
 python scripts/validate_governance_boundary.py
 python scripts/check_release_inventory.py
