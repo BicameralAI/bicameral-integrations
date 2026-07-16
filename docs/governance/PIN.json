@@ -3,7 +3,7 @@
   "factory_governance": {
     "producer": "BicameralAI/bicameral-factory",
     "consumer": "BicameralAI/bicameral-integrations",
-    "commit": "188b6314b7d2945cb958a26553bfe3a4081a0eb6",
+    "commit": "12d16bd12e06c6bb3296c529d47fa90f0c86755f",
     "doctrine": [
       {
         "path": "playbooks/devin-bicameral-factory-run.md",
@@ -35,10 +35,11 @@
       "role": "consumer",
       "upstream_repo": "BicameralAI/bicameral-factory",
       "upstream_path": "schemas/repo-governance.schema.json",
-      "upstream_commit": "188b6314b7d2945cb958a26553bfe3a4081a0eb6",
+      "upstream_commit": "12d16bd12e06c6bb3296c529d47fa90f0c86755f",
+      "upstream_sha256": "94a5b04d4279a84494fd441233e68637afa39d8d522728f10d92b7b355c92498",
       "local_path": null,
       "content_sha256": null,
-      "note": "Consumed by reference (no local mirror). Requires the development_governance/customer_distribution extension per bicameral-factory#243 before .bicameral/repo-governance.yaml validates upstream."
+      "note": "Consumed by reference (no local mirror). The development_governance/customer_distribution/observed_state extension (bicameral-factory#243) merged in bicameral-factory#250 at the pinned reviewed commit; .bicameral/repo-governance.yaml now validates against it upstream."
     }
   ]
 }
