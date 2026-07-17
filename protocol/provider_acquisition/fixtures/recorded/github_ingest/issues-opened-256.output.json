@@ -5,6 +5,18 @@
     "schema_version": 1,
     "updated_at": "2026-07-17T05:10:00Z"
   },
+  "emission": {
+    "adapter_version": "github-issue-ingest/0.1.0",
+    "advisories": [],
+    "emission_type": "evidence",
+    "evidence_id": "github:987654321:issue:24681012:845f4cd2908b3b0a5792d6d134805c96ae550af9d4f5c2d07e0246bcae7a12e1",
+    "provenance": {
+      "delivery_mode": "webhook",
+      "provider_event_id": "recorded-delivery-001",
+      "provider_resource_id": "issue:24681012",
+      "verification": "signed"
+    }
+  },
   "external_ingest_envelope": {
     "candidate_hints": [
       {
@@ -28,16 +40,30 @@
     "source_system": "github",
     "source_uri": "https://github.com/BicameralAI/bicameral-integrations/issues/256"
   },
-  "normalized": {
-    "action": "opened",
-    "content_truncated": false,
-    "event_name": "issues",
-    "issue_id": "24681012",
-    "issue_number": "256",
-    "repository_full_name": "BicameralAI/bicameral-integrations",
-    "repository_id": "987654321",
-    "source_version": "845f4cd2908b3b0a5792d6d134805c96ae550af9d4f5c2d07e0246bcae7a12e1",
-    "title_truncated": false,
-    "tombstone": false
+  "observation": {
+    "evidence_id": "github:987654321:issue:24681012:845f4cd2908b3b0a5792d6d134805c96ae550af9d4f5c2d07e0246bcae7a12e1",
+    "excerpt": "GitHub issue discussions should enter Bicameral as screened, replay-safe evidence.",
+    "integration_advisories": [],
+    "mode": "webhook",
+    "normalized": {
+      "action": "opened",
+      "content_truncated": false,
+      "event_name": "issues",
+      "issue_id": "24681012",
+      "issue_number": "256",
+      "repository_full_name": "BicameralAI/bicameral-integrations",
+      "repository_id": "987654321",
+      "source_version": "845f4cd2908b3b0a5792d6d134805c96ae550af9d4f5c2d07e0246bcae7a12e1",
+      "title_truncated": false,
+      "tombstone": false
+    },
+    "provider_event_id": "recorded-delivery-001",
+    "provider_resource_id": "issue:24681012",
+    "source_ref": {
+      "kind": "issue",
+      "ref": "BicameralAI/bicameral-integrations#issues/256:issue:24681012:v:845f4cd2908b3b0a5792d6d134805c96ae550af9d4f5c2d07e0246bcae7a12e1",
+      "source_id": "github",
+      "url": "https://github.com/BicameralAI/bicameral-integrations/issues/256"
+    }
   }
 }
