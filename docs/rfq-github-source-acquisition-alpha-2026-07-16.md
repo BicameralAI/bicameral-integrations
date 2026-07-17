@@ -1,166 +1,90 @@
-# RFQ Addendum: GitHub Source Acquisition for Alpha Decision Candidates
+# GitHub Incremental Issue Ingest for Alpha
 
-Date: 2026-07-16
-Status: open for Kevin Knapp and Jin Kuan review
+Date: 2026-07-17
+Status: Implemented for review in PR #255
 Owner: Bicameral Integrations
-Related: `docs/rfq-bot-integrations-boundary-2026-06-06.md`, ADR-0017 provider acquisition contract, Bot merged PR #325
+Related: issue #256, ADR-0017 provider acquisition contract, Factory #210
 
 ## Purpose
 
-Define the integrations-side contract for GitHub issues as Bicameral's first alpha dogfooding source. This document extends the existing bot/integrations boundary RFQ without changing its authority split.
+Define and implement the integrations-side contract for GitHub issues as Bicameral's first alpha dogfooding ingest source.
 
-Integrations owns provider acquisition, verification, source normalization, producer-side screening, and replay-safe delivery. Bot owns evidence acceptance, SourceSnapshot materialization, filtration policy, reasoning projection, candidate convergence, weighting, lifecycle, review routing, and persistent Decisions.
+Integrations owns provider acquisition, verification, source normalization, producer-side screening, cursor persistence, and replay-safe delivery. Bot owns evidence acceptance, SourceSnapshot materialization, filtration policy, reasoning projection, candidate convergence, weighting, lifecycle, review routing, and persistent Decisions.
 
-## Fixed boundary
+## Accepted alpha scope
 
-Integrations may send:
-
-- screened source facts;
-- evidence excerpts or approved source content;
-- stable provider references;
-- delivery and verification provenance;
-- advisory hints.
-
-Integrations must not send or claim:
-
-- accepted Decisions;
-- authoritative DecisionCandidates;
-- decision level or authority;
-- ratification or review outcomes;
-- bot ActorContext;
-- persistent-memory mutation;
-- final relevance score;
-- lifecycle promotion.
-
-## RFQ A: GitHub issue acquisition scope
-
-### Initial events
-
-Evaluate support for:
+The first increment supports:
 
 - issue opened;
 - issue edited;
 - issue closed or reopened;
 - issue comment created or edited;
-- label and milestone changes;
-- assignee changes;
-- cross-reference and linked pull-request events.
+- deleted comments as content-free tombstone observations;
+- webhook-first delivery;
+- polling backfill from a durable per-repository cursor;
+- GitHub App installation authentication only;
+- bounded screened text;
+- immutable source versions;
+- at-least-once delivery through `GatewaySink`.
 
-### Decision requested
+Label, milestone, assignee, and linked-pull-request changes remain metadata on the next issue observation rather than independent emissions. Pull-request, commit, repository-clone, and code-indexing ingest are deferred.
 
-Choose the minimum alpha event set. The recommendation is issue body plus comments and state transitions, with low-value administrative events retained as metadata rather than independent observations.
+## Data flow
 
-## RFQ B: Normalized source envelope
+```text
+GitHub webhook or bounded poll
+  -> signature / installation-token verification
+  -> GitHub source normalization
+  -> immutable source version and stable provider identifiers
+  -> AdapterEmission(emission_type="evidence")
+  -> existing GatewaySink
+  -> authority-stripped ExternalIngestEnvelope
+  -> Bot external-ingest gate
+```
 
-The GitHub adapter should produce a provider-neutral observation containing at least:
+## Stable source identity
 
-- provider: `github`;
-- repository stable identifier and full name;
-- issue number and node identifier;
-- canonical URL;
-- issue state;
-- title and body;
-- author identifier and type;
-- created, updated, and closed timestamps;
-- labels, milestone, assignees, and linked pull requests where available;
-- comment identifier, author, timestamp, and body for comment observations;
-- delivery identifier and event type;
-- delivery mode and signature-verification result;
-- source version or content hash;
-- connector and schema version.
+Each observation preserves repository id and full name, issue number and id, comment id when applicable, delivery id, source kind, canonical URL, updated timestamp, deterministic content-version digest, and schema version.
 
-### Decision requested
+Edits create new immutable observations. Integrations never rewrites Bot history.
 
-Confirm which fields cross the wire as source facts, which remain connector-local metadata, and whether full bodies or bounded excerpts are sent for alpha.
+## Screening and noise
 
-## RFQ C: Producer-side screening and exclusion hints
+The connector sends screened source facts and bounded excerpts. Removed content is never repeated in a tombstone. Bot-authored, dependency, templated, and status-only content is retained with advisory noise labels rather than authoritatively discarded.
 
-Integrations performs deterministic producer-side checks before delivery:
+## Cursor and delivery semantics
 
-- signature or credential verification;
-- schema and payload-size validation;
-- secret, credential, PHI, PAN, and configured sensitive-data screening;
-- unsupported repository or workspace exclusion;
-- replay and delivery deduplication;
-- malformed encoding or binary-content rejection.
+Cursor advancement is a two-phase operation:
 
-Integrations may attach advisory hints for obvious provider boilerplate, bot-generated comments, synchronization events, or administratively generated noise. These hints must not become authoritative Bot exclusions.
+```text
+normalize -> emit -> receive HTTP 201 -> atomically persist cursor
+```
 
-### Decision requested
+- `201`: advance;
+- transport, `429`, and `5xx`: retry without advancing;
+- sensitive-data or schema-drift rejection: quarantine without advancing;
+- terminal `4xx`: record the terminal outcome according to the existing cursor policy.
 
-Choose the alpha handling for bot-authored GitHub content, automated dependency notices, status-only comments, and issue templates with little user content. Confirm whether integrations drops them, downgrades them to evidence-only, or forwards them with noise hints.
+A crash after Bot acceptance but before cursor persistence may replay the source observation. Stable provider and content-version identifiers make that replay deduplicable downstream.
 
-## RFQ D: Delivery, retry, and cursor semantics
+## Authority boundary
 
-GitHub webhook delivery should preserve at-least-once semantics. Bot deduplication must make replay effectively once at canonical materialization.
+Integrations may emit source facts, evidence excerpts, stable provider references, delivery provenance, and advisory hints.
 
-Required outcomes:
+Integrations must not emit or claim accepted Decisions, authoritative DecisionCandidates, decision level, signoff, compliance, ActorContext, lifecycle promotion, final relevance, or event-store mutation.
 
-- accepted: advance delivery state;
-- terminal schema or policy rejection: record terminal outcome and surface for review;
-- rate limit, transport, or server error: retry without advancing;
-- sensitive-data rejection: quarantine and alert;
-- contract drift: fail the contract gate and do not silently skip.
+## Implementation
 
-### Decision requested
+- `protocol/provider_acquisition/github/ingest.py`
+- `protocol/provider_acquisition/github/tests/test_github_ingest.py`
 
-Confirm webhook-first alpha posture, whether any polling backfill is required, retry limits, dead-letter handling, and the durable receipt shape returned by Bot.
+## Factory lifecycle metadata
 
-## RFQ E: Update and deletion semantics
+```yaml
+factory_lifecycle_ref: BicameralAI/bicameral-factory#210
+evidence_class: implementation
+journey_status_claim: none
+acceptance_authority: factory
+```
 
-GitHub issues and comments can be edited or deleted after initial capture.
-
-Integrations should emit new immutable observations referencing the same provider object and a new content version. It should not rewrite Bot evidence history.
-
-### Decision requested
-
-Choose the alpha policy for:
-
-- edited issue bodies;
-- edited comments;
-- deleted comments;
-- transferred issues;
-- renamed repositories;
-- inaccessible private repositories;
-- force-deleted or redacted source content.
-
-The recommended posture is immutable observation history plus a current-source availability marker, with security-driven redaction handled through an explicit governed removal process rather than ordinary connector updates.
-
-## RFQ F: Alpha conformance fixtures
-
-The integration package must provide fixtures for:
-
-- clear product decision discussion;
-- ambiguous question with no decision;
-- high-volume issue with mixed signal;
-- bot-generated or templated noise;
-- edited issue and comment;
-- duplicate webhook delivery;
-- signature failure;
-- sensitive-data rejection;
-- rate-limit and retry;
-- repository rename or transfer.
-
-Each fixture must validate normalized output, screening outcome, provenance, idempotency key, and expected Bot handoff lane.
-
-## Cross-repository acceptance criteria
-
-- GitHub-specific logic terminates at the neutral acquisition envelope.
-- Bot can change filtration or weighting policy without reconfiguring the GitHub connector.
-- Source provenance remains sufficient to reconstruct what GitHub object and version produced each evidence record.
-- Integrations never assigns final candidate relevance or lifecycle state.
-- Delivery is replay-safe and contract-versioned.
-- Security and schema failures are explicit, observable, and non-silent.
-- The contract supports independent integration fixtures before end-to-end alpha evaluation.
-
-## Requested decisions
-
-Kevin and Jin should record:
-
-- minimum GitHub event scope;
-- full-body versus excerpt policy;
-- bot-generated-content handling;
-- webhook and optional backfill posture;
-- edit and deletion behavior;
-- receipt and retry contract;
-- schema version targeted for alpha.
+This implementation does not claim terminal evidence, human acceptance, or alpha readiness. A real GitHub App to Integrations to production Bot daemon journey remains required for terminal evidence.
