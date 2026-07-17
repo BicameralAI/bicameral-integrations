@@ -14,7 +14,7 @@ Governance gate: `bic:spec-governance-gate` advisory/no-op. This is a documentat
 
 ## Reading Guide
 
-Read `Runtime Invariant`, `Runtime State Classification`, and `Runtime Architecture Conformance` first.
+Read `Runtime Invariant`, `Conformance Gap Summary`, `Runtime State Classification`, and `Runtime Architecture Conformance` first.
 
 ## Runtime Invariant
 
@@ -23,6 +23,19 @@ Integrations observe provider systems and emit screened evidence or provider fac
 ## Runtime Problem
 
 This repository contains connectors, provider-acquisition descriptors, operator config, gateway sinks, and cursor policy. Without an ownership map, a connector can accidentally become a state authority, a credential can enter a descriptor/envelope, or a cursor can advance before the bot has acknowledged the evidence. The conformance table makes those boundaries executable.
+
+## Conformance Gap Summary
+
+Status vocabulary: `proven` means the required implementation and executable evidence are cited; `partial` means the path exists but the required integration, replay, or real-provider evidence is incomplete; `missing` means the required implementation or evidence does not yet exist; `unresolved` means the owning contract is not yet decided.
+
+| Conformance ids | Intended contract | Current implementation / evidence | Status | Missing evidence or work |
+| --- | --- | --- | --- | --- |
+| CONF-EVIDENCE-ONLY-01 | Connectors emit provider facts/evidence and never canonical Bicameral state | ADRs and provider-acquisition protocol tests establish the boundary | partial | Cross-boundary negative authority test against the bot gateway |
+| CONF-SECRET-BOUNDARY-01 | Credentials remain operator-local and never enter descriptors, envelopes, Cloud, or logs | Local-config and fixture secret-guard tests exist | proven | Preserve the guard across every new connector descriptor |
+| CONF-ENVELOPE-01 | Every live emission is screened and mapped to `ExternalIngestEnvelope` v2 | Gateway mapping and screening tests exist | partial | Bot producer/consumer integration evidence for the live gateway seam |
+| CONF-CURSOR-2PC-01 | Cursor advance occurs only after an accepted bot receipt or explicit terminal policy | Cursor-policy unit tests exist | partial | Crash/replay integration with the durable checkpoint owner |
+| CONF-CURSOR-ROUTING-01 | Checkpoints are scoped by connector and provider/source identity | Policy names the key, but no concrete durable persistence owner is selected | unresolved | Assign the operator checkpoint Module/Seam and add multi-source restart/replay topology evidence |
+| CONF-LIVE-READINESS-01 | Fixtures/contracts never imply a connector is Live | Readiness ADR and connector metadata distinguish evidence levels | partial | Real-provider terminal evidence for each connector promoted to Live |
 
 ## Goals And Non-Goals
 
@@ -63,6 +76,28 @@ Non-goals:
 | REL-FUNNEL-SINK | ELM-EMISSION-FUNNEL -> ELM-GATEWAY-SINK | Authority-free envelope mapping | Synchronous | `ExternalIngestEnvelope` v2 | Evidence to network boundary |
 | REL-SINK-BOT | ELM-GATEWAY-SINK -> ELM-BOT-GATEWAY | HTTPS POST | Synchronous receipt | Envelope and HTTP receipt | Operator runtime to bot authority boundary |
 | REL-BOT-CURSOR | ELM-BOT-GATEWAY -> ELM-CURSOR-POLICY | Receipt status/reason | Synchronous decision input | 201, retryable, terminal, quarantine classification | Bot acknowledgement to operator cursor policy |
+
+## Derived Topology View
+
+This review aid is generated from the `ELM-*` and `REL-*` tables. It deliberately ends at the cursor-policy seam because the durable checkpoint owner is unresolved; inventing a store node would hide the gap.
+
+```mermaid
+flowchart LR
+    ELM_SECRET_RESOLVER["ELM-SECRET-RESOLVER<br/>Operator-local secrets"]
+    ELM_CONNECTOR["ELM-CONNECTOR<br/>Provider adapter"]
+    ELM_ACQUISITION["ELM-ACQUISITION<br/>Provider facts"]
+    ELM_EMISSION_FUNNEL["ELM-EMISSION-FUNNEL<br/>Screened evidence"]
+    ELM_GATEWAY_SINK["ELM-GATEWAY-SINK<br/>Envelope transport"]
+    ELM_BOT_GATEWAY["ELM-BOT-GATEWAY<br/>Governed ingest"]
+    ELM_CURSOR_POLICY["ELM-CURSOR-POLICY<br/>Advance/retry/quarantine"]
+
+    ELM_SECRET_RESOLVER -->|REL-SECRET-CONNECTOR| ELM_CONNECTOR
+    ELM_CONNECTOR -->|REL-CONNECTOR-ACQUISITION| ELM_ACQUISITION
+    ELM_ACQUISITION -->|REL-ACQUISITION-FUNNEL| ELM_EMISSION_FUNNEL
+    ELM_EMISSION_FUNNEL -->|REL-FUNNEL-SINK| ELM_GATEWAY_SINK
+    ELM_GATEWAY_SINK -->|REL-SINK-BOT| ELM_BOT_GATEWAY
+    ELM_BOT_GATEWAY -->|REL-BOT-CURSOR| ELM_CURSOR_POLICY
+```
 
 ## Runtime State Classification, Authority, Persistence, And Routing
 
@@ -128,7 +163,9 @@ Transport/429/5xx failure leaves the cursor unchanged for retry. Sensitive-data 
 
 A connector writes a Decision Ledger event, treats a provider row as approval, sends a credential in an envelope, or advances a cursor before receipt. This path is forbidden.
 
-UserJourney: not applicable to this documentation-only baseline. No live connector is promoted and no cross-repo operator journey is changed by this seed.
+UserJourney: not applicable. This baseline does not introduce or promote a named operator journey; it classifies shared connector seams across all providers. A connector promotion to Live must declare its provider-specific entrypoint, observable success state, boundary contracts, and terminal real-provider evidence rather than inheriting journey acceptance from this document.
+
+Journey Boundary Review: not applicable to this baseline because no connector is promoted to a user-visible release journey. The receipt/cursor partial-failure path is still specified as a runtime conformance obligation; it becomes a required Journey Boundary Review input when a concrete connector is promoted to Live.
 
 ## Event, Command, And Protocol Contracts
 
@@ -149,14 +186,14 @@ Integrations runs in an operator-controlled process and communicates with a conf
 
 ## Runtime Architecture Conformance
 
-| ID | Source ids | Owning Module / Seam | Required behavior | Prohibited fallback | Validation obligation | Implementation evidence |
-| --- | --- | --- | --- | --- | --- | --- |
-| CONF-EVIDENCE-ONLY-01 | ELM-CONNECTOR, ELM-ACQUISITION, STATE-PROVIDER-FACT, SCN-FORBIDDEN-CONNECTOR-AUTHORITY | Connector/provider-acquisition protocols | Emit provider facts/evidence only; route canonical decisions through bot | Connector writes canonical state or interprets provider state as Bicameral approval | Protocol contract and negative authority tests | ADR-0001/0004/0008; provider-acquisition tests |
-| CONF-SECRET-BOUNDARY-01 | ELM-SECRET-RESOLVER, STATE-CONFIG, REL-SECRET-CONNECTOR | `runtime/local_config.py` / `runtime/secrets.py` | Resolve credentials only in operator runtime and reject unknown keys/token-bearing logs | Secret in descriptor, envelope, Cloud, or diagnostic output | Secret-fixture and config-redaction tests | `runtime/tests/test_local_config.py`; `protocol/provider_acquisition/tests/test_fixture_secret_guard.py` |
-| CONF-ENVELOPE-01 | REL-FUNNEL-SINK, REL-SINK-BOT, STATE-EMISSION | `adapter/core/emissions.py` / `runtime/gateway_mapping.py` | Screen and map every live emission to authority-free `ExternalIngestEnvelope` v2 | Direct provider payload, unscreened emission, or direct event-store write | Schema/contract and gateway integration test | `runtime/tests/test_gateway_mapping.py`; bot external-ingest contract |
-| CONF-CURSOR-2PC-01 | ELM-CURSOR-POLICY, STATE-CURSOR-DECISION, TRANS-RECEIPT-CLASSIFY, SCN-EVIDENCE-DELIVERY | `runtime/cursor_policy.py` plus operator cursor seam | Advance only after 201/approved terminal outcome; retry or quarantine otherwise | Advance before receipt or silently skip rejected batches | Cursor policy unit, crash/replay, and integration test | `runtime/tests/test_cursor_policy.py` |
-| CONF-CURSOR-ROUTING-01 | STATE-CURSOR-DECISION, ELM-CONNECTOR, SCN-RETRY-AND-QUARANTINE | Operator runner/checkpoint seam | Scope cursor/checkpoint by connector, provider/source, and item identity | Process-global cursor, cwd-derived Product, or shared connector watermark | Multi-connector/source restart/replay topology test | Planned operator-runtime persistence fixture; current policy documents owner boundary |
-| CONF-LIVE-READINESS-01 | ELM-CONNECTOR, STATE-PROVIDER-FACT, SCN-PROVIDER-ACQUISITION | Connector descriptor/readiness seam | Keep fixture/contract evidence distinct from Live promotion | Mock/fixture path presented as real-provider acceptance | Readiness ladder review plus real-provider evidence when promoted | ADR-0012 and connector `config.json` readiness metadata |
+| ID | Status | Source ids | Owning Module / Seam | Required behavior | Prohibited fallback | Validation obligation | Implementation evidence |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| CONF-EVIDENCE-ONLY-01 | partial | ELM-CONNECTOR, ELM-ACQUISITION, STATE-PROVIDER-FACT, SCN-FORBIDDEN-CONNECTOR-AUTHORITY | Connector/provider-acquisition protocols | Emit provider facts/evidence only; route canonical decisions through bot | Connector writes canonical state or interprets provider state as Bicameral approval | Protocol contract and negative authority tests | ADR-0001/0004/0008; provider-acquisition tests |
+| CONF-SECRET-BOUNDARY-01 | proven | ELM-SECRET-RESOLVER, STATE-CONFIG, REL-SECRET-CONNECTOR | `runtime/local_config.py` / `runtime/secrets.py` | Resolve credentials only in operator runtime and reject unknown keys/token-bearing logs | Secret in descriptor, envelope, Cloud, or diagnostic output | Secret-fixture and config-redaction tests | `runtime/tests/test_local_config.py`; `protocol/provider_acquisition/tests/test_fixture_secret_guard.py` |
+| CONF-ENVELOPE-01 | partial | REL-FUNNEL-SINK, REL-SINK-BOT, STATE-EMISSION | `adapter/core/emissions.py` / `runtime/gateway_mapping.py` | Screen and map every live emission to authority-free `ExternalIngestEnvelope` v2 | Direct provider payload, unscreened emission, or direct event-store write | Schema/contract and gateway integration test | `runtime/tests/test_gateway_mapping.py`; bot external-ingest contract |
+| CONF-CURSOR-2PC-01 | partial | ELM-CURSOR-POLICY, STATE-CURSOR-DECISION, TRANS-RECEIPT-CLASSIFY, SCN-EVIDENCE-DELIVERY | `runtime/cursor_policy.py` plus operator cursor seam | Advance only after 201/approved terminal outcome; retry or quarantine otherwise | Advance before receipt or silently skip rejected batches | Cursor policy unit, crash/replay, and integration test | `runtime/tests/test_cursor_policy.py` |
+| CONF-CURSOR-ROUTING-01 | unresolved | STATE-CURSOR-DECISION, ELM-CONNECTOR, SCN-RETRY-AND-QUARANTINE | Operator runner/checkpoint seam | Scope cursor/checkpoint by connector, provider/source, and item identity | Process-global cursor, cwd-derived Product, or shared connector watermark | Multi-connector/source restart/replay topology test | Planned operator-runtime persistence fixture; current policy documents owner boundary |
+| CONF-LIVE-READINESS-01 | partial | ELM-CONNECTOR, STATE-PROVIDER-FACT, SCN-PROVIDER-ACQUISITION | Connector descriptor/readiness seam | Keep fixture/contract evidence distinct from Live promotion | Mock/fixture path presented as real-provider acceptance | Readiness ladder review plus real-provider evidence when promoted | ADR-0012 and connector `config.json` readiness metadata |
 
 ## Implementation And Issue Handoff
 
