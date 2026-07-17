@@ -146,10 +146,20 @@ def _sanitize_value(
             _sanitize_value(item, findings, path=f"{path}[]") for item in value
         )
     if isinstance(value, set):
-        return {
-            _sanitize_value(item, findings, path=f"{path}[]") for item in value
-        }
+        raise RedactionFailure(f"unsupported_metadata_type:set:{path}")
     raise RedactionFailure(f"unsupported_metadata_type:{type(value).__name__}")
+
+
+def _sanitize_mapping(
+    value: dict[str, object],
+    findings: dict[str, int],
+    *,
+    path: str,
+) -> dict[str, object]:
+    sanitized = _sanitize_value(value, findings, path=path)
+    if not isinstance(sanitized, dict):
+        raise RedactionFailure(f"sanitized_mapping_invalid:{path}")
+    return {str(key): sub for key, sub in sanitized.items()}
 
 
 def sanitize_observation(
@@ -177,15 +187,15 @@ def sanitize_observation(
         excerpt=_sanitize_text(observation.excerpt, findings),
         title=_sanitize_text(observation.title, findings),
         author=_sanitize_text(observation.author, findings),
-        evidence_metadata=dict(
-            _sanitize_value(
-                observation.evidence_metadata,
-                findings,
-                path="evidence_metadata",
-            )
+        evidence_metadata=_sanitize_mapping(
+            observation.evidence_metadata,
+            findings,
+            path="evidence_metadata",
         ),
-        metadata=dict(
-            _sanitize_value(observation.metadata, findings, path="metadata")
+        metadata=_sanitize_mapping(
+            observation.metadata,
+            findings,
+            path="metadata",
         ),
     )
     output_payload = _observation_payload(sanitized)
