@@ -56,10 +56,11 @@ def _signal(
     }
 
 
-def _integration_signals(event: dict) -> list[dict[str, Any]]:
+def _integration_signals(event: dict[str, Any]) -> list[dict[str, Any]]:
     """Derive Linear-aware, fail-open advisory signals."""
     signals: list[dict[str, Any]] = []
-    actor = event.get("actor") if isinstance(event.get("actor"), dict) else {}
+    actor_raw = event.get("actor")
+    actor: dict[str, Any] = actor_raw if isinstance(actor_raw, dict) else {}
     actor_type = str(actor.get("type", "")).strip().lower()
     if actor_type and actor_type not in {"user", "member"}:
         signals.append(
@@ -88,7 +89,7 @@ def _integration_signals(event: dict) -> list[dict[str, Any]]:
     return signals
 
 
-def _is_issue_event(payload: dict) -> bool:
+def _is_issue_event(payload: dict[str, Any]) -> bool:
     """Admit only create/update Issue events with a stable identifier."""
     if payload.get("type") != "Issue":
         return False
@@ -98,34 +99,36 @@ def _is_issue_event(payload: dict) -> bool:
     return isinstance(data, dict) and bool(data.get("identifier"))
 
 
-def parse_event(event: dict) -> Observation:
+def parse_event(event: dict[str, Any]) -> Observation:
     """Map a Linear webhook event into a provider-neutral Observation."""
-    data = event.get("data") or {}
-    identifier = data.get("identifier") or data.get("id") or ""
+    data_raw = event.get("data")
+    data: dict[str, Any] = data_raw if isinstance(data_raw, dict) else {}
+    identifier = str(data.get("identifier") or data.get("id") or "")
     resource_id = str(data.get("id") or identifier)
-    name = data.get("title") or ""
+    name = str(data.get("title") or "")
     title = f"{identifier}: {name}".strip(": ").strip() or identifier
-    excerpt = data.get("description") or name or identifier
-    actor = event.get("actor") if isinstance(event.get("actor"), dict) else {}
-    metadata = {
-        "action": event.get("action", ""),
-        "type": event.get("type", ""),
-        "organization_id": event.get("organizationId", ""),
-        "actor_type": actor.get("type", ""),
+    excerpt = str(data.get("description") or name or identifier)
+    actor_raw = event.get("actor")
+    actor: dict[str, Any] = actor_raw if isinstance(actor_raw, dict) else {}
+    metadata: dict[str, Any] = {
+        "action": str(event.get("action") or ""),
+        "type": str(event.get("type") or ""),
+        "organization_id": str(event.get("organizationId") or ""),
+        "actor_type": str(actor.get("type") or ""),
         "advisory_signals": _integration_signals(event),
     }
     return Observation(
         source_ref=SourceRef(
             source_id="linear",
             ref=identifier,
-            url=data.get("url") or event.get("url") or "",
-            kind=(event.get("type") or "issue").lower(),
+            url=str(data.get("url") or event.get("url") or ""),
+            kind=str(event.get("type") or "issue").lower(),
         ),
         excerpt=excerpt,
         mode=SourceMode.WEBHOOK,
         title=title,
         author="",
-        timestamp=event.get("createdAt") or "",
+        timestamp=str(event.get("createdAt") or ""),
         provider_event_id=str(event.get("webhookId") or ""),
         provider_resource_id=f"issue:{resource_id}",
         evidence_id=f"linear:issue:{resource_id}:{event.get('createdAt') or ''}",
@@ -134,29 +137,30 @@ def parse_event(event: dict) -> Observation:
     )
 
 
-def parse_issue_node(node: dict) -> Observation:
+def parse_issue_node(node: dict[str, Any]) -> Observation:
     """Map one Linear GraphQL Issue node into a neutral Observation."""
-    identifier = node.get("identifier") or node.get("id") or ""
+    identifier = str(node.get("identifier") or node.get("id") or "")
     resource_id = str(node.get("id") or identifier)
-    name = node.get("title") or ""
+    name = str(node.get("title") or "")
     title = f"{identifier}: {name}".strip(": ").strip() or identifier
-    excerpt = node.get("description") or name or identifier
-    state = node.get("state") or {}
-    metadata = {
-        "state": state.get("name", "") if isinstance(state, dict) else "",
+    excerpt = str(node.get("description") or name or identifier)
+    state_raw = node.get("state")
+    state: dict[str, Any] = state_raw if isinstance(state_raw, dict) else {}
+    metadata: dict[str, Any] = {
+        "state": str(state.get("name") or ""),
         "advisory_signals": [],
     }
     return Observation(
         source_ref=SourceRef(
             source_id="linear",
             ref=identifier,
-            url=node.get("url") or "",
+            url=str(node.get("url") or ""),
             kind="issue",
         ),
         excerpt=excerpt,
         mode=SourceMode.ACTIVE,
         title=title,
-        timestamp=node.get("updatedAt") or "",
+        timestamp=str(node.get("updatedAt") or ""),
         provider_resource_id=f"issue:{resource_id}",
         evidence_id=f"linear:issue:{resource_id}:{node.get('updatedAt') or ''}",
         evidence_metadata=metadata,
@@ -183,14 +187,14 @@ class LinearConnector:
         self._dedup = dedup
         self._clock = clock or time.time
 
-    def observations(self, payload: dict) -> list[Observation]:
+    def observations(self, payload: dict[str, Any]) -> list[Observation]:
         if not isinstance(payload, dict):
             return []
         if not _is_issue_event(payload):
             return []
         return [parse_event(payload)]
 
-    def _timestamp_ok(self, data: dict, now_ms: float) -> bool:
+    def _timestamp_ok(self, data: dict[str, Any], now_ms: float) -> bool:
         ts = int(data["webhookTimestamp"])
         return abs(now_ms - ts) <= _REPLAY_WINDOW_MS
 
@@ -202,8 +206,10 @@ class LinearConnector:
                 body=body,
                 secret=self._secret,
             )
-            data = json.loads(body)
-            return self._timestamp_ok(data, self._clock() * 1000)
+            decoded = json.loads(body)
+            if not isinstance(decoded, dict):
+                return False
+            return self._timestamp_ok(decoded, self._clock() * 1000)
         except (
             WebhookVerificationError,
             json.JSONDecodeError,
@@ -220,7 +226,10 @@ class LinearConnector:
         """Self-guard, deduplicate by webhookId, and parse admitted events."""
         if not self.verify(headers=headers, body=body):
             return []
-        payload = json.loads(body)
+        decoded = json.loads(body)
+        if not isinstance(decoded, dict):
+            return []
+        payload: dict[str, Any] = decoded
         if not _is_issue_event(payload):
             return []
         delivery_id = str(payload.get("webhookId") or "")
