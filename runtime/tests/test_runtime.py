@@ -560,8 +560,9 @@ def test_deliver_poll_servicenow_beta():
     assert "AKIAIOSFODNN7EXAMPLE" not in sanitized.body
     assert "[redacted:secret]" in sanitized.body
     assert sanitized.metadata["redaction_receipt"]["findings"] == [
-        {"category": "secret", "action": "tokenized", "count": 1}
-    ]
+    {"category": "pii", "action": "tokenized", "count": 1},
+    {"category": "secret", "action": "tokenized", "count": 1},
+]
     sink = _poll_one(
         ServiceNowConnector(), "servicenow", "incident.json", "servicenow", 1
     )
