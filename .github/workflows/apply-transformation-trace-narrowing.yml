@@ -1,0 +1,32 @@
+name: Apply Transformation Trace Narrowing
+
+on:
+  push:
+    branches:
+      - rfq/github-source-acquisition-alpha
+    paths:
+      - scripts/fix_transformation_trace_narrowing.py
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: rfq/github-source-acquisition-alpha
+          fetch-depth: 0
+      - run: python3 scripts/fix_transformation_trace_narrowing.py
+      - run: git diff --check
+      - name: Commit correction
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runtime/transformation_trace.py
+          git commit -m "fix(trace): narrow required phases explicitly"
+          git push origin HEAD:rfq/github-source-acquisition-alpha
