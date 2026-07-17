@@ -10,10 +10,10 @@ residual (not auto-scrubbed). It returns text that PASSES
 hard screen, which stays the un-bypassable backstop: if the redactor ever misses a
 secret, the gate still rejects the emission (defense in depth).
 
-The catalog pass runs **LAST** (after email/phone), so ``redact_catalog`` evaluates
-the final digit layout and ``detect_sensitive(redact(x)) == []`` holds **by
-construction** — no later step can surface or fragment a digit run into a detectable
-PAN. Redaction is irreversible (placeholders); stdlib ``re`` only.
+The catalog runs both before and after the generic PII passes. The first pass prevents
+a phone-like substring from fragmenting a secret or PAN token. The final pass preserves
+the invariant that ``detect_sensitive(redact(x)) == []`` even if a later transform
+changes digit adjacency. Redaction is irreversible and uses deterministic placeholders.
 """
 
 from __future__ import annotations
@@ -54,11 +54,14 @@ def redact_with_findings(text: str) -> tuple[str, dict[str, int]]:
     phi_count = sum(1 for hit in catalog_hits if hit.cls == "phi")
     pan_count = sum(1 for hit in catalog_hits if hit.cls == "pan")
 
-    out, email_count = _EMAIL_RE.subn("[redacted:email]", text)
+    # Protect catalog-shaped values first so broad PII patterns cannot fragment them.
+    out = redact_catalog(text)
+    out, email_count = _EMAIL_RE.subn("[redacted:email]", out)
     out, phone_count = _PHONE_RE.subn("[redacted:phone]", out)
     out, contextual_phone_count = _PHONE_CONTEXT_RE.subn(
         r"\1[redacted:phone]", out
     )
+    # Defense in depth: ensure later substitutions did not expose a catalog match.
     out = redact_catalog(out)
 
     findings = {
@@ -70,11 +73,6 @@ def redact_with_findings(text: str) -> tuple[str, dict[str, int]]:
 
 
 def redact(text: str) -> str:
-    """Scrub email + phone + secret/PHI/PAN, returning emit-safe text.
-
-    Order is email -> phone (+/00 international, then keyword-anchored national) -> ``redact_catalog``
-    (catalog LAST): the catalog pass evaluates the final string, so ``detect_sensitive(redact(x)) == []``
-    by construction. FX-SEC-001 (``_screen_sensitive``) remains the backstop regardless.
-    """
+    """Scrub generic PII and catalog classes, returning emit-safe text."""
 
     return redact_with_findings(text)[0]
