@@ -10,6 +10,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from runtime.ingest_lifecycle_markdown import render_markdown_trace
+from runtime.ingest_phase_contract import validate_phase_trace
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -32,6 +33,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise SystemExit("trace root must be a JSON object")
 
     try:
+        validate_phase_trace(raw)
         rendered = render_markdown_trace(raw, title=args.title)
     except ValueError as exc:
         raise SystemExit(f"invalid trace: {exc}") from exc
