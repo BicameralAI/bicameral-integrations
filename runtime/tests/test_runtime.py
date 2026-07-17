@@ -39,7 +39,7 @@ from connectors.slack.connector import SlackConnector
 from connectors.zendesk.connector import ZendeskConnector
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
-from adapter.core.pipeline import EmissionContractError, normalize
+from adapter.core.pipeline import normalize
 from runtime import (
     CollectingSink,
     GatewayEmissionGated,
