@@ -76,5 +76,15 @@ def test_cli_rejects_trace_without_phases(tmp_path: Path) -> None:
     trace_path = tmp_path / "trace.json"
     trace_path.write_text("{}", encoding="utf-8")
 
-    with pytest.raises(SystemExit, match="invalid trace: trace_has_no_phases"):
+    with pytest.raises(SystemExit, match="invalid trace: phases_required"):
+        main([str(trace_path), "--title", "Invalid"])
+
+
+def test_cli_rejects_phase_without_concrete_data(tmp_path: Path) -> None:
+    trace = _trace()
+    trace["phases"][0]["data"] = {}
+    trace_path = tmp_path / "trace.json"
+    trace_path.write_text(json.dumps(trace), encoding="utf-8")
+
+    with pytest.raises(SystemExit, match="phase_provider_capture_data_required"):
         main([str(trace_path), "--title", "Invalid"])
