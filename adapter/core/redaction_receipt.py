@@ -13,7 +13,6 @@ import hashlib
 import json
 from dataclasses import replace
 from datetime import datetime, timezone
-from typing import Any
 
 from .observations import Observation
 from .redaction import redact_with_findings
@@ -30,7 +29,9 @@ _RULESET_MANIFEST = {
     "metadata_policy": "recursive-values; sensitive-keys-rejected",
 }
 RULESET_DIGEST = "sha256:" + hashlib.sha256(
-    json.dumps(_RULESET_MANIFEST, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    json.dumps(_RULESET_MANIFEST, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
 ).hexdigest()
 
 
@@ -46,16 +47,27 @@ def _canonical(value: object) -> object:
     if value is None or isinstance(value, (bool, int, float, str)):
         return value
     if isinstance(value, dict):
-        return {str(key): _canonical(sub) for key, sub in sorted(value.items(), key=lambda item: str(item[0]))}
+        return {
+            str(key): _canonical(sub)
+            for key, sub in sorted(value.items(), key=lambda item: str(item[0]))
+        }
     if isinstance(value, (list, tuple)):
         return [_canonical(item) for item in value]
     if isinstance(value, set):
-        return sorted((_canonical(item) for item in value), key=lambda item: json.dumps(item, sort_keys=True))
+        return sorted(
+            (_canonical(item) for item in value),
+            key=lambda item: json.dumps(item, sort_keys=True),
+        )
     raise RedactionFailure(f"unsupported_metadata_type:{type(value).__name__}")
 
 
 def _digest(value: object) -> str:
-    encoded = json.dumps(_canonical(value), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    encoded = json.dumps(
+        _canonical(value),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    ).encode("utf-8")
     return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
 
@@ -100,7 +112,12 @@ def _sanitize_text(value: str, findings: dict[str, int]) -> str:
     return redacted
 
 
-def _sanitize_value(value: object, findings: dict[str, int], *, path: str) -> object:
+def _sanitize_value(
+    value: object,
+    findings: dict[str, int],
+    *,
+    path: str,
+) -> object:
     if isinstance(value, str):
         return _sanitize_text(value, findings)
     if value is None or isinstance(value, (bool, int, float)):
@@ -114,14 +131,24 @@ def _sanitize_value(value: object, findings: dict[str, int], *, path: str) -> ob
             redacted_key, key_findings = redact_with_findings(key_text)
             if redacted_key != key_text or any(key_findings.values()):
                 raise RedactionFailure(f"sensitive_metadata_key:{path}")
-            output[key] = _sanitize_value(sub, findings, path=f"{path}.{key_text}")
+            output[key] = _sanitize_value(
+                sub,
+                findings,
+                path=f"{path}.{key_text}",
+            )
         return output
     if isinstance(value, list):
-        return [_sanitize_value(item, findings, path=f"{path}[]") for item in value]
+        return [
+            _sanitize_value(item, findings, path=f"{path}[]") for item in value
+        ]
     if isinstance(value, tuple):
-        return tuple(_sanitize_value(item, findings, path=f"{path}[]") for item in value)
+        return tuple(
+            _sanitize_value(item, findings, path=f"{path}[]") for item in value
+        )
     if isinstance(value, set):
-        return {_sanitize_value(item, findings, path=f"{path}[]") for item in value}
+        return {
+            _sanitize_value(item, findings, path=f"{path}[]") for item in value
+        }
     raise RedactionFailure(f"unsupported_metadata_type:{type(value).__name__}")
 
 
@@ -151,9 +178,15 @@ def sanitize_observation(
         title=_sanitize_text(observation.title, findings),
         author=_sanitize_text(observation.author, findings),
         evidence_metadata=dict(
-            _sanitize_value(observation.evidence_metadata, findings, path="evidence_metadata")
+            _sanitize_value(
+                observation.evidence_metadata,
+                findings,
+                path="evidence_metadata",
+            )
         ),
-        metadata=dict(_sanitize_value(observation.metadata, findings, path="metadata")),
+        metadata=dict(
+            _sanitize_value(observation.metadata, findings, path="metadata")
+        ),
     )
     output_payload = _observation_payload(sanitized)
 
@@ -172,6 +205,8 @@ def sanitize_observation(
         ],
         "structural_fields_preserved": True,
         "completed_at": completed_at
-        or datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        or datetime.now(timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z"),
     }
     return sanitized, receipt
