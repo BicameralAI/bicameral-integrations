@@ -72,8 +72,10 @@ def test_issue_normalization_is_evidence_only_and_stable() -> None:
     emission, cursor = first
     assert isinstance(emission, AdapterEmission)
     assert emission.emission_type == "evidence"
+    assert emission.adapter_version == "github-issue-ingest/0.1.0"
     assert emission.provenance is not None
     assert emission.provenance.provider_event_id == "delivery-1"
+    assert emission.provenance.provider_resource_id == "issue:22"
     assert cursor.repository_id == "11"
     assert emission.evidence[0].evidence_id == second[0].evidence[0].evidence_id
     envelope = emission_to_external_envelope(emission)
@@ -99,7 +101,10 @@ def test_comment_noise_is_advisory_not_dropped() -> None:
     assert normalized is not None
     emission, _ = normalized
     assert emission.body == "Ship the narrow slice."
-    assert "noise:bot_authored" in emission.metadata["advisory_labels"]
+    assert [advisory.kind for advisory in emission.advisories] == ["bot_authored"]
+    assert emission.advisories[0].metadata["scope"] == "integration"
+    labels = emission_to_external_envelope(emission)["candidate_hints"][0]["labels"]
+    assert any(label.startswith("advisory_v1:bot_authored:integration:") for label in labels)
 
 
 def test_deleted_comment_becomes_tombstone_without_removed_content() -> None:
@@ -182,4 +187,7 @@ def test_poll_backfill_uses_cursor_and_ignores_pull_requests(tmp_path: Path) -> 
     )
     assert action.verdict is CursorVerdict.ADVANCE
     assert len(sink.emissions) == 1
+    assert sink.emissions[0].provenance is not None
+    assert sink.emissions[0].provenance.delivery_mode == "poll"
+    assert sink.emissions[0].provenance.verification == "unsigned"
     assert store.load("11").updated_at == "2026-07-17T04:00:00Z"
