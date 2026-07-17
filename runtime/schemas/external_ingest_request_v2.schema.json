@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExternalIngestEnvelope",
-  "description": "External/source-system evidence submission contract.\n\nExternal integrations (Jira, Linear, Slack, GitHub webhooks, etc.) use this envelope to submit evidence, candidates, hints, and signals.  The envelope is **not** a `ToolRequest` — it enters the daemon through a separate validation path (the external ingest gate) and cannot carry or trigger:\n\n- Review commands (`accept_candidate`, `reject_candidate`, `approve_signoff`, etc.) - Canonical decisions or event-store writes - Signoff approval or compliance resolution - Policy grants or local actor/session authority - Blocking governance results\n\nThe daemon validates the envelope, projects candidates/evidence through policy, and returns only advisory governance results.",
+  "description": "External/source-system evidence submission contract.",
   "type": "object",
   "required": [
     "content",
@@ -10,7 +10,7 @@
   ],
   "properties": {
     "candidate_hints": {
-      "description": "Candidate suggestions — advisory only, not canonical authority.",
+      "description": "Candidate suggestions. Advisory only, never canonical authority.",
       "default": [],
       "type": "array",
       "items": {
@@ -18,26 +18,37 @@
       }
     },
     "content": {
-      "description": "Captured content snapshot.",
+      "description": "Sanitized captured content snapshot.",
       "type": "string"
     },
     "content_hash": {
-      "description": "Content hash (SHA-256). Daemon verifies if provided, computes if omitted.",
+      "description": "Content hash (SHA-256). The daemon verifies if provided and computes if omitted.",
       "type": [
         "string",
         "null"
       ]
     },
     "evidence": {
-      "description": "Evidence excerpts within the content.",
+      "description": "Evidence excerpts within the sanitized content.",
       "default": [],
       "type": "array",
       "items": {
         "$ref": "#/definitions/ExternalEvidenceItem"
       }
     },
+    "redaction_receipt": {
+      "description": "Value-free proof that required pre-Bot redaction executed.\n\nThe receipt carries digests, ruleset identity, categories, actions, counts, and completion metadata. It must never contain removed values. Malformed receipts fail during typed deserialization before evidence admission.",
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ExternalRedactionReceipt"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "source_system": {
-      "description": "Source system identifier (e.g. `jira`, `linear`, `slack`, `github`).",
+      "description": "Source system identifier (for example `jira`, `linear`, `slack`, `github`).",
       "type": "string"
     },
     "source_uri": {
@@ -47,7 +58,7 @@
   },
   "definitions": {
     "ExternalCandidateHint": {
-      "description": "A candidate hint from an external source — advisory, not authority.",
+      "description": "A candidate hint from an external source. Advisory, not authority.",
       "type": "object",
       "required": [
         "body",
@@ -107,6 +118,95 @@
           ],
           "format": "uint",
           "minimum": 0.0
+        }
+      }
+    },
+    "ExternalRedactionFinding": {
+      "description": "One value-free redaction finding summary.",
+      "type": "object",
+      "required": [
+        "action",
+        "category",
+        "count"
+      ],
+      "properties": {
+        "action": {
+          "description": "Bounded action such as `tokenized` or `removed`.",
+          "type": "string"
+        },
+        "category": {
+          "description": "Bounded category such as `secret`, `credential`, or `pii`.",
+          "type": "string"
+        },
+        "count": {
+          "description": "Number of findings in this category.",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false
+    },
+    "ExternalRedactionReceipt": {
+      "description": "Deterministic proof that Integrations sanitized the Bot-bound payload.",
+      "type": "object",
+      "required": [
+        "completed_at",
+        "engine",
+        "engine_version",
+        "input_digest",
+        "output_digest",
+        "ruleset_digest",
+        "ruleset_id",
+        "schema_version",
+        "structural_fields_preserved"
+      ],
+      "properties": {
+        "completed_at": {
+          "description": "UTC completion timestamp.",
+          "type": "string"
+        },
+        "engine": {
+          "description": "Redaction engine identity.",
+          "type": "string"
+        },
+        "engine_version": {
+          "description": "Redaction engine version.",
+          "type": "string"
+        },
+        "findings": {
+          "description": "Value-free categories and actions applied.",
+          "default": [],
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExternalRedactionFinding"
+          }
+        },
+        "input_digest": {
+          "description": "SHA-256 digest of the canonical pre-redaction payload.",
+          "type": "string"
+        },
+        "output_digest": {
+          "description": "SHA-256 digest of the canonical sanitized payload.",
+          "type": "string"
+        },
+        "ruleset_digest": {
+          "description": "SHA-256 digest of the canonical ruleset manifest.",
+          "type": "string"
+        },
+        "ruleset_id": {
+          "description": "Versioned ruleset identifier.",
+          "type": "string"
+        },
+        "schema_version": {
+          "description": "Receipt schema version. Alpha requires version 1.",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "structural_fields_preserved": {
+          "description": "Confirms provider/evidence structural identity was preserved.",
+          "type": "boolean"
         }
       }
     }
