@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import re
 
-from .sensitive import redact_catalog
+from .sensitive import detect_sensitive, redact_catalog
 
 # RFC-bounded quantifiers (local <=64, label <=63, TLD <=63) cap the per-anchor scan to a
 # constant, so a long local/domain run with no terminating `.TLD` fails in O(1) per position
@@ -46,6 +46,29 @@ _PHONE_CONTEXT_RE = re.compile(
 )
 
 
+def redact_with_findings(text: str) -> tuple[str, dict[str, int]]:
+    """Scrub text and return category counts without returning matched values."""
+
+    catalog_hits = detect_sensitive(text)
+    secret_count = sum(1 for hit in catalog_hits if hit.cls == "secret")
+    phi_count = sum(1 for hit in catalog_hits if hit.cls == "phi")
+    pan_count = sum(1 for hit in catalog_hits if hit.cls == "pan")
+
+    out, email_count = _EMAIL_RE.subn("[redacted:email]", text)
+    out, phone_count = _PHONE_RE.subn("[redacted:phone]", out)
+    out, contextual_phone_count = _PHONE_CONTEXT_RE.subn(
+        r"\1[redacted:phone]", out
+    )
+    out = redact_catalog(out)
+
+    findings = {
+        "credential": pan_count,
+        "pii": email_count + phone_count + contextual_phone_count + phi_count,
+        "secret": secret_count,
+    }
+    return out, {category: count for category, count in findings.items() if count > 0}
+
+
 def redact(text: str) -> str:
     """Scrub email + phone + secret/PHI/PAN, returning emit-safe text.
 
@@ -53,7 +76,5 @@ def redact(text: str) -> str:
     (catalog LAST): the catalog pass evaluates the final string, so ``detect_sensitive(redact(x)) == []``
     by construction. FX-SEC-001 (``_screen_sensitive``) remains the backstop regardless.
     """
-    out = _EMAIL_RE.sub("[redacted:email]", text)
-    out = _PHONE_RE.sub("[redacted:phone]", out)
-    out = _PHONE_CONTEXT_RE.sub(r"\1[redacted:phone]", out)  # keep the keyword, scrub the number
-    return redact_catalog(out)
+
+    return redact_with_findings(text)[0]
