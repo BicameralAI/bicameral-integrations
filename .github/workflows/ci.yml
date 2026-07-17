@@ -34,7 +34,16 @@ jobs:
           path: /tmp/mypy.log
           if-no-files-found: error
       - name: Pytest
-        run: pytest adapter/core/tests connectors runtime mods scripts/tests tests/redteam -q
+        run: |
+          set -o pipefail
+          pytest adapter/core/tests connectors runtime mods scripts/tests tests/redteam -q 2>&1 | tee /tmp/pytest.log
+      - name: Upload pytest diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pytest-diagnostics
+          path: /tmp/pytest.log
+          if-no-files-found: error
       - name: Connector config descriptors (validate + index freshness)
         run: python scripts/validate_connector_config.py
       - name: Mod descriptors (validate + manifest-consistency + index freshness)
