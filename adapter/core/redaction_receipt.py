@@ -25,7 +25,7 @@ _RULESET_MANIFEST = {
     "catalog": "FX-SEC-001/v1",
     "detectors": ["secret", "phi", "pan", "email", "phone"],
     "replacement": "[redacted:<category>]",
-    "identity_policy": "preserve-or-fail-closed",
+    "identity_policy": "preserve-opaque-identifiers; hard-catalog-fail-closed",
     "metadata_policy": "recursive-values; sensitive-keys-rejected",
 }
 RULESET_DIGEST = "sha256:" + hashlib.sha256(
@@ -93,10 +93,15 @@ def _observation_payload(observation: Observation) -> dict[str, object]:
 
 
 def _preserve_identity(value: str, field: str) -> str:
+    """Preserve opaque provider identity byte-for-byte unless the hard catalog hits.
+
+    Generic email and phone heuristics are intentionally excluded here because UUIDs,
+    timestamps, document IDs, and source refs routinely contain phone-like digit runs.
+    Identity is structural, not free-text. A secret, PHI label, or valid PAN still fails
+    closed through the hard catalog.
+    """
+
     if detect_sensitive(value):
-        raise RedactionFailure(f"sensitive_identity_field:{field}")
-    redacted, findings = redact_with_findings(value)
-    if redacted != value or any(findings.values()):
         raise RedactionFailure(f"sensitive_identity_field:{field}")
     return value
 
