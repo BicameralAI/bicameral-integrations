@@ -39,7 +39,7 @@ jobs:
               with pytest.raises(
                   EmissionContractError
               ):  # companion non-vacuity: raw really trips FX-SEC-001
-                  normalize([raw], adapter_version="x")
+                  normalize([raw], adapter_version="runtime/0.1.0")
           '''
           new = '''def test_deliver_poll_servicenow_beta():
               # Required pre-Bot redaction preserves the incident while removing quoted secrets.
@@ -48,7 +48,7 @@ jobs:
                   source_ref=SourceRef(source_id="servicenow", ref="x"),
                   excerpt=record["description"],
               )
-              sanitized = normalize([raw], adapter_version="x")[0]
+              sanitized = normalize([raw], adapter_version="runtime/0.1.0")[0]
               assert "AKIAIOSFODNN7EXAMPLE" not in sanitized.body
               assert "[redacted:secret]" in sanitized.body
               assert sanitized.metadata["redaction_receipt"]["findings"] == [
