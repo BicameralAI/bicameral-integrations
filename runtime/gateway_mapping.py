@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
 """Map an ``AdapterEmission`` to the bot's v2 ``ExternalIngestEnvelope``.
 
-The mapping is authority-stripped. Source facts and screened advisory features may
-cross the boundary; candidate level, content hashes, accepted state, actor
-authority, signoff, compliance, bindings, and event-store fields remain Bot-owned.
+The mapping is authority-stripped. Source facts, screened advisory features, and
+a value-free redaction receipt may cross the boundary; candidate level, content
+hashes, accepted state, actor authority, signoff, compliance, bindings, and
+event-store fields remain Bot-owned.
 """
 
 from __future__ import annotations
@@ -88,16 +89,21 @@ def _hint_labels(emission: AdapterEmission) -> list[str]:
                 f"{redact(emission.provenance.provider_resource_id)}"
             )
 
+    receipt = emission.metadata.get("redaction_receipt")
+    if isinstance(receipt, dict):
+        labels.append(f"redaction:v{receipt.get('schema_version', 'unknown')}")
+        labels.append(f"redaction_ruleset:{_label_token(receipt.get('ruleset_id'))}")
+
     return labels
 
 
 def emission_to_external_envelope(emission: AdapterEmission) -> dict:
     """Map one validated emission into the authority-stripped external envelope.
 
-    The envelope preserves source content and evidence. Advisory signals travel
-    through the schema's existing candidate-hint label surface as structured
-    ``advisory_v1`` labels. They remain projection features, never candidate
-    instructions or lifecycle authority.
+    The envelope preserves sanitized source content and evidence. Advisory signals
+    remain projection features, never candidate instructions or lifecycle authority.
+    The optional redaction receipt contains only ruleset identity, digests, category
+    counts, actions, and completion metadata. It never contains removed values.
     """
     title = emission.title.strip() or _first_excerpt(emission) or emission.source_id
     content = (
@@ -110,10 +116,14 @@ def emission_to_external_envelope(emission: AdapterEmission) -> dict:
     labels = _hint_labels(emission)
     if labels:
         hint["labels"] = labels
-    return {
+    envelope = {
         "source_system": emission.source_id,
         "source_uri": _source_uri(emission),
         "content": content,
         "evidence": [{"excerpt": ev.excerpt} for ev in emission.evidence],
         "candidate_hints": [hint],
     }
+    receipt = emission.metadata.get("redaction_receipt")
+    if isinstance(receipt, dict):
+        envelope["redaction_receipt"] = dict(receipt)
+    return envelope
