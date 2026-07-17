@@ -13,7 +13,7 @@ import json
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 TRACE_SCHEMA = "bicameral.transformation-trace/v1"
 TRACE_SET_SCHEMA = "bicameral.transformation-trace-set/v1"
@@ -88,7 +88,7 @@ def _required_text(value: object, label: str) -> str:
 def _mapping(value: object, label: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
         raise TransformationTraceContractError(f"{label}_must_be_object")
-    return value
+    return cast(Mapping[str, Any], value)
 
 
 def _phase_by_id(trace: Mapping[str, Any], phase_id: str) -> Mapping[str, Any] | None:
@@ -97,12 +97,19 @@ def _phase_by_id(trace: Mapping[str, Any], phase_id: str) -> Mapping[str, Any] |
         raise TransformationTraceContractError("phases_required")
     for raw_phase in raw_phases:
         if isinstance(raw_phase, Mapping) and raw_phase.get("id") == phase_id:
-            return raw_phase
+            return cast(Mapping[str, Any], raw_phase)
     return None
 
 
 def _copy(value: object) -> Any:
     return json.loads(json.dumps(value, ensure_ascii=False))
+
+
+def _copy_object(value: object) -> dict[str, Any]:
+    copied = _copy(value)
+    if not isinstance(copied, dict):
+        raise TransformationTraceContractError("copied_value_must_be_object")
+    return cast(dict[str, Any], copied)
 
 
 def _advisories(
@@ -117,10 +124,11 @@ def _advisories(
     for item in raw:
         if not isinstance(item, Mapping):
             continue
-        metadata = item.get("metadata")
+        typed_item = cast(Mapping[str, Any], item)
+        metadata = typed_item.get("metadata")
         item_scope = metadata.get("scope") if isinstance(metadata, Mapping) else None
         if item_scope == scope:
-            output.append(item)
+            output.append(typed_item)
     return output
 
 
@@ -136,7 +144,7 @@ def _delta_items(raw: object) -> list[dict[str, str]]:
 
 def _legacy_delta(phase: Mapping[str, Any]) -> dict[str, list[dict[str, str]]]:
     transformation = phase.get("transformation")
-    source = transformation if isinstance(transformation, Mapping) else {}
+    source = cast(Mapping[str, Any], transformation) if isinstance(transformation, Mapping) else {}
     return {
         "preserved": _delta_items(source.get("preserved")),
         "added": _delta_items(source.get("added")),
@@ -150,7 +158,7 @@ def _advisory_records(items: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]
     records: list[dict[str, Any]] = []
     for item in items:
         metadata = item.get("metadata")
-        details = metadata if isinstance(metadata, Mapping) else {}
+        details = cast(Mapping[str, Any], metadata) if isinstance(metadata, Mapping) else {}
         records.append(
             {
                 "advisory_id": str(item.get("code") or item.get("kind") or "unknown"),
@@ -188,6 +196,13 @@ def _record(
     retryable: bool = False,
 ) -> dict[str, Any]:
     contract_id = _PHASE_CONTRACTS[phase_id]
+    persistence_value: Mapping[str, Any] = persistence or {
+        "plane": "none",
+        "operation": "none",
+        "artifact_id": None,
+        "digest": None,
+        "locator": None,
+    }
     return {
         "schema": TRACE_SCHEMA,
         "journey_id": context.journey_id,
@@ -219,16 +234,7 @@ def _record(
             "hard_gates": _copy(list(hard_gates)),
             "advisories": _copy(list(advisories)),
         },
-        "persistence": _copy(
-            persistence
-            or {
-                "plane": "none",
-                "operation": "none",
-                "artifact_id": None,
-                "digest": None,
-                "locator": None,
-            }
-        ),
+        "persistence": _copy(persistence_value),
         "authority": {
             "before": authority_before,
             "after": authority_after,
@@ -268,16 +274,20 @@ def project_ingest_transformation_trace(
     envelope_phase = _phase_by_id(trace, "external_envelope")
     delivery_phase = _phase_by_id(trace, "delivery_state")
 
-    required = {
-        "observation": observation_phase,
-        "adapter_emission": emission_phase,
-        "external_envelope": envelope_phase,
-    }
-    missing = [name for name, phase in required.items() if phase is None]
+    missing: list[str] = []
+    if observation_phase is None:
+        missing.append("observation")
+    if emission_phase is None:
+        missing.append("adapter_emission")
+    if envelope_phase is None:
+        missing.append("external_envelope")
     if missing:
         raise TransformationTraceContractError(
             "missing_required_legacy_phases:" + ",".join(missing)
         )
+    assert observation_phase is not None
+    assert emission_phase is not None
+    assert envelope_phase is not None
 
     records: list[dict[str, Any]] = []
     state: object = {}
@@ -309,7 +319,6 @@ def project_ingest_transformation_trace(
         )
         state = capture
 
-    observation_input = state
     records.append(
         _record(
             context=context,
@@ -318,7 +327,7 @@ def project_ingest_transformation_trace(
             input_schema=(
                 "bicameral.provider-capture/v1" if capture_phase else "provider-specific/capture"
             ),
-            input_data=observation_input,
+            input_data=state,
             output_schema="bicameral.observation/v1",
             output_data=observation,
             delta=_legacy_delta(observation_phase),
@@ -338,7 +347,7 @@ def project_ingest_transformation_trace(
     state = observation
 
     provider_advisories = _advisories(emission, scope="integration")
-    provider_state = _copy(observation)
+    provider_state = _copy_object(observation)
     provider_state["advisories"] = _copy(provider_advisories)
     records.append(
         _record(
@@ -364,7 +373,7 @@ def project_ingest_transformation_trace(
     )
     state = provider_state
 
-    integration_only_emission = _copy(emission)
+    integration_only_emission = _copy_object(emission)
     integration_only_emission["advisories"] = _copy(provider_advisories)
     records.append(
         _record(
