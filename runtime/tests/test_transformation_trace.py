@@ -38,6 +38,7 @@ def _legacy_trace() -> dict:
         evidence_id="github:comment:9:v1",
         metadata={
             "actor_type": "Bot",
+            "stale_source": True,
             "advisory_signals": [
                 {
                     "code": "bot_authored",
@@ -119,7 +120,7 @@ def test_provider_and_universal_advisories_remain_fail_open_and_distinct() -> No
     universal = by_phase["PHASE-07-UNIVERSAL-ADVISORIES"]["evaluation"]["advisories"]
 
     assert [item["advisory_id"] for item in provider] == ["bot_authored"]
-    assert any(item["advisory_id"] == "status_only" for item in universal)
+    assert any(item["advisory_id"] == "stale_source" for item in universal)
     assert all(item["failure_mode"] == "fail_open" for item in [*provider, *universal])
     assert all(item["authority"] == "none" for item in [*provider, *universal])
 
