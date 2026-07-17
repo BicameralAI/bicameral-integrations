@@ -1,0 +1,43 @@
+{
+  "cursor": {
+    "last_provider_event_id": "recorded-delivery-001",
+    "repository_id": "987654321",
+    "schema_version": 1,
+    "updated_at": "2026-07-17T05:10:00Z"
+  },
+  "external_ingest_envelope": {
+    "candidate_hints": [
+      {
+        "body": "GitHub issue discussions should enter Bicameral as screened, replay-safe evidence.",
+        "labels": [
+          "emission_type:evidence",
+          "delivery:webhook",
+          "verification:signed",
+          "provider_event_id:recorded-delivery-001",
+          "provider_resource_id:issue:24681012"
+        ],
+        "title": "Implement incremental GitHub issue ingest"
+      }
+    ],
+    "content": "GitHub issue discussions should enter Bicameral as screened, replay-safe evidence.",
+    "evidence": [
+      {
+        "excerpt": "GitHub issue discussions should enter Bicameral as screened, replay-safe evidence."
+      }
+    ],
+    "source_system": "github",
+    "source_uri": "https://github.com/BicameralAI/bicameral-integrations/issues/256"
+  },
+  "normalized": {
+    "action": "opened",
+    "content_truncated": false,
+    "event_name": "issues",
+    "issue_id": "24681012",
+    "issue_number": "256",
+    "repository_full_name": "BicameralAI/bicameral-integrations",
+    "repository_id": "987654321",
+    "source_version": "845f4cd2908b3b0a5792d6d134805c96ae550af9d4f5c2d07e0246bcae7a12e1",
+    "title_truncated": false,
+    "tombstone": false
+  }
+}
