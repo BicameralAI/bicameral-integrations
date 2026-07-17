@@ -6,6 +6,12 @@ on:
       - rfq/github-source-acquisition-alpha
     paths:
       - .github/workflows/prepare-runtime-redaction-test.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/prepare-runtime-redaction-test.yml
+      - runtime/tests/test_runtime.py
 
 permissions:
   contents: read
@@ -34,7 +40,7 @@ jobs:
                   EmissionContractError
               ):  # companion non-vacuity: raw really trips FX-SEC-001
                   normalize([raw], adapter_version="x")
-'''
+          '''
           new = '''def test_deliver_poll_servicenow_beta():
               # Required pre-Bot redaction preserves the incident while removing quoted secrets.
               record = _fixture_payload("servicenow", "incident.json")
@@ -48,7 +54,7 @@ jobs:
               assert sanitized.metadata["redaction_receipt"]["findings"] == [
                   {"category": "secret", "action": "tokenized", "count": 1}
               ]
-'''
+          '''
           old = old.replace("          ", "")
           new = new.replace("          ", "")
           if old not in text:
