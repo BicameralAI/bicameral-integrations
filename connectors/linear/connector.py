@@ -1,15 +1,8 @@
 # SPDX-License-Identifier: MIT
-"""Linear webhook connector: event payloads into neutral Observations.
+"""Linear webhook and GraphQL connector into provider-neutral Observations.
 
-A Linear webhook event envelope (``{action, type, actor, data, ...}``) for an
-Issue maps to one provider-neutral Observation. The ``action`` / ``type`` /
-``organizationId`` change-context fields are preserved in
-``Observation.metadata`` for downstream diffing. Provider field knowledge stays
-here; normalization is the universal adapter's job (ADR-0004). ``Linear-Signature``
-verification (+ 60 s anti-replay) is built (``verify``/``normalize_event``); the live
-GraphQL active-fetch parse surface (``parse_issue_node``) is built this cycle and driven
-by ``runtime.graphql_poll`` — the live HTTP boundary + API-key resolution stay
-operator-run (see ``auth.md``).
+Provider-specific parsing and source-aware heuristic features stay here. Every
+Observation is normalized and universally evaluated by ``adapter.core.pipeline``.
 """
 
 from __future__ import annotations
@@ -18,6 +11,7 @@ import dataclasses
 import json
 import time
 from collections.abc import Callable
+from typing import Any
 
 from adapter.core.capabilities import SourceCapabilities, SourceMode
 from adapter.core.emissions import SourceRef
@@ -30,19 +24,72 @@ from adapter.core.webhook_security import (
 )
 
 _REPLAY_WINDOW_MS = 60_000
+_ADMINISTRATIVE_UPDATE_FIELDS = frozenset(
+    {
+        "assigneeId",
+        "cycleId",
+        "estimate",
+        "labelIds",
+        "priority",
+        "projectId",
+        "stateId",
+        "teamId",
+    }
+)
+
+
+def _signal(
+    code: str,
+    basis: str,
+    confidence: str,
+    effect: str,
+    explanation: str,
+) -> dict[str, Any]:
+    return {
+        "code": code,
+        "scope": "integration",
+        "basis": basis,
+        "confidence": confidence,
+        "recommended_effect": effect,
+        "explanation": explanation,
+        "schema_version": 1,
+    }
+
+
+def _integration_signals(event: dict) -> list[dict[str, Any]]:
+    """Derive Linear-aware, fail-open advisory signals."""
+    signals: list[dict[str, Any]] = []
+    actor = event.get("actor") if isinstance(event.get("actor"), dict) else {}
+    actor_type = str(actor.get("type", "")).strip().lower()
+    if actor_type and actor_type not in {"user", "member"}:
+        signals.append(
+            _signal(
+                "generated_sync_event",
+                "linear_non_user_actor_type",
+                "medium",
+                "rank_lower",
+                "Linear reports a non-user actor for this event.",
+            )
+        )
+
+    updated_from = event.get("updatedFrom")
+    if event.get("action") == "update" and isinstance(updated_from, dict) and updated_from:
+        changed_fields = {str(key) for key in updated_from}
+        if changed_fields.issubset(_ADMINISTRATIVE_UPDATE_FIELDS):
+            signals.append(
+                _signal(
+                    "administrative_only",
+                    "linear_updated_from_administrative_fields",
+                    "high",
+                    "rank_lower",
+                    "Linear reports only administrative issue-field changes.",
+                )
+            )
+    return signals
 
 
 def _is_issue_event(payload: dict) -> bool:
-    """Fail-closed receiver guard: only a create/update **Issue** event carrying a non-empty
-    ``data.identifier`` yields an Observation.
-
-    A ``config.json events:["Issue"]`` subscription is a Linear-UI hint, **not** an enforced
-    filter (SG-2026-06-18-A): Linear can still deliver ``Comment``/``Project``/``Attachment``
-    events (which lack ``identifier``/``title``/``description`` and would otherwise emit an
-    empty-``title``/``excerpt`` Observation that violates the ADR-0005 non-empty contract), and a
-    ``remove`` (delete) action must not surface a now-deleted issue as live evidence. Anything
-    that is not an ingestible Issue create/update is skipped at the boundary.
-    """
+    """Admit only create/update Issue events with a stable identifier."""
     if payload.get("type") != "Issue":
         return False
     if payload.get("action") == "remove":
@@ -52,23 +99,21 @@ def _is_issue_event(payload: dict) -> bool:
 
 
 def parse_event(event: dict) -> Observation:
-    """Map a Linear webhook event into a provider-neutral Observation.
-
-    The title combines the human identifier (e.g. ``PROJ-123``) with the issue
-    title; the excerpt is the description, falling back to the title then the
-    identifier so the contract's non-empty-excerpt rule holds. ``author`` is
-    deliberately EMPTY: the actor's real name (``actor.name``) is dropped, not
-    surfaced (SG-2026-06-11-D; jira/granola precedent) — a generic name is not
-    caught by the FX-SEC-001 screen, so non-forwarding is the fail-closed choice.
-
-    Assumes an ingestible Issue create/update envelope; callers gate on
-    ``_is_issue_event`` first, so ``data.identifier`` is present here.
-    """
+    """Map a Linear webhook event into a provider-neutral Observation."""
     data = event.get("data") or {}
     identifier = data.get("identifier") or data.get("id") or ""
+    resource_id = str(data.get("id") or identifier)
     name = data.get("title") or ""
     title = f"{identifier}: {name}".strip(": ").strip() or identifier
     excerpt = data.get("description") or name or identifier
+    actor = event.get("actor") if isinstance(event.get("actor"), dict) else {}
+    metadata = {
+        "action": event.get("action", ""),
+        "type": event.get("type", ""),
+        "organization_id": event.get("organizationId", ""),
+        "actor_type": actor.get("type", ""),
+        "advisory_signals": _integration_signals(event),
+    }
     return Observation(
         source_ref=SourceRef(
             source_id="linear",
@@ -79,50 +124,48 @@ def parse_event(event: dict) -> Observation:
         excerpt=excerpt,
         mode=SourceMode.WEBHOOK,
         title=title,
-        author="",  # was actor.name (real-name PII reaching the mod chokepoint) — dropped per
-        # SG-2026-06-11-D (jira/granola precedent); FX-SEC-001 does not screen a generic name.
+        author="",
         timestamp=event.get("createdAt") or "",
-        metadata={
-            "action": event.get("action", ""),
-            "type": event.get("type", ""),
-            "organization_id": event.get("organizationId", ""),
-        },
+        provider_event_id=str(event.get("webhookId") or ""),
+        provider_resource_id=f"issue:{resource_id}",
+        evidence_id=f"linear:issue:{resource_id}:{event.get('createdAt') or ''}",
+        evidence_metadata=metadata,
+        metadata=metadata,
     )
 
 
 def parse_issue_node(node: dict) -> Observation:
-    """Map one Linear GraphQL ``Issue`` node (active fetch) into a neutral Observation.
-
-    The GraphQL node is the issue object directly (top-level ``identifier``/``title``/
-    ``description``/``url``/``updatedAt``/``state``) — distinct from the webhook envelope
-    ``parse_event`` reads. PII-safe: assignee/creator identity is NOT surfaced (FX-SEC-001
-    is the backstop). Excerpt falls back title→identifier so the non-empty rule holds.
-    """
+    """Map one Linear GraphQL Issue node into a neutral Observation."""
     identifier = node.get("identifier") or node.get("id") or ""
+    resource_id = str(node.get("id") or identifier)
     name = node.get("title") or ""
     title = f"{identifier}: {name}".strip(": ").strip() or identifier
     excerpt = node.get("description") or name or identifier
     state = node.get("state") or {}
+    metadata = {
+        "state": state.get("name", "") if isinstance(state, dict) else "",
+        "advisory_signals": [],
+    }
     return Observation(
         source_ref=SourceRef(
-            source_id="linear", ref=identifier, url=node.get("url") or "", kind="issue"
+            source_id="linear",
+            ref=identifier,
+            url=node.get("url") or "",
+            kind="issue",
         ),
         excerpt=excerpt,
         mode=SourceMode.ACTIVE,
         title=title,
         timestamp=node.get("updatedAt") or "",
-        metadata={"state": state.get("name", "") if isinstance(state, dict) else ""},
+        provider_resource_id=f"issue:{resource_id}",
+        evidence_id=f"linear:issue:{resource_id}:{node.get('updatedAt') or ''}",
+        evidence_metadata=metadata,
+        metadata=metadata,
     )
 
 
 class LinearConnector:
-    """Linear connector identity plus the webhook-event parse surface.
-
-    Declares the modes Linear supports: webhook delivery (primary — the
-    envelope carries change context a poll cannot) and active GraphQL fetch
-    (`parse_issue_node`, driven by `runtime.graphql_poll`). `Linear-Signature`
-    verification is built; the live HTTP boundary stays operator-run.
-    """
+    """Linear connector identity plus signed-webhook and GraphQL parse surfaces."""
 
     source_id = "linear"
     capabilities = SourceCapabilities(
@@ -136,17 +179,14 @@ class LinearConnector:
         dedup: DeliveryDedupCache | None = None,
         clock: Callable[[], float] | None = None,
     ) -> None:
-        # Secret injected (keyring resolution stays in the operator runtime).
         self._secret = secret
         self._dedup = dedup
         self._clock = clock or time.time
 
     def observations(self, payload: dict) -> list[Observation]:
-        if not isinstance(
-            payload, dict
-        ):  # untrusted poll boundary: skip, don't crash (#59)
+        if not isinstance(payload, dict):
             return []
-        if not _is_issue_event(payload):  # fail-closed receiver guard (SG-2026-06-18-A)
+        if not _is_issue_event(payload):
             return []
         return [parse_event(payload)]
 
@@ -155,7 +195,7 @@ class LinearConnector:
         return abs(now_ms - ts) <= _REPLAY_WINDOW_MS
 
     def verify(self, *, headers: dict[str, str], body: bytes) -> bool:
-        """HMAC first; only then parse the body for the timestamp window. Fail closed."""
+        """Verify HMAC first, then enforce the Linear replay window."""
         try:
             verify_hmac_hex(
                 header_sig=header_value(headers, "Linear-Signature"),
@@ -177,13 +217,11 @@ class LinearConnector:
     def normalize_event(
         self, *, headers: dict[str, str], body: bytes
     ) -> list[Observation]:
-        """Self-guard (re-verify), dedup on webhookId, then parse. ``[]`` on reject."""
+        """Self-guard, deduplicate by webhookId, and parse admitted events."""
         if not self.verify(headers=headers, body=body):
             return []
         payload = json.loads(body)
-        if not _is_issue_event(
-            payload
-        ):  # subscribed != enforced: skip non-Issue/remove/shapeless (SG-2026-06-18-A)
+        if not _is_issue_event(payload):
             return []
         delivery_id = str(payload.get("webhookId") or "")
         if self._dedup is not None:
