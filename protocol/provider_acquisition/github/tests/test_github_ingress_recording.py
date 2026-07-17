@@ -19,7 +19,7 @@ from protocol.provider_acquisition.github import (
     parse_webhook_observation,
 )
 from runtime.cursor_policy import CursorVerdict
-from runtime.ingest_conformance import emission_checkpoint, trace_ingest
+from runtime.ingest_conformance import emission_checkpoint, render_mermaid_trace, trace_ingest
 from runtime.sinks import CollectingSink
 
 _FIXTURE_DIR = (
@@ -43,7 +43,7 @@ def _recorded_result(
     fixture_stem: str,
     event_name: str,
     delivery_id: str,
-) -> dict:
+) -> tuple[dict, dict]:
     input_path = _FIXTURE_DIR / f"{fixture_stem}.input.json"
     payload = json.loads(input_path.read_text(encoding="utf-8"))
     body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -76,7 +76,17 @@ def _recorded_result(
     )
     assert parsed is not None
     observation, _ = parsed
-    trace = trace_ingest([observation], adapter_version=_ADAPTER_VERSION)[0]
+    cursor = asdict(cursor_store.load("987654321"))
+    trace = trace_ingest(
+        [observation],
+        adapter_version=_ADAPTER_VERSION,
+        source_capture=payload,
+        delivery_result={
+            "status": 201,
+            "cursor_verdict": action.verdict.value,
+            "cursor": cursor,
+        },
+    )[0]
     emission = sink.emissions[0]
 
     # The public runtime and reusable conformance path must produce the same
@@ -84,8 +94,8 @@ def _recorded_result(
     assert emission_checkpoint(emission) == trace["emission"]
 
     metadata = trace["observation"]["metadata"]
-    return {
-        "cursor": asdict(cursor_store.load("987654321")),
+    stable_output = {
+        "cursor": cursor,
         "observation": {
             "source_ref": trace["observation"]["source_ref"],
             "excerpt": trace["observation"]["excerpt"],
@@ -119,6 +129,7 @@ def _recorded_result(
         },
         "external_ingest_envelope": trace["external_ingest_envelope"],
     }
+    return stable_output, trace
 
 
 @pytest.mark.parametrize(
@@ -138,7 +149,7 @@ def test_recorded_github_ingress_matches_expected_output(
     event_name: str,
     delivery_id: str,
 ) -> None:
-    actual = _recorded_result(
+    actual, trace = _recorded_result(
         tmp_path=tmp_path,
         fixture_stem=fixture_stem,
         event_name=event_name,
@@ -152,10 +163,18 @@ def test_recorded_github_ingress_matches_expected_output(
     envelope = actual["external_ingest_envelope"]
     assert "content_hash" not in envelope
     assert "level" not in envelope["candidate_hints"][0]
+    assert [phase["id"] for phase in trace["phases"]] == [
+        "provider_capture",
+        "observation",
+        "adapter_emission",
+        "external_envelope",
+        "delivery_state",
+    ]
+    assert "flowchart LR" in render_mermaid_trace(trace)
 
 
 def test_bot_authored_real_decision_remains_ingested(tmp_path: Path) -> None:
-    actual = _recorded_result(
+    actual, trace = _recorded_result(
         tmp_path=tmp_path,
         fixture_stem="issue-comment-bot-decision",
         event_name="issue_comment",
@@ -173,3 +192,6 @@ def test_bot_authored_real_decision_remains_ingested(tmp_path: Path) -> None:
         label.startswith("advisory_v1:bot_authored:integration:")
         for label in labels
     )
+    for phase_id in ("provider_capture", "observation", "adapter_emission", "external_envelope"):
+        phase = next(item for item in trace["phases"] if item["id"] == phase_id)
+        assert decision_text in json.dumps(phase["data"])
