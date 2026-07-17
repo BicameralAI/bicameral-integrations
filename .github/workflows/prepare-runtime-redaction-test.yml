@@ -1,11 +1,6 @@
 name: Prepare Runtime Redaction Test
 
 on:
-  push:
-    branches:
-      - rfq/github-source-acquisition-alpha
-    paths:
-      - .github/workflows/prepare-runtime-redaction-test.yml
   pull_request:
     branches:
       - main
@@ -14,13 +9,16 @@ on:
       - runtime/tests/test_runtime.py
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   prepare:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: rfq/github-source-acquisition-alpha
+          fetch-depth: 0
       - name: Replace one legacy rejection assertion
         run: |
           python3 - <<'PY'
@@ -57,14 +55,20 @@ jobs:
           '''
           old = old.replace("          ", "")
           new = new.replace("          ", "")
+          if new in text:
+              raise SystemExit(0)
           if old not in text:
               raise SystemExit("expected legacy assertion block not found")
           path.write_text(text.replace(old, new, 1), encoding="utf-8")
           PY
           git diff --check
-      - name: Upload patched runtime test
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: patched-runtime-redaction-test
-          path: runtime/tests/test_runtime.py
-          if-no-files-found: error
+      - name: Commit exact patch
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runtime/tests/test_runtime.py
+          git commit -m "test(redaction): assert ServiceNow sanitization receipt"
+          git push origin HEAD:rfq/github-source-acquisition-alpha
