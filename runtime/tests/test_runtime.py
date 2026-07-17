@@ -136,8 +136,12 @@ def test_full_path_signed_webhook_to_configured_gateway_sink():
         return _Ctx()
 
     conn, body, sig = _signed_sentry()
-    sink = GatewaySink(endpoint="https://gw.example/api/v1/external-ingest", opener=_opener)
-    n = deliver_webhook(conn, headers={"Sentry-Hook-Signature": sig}, body=body, sink=sink)
+    sink = GatewaySink(
+        endpoint="https://gw.example/api/v1/external-ingest", opener=_opener
+    )
+    n = deliver_webhook(
+        conn, headers={"Sentry-Hook-Signature": sig}, body=body, sink=sink
+    )
     assert n == 1
     assert captured["body"]["source_system"] == "sentry"
     assert captured["body"]["content"] and captured["body"]["source_uri"]
@@ -560,9 +564,9 @@ def test_deliver_poll_servicenow_beta():
     assert "AKIAIOSFODNN7EXAMPLE" not in sanitized.body
     assert "[redacted:secret]" in sanitized.body
     assert sanitized.metadata["redaction_receipt"]["findings"] == [
-    {"category": "pii", "action": "tokenized", "count": 1},
-    {"category": "secret", "action": "tokenized", "count": 1},
-]
+        {"category": "pii", "action": "tokenized", "count": 1},
+        {"category": "secret", "action": "tokenized", "count": 1},
+    ]
     sink = _poll_one(
         ServiceNowConnector(), "servicenow", "incident.json", "servicenow", 1
     )
