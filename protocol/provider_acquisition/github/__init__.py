@@ -17,6 +17,7 @@ from .ingest import (
     JsonCursorStore,
     SignatureVerificationError,
     normalize_webhook,
+    parse_webhook_observation,
     verify_webhook_signature,
 )
 from .transport import GitHubResponse, GitHubTransport, RecordedTransport
@@ -35,5 +36,6 @@ __all__ = [
     "RecordedTransport",
     "SignatureVerificationError",
     "normalize_webhook",
+    "parse_webhook_observation",
     "verify_webhook_signature",
 ]
