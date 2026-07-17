@@ -10,6 +10,7 @@ event-store fields remain Bot-owned.
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from adapter.core.emissions import AdapterEmission
 from adapter.core.redaction import redact
@@ -97,7 +98,7 @@ def _hint_labels(emission: AdapterEmission) -> list[str]:
     return labels
 
 
-def emission_to_external_envelope(emission: AdapterEmission) -> dict:
+def emission_to_external_envelope(emission: AdapterEmission) -> dict[str, Any]:
     """Map one validated emission into the authority-stripped external envelope.
 
     The envelope preserves sanitized source content and evidence. Advisory signals
@@ -112,11 +113,11 @@ def emission_to_external_envelope(emission: AdapterEmission) -> dict:
         or _first_excerpt(emission)
         or emission.source_id
     )
-    hint: dict = {"title": title, "body": content}
+    hint: dict[str, Any] = {"title": title, "body": content}
     labels = _hint_labels(emission)
     if labels:
         hint["labels"] = labels
-    envelope = {
+    envelope: dict[str, Any] = {
         "source_system": emission.source_id,
         "source_uri": _source_uri(emission),
         "content": content,
