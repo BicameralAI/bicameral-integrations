@@ -75,7 +75,7 @@
       "event_name": "issue_comment",
       "issue_id": "24681012",
       "issue_number": "256",
-      "repository_full_name": "BicamerAI/bicameral-integrations",
+      "repository_full_name": "BicameralAI/bicameral-integrations",
       "repository_id": "987654321",
       "source_version": "b22d34c884337a4bf2cff291a0df3ea5bbdb0574fb0f503e4a4244c3268766c0",
       "title_truncated": false,
@@ -85,7 +85,7 @@
     "provider_resource_id": "issue_comment:24681013",
     "source_ref": {
       "kind": "issue_comment",
-      "ref": "BicamerAI/bicameral-integrations#issues/256:issue_comment:24681013:v:b22d34c884337a4bf2cff291a0df3ea5bbdb0574fb0f503e4a4244c3268766c0",
+      "ref": "BicameralAI/bicameral-integrations#issues/256:issue_comment:24681013:v:b22d34c884337a4bf2cff291a0df3ea5bbdb0574fb0f503e4a4244c3268766c0",
       "source_id": "github",
       "url": "https://github.com/BicamerAI/bicameral-integrations/issues/256#issuecomment-24681013"
     }
