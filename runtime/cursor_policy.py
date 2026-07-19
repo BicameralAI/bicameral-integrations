@@ -121,6 +121,7 @@ _SCHEMA_DRIFT_REASONS = frozenset(
         "schema_invalid",
         "schema_drift",
         "envelope_malformed",
+        "protocol_mismatch",
     }
 )
 

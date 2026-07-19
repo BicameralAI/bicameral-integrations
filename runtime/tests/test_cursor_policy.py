@@ -220,6 +220,15 @@ class TestSchemaDrift:
         action = resolve_cursor_action(status=400, reason="schema_drift")
         assert action.verdict != CursorVerdict.ADVANCE
 
+    def test_protocol_mismatch_does_not_advance(self) -> None:
+        action = resolve_cursor_action(
+            error=GatewayEmissionError(
+                0, "protocol_mismatch:contract_fingerprint_mismatch"
+            )
+        )
+        assert action.verdict == CursorVerdict.QUARANTINE
+        assert action.quarantine_reason == QuarantineReason.SCHEMA_DRIFT
+
 
 # ---------------------------------------------------------------------------
 # Crash between emit and cursor persist — at-least-once semantics
