@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Emit and verify a commit-bound Integrations release descriptor."""
 
 from __future__ import annotations
@@ -8,7 +9,6 @@ import hashlib
 import json
 import os
 import re
-import subprocess
 from pathlib import Path
 
 
@@ -91,7 +91,9 @@ def main() -> int:
             print("\n".join(f"- {error}" for error in errors))
             return 1
         return 0
-    commit = os.environ.get("RELEASE_SOURCE_COMMIT") or os.environ.get("GITHUB_SHA") or subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    commit = os.environ.get("RELEASE_SOURCE_COMMIT") or os.environ.get("GITHUB_SHA")
+    if not commit:
+        parser.error("RELEASE_SOURCE_COMMIT or GITHUB_SHA is required")
     args.output.parent.mkdir(exist_ok=True)
     args.output.write_text(json.dumps(build_descriptor(commit), indent=2, sort_keys=True) + "\n")
     print(args.output)

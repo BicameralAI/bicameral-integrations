@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Emit and verify descriptor
         run: |
-          python -m unittest scripts.tests.test_emit_release_descriptor
+          python scripts/tests/test_emit_release_descriptor.py
           python scripts/emit_release_descriptor.py
           python scripts/emit_release_descriptor.py --verify release-artifacts/integrations-release-descriptor.json
       - uses: actions/upload-artifact@v4
