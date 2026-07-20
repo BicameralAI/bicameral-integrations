@@ -1,6 +1,6 @@
 # Release Manifest Adoption: Bicameral Integrations
 
-Status: draft
+Status: descriptor CI implemented
 Related Factory blueprint: https://github.com/BicameralAI/bicameral-factory/pull/290
 
 ## Purpose
@@ -17,11 +17,11 @@ Integration adapter artifact/config + Bot integration-ingress interface + Bot MC
 
 If an integration changes, this closure is revalidated with pinned Bot and MCP artifacts. Bot-to-Cloud evidence is reusable only when its independent closure is identical. Paths, labels, and claims that Bot/Cloud were not edited are insufficient.
 
-## Required eventual gates
+## Delivery gates
 
 1. Integration CI emits deterministic interface fingerprint and provenance.
 2. Release assembly records the integration closure.
-3. A real-process Integration-to-Bot-to-MCP receipt is bound to that closure.
+3. A real-process Integration-to-Bot-to-MCP receipt is bound to that closure before a manifest requiring this journey is promoted.
 4. Missing dependency edges fail closed.
 
 ## Authority boundaries
@@ -32,4 +32,4 @@ If an integration changes, this closure is revalidated with pinned Bot and MCP a
 
 ## Non-goals
 
-No Bot/Cloud release implementation, connector lifecycle state, or claim that adapter component tests are terminal journey evidence.
+No Bot/Cloud release implementation or connector lifecycle state. Descriptor CI is component provenance, not terminal journey evidence.
