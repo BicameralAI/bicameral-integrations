@@ -9,27 +9,27 @@ Bicameral Integrations
 BicameralAI maintainers steward repository direction, review contributions, and
 preserve the authority boundaries documented in `README.md` and `docs/adr/`.
 
-## Decision Making
+## Product authority boundary
 
-Architecture decisions are recorded in `docs/adr/`. Source adapters and EM-safe
-mods must emit candidates, evidence, hints, signals, and advisories through
-protocol-compatible paths; they must not write canonical state directly.
+This is the public, product-facing governance statement. It describes what the
+integrations in this repository are permitted to do — not how the project is
+developed internally.
 
-## Process Governance (three layers)
+- Source adapters and EM-safe mods emit candidates, evidence, hints, signals, and
+  advisories through protocol-compatible paths. **They never write canonical state
+  directly** ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)).
+- Trust-tiered governance decides how emitted evidence routes to review, advisory
+  state, or enforcement downstream ([ADR-0009](docs/adr/0009-trust-tiered-integration-governance.md)).
+- Architecture decisions are recorded in `docs/adr/`.
 
-Repository **process** governance is layered:
+## Development process
 
-- **Shared process (bic-logic)** — factory-owned doctrine, owned upstream in
-  `bicameral-factory` and consumed here. This is the **one mandatory layer**: the contract
-  every PR must satisfy.
-- **Sibling tools (registry)** — any local process, governance, or AI tooling a contributor
-  uses is a *registered sibling*: leak-guarded, never tracked, never referenced. The registry
-  is [`docs/governance/SIBLINGS.md`](docs/governance/SIBLINGS.md). The maintainer's own tooling
-  is itself a registered sibling, not a requirement on contributors.
-
-Contributors are free to bring their own tooling — see `CONTRIBUTING.md` → *Bring your own
-tools*. This is repo/process governance only; it never produces product Decisions, gates, or
-compliance outcomes.
+The project is developed under a controlled, reviewed process with security review;
+every change lands through pull request with required review and CI security/supply-chain
+checks. The internal contributor development process — including how contributors bring
+their own local tooling — is documented for contributors in
+[`CONTRIBUTING.md`](CONTRIBUTING.md) and [`AGENTS.md`](AGENTS.md). Those are contributor
+references, not a dependency or required concept for using these integrations.
 
 ## Branch Protection Plan
 

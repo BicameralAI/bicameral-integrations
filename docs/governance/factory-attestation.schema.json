@@ -1,0 +1,314 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BicameralAI/bicameral-factory/schemas/factory-attestation.schema.json",
+  "title": "Bicameral factory context attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "factory_repo",
+    "factory_commit",
+    "loaded_context",
+    "local_setup_divergence",
+    "roadmap_reconciliation",
+    "state_refinement",
+    "end_of_session_capture",
+    "attested_by",
+    "timestamp"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "factory_repo": {
+      "type": "string",
+      "const": "BicameralAI/bicameral-factory"
+    },
+    "factory_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "The bicameral-factory commit whose guidance was loaded."
+    },
+    "loaded_context": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "contains": {
+        "const": "README.md"
+      }
+    },
+    "context_evidence": {
+      "type": "object",
+      "description": "Optional demotion-loop evidence for loaded_context entries. Keys must match loaded_context paths. sha256 pins the exact bytes consumed when available.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": ["agent-declared", "wrapper-observed", "human-declared"]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "contract_conformance": {
+      "type": "array",
+      "description": "Deterministic wrapper-observed evidence that this product repo matches an active semantic contract fingerprint.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contract_id",
+          "repository",
+          "role",
+          "artifact_path",
+          "contract_version",
+          "fingerprint",
+          "pinned_at",
+          "evidence_source"
+        ],
+        "properties": {
+          "contract_id": { "type": "string", "minLength": 1 },
+          "repository": {
+            "type": "string",
+            "pattern": "^[^/]+/[^/]+$"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["producer", "consumer"]
+          },
+          "artifact_path": { "type": "string", "minLength": 1 },
+          "contract_version": { "type": "string", "minLength": 1 },
+          "fingerprint": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "pinned_at": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "evidence_source": {
+            "type": "string",
+            "const": "wrapper-observed"
+          }
+        }
+      }
+    },
+    "local_setup_divergence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["checked", "resolution"],
+      "properties": {
+        "checked": {
+          "type": "boolean",
+          "const": true
+        },
+        "resolution": {
+          "type": "string",
+          "enum": ["none", "promoted", "disabled", "not_applicable"]
+        },
+        "notes": {
+          "type": "string"
+        },
+        "factory_pr": {
+          "type": ["string", "null"],
+          "pattern": "^https://github.com/BicameralAI/bicameral-factory/pull/[0-9]+$"
+        },
+        "unresolved_items": {
+          "type": "array",
+          "maxItems": 0,
+          "items": false,
+          "description": "Must be empty or omitted; unresolved divergence blocks merge."
+        }
+      }
+    },
+    "roadmap_reconciliation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checked",
+        "issue_number",
+        "issue_type",
+        "project_status",
+        "pr_links_checked",
+        "pr_body_links_issue",
+        "pr_links",
+        "post_work_comment_url"
+      ],
+      "properties": {
+        "checked": {
+          "type": "boolean",
+          "const": true
+        },
+        "issue_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "BicameralAI/bicameral-factory roadmap issue number used for this work."
+        },
+        "issue_type": {
+          "type": "string",
+          "enum": ["validated", "validating", "deferred"]
+        },
+        "project_status": {
+          "type": "string",
+          "enum": ["Todo", "In Progress", "Done"],
+          "description": "Current GitHub Project Status for the roadmap issue."
+        },
+        "pr_links_checked": {
+          "type": "boolean",
+          "const": true,
+          "description": "The caller checked existing Linked pull requests / PR Links for the roadmap issue."
+        },
+        "pr_body_links_issue": {
+          "type": "boolean",
+          "const": true,
+          "description": "The product PR body links the roadmap issue so GitHub can populate Linked pull requests."
+        },
+        "pr_links": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^https://github\\.com/[^/]+/[^/]+/pull/[0-9]+$"
+          }
+        },
+        "post_work_comment_url": {
+          "type": ["string", "null"],
+          "pattern": "^https://github\\.com/[^/]+/[^/]+/issues/[0-9]+#issuecomment-[0-9]+$"
+        },
+        "deferred_override_reason": {
+          "type": "string",
+          "description": "Required by the validator when issue_type is deferred."
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "state_refinement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "checked",
+        "release_state",
+        "states_added",
+        "states_deferred",
+        "invariants",
+        "minimization_review"
+      ],
+      "properties": {
+        "checked": {
+          "type": "boolean",
+          "const": true
+        },
+        "release_state": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Smallest honest lifecycle state machine or release-state summary used for the PR, or an explicit statement that no lifecycle behavior changed."
+        },
+        "states_added": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Lifecycle states or durable state terms accepted in this PR. Empty when no lifecycle behavior changed."
+        },
+        "states_deferred": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "State terms deferred because transitions, authority, persistence, or recovery behavior are not yet defined. Empty when no lifecycle behavior changed."
+        },
+        "invariants": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "State semantics that later refinements must preserve."
+        },
+        "minimization_review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reviewed", "rejected_or_collapsed_states", "rationale"],
+          "properties": {
+            "reviewed": {
+              "type": "boolean",
+              "const": true
+            },
+            "rejected_or_collapsed_states": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "States intentionally rejected, collapsed into attributes, or deferred to avoid state explosion."
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Why this is the smallest honest state machine for the release."
+            }
+          }
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "end_of_session_capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run"],
+      "properties": {
+        "run": {
+          "type": "boolean",
+          "const": true
+        },
+        "notes": {
+          "type": "string"
+        },
+        "factory_pr": {
+          "type": ["string", "null"],
+          "pattern": "^https://github.com/BicameralAI/bicameral-factory/pull/[0-9]+$"
+        }
+      }
+    },
+    "attested_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human, agent, or wrapper that produced the attestation."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "target_repo": {
+      "type": "string"
+    },
+    "target_branch": {
+      "type": "string"
+    },
+    "agent": {
+      "type": "string"
+    },
+    "session": {
+      "type": "string"
+    }
+  }
+}

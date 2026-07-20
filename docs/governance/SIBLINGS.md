@@ -6,8 +6,8 @@ This file is the single source of truth for **sibling tools** — local process,
 governance, or AI tooling that touches this checkout but must **never** leak into a
 commit or a tracked reference.
 
-The **only** mandatory layer for a pull request is the shared **bic-logic** contract
-(the factory-owned process). Below that line, your choice of local tooling is free — as
+The **only** mandatory layer for a pull request is the **shared Factory process contract**
+(the factory-owned development doctrine). Below that line, your choice of local tooling is free — as
 long as the tool is **registered as a sibling** here and its artifacts stay out of the
 repo.
 
@@ -57,6 +57,6 @@ You do **not** need maintainer permission to use your own tooling. To register i
 3. **Keep artifacts out of tracked files** — never commit the tool's output and never name
    its internals in a tracked doc.
 
-Open the change as a normal PR; the only thing it must satisfy is the shared bic-logic
+Open the change as a normal PR; the only thing it must satisfy is the shared Factory process
 contract and a clean working tree. See [`CONTRIBUTING.md`](../../CONTRIBUTING.md) →
 *Bring your own tools*.

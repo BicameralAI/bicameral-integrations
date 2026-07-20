@@ -201,8 +201,7 @@ live in [`docs/compliance/`](docs/compliance/) — control alignment, not certif
 - **Architecture & decisions**: [ADRs](docs/adr/) — incl. [0004 adapter boundary](docs/adr/0004-integration-adapter-boundary.md), [0005 emission contract](docs/adr/0005-adapter-emission-contract.md), [0006 active/passive/webhook modes](docs/adr/0006-active-passive-webhook-modes.md), [0008 evidence-not-authority](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md), [0009 trust-tiered governance](docs/adr/0009-trust-tiered-integration-governance.md), [0012 readiness ladder + runtime boundary](docs/adr/0012-connector-readiness-ladder-and-live-ingest-runtime.md)
 - **Contracts**: [Governed Adapter Contract](docs/GOVERNED_ADAPTER_CONTRACT.md) · [Trust Tier Model](docs/TRUST_TIER_MODEL.md) · [Data Classification & Redaction](docs/DATA_CLASSIFICATION_AND_REDACTION.md)
 - **Strategy & catalog**: [Integration Strategy & Candidate Harvesting](docs/INTEGRATION_STRATEGY_AND_CANDIDATE_HARVESTING.md) · [Integration Candidate Catalog](docs/INTEGRATION_CANDIDATE_CATALOG.md) · [Integration Docs Index](docs/INTEGRATION_DOCS_INDEX.md)
-- **Feature & state**: [Feature Index](docs/FEATURE_INDEX.md) (every feature → a test) · [System State](docs/SYSTEM_STATE.md) · [Backlog](docs/BACKLOG.md)
-- **Governance internals**: [Governance Index](docs/GOVERNANCE_INDEX.md) · [Meta Ledger](docs/META_LEDGER.md) (hash-chained) · [Shadow Genome](docs/SHADOW_GENOME.md) (lessons) · [Compliance mappings](docs/compliance/) · [Ecosystem gate adoption](docs/ecosystem/)
+- **Feature & state**: [Feature Index](docs/FEATURE_INDEX.md) (every feature → a test)
 - **Components**: [adapter/](adapter/README.md) · [connectors/](connectors/README.md) · [runtime/](runtime/README.md)
 
 ## Project Governance
@@ -211,9 +210,15 @@ live in [`docs/compliance/`](docs/compliance/) — control alignment, not certif
 - [Security Policy](SECURITY.md)
 - [Changelog](CHANGELOG.md)
 
-## Governed by the Bicameral Factory
+## Development & security
 
-This repository is part of the BicameralAI organization and is governed by the [Bicameral Factory](https://github.com/BicameralAI/bicameral-factory), the org's governance control plane. The factory aggregates each repo's declared governance facts (classification, visibility, required checks) into an org-wide governance dashboard. Governance is evidence-first: status is read from hard evidence such as CI runs, file presence, and branch protection, never inferred.
+This repository is developed under a controlled, reviewed process: every change lands
+through pull request with required review, and security and supply-chain checks
+(CodeQL, secret scanning, dependency review, OpenSSF Scorecard, SBOM) run in CI. The
+authority boundary for what these adapters may and may not do is a product contract,
+documented in [`GOVERNANCE.md`](GOVERNANCE.md) and [ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md).
+Contributor and development-process details live in [`CONTRIBUTING.md`](CONTRIBUTING.md);
+no access to any private development tooling is required to use these integrations.
 
 ## Trust & Compliance
 
