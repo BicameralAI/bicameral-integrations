@@ -20,9 +20,16 @@ named by ``--token-env`` (never from arguments, never logged).
 
     python scripts/real_gateway_delivery.py \
         --route local_directory/passive_import \
-        --endpoint https://<bot-host>/api/v1/external-ingest \
+        --endpoint <bot-external-ingest-endpoint-url> \
         --token-env BICAMERAL_GATEWAY_TOKEN \
         --receipt-out ingest/receipts/<route>-gateway-receipt.json
+
+BLOCKED ON PR #262 (do not treat as complete until it merges): exact Bot
+capability negotiation, the /api/v2/external-ingest route + contract
+fingerprint matching, a Bot-authored acceptance identity from the real
+response, and the closed gateway-receipt schema with fail-closed validation.
+This command performs the delivery and records what it can bind today; the
+resulting receipt is NOT yet the final #262-era gateway proof.
 """
 
 from __future__ import annotations
@@ -34,7 +41,6 @@ import os
 import subprocess  # nosec B404
 import sys
 from datetime import datetime, timezone
-from hashlib import sha256
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parents[1]
@@ -90,12 +96,11 @@ def main() -> int:
     try:
         sink.emit([emission])
         status = 201
-        # The current GatewaySink does not surface the response body; the
-        # Bot-side identity is the deterministic content hash of the envelope
-        # content, which the Bot computes identically (typed acceptance id).
-        bot_identity = "content_sha256:" + sha256(
-            str(envelope.get("content", "")).encode("utf-8")
-        ).hexdigest()
+        # A Bot acceptance identity must be BOT-AUTHORED from the real response
+        # body. The current GatewaySink does not surface it, and inventing one
+        # locally is prohibited; this stays empty until the accepted PR #262
+        # protocol lifecycle (capability negotiation + response surface) lands.
+        bot_identity = ""
     except GatewayEmissionError as exc:
         status = getattr(exc, "status", 0)
         error_reason = getattr(exc, "reason", "") or exc.__class__.__name__
@@ -117,6 +122,7 @@ def main() -> int:
         "http_status": status,
         "success": status == 201,
         "bot_evidence_identity": bot_identity,
+        "bot_identity_note": "empty until PR #262 exposes the Bot-authored response identity; never locally derived",
         "typed_failure_reason": error_reason,
         "cursor_outcome": str(cursor.verdict),
         "started_at": started_at,

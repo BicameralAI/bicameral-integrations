@@ -1,6 +1,6 @@
 {
   "acquisition": "operator-run local file read of CODE_OF_CONDUCT.md",
-  "captured_at": "2026-07-22T17:04:27Z",
+  "captured_at": "2026-07-22T18:03:15Z",
   "mode": "passive_import",
   "original_content_sha256": "sha256:3b36a0c8088c06b1a40208b3e7050df0da9312306eee229842d352c51fccc3bc",
   "original_retention": "raw bytes discarded after sanitization; the digest above is the only, irreversible representation",
@@ -15,7 +15,7 @@
     "ruleset_digest": "sha256:b5c6c583fb6c939a47f70f66c65a44a9c9dc4de291fe018a597cc03267bb9141",
     "ruleset_id": "fx-sec-001-plus-pii-v1"
   },
-  "sanitized_content_sha256": "sha256:a91a27ac94ff70812980755727f8ce9b0984e319f7ea2e82e1043717abf225dc",
+  "sanitized_content_sha256": "sha256:ad76d0810562d75cbf5fb47c2a47cc6f58934d84f2cf5a3eceea861f8376ce6f",
   "sanitized_payload_sha256": "sha256:71f5b20e6d6a9cfa2bbbd1502a7f8b279dcc8b30285449623b3528b4dc1822da",
   "source_license_or_retention_note": "MIT (this repository's own committed file); retention: sanitized recording only, original digest retained",
   "structural_fields_proof": {

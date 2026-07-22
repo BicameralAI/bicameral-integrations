@@ -40,7 +40,6 @@ from adapter.core.observations import Observation
 from adapter.core.pipeline import normalize
 from adapter.core.redaction_receipt import (
     RedactionFailure,
-    guarded_sanitize_observation,
     receipt_digest,
 )
 from connectors.github.connector import GitHubConnector
@@ -81,9 +80,14 @@ REASON_ACQUISITION_FAILED = "acquisition_failed"
 
 @dataclass
 class ConformanceReport:
+    """Component-scoped result. ``component_passed`` covers checkpoints 1-11
+    only; the gateway checkpoint carries its own ``gateway_state`` axis and a
+    report NEVER claims an overall pass while the gateway is unproven — there
+    is deliberately no aggregate ``passed`` field (GH #269 review item 4)."""
+
     connector: str
     mode: str
-    passed: bool = False
+    component_passed: bool = False
     stages_passed: list[str] = field(default_factory=list)
     failed_stage: str = ""
     expected_digest: str = ""
@@ -116,6 +120,29 @@ def _observation_artifact(observation: Observation) -> dict[str, Any]:
         "provider_event_id": observation.provider_event_id,
         "mode": str(observation.mode),
         "metadata": observation.metadata,
+    }
+
+
+def _sanitized_observation_artifact(emission: AdapterEmission) -> dict[str, Any]:
+    """Post-boundary Observation view reconstructed from the production
+    emission (the harness holds no separate sanitized Observation because the
+    only redaction pass is the one inside normalize())."""
+    evidence = emission.evidence[0]
+    metadata = {
+        key: value
+        for key, value in emission.metadata.items()
+        if key != "redaction_receipt"
+    }
+    return {
+        "source_id": evidence.source_ref.source_id,
+        "ref": evidence.source_ref.ref,
+        "url": evidence.source_ref.url,
+        "kind": evidence.source_ref.kind,
+        "title": emission.title,
+        "excerpt": evidence.excerpt,
+        "author": evidence.author,
+        "timestamp": evidence.timestamp,
+        "metadata": metadata,
     }
 
 
@@ -153,41 +180,105 @@ def _emission_artifact(emission: AdapterEmission) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
-def _acquire_github_webhook(payload: dict[str, Any], meta: dict[str, Any]) -> tuple[dict[str, Any], Observation]:
+REQUIRED_RECEIPT_FIELDS = (
+    "original_payload_sha256",
+    "provider_headers",
+    "provider_verification",
+    "replay_window",
+    "receiver",
+    "captured_at",
+    "source_scope",
+)
+
+
+def _acquisition_receipt(meta: dict[str, Any], *, require_verified: bool) -> dict[str, Any]:
+    """Validate the durable original-acquisition receipt recorded by the REAL
+    receiver at capture time. This receipt — not a locally re-signed sanitized
+    payload and not a self-declared boolean — is the only admissible evidence
+    that the provider authenticated the original delivery (GH #269 review
+    items 5 and 7)."""
+    receipt = meta.get("acquisition_receipt")
+    if not isinstance(receipt, dict):
+        raise ValueError("acquisition receipt missing: original provider authentication unproven")
+    missing = [field for field in REQUIRED_RECEIPT_FIELDS if field not in receipt]
+    if missing:
+        raise ValueError(f"acquisition receipt incomplete: missing {missing}")
+    verification = receipt.get("provider_verification")
+    if not isinstance(verification, dict) or verification.get("over") != "original_bytes":
+        raise ValueError("acquisition receipt verification must be recorded over the original bytes")
+    result = verification.get("result")
+    if require_verified and result != "verified":
+        raise ValueError(f"acquisition receipt verification result is {result!r}, not verified")
+    if not require_verified and result not in ("verified", "not_applicable"):
+        raise ValueError(f"acquisition receipt verification result invalid: {result!r}")
+    digest = str(receipt.get("original_payload_sha256", ""))
+    if not digest.startswith("sha256:"):
+        raise ValueError("acquisition receipt must carry the original payload sha256")
+    return receipt
+
+
+def _verification_artifact(receipt: dict[str, Any], extra: dict[str, Any] | None = None) -> dict[str, Any]:
+    verification = dict(receipt["provider_verification"])
+    artifact: dict[str, Any] = {
+        "acquisition": {
+            "original_payload_sha256": receipt["original_payload_sha256"],
+            "method": verification.get("method", ""),
+            "result": verification.get("result", ""),
+            "over": verification.get("over", ""),
+            "replay_window": receipt["replay_window"],
+            "receiver": receipt["receiver"],
+            "captured_at": receipt["captured_at"],
+            "source_scope": receipt["source_scope"],
+        },
+    }
+    if extra:
+        artifact.update(extra)
+    return artifact
+
+
+def _replay_check_github(payload: dict[str, Any], meta: dict[str, Any]) -> tuple[Observation, str]:
+    """Sanitized-replay signature check: TEST-REPLAY EVIDENCE ONLY. It proves
+    the connector verify/parse code runs over the sanitized bytes; it is
+    never provider authentication (that lives in the acquisition receipt)."""
     body = json.dumps(payload, sort_keys=True).encode("utf-8")
-    secret = str(meta.get("resign_secret", ""))
+    secret = str(meta.get("replay_secret", ""))
     headers = {
-        "X-Hub-Signature-256": str(meta.get("resign_signature", "")),
+        "X-Hub-Signature-256": str(meta.get("replay_signature", "")),
         "X-GitHub-Delivery": str(meta.get("delivery_id", "")),
     }
     connector = GitHubConnector(secret=secret)
     if not secret or not connector.verify(headers=headers, body=body):
-        raise ValueError("github webhook signature verification failed over capture bytes")
+        raise ValueError("sanitized test-replay signature did not verify")
     observations = connector.normalize_event(headers=headers, body=body)
     if not observations:
-        raise ValueError("github webhook capture did not normalize to an observation")
-    verification = {"method": "hmac_sha256_x_hub_signature_256", "verified": True, "scope": "signed webhook delivery"}
-    return verification, observations[0]
+        raise ValueError("github capture did not normalize to an observation")
+    return observations[0], "passed (test-replay evidence only; not provider authentication)"
+
+
+def _acquire_github_webhook(payload: dict[str, Any], meta: dict[str, Any]) -> tuple[dict[str, Any], Observation]:
+    receipt = _acquisition_receipt(meta, require_verified=True)
+    observation, replay = _replay_check_github(payload, meta)
+    return _verification_artifact(receipt, {"sanitized_replay_check": replay}), observation
 
 
 def _acquire_linear_webhook(payload: dict[str, Any], meta: dict[str, Any]) -> tuple[dict[str, Any], Observation]:
+    receipt = _acquisition_receipt(meta, require_verified=True)
     body = json.dumps(payload, sort_keys=True).encode("utf-8")
-    secret = str(meta.get("resign_secret", ""))
-    headers = {"Linear-Signature": str(meta.get("resign_signature", ""))}
-    # Deterministic clock pinned to the capture's webhookTimestamp so the 60s
-    # replay window is exercised against capture-time, not wall-clock.
+    secret = str(meta.get("replay_secret", ""))
+    headers = {"Linear-Signature": str(meta.get("replay_signature", ""))}
     clock_ms = float(payload.get("webhookTimestamp", 0)) / 1000.0
     connector = LinearConnector(secret=secret, clock=lambda: clock_ms)
     if not secret or not connector.verify(headers=headers, body=body):
-        raise ValueError("linear webhook signature/timestamp verification failed over capture bytes")
+        raise ValueError("sanitized test-replay signature/window did not verify")
     observations = connector.normalize_event(headers=headers, body=body)
     if not observations:
         raise ValueError("linear webhook capture did not normalize to an observation")
-    verification = {"method": "hmac_sha256_linear_signature_60s_window", "verified": True, "scope": "signed webhook delivery"}
-    return verification, observations[0]
+    replay = "passed (test-replay evidence only; not provider authentication)"
+    return _verification_artifact(receipt, {"sanitized_replay_check": replay}), observations[0]
 
 
 def _acquire_linear_graphql(payload: dict[str, Any], meta: dict[str, Any]) -> tuple[dict[str, Any], Observation]:
+    receipt = _acquisition_receipt(meta, require_verified=True)
     if "errors" in payload:
         raise ValueError("linear graphql capture carries an errors array; fail-closed")
     nodes = payload.get("data", {}).get("issues", {}).get("nodes", [])
@@ -196,32 +287,32 @@ def _acquire_linear_graphql(payload: dict[str, Any], meta: dict[str, Any]) -> tu
     observation = parse_issue_node(nodes[0])
     if observation is None:
         raise ValueError("linear issue node did not parse")
-    verification = {
-        "method": "authorization_api_key_header",
-        "verified": bool(meta.get("authenticated", False)),
-        "scope": "workspace-scoped GraphQL viewer",
-    }
-    return verification, observation
+    return _verification_artifact(receipt), observation
 
 
 def _acquire_local_directory(payload: dict[str, Any], meta: dict[str, Any]) -> tuple[dict[str, Any], Observation]:
-    scan_root = str(meta.get("scan_root", ""))
-    path = str(payload.get("path", ""))
-    if not scan_root or not path.startswith(scan_root):
-        raise ValueError("local_directory capture path escapes the recorded scan root")
+    receipt = _acquisition_receipt(meta, require_verified=False)
+    scope = str(receipt["source_scope"])
+    scan_root = (_REPO / scope).resolve()
+    candidate = (_REPO / str(payload.get("path", ""))).resolve()
+    # Canonical resolved-path containment: sibling-prefix roots like
+    # "<root>-evil" can never pass relative_to (GH #269 review item 6).
+    try:
+        candidate.relative_to(scan_root)
+    except ValueError as exc:
+        raise ValueError("local_directory capture path escapes the recorded scan root") from exc
     observation = parse_file(payload)
-    verification = {"method": "operator_local_scan", "verified": True, "scope": f"scan_root={scan_root}"}
-    return verification, observation
+    return _verification_artifact(receipt), observation
 
 
 def _acquire_google_drive(payload: dict[str, Any], meta: dict[str, Any]) -> tuple[dict[str, Any], Observation]:
-    source_url = str(meta.get("source_url", ""))
-    document_id = parse_gdrive_url(source_url) if source_url else str(payload.get("documentId", ""))
+    receipt = _acquisition_receipt(meta, require_verified=True)
+    source_url = str(receipt["source_scope"])
+    document_id = parse_gdrive_url(source_url) if source_url.startswith("http") else str(payload.get("documentId", ""))
     if not document_id or payload.get("documentId") != document_id:
         raise ValueError("google_drive capture documentId does not match the requested resource scope")
     observation = parse_document(payload)
-    verification = {"method": "oauth_bearer_documents_get", "verified": bool(meta.get("authenticated", False)), "scope": f"document:{document_id}"}
-    return verification, observation
+    return _verification_artifact(receipt), observation
 
 
 ACQUIRERS: dict[tuple[str, str], Callable[[dict[str, Any], dict[str, Any]], tuple[dict[str, Any], Observation]]] = {
@@ -268,21 +359,19 @@ def collect_artifacts(entry: dict[str, Any]) -> dict[str, Any]:
 
     verification, observation = ACQUIRERS[(entry["connector_id"], entry["mode"])](payload, meta)
 
-    # 3-4: the mandatory redaction boundary with the full typed-failure
-    # envelope; the SAME engine runs again inside normalize() (idempotent).
-    sanitized, receipt = guarded_sanitize_observation(observation)
+    # 3-9: ONE production seam. normalize() runs the guarded redaction
+    # boundary (typed engine/ruleset/size/timeout/receipt failures), the
+    # universal heuristics, and contract validation — the harness has no
+    # separate preflight beside the runtime path (GH #269 review item 2).
+    [emission] = normalize([observation], adapter_version="1.0.0")
+    receipt = dict(emission.metadata["redaction_receipt"])
     receipt_artifact = {
         # completed_at is the excluded digest-domain timestamp; goldens stay
         # time-free by omitting it (receipt_digest ignores it by contract).
         "receipt": {k: v for k, v in receipt.items() if k != "completed_at"},
         "receipt_digest": receipt_digest(receipt),
     }
-
-    integration_advisories = list(sanitized.metadata.get("advisory_signals", []))
-
-    # 7-9: one universal seam — normalize() redacts, normalizes, runs the
-    # fail-open universal heuristics, and contract-validates.
-    [emission] = normalize([observation], adapter_version="1.0.0")
+    integration_advisories = list(emission.metadata.get("advisory_signals", []))
     emission.metadata["redaction_receipt"] = dict(
         emission.metadata["redaction_receipt"], completed_at="1970-01-01T00:00:00Z"
     )
@@ -303,7 +392,7 @@ def collect_artifacts(entry: dict[str, Any]) -> dict[str, Any]:
         "parsed_facts": _observation_artifact(observation),
         "redaction_receipt": receipt_artifact,
         "integration_advisories": integration_advisories,
-        "observation": _observation_artifact(sanitized),
+        "observation": _sanitized_observation_artifact(emission),
         "universal_advisories": universal_artifact,
         "adapter_emission": _emission_artifact(emission),
         "external_ingest_envelope": envelope,
@@ -365,5 +454,5 @@ def run_entry(entry: dict[str, Any], *, sink: Any = None) -> ConformanceReport:
         report.stages_passed.append("gateway_sink")
         report.gateway_state = "delivered"
 
-    report.passed = report.failed_stage == ""
+    report.component_passed = report.failed_stage == ""
     return report

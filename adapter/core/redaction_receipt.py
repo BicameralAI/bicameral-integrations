@@ -11,6 +11,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeout
 from dataclasses import replace
 from datetime import datetime, timezone
 
@@ -232,6 +234,9 @@ def sanitize_observation(
 # ---------------------------------------------------------------------------
 
 _GATE_MAX_BYTES = 1_048_576  # 1 MiB serialized-observation budget
+# One shared worker pool for bounded-timeout sanitization; sized small because
+# sanitization is CPU-light and normalize() awaits each result synchronously.
+_GATE_EXECUTOR = ThreadPoolExecutor(max_workers=4, thread_name_prefix="redaction-gate")
 _GATE_BUDGET_SECONDS = 5.0
 
 
@@ -260,8 +265,6 @@ def guarded_sanitize_observation(
       cannot safely transform surfaces as ``sensitive_identity_field`` /
       ``sensitive_metadata_key`` (prohibited content, rejected).
     """
-    import time as _time
-
     if engine is None:
         raise RedactionFailure("engine_unavailable")
     if not RULESET_ID or not RULESET_DIGEST.startswith("sha256:"):
@@ -281,10 +284,18 @@ def guarded_sanitize_observation(
     if len(serialized.encode("utf-8")) > max_bytes:
         raise RedactionFailure("oversized_payload")
 
-    started = _time.monotonic()
-    sanitized, receipt = sanitize_observation(observation, completed_at=completed_at)
-    if _time.monotonic() - started > budget_seconds:
-        raise RedactionFailure("timeout")
+    # Bounded enforcement: the sanitizer runs on a worker thread and the
+    # caller waits at most budget_seconds -- the budget is enforced BEFORE an
+    # unbounded call could return, not detected afterwards. (The worker may
+    # finish in the background; its result is discarded on timeout.)
+    future = _GATE_EXECUTOR.submit(
+        sanitize_observation, observation, completed_at=completed_at
+    )
+    try:
+        sanitized, receipt = future.result(timeout=budget_seconds)
+    except FuturesTimeout:
+        future.cancel()
+        raise RedactionFailure("timeout") from None
 
     try:
         json.dumps(receipt, sort_keys=True, separators=(",", ":"))

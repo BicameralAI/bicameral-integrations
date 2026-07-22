@@ -69,7 +69,7 @@ def _category_counts(before: str, after: str) -> dict[str, int]:
     return counts
 
 
-def _structural_proof(connector: str, raw: dict[str, Any], sanitized: dict[str, Any]) -> dict[str, Any]:
+def _structural_proof(connector: str, mode: str, raw: dict[str, Any], sanitized: dict[str, Any]) -> dict[str, Any]:
     """Prove sanitization preserved parsing, identity, dedup, timestamp, and
     version fields by parsing BOTH payloads and comparing structural facts."""
     if connector == "local_directory":
@@ -90,6 +90,23 @@ def _structural_proof(connector: str, raw: dict[str, Any], sanitized: dict[str, 
             "ref": (a.source_ref.ref, b.source_ref.ref),
             "timestamp": (a.timestamp, b.timestamp),
             "mode": (str(a.mode), str(b.mode)),
+        }
+    elif connector == "linear" and mode == "graphql_poll":
+        from connectors.linear.connector import parse_issue_node
+
+        def _first_node(payload: dict) -> dict:
+            nodes = payload.get("data", {}).get("issues", {}).get("nodes", [])
+            if not isinstance(nodes, list) or not nodes:
+                raise SystemExit("linear graphql payload has no data.issues.nodes[]; capture rejected")
+            return nodes[0]
+
+        node_a, node_b = parse_issue_node(_first_node(raw)), parse_issue_node(_first_node(sanitized))
+        if node_a is None or node_b is None:
+            raise SystemExit("linear graphql node did not parse; capture rejected")
+        fields = {
+            "ref": (node_a.source_ref.ref, node_b.source_ref.ref),
+            "timestamp": (node_a.timestamp, node_b.timestamp),
+            "mode": (str(node_a.mode), str(node_b.mode)),
         }
     elif connector == "linear":
         from connectors.linear.connector import parse_event
@@ -131,6 +148,16 @@ def main() -> int:
     parser.add_argument("--license-note", required=True)
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--capture-meta", default="{}", help="JSON object merged into capture_meta")
+    parser.add_argument(
+        "--acquisition-receipt",
+        help=(
+            "Path to the durable original-acquisition receipt produced by the REAL "
+            "receiver/poller at capture time (original payload digest, provider "
+            "verification over original bytes, replay-window outcome, receiver "
+            "identity, source scope). Required for provider modes; local_directory "
+            "synthesizes its own local-source receipt."
+        ),
+    )
     args = parser.parse_args()
 
     if args.acquire_local_file:
@@ -144,17 +171,49 @@ def main() -> int:
             "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
         }
         acquisition = f"operator-run local file read of {source.as_posix()}"
+        local_receipt = True
     elif args.input:
         raw = json.loads(Path(args.input).read_text(encoding="utf-8"))
         acquisition = f"operator-supplied raw capture {Path(args.input).name} (obtained with provider credentials)"
+        local_receipt = False
     else:
         raise SystemExit("supply --input or --acquire-local-file")
 
     raw_bytes = json.dumps(raw, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    original_digest = "sha256:" + sha256(raw_bytes).hexdigest()
+
+    if local_receipt:
+        acquisition_receipt: dict[str, Any] = {
+            "original_payload_sha256": original_digest,
+            "provider_headers": {},
+            "provider_verification": {
+                "method": "operator_local_scan",
+                "result": "not_applicable",
+                "over": "original_bytes",
+            },
+            "replay_window": {"result": "not_applicable"},
+            "receiver": {"identity": "scripts/capture_sanitize.py", "version": "1.1.0"},
+            "captured_at": "",  # filled below with the capture timestamp
+            "source_scope": args.scan_root or ".",
+        }
+    else:
+        if not args.acquisition_receipt:
+            raise SystemExit(
+                "provider captures require --acquisition-receipt from the real "
+                "receiver; a locally re-signed sanitized payload is never "
+                "original provider authentication"
+            )
+        acquisition_receipt = json.loads(Path(args.acquisition_receipt).read_text(encoding="utf-8"))
+        recorded = str(acquisition_receipt.get("original_payload_sha256", ""))
+        if recorded != original_digest:
+            raise SystemExit(
+                "acquisition receipt original_payload_sha256 does not match the "
+                "supplied raw payload; receipt and capture are not the same delivery"
+            )
     sanitized = _sanitize(raw)
     sanitized_payload_bytes = json.dumps(sanitized, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
-    proof = _structural_proof(args.connector, raw, sanitized)
+    proof = _structural_proof(args.connector, args.mode, raw, sanitized)
     if not proof["preserved"]:
         raise SystemExit("sanitization changed structural fields; capture rejected (fail closed)")
 
@@ -165,7 +224,13 @@ def main() -> int:
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    capture_meta = {"acquisition": acquisition, "captured_at": captured_at}
+    if not acquisition_receipt.get("captured_at"):
+        acquisition_receipt["captured_at"] = captured_at
+    capture_meta = {
+        "acquisition": acquisition,
+        "captured_at": captured_at,
+        "acquisition_receipt": acquisition_receipt,
+    }
     capture_meta.update(json.loads(args.capture_meta))
     if args.scan_root:
         capture_meta["scan_root"] = args.scan_root
@@ -179,7 +244,7 @@ def main() -> int:
         "captured_at": captured_at,
         "provider_schema_version": args.provider_schema_version,
         "acquisition": acquisition,
-        "original_content_sha256": "sha256:" + sha256(raw_bytes).hexdigest(),
+        "original_content_sha256": original_digest,
         "original_retention": "raw bytes discarded after sanitization; the digest above is the only, irreversible representation",
         "sanitized_content_sha256": "sha256:"
         + sha256(capture_path.read_bytes().replace(b"\r\n", b"\n")).hexdigest(),

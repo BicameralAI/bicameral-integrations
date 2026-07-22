@@ -1,5 +1,17 @@
 {
-  "method": "operator_local_scan",
-  "scope": "scan_root=CODE_OF_CONDUCT",
-  "verified": true
+  "acquisition": {
+    "captured_at": "2026-07-22T18:03:15Z",
+    "method": "operator_local_scan",
+    "original_payload_sha256": "sha256:3b36a0c8088c06b1a40208b3e7050df0da9312306eee229842d352c51fccc3bc",
+    "over": "original_bytes",
+    "receiver": {
+      "identity": "scripts/capture_sanitize.py",
+      "version": "1.1.0"
+    },
+    "replay_window": {
+      "result": "not_applicable"
+    },
+    "result": "not_applicable",
+    "source_scope": "."
+  }
 }

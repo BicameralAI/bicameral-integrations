@@ -47,11 +47,13 @@ def test_every_route_runs_the_universal_harness(route: str) -> None:
     elif state["real_capture"] != "recorded":
         # Missing captures skip with a TYPED reason; never a fake pass.
         assert report.reason_code == REASON_CAPTURE_MISSING
-        assert not report.passed or not report.stages_passed
+        assert not report.component_passed and not report.stages_passed
     else:
-        assert report.passed, (report.failed_stage, report.reason_code, report.observed_digest)
-        # All component checkpoints ran; the real-gateway checkpoint stays
-        # honestly unproven without a live Bot delivery.
+        # Component-scoped honesty: checkpoints 1-11 pass, and the result
+        # NEVER claims an aggregate pass while the gateway is unproven —
+        # ConformanceReport deliberately has no overall `passed` field.
+        assert report.component_passed, (report.failed_stage, report.reason_code, report.observed_digest)
+        assert not hasattr(report, "passed")
         assert set(STAGES) - {"gateway_sink"} <= set(report.stages_passed)
         assert report.reason_code == REASON_GATEWAY_UNPROVEN
         assert report.gateway_state == "unproven"
@@ -80,7 +82,7 @@ def test_golden_mismatch_reports_stage_and_both_digests(tmp_path: Path) -> None:
     entry["expected"]["observation"] = str(tampered)
 
     report = run_entry(entry)
-    assert not report.passed
+    assert not report.component_passed
     assert report.failed_stage == "observation"
     assert report.reason_code == REASON_GOLDEN_MISMATCH
     assert report.expected_digest.startswith("sha256:")
@@ -93,6 +95,100 @@ def test_gateway_checkpoint_requires_a_real_sink() -> None:
     report = run_entry(_ENTRIES["local_directory/passive_import"], sink=None)
     assert "gateway_sink" not in report.stages_passed
     assert report.gateway_state == "unproven"
+
+
+def test_acquisition_receipt_is_required() -> None:
+    """A capture without the receiver-authored acquisition receipt fails the
+    acquisition checkpoint: original provider authentication is unproven."""
+    entry = json.loads(json.dumps(_ENTRIES["local_directory/passive_import"]))
+    capture = json.loads((_REPO / entry["real_capture"]["path"]).read_text(encoding="utf-8"))
+    from runtime.ingest_conformance_harness import ACQUIRERS
+
+    meta = dict(capture["capture_meta"])
+    meta.pop("acquisition_receipt")
+    with pytest.raises(ValueError, match="acquisition receipt missing"):
+        ACQUIRERS[("local_directory", "passive_import")](capture["payload"], meta)
+
+
+def test_self_declared_authentication_is_rejected() -> None:
+    """capture_meta.authenticated=true (or any self-declared boolean) never
+    counts: only a receipt with provider verification over ORIGINAL bytes
+    satisfies acquisition for provider modes."""
+    from runtime.ingest_conformance_harness import ACQUIRERS
+
+    payload = {"documentId": "d" * 30, "title": "x", "body": {"content": []}}
+    meta = {"authenticated": True}
+    with pytest.raises(ValueError, match="acquisition receipt missing"):
+        ACQUIRERS[("google_drive", "document_fetch")](payload, meta)
+
+
+def test_resigned_sanitized_payload_never_reports_provider_authentication() -> None:
+    """A locally re-signed sanitized payload without an acquisition receipt is
+    rejected outright; with a receipt, the replay check is labeled test-replay
+    evidence, distinct from provider authentication."""
+    import hashlib
+    import hmac
+
+    from runtime.ingest_conformance_harness import ACQUIRERS
+
+    payload = {
+        "action": "closed",
+        "number": 7,
+        "pull_request": {
+            "base": {"repo": {"full_name": "acme/app"}},
+            "number": 7,
+            "title": "fix",
+            "body": "merged the fix",
+            "html_url": "https://github.com/acme/app/pull/7",
+            "user": {"login": "carol"},
+            "merged_at": "2026-07-22T00:00:00Z",
+        },
+    }
+    body = json.dumps(payload, sort_keys=True).encode("utf-8")
+    secret = "test-replay-secret"
+    signature = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    meta_no_receipt = {
+        "replay_secret": secret,
+        "replay_signature": signature,
+        "delivery_id": "d-1",
+    }
+    with pytest.raises(ValueError, match="acquisition receipt missing"):
+        ACQUIRERS[("github", "webhook")](payload, meta_no_receipt)
+
+    meta = dict(
+        meta_no_receipt,
+        acquisition_receipt={
+            "original_payload_sha256": "sha256:" + "a" * 64,
+            "provider_headers": {"X-GitHub-Delivery": "d-1"},
+            "provider_verification": {
+                "method": "hmac_sha256_x_hub_signature_256",
+                "result": "verified",
+                "over": "original_bytes",
+            },
+            "replay_window": {"result": "not_applicable"},
+            "receiver": {"identity": "test-receiver", "version": "0"},
+            "captured_at": "2026-07-22T00:00:00Z",
+            "source_scope": "repo:acme/app webhook",
+        },
+    )
+    verification, observation = ACQUIRERS[("github", "webhook")](payload, meta)
+    assert observation.excerpt
+    assert "test-replay evidence only" in verification["sanitized_replay_check"]
+    assert verification["acquisition"]["result"] == "verified"
+
+
+def test_sibling_prefix_scan_root_is_rejected() -> None:
+    """Canonical containment: a path under `<root>-evil` must not satisfy a
+    `<root>` scope (string-prefix checks would wrongly accept it)."""
+    from runtime.ingest_conformance_harness import ACQUIRERS
+
+    entry = _ENTRIES["local_directory/passive_import"]
+    capture = json.loads((_REPO / entry["real_capture"]["path"]).read_text(encoding="utf-8"))
+    meta = json.loads(json.dumps(capture["capture_meta"]))
+    meta["acquisition_receipt"]["source_scope"] = "ingest"
+    payload = dict(capture["payload"], path="ingest-evil/file.md")
+    with pytest.raises(ValueError, match="escapes the recorded scan root"):
+        ACQUIRERS[("local_directory", "passive_import")](payload, meta)
 
 
 class _ExplodingSink:
