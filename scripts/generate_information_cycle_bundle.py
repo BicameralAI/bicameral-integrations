@@ -25,7 +25,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
+# Fixed-argv `git rev-parse` only; no shell, no untrusted input.
+import subprocess  # nosec B404
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -441,7 +442,7 @@ def build_bundle(route: str, out_dir: Path) -> dict[str, Any]:
         "evidence_class": "component",
         "integrations": {
             "repository": "BicameralAI/bicameral-integrations",
-            "commit": subprocess.run(
+            "commit": subprocess.run(  # nosec B603 B607
                 ["git", "-C", str(_REPO), "rev-parse", "HEAD"],
                 capture_output=True, text=True, check=True,
             ).stdout.strip(),
