@@ -178,7 +178,7 @@
         "path": "ingest/captures/local_directory-passive_import/capture.json",
         "captured_at": "2026-07-22T17:04:27Z",
         "source_version": "filesystem/utf-8-text",
-        "sanitized_digest": "sha256:7627df93f40264159ac7cf7d71012a8a74255bc498dfb203fd91ac3fe319f169",
+        "sanitized_digest": "sha256:a91a27ac94ff70812980755727f8ce9b0984e319f7ea2e82e1043717abf225dc",
         "sanitization_ledger": "ingest/captures/local_directory-passive_import/sanitization-ledger.json",
         "source_license_or_retention_note": "MIT (this repository's own committed file); retention: sanitized recording only, original digest retained"
       },

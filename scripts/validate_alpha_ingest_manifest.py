@@ -72,7 +72,9 @@ def semantic_errors(manifest: dict) -> list[str]:
             ledger = _REPO / capture["sanitization_ledger"]
             if not path.is_file():
                 errs.append(f"{label}: recorded capture path missing: {capture['path']}")
-            elif capture["sanitized_digest"] != "sha256:" + sha256(path.read_bytes()).hexdigest():
+            elif capture["sanitized_digest"] != "sha256:" + sha256(
+                path.read_bytes().replace(b"\r\n", b"\n")  # line-ending-proof
+            ).hexdigest():
                 errs.append(f"{label}: sanitized_digest does not match the committed capture bytes")
             if not ledger.is_file():
                 errs.append(f"{label}: sanitization ledger missing: {capture['sanitization_ledger']}")

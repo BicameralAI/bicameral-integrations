@@ -1,5 +1,7 @@
 {
   "_comment": "Maintainer-curated allowlist for the contributor reputation check. Entries here only downgrade the automated risk flag to LOW; they never bypass code review or branch protection. Add a username to 'users' or an org login to 'orgs' (case-insensitive) when a known-good contributor is repeatedly mis-flagged by the heuristic. Each addition should be made by a maintainer in a reviewable commit with rationale in the PR description. Ships empty by design.",
-  "users": [],
+  "users": [
+    "Knapp-Kevin"
+  ],
   "orgs": []
 }

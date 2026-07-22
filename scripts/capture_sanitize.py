@@ -181,7 +181,8 @@ def main() -> int:
         "acquisition": acquisition,
         "original_content_sha256": "sha256:" + sha256(raw_bytes).hexdigest(),
         "original_retention": "raw bytes discarded after sanitization; the digest above is the only, irreversible representation",
-        "sanitized_content_sha256": "sha256:" + sha256(capture_path.read_bytes()).hexdigest(),
+        "sanitized_content_sha256": "sha256:"
+        + sha256(capture_path.read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
         "sanitized_payload_sha256": "sha256:" + sha256(sanitized_payload_bytes).hexdigest(),
         "redaction": {
             "engine": ENGINE,
