@@ -15,8 +15,13 @@ class Observation:
     """Provider-neutral raw capture a connector produces before normalization.
 
     Connectors own provider-specific parsing and yield Observations; the
-    universal adapter (`pipeline.normalize`) is the single normalizer that turns
-    any Observation into a reviewable `AdapterEmission` (ADR-0004 seam).
+    universal adapter (``pipeline.normalize``) is the single normalizer that turns
+    any Observation into a reviewable ``AdapterEmission`` (ADR-0004 seam).
+
+    ``advisory_signals`` may be supplied inside ``metadata`` using the shared
+    fail-open heuristic schema. Evidence identity and evidence metadata are
+    explicit fields so the universal normalizer can preserve recorded provenance
+    without provider-specific emission construction.
     """
 
     source_ref: SourceRef
@@ -26,4 +31,7 @@ class Observation:
     author: str = ""
     timestamp: str = ""
     provider_event_id: str = ""
+    provider_resource_id: str = ""
+    evidence_id: str = ""
+    evidence_metadata: dict[str, Any] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)

@@ -1,0 +1,46 @@
+{
+  "action": "created",
+  "comment": {
+    "body": "Decision: keep ingress heuristics fail-open; preserve evidence and rank downstream.",
+    "created_at": "2026-07-17T05:11:00Z",
+    "html_url": "https://github.com/BicameralAI/bicameral-integrations/issues/256#issuecomment-24681013",
+    "id": 24681013,
+    "node_id": "IC_kwDORecordedBot",
+    "updated_at": "2026-07-17T05:11:00Z",
+    "user": {
+      "id": 86420,
+      "login": "bicameral-ingest[bot]",
+      "type": "Bot"
+    }
+  },
+  "installation": {
+    "id": 13579
+  },
+  "issue": {
+    "body": "GitHub issue discussions should enter Bicameral as screened, replay-safe evidence.",
+    "created_at": "2026-07-17T04:57:27Z",
+    "html_url": "https://github.com/BicameralAI/bicameral-integrations/issues/256",
+    "id": 24681012,
+    "node_id": "I_kwDORecorded",
+    "number": 256,
+    "state": "open",
+    "title": "Implement incremental GitHub issue ingest",
+    "updated_at": "2026-07-17T05:10:00Z",
+    "user": {
+      "id": 205245245,
+      "login": "Knapp-Kevin",
+      "type": "User"
+    }
+  },
+  "repository": {
+    "full_name": "BicameralAI/bicameral-integrations",
+    "html_url": "https://github.com/BicameralAI/bicameral-integrations",
+    "id": 987654321,
+    "node_id": "R_kgDOExample"
+  },
+  "sender": {
+    "id": 86420,
+    "login": "bicameral-ingest[bot]",
+    "type": "Bot"
+  }
+}
