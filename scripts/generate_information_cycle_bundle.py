@@ -48,7 +48,11 @@ from validate_information_cycle_bundle import (  # noqa: E402
     aggregate_digest,
     bundle_id,
     file_digest,
+    git_blob_digest,
+    stage_record_digest,
+    value_digest,
 )
+from validate_information_cycle_bundle import _EMAIL_RE  # noqa: E402
 
 _MANIFEST = _REPO / "ingest" / "alpha-ingest-manifest.json"
 
@@ -71,7 +75,7 @@ def _out(artifacts: list[dict[str, Any]]) -> dict[str, Any]:
     return {"artifacts": artifacts, "aggregate_digest": aggregate_digest(artifacts)}
 
 
-def build_bundle(route: str, out_dir: Path) -> dict[str, Any]:
+def build_bundle(route: str, out_dir: Path, *, reviewed_commit: str | None = None) -> dict[str, Any]:
     connector, mode = route.split("/", 1)
     manifest = json.loads(_MANIFEST.read_text(encoding="utf-8"))
     entry = next(
@@ -164,17 +168,21 @@ def build_bundle(route: str, out_dir: Path) -> dict[str, Any]:
     md = "text/markdown"
     stage_defs: list[dict[str, Any]] = []
 
+    producer_of: dict[str, tuple[str, str]] = {}  # artifact path -> (stage_id, aggregate)
+
     def stage(
         stage_id: str,
         *,
         status: str = "passed",
         evidence_class: str = "component",
+        required_evidence_class: str | None = None,
         inp: list[dict[str, Any]] | None = None,
         transformation: dict[str, Any] | None = None,
         output: list[dict[str, Any]] | None = None,
         authority: dict[str, Any] | None = None,
         unproven: dict[str, Any] | None = None,
         warnings: list[str] | None = None,
+        extra_depends: list[dict[str, Any]] | None = None,
     ) -> None:
         record: dict[str, Any] = {
             "stage_id": stage_id,
@@ -184,12 +192,30 @@ def build_bundle(route: str, out_dir: Path) -> dict[str, Any]:
             "authority": authority
             or _authority("integrations", ["evidence artifacts"], ["candidates", "Decisions", "canonical Product state"]),
         }
+        if required_evidence_class is not None:
+            record["required_evidence_class"] = required_evidence_class
         if inp is not None:
             record["input"] = _out(inp)
+            # Transformation-output lineage: cite each input artifact's actual
+            # producing stage (never an output-less stage).
+            depends: dict[str, str] = {}
+            for artifact in inp:
+                produced = producer_of.get(artifact["path"])
+                if produced is not None and produced[0] != stage_id:
+                    depends[produced[0]] = produced[1]
+            if depends:
+                record["depends_on_outputs"] = [
+                    {"stage_id": sid, "output_digest": digest}
+                    for sid, digest in sorted(depends.items())
+                ]
+        if extra_depends:
+            record.setdefault("depends_on_outputs", []).extend(extra_depends)
         if transformation is not None:
             record["transformation"] = transformation
         if output is not None:
             record["output"] = _out(output)
+            for artifact in output:
+                producer_of[artifact["path"]] = (stage_id, record["output"]["aggregate_digest"])
         if unproven is not None:
             record["unproven"] = unproven
         if warnings:
@@ -377,11 +403,30 @@ def build_bundle(route: str, out_dir: Path) -> dict[str, Any]:
         output=[_artifact(golden["delivery_or_cursor_receipt"])],
     )
 
-    def unproven_stage(stage_id: str, evidence_class: str, receipt_type: str, authority_name: str, dependency: str, reason: str) -> None:
+    envelope_dep = {
+        "stage_id": "external_ingest_envelope",
+        "output_digest": producer_of[golden["external_ingest_envelope"]][1],
+    }
+    prior_unproven: list[str] = []
+
+    def unproven_stage(stage_id: str, required_class: str, receipt_type: str, authority_name: str, dependency: str, reason: str) -> None:
+        # Lineage honesty: an unproven stage depends on the last ACTUAL
+        # output-producing stage plus its missing immediate prerequisite(s);
+        # an output-less stage is never cited as having emitted a digest.
+        extra: list[dict[str, Any]] = [dict(envelope_dep)]
+        if prior_unproven:
+            extra.append(
+                {
+                    "stage_id": prior_unproven[-1],
+                    "required_output": "the receipt/output this prerequisite stage must first produce",
+                    "status": "missing",
+                }
+            )
         stage(
             stage_id,
             status="unproven",
-            evidence_class=evidence_class,
+            evidence_class="none",
+            required_evidence_class=required_class,
             authority=_authority(authority_name, [], ["evidence fabrication by Integrations"]),
             unproven={
                 "required_receipt_type": receipt_type,
@@ -389,7 +434,9 @@ def build_bundle(route: str, out_dir: Path) -> dict[str, Any]:
                 "implementation_dependency": dependency,
                 "reason": reason,
             },
+            extra_depends=extra,
         )
+        prior_unproven.append(stage_id)
 
     unproven_stage(
         "gateway_negotiation", "observed_live",
@@ -434,6 +481,58 @@ def build_bundle(route: str, out_dir: Path) -> dict[str, Any]:
         "Exposure evidence belongs to the host surfaces after recall exists; credentialed run deferred.",
     )
 
+    head = subprocess.run(  # nosec B603 B607
+        ["git", "-C", str(_REPO), "rev-parse", "HEAD"],
+        capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    reviewed = reviewed_commit or head
+
+    # Implementation provenance: every component blob must exist at the
+    # reviewed commit AND still match the current working bytes — the bundle
+    # can never describe behavior the reviewed commit does not contain.
+    component_paths = [
+        "adapter/core/redaction_receipt.py",
+        "adapter/core/pipeline.py",
+        "adapter/core/heuristics.py",
+        "connectors/local_directory/connector.py",
+        "runtime/ingest_conformance_harness.py",
+        "runtime/gateway_mapping.py",
+        "runtime/cursor_policy.py",
+        "scripts/capture_sanitize.py",
+        "scripts/generate_information_cycle_bundle.py",
+        "scripts/validate_information_cycle_bundle.py",
+        "ingest/_schema/information-cycle-evidence-bundle.schema.json",
+    ]
+    components = []
+    for path in component_paths:
+        blob = git_blob_digest(_REPO, reviewed, path)
+        if blob is None:
+            raise SystemExit(f"implementation path absent at reviewed commit {reviewed[:12]}: {path}")
+        if file_digest(_REPO / path) != blob:
+            raise SystemExit(
+                f"working bytes differ from reviewed commit for {path}; commit the "
+                "implementation first, then generate with --reviewed-commit"
+            )
+        components.append({"path": path, "blob_sha256": blob})
+
+    # Raw-sample policy: allowlist the approved repo-owned raw values by
+    # digest+category only, scoped to the raw stage. The value itself is never
+    # stored in the policy.
+    raw_emails = sorted(set(_EMAIL_RE.findall(raw_payload["content"])))
+    raw_policy = {
+        "source": source_path,
+        "repository_owned": True,
+        "public_content": True,
+        "permitted_raw_values": [
+            {
+                "category": "public_contact_email",
+                "value_digest": value_digest(email),
+                "allowed_stage_ids": ["raw_acquisition"],
+            }
+            for email in raw_emails
+        ],
+    }
+
     bundle: dict[str, Any] = {
         "schema_version": 1,
         "bundle_id": "",
@@ -442,11 +541,14 @@ def build_bundle(route: str, out_dir: Path) -> dict[str, Any]:
         "evidence_class": "component",
         "integrations": {
             "repository": "BicameralAI/bicameral-integrations",
-            "commit": subprocess.run(  # nosec B603 B607
-                ["git", "-C", str(_REPO), "rev-parse", "HEAD"],
-                capture_output=True, text=True, check=True,
-            ).stdout.strip(),
+            "commit": reviewed,
         },
+        "implementation_provenance": {
+            "repository": "BicameralAI/bicameral-integrations",
+            "reviewed_commit": reviewed,
+            "components": components,
+        },
+        "raw_sample_policy": raw_policy,
         "contract": {"contract_id": CONTRACT_ID, "semantic_fingerprint": SEMANTIC_FINGERPRINT},
         "started_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "completed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -454,17 +556,16 @@ def build_bundle(route: str, out_dir: Path) -> dict[str, Any]:
         "unproven_downstream": [s["stage_id"] for s in stage_defs if s["status"] == "unproven"],
     }
 
-    # Cryptographic linkage: each stage links to the last output-bearing
-    # stage's aggregate digest (the anchor carries through output-less stages).
-    anchor = ""
+    # Stage-RECORD chain: deterministic record identity for EVERY stage
+    # (unproven and failed included). Digest domain excludes only
+    # stage_record_digest and previous_stage_record.
     for index, record in enumerate(bundle["stages"]):
         if index > 0:
-            record["previous_stage"] = {
+            record["previous_stage_record"] = {
                 "stage_id": bundle["stages"][index - 1]["stage_id"],
-                "output_digest": anchor,
+                "stage_record_digest": bundle["stages"][index - 1]["stage_record_digest"],
             }
-        if "output" in record:
-            anchor = record["output"]["aggregate_digest"]
+        record["stage_record_digest"] = stage_record_digest(record)
 
     bundle["bundle_id"] = bundle_id(bundle)
     return bundle
@@ -474,9 +575,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--route", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--reviewed-commit", default=None, help="ancestor commit containing the exact implementation bytes (default: HEAD)")
     args = parser.parse_args()
     out_dir = (_REPO / args.out).resolve() if not Path(args.out).is_absolute() else Path(args.out)
-    bundle = build_bundle(args.route, out_dir)
+    bundle = build_bundle(args.route, out_dir, reviewed_commit=args.reviewed_commit)
     _write_json(out_dir / "bundle.json", bundle)
     print(f"bundle written: {out_dir / 'bundle.json'}")
     print(f"bundle_id: {bundle['bundle_id']}")

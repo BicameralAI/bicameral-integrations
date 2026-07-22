@@ -1,5 +1,5 @@
 {
-  "$comment": "Closed schema for one ingress information-cycle evidence bundle (GH #269 round 3, objective 2). Structural layer only; scripts/validate_information_cycle_bundle.py enforces the cross-field contract: contiguous ordering, the exact 20-stage ledger, previous-stage digest links, artifact/aggregate digest recomputation, upstream-failure propagation, unproven honesty (no fabricated outputs), and evidence-class escalation rules. bundle_id digest domain: the canonical bundle content EXCLUDING bundle_id, started_at, and completed_at (the only excluded observation timestamps). Artifact digests are sha256 over LF-normalized file bytes.",
+  "$comment": "Closed schema for one ingress information-cycle evidence bundle (GH #269 rounds 3-4). Structural layer only; scripts/validate_information_cycle_bundle.py enforces the cross-field contract: the exact 20-stage ledger, the stage-RECORD chain (stage_record_digest over the canonical record minus stage_record_digest and previous_stage_record; every stage links to the immediately preceding record, unproven/failed included), the separate transformation-OUTPUT dependency chain (depends_on_outputs may cite only output-producing stages or explicitly missing prerequisites), implementation provenance (reviewed_commit must be an ancestor containing every component blob; current bytes must still match), the raw-sample allowlist (digest+category only, stage-scoped), and held-vs-required evidence classes (unproven holds none and declares required_evidence_class; the bundle class equals the strongest actually held class). bundle_id digest domain: canonical content excluding bundle_id, started_at, completed_at. Artifact digests are sha256 over LF-normalized bytes.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,51 +13,101 @@
     "started_at",
     "completed_at",
     "stages",
-    "unproven_downstream"
+    "unproven_downstream",
+    "implementation_provenance"
   ],
   "properties": {
-    "schema_version": { "type": "integer", "enum": [1] },
-    "bundle_id": { "type": "string" },
-    "run_id": { "type": "string" },
+    "schema_version": {
+      "type": "integer",
+      "enum": [
+        1
+      ]
+    },
+    "bundle_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
     "route": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["connector_id", "mode"],
+      "required": [
+        "connector_id",
+        "mode"
+      ],
       "properties": {
-        "connector_id": { "type": "string" },
-        "mode": { "type": "string" }
+        "connector_id": {
+          "type": "string"
+        },
+        "mode": {
+          "type": "string"
+        }
       }
     },
     "evidence_class": {
       "type": "string",
-      "enum": ["component", "observed_live", "terminal_product", "human_accepted"]
+      "enum": [
+        "component",
+        "observed_live",
+        "terminal_product",
+        "human_accepted"
+      ]
     },
     "integrations": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["repository", "commit"],
+      "required": [
+        "repository",
+        "commit"
+      ],
       "properties": {
-        "repository": { "type": "string", "enum": ["BicameralAI/bicameral-integrations"] },
-        "commit": { "type": "string" }
+        "repository": {
+          "type": "string",
+          "enum": [
+            "BicameralAI/bicameral-integrations"
+          ]
+        },
+        "commit": {
+          "type": "string"
+        }
       }
     },
     "contract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["contract_id", "semantic_fingerprint"],
+      "required": [
+        "contract_id",
+        "semantic_fingerprint"
+      ],
       "properties": {
-        "contract_id": { "type": "string" },
-        "semantic_fingerprint": { "type": "string" }
+        "contract_id": {
+          "type": "string"
+        },
+        "semantic_fingerprint": {
+          "type": "string"
+        }
       }
     },
-    "started_at": { "type": "string" },
-    "completed_at": { "type": "string" },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
     "stages": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["stage_id", "sequence", "status", "evidence_class", "authority"],
+        "required": [
+          "stage_id",
+          "sequence",
+          "status",
+          "evidence_class",
+          "authority",
+          "stage_record_digest"
+        ],
         "properties": {
           "stage_id": {
             "type": "string",
@@ -84,57 +134,472 @@
               "agent_session_exposure"
             ]
           },
-          "sequence": { "type": "integer" },
-          "status": { "type": "string", "enum": ["passed", "failed", "unproven", "not_applicable"] },
+          "sequence": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed",
+              "unproven",
+              "not_applicable"
+            ]
+          },
           "evidence_class": {
             "type": "string",
-            "enum": ["component", "observed_live", "terminal_product", "human_accepted"]
+            "enum": [
+              "none",
+              "component",
+              "observed_live",
+              "terminal_product",
+              "human_accepted"
+            ]
           },
-          "input": { "type": "object", "additionalProperties": false, "required": ["artifacts", "aggregate_digest"], "properties": {
-            "artifacts": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "digest", "media_type"], "properties": {
-              "path": { "type": "string" }, "digest": { "type": "string" }, "media_type": { "type": "string" } } } },
-            "aggregate_digest": { "type": "string" } } },
-          "transformation": { "type": "object", "additionalProperties": false, "required": ["name", "implementation"], "properties": {
-            "name": { "type": "string" },
-            "implementation": { "type": "object", "additionalProperties": false, "required": ["repository", "path"], "properties": {
-              "repository": { "type": "string" }, "commit": { "type": "string" }, "path": { "type": "string" } } },
-            "version": { "type": "string" },
-            "contract_or_schema": { "type": "string" },
-            "ruleset_id": { "type": "string" },
-            "ruleset_digest": { "type": "string" },
-            "summary": { "type": "string" },
-            "extracted": { "type": "array", "items": { "type": "string" } },
-            "added_metadata": { "type": "array", "items": { "type": "string" } },
-            "authority_stripped": { "type": "array", "items": { "type": "string" } },
-            "carried_forward": { "type": "array", "items": { "type": "string" } },
-            "deliberately_omitted": { "type": "array", "items": { "type": "string" } },
-            "downstream_may": { "type": "array", "items": { "type": "string" } },
-            "mappings": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["source_path", "target_path", "operation"], "properties": {
-              "source_path": { "type": "string" }, "target_path": { "type": "string" }, "operation": { "type": "string" } } } },
-            "changes": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "category", "action", "count"], "properties": {
-              "path": { "type": "string" }, "category": { "type": "string" }, "action": { "type": "string" }, "count": { "type": "integer" } } } }
-          } },
-          "output": { "type": "object", "additionalProperties": false, "required": ["artifacts", "aggregate_digest"], "properties": {
-            "artifacts": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "digest", "media_type"], "properties": {
-              "path": { "type": "string" }, "digest": { "type": "string" }, "media_type": { "type": "string" } } } },
-            "aggregate_digest": { "type": "string" } } },
-          "previous_stage": { "type": "object", "additionalProperties": false, "required": ["stage_id", "output_digest"], "properties": {
-            "stage_id": { "type": "string" }, "output_digest": { "type": "string" } } },
-          "authority": { "type": "object", "additionalProperties": false, "required": ["owner"], "properties": {
-            "owner": { "type": "string" },
-            "may_create": { "type": "array", "items": { "type": "string" } },
-            "may_not_create": { "type": "array", "items": { "type": "string" } } } },
-          "warnings": { "type": "array", "items": { "type": "string" } },
-          "failure": { "type": "object", "additionalProperties": false, "required": ["reason_code", "safe_message"], "properties": {
-            "reason_code": { "type": "string" }, "safe_message": { "type": "string" } } },
-          "unproven": { "type": "object", "additionalProperties": false, "required": ["required_receipt_type", "responsible_authority", "implementation_dependency", "reason"], "properties": {
-            "required_receipt_type": { "type": "string" },
-            "responsible_authority": { "type": "string" },
-            "implementation_dependency": { "type": "string" },
-            "reason": { "type": "string" } } }
+          "input": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "artifacts",
+              "aggregate_digest"
+            ],
+            "properties": {
+              "artifacts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "digest",
+                    "media_type"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "digest": {
+                      "type": "string"
+                    },
+                    "media_type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "aggregate_digest": {
+                "type": "string"
+              }
+            }
+          },
+          "transformation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "implementation"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "implementation": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "repository",
+                  "path"
+                ],
+                "properties": {
+                  "repository": {
+                    "type": "string"
+                  },
+                  "commit": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                }
+              },
+              "version": {
+                "type": "string"
+              },
+              "contract_or_schema": {
+                "type": "string"
+              },
+              "ruleset_id": {
+                "type": "string"
+              },
+              "ruleset_digest": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "extracted": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "added_metadata": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "authority_stripped": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "carried_forward": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "deliberately_omitted": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "downstream_may": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "mappings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "source_path",
+                    "target_path",
+                    "operation"
+                  ],
+                  "properties": {
+                    "source_path": {
+                      "type": "string"
+                    },
+                    "target_path": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "category",
+                    "action",
+                    "count"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "output": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "artifacts",
+              "aggregate_digest"
+            ],
+            "properties": {
+              "artifacts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "digest",
+                    "media_type"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "digest": {
+                      "type": "string"
+                    },
+                    "media_type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "aggregate_digest": {
+                "type": "string"
+              }
+            }
+          },
+          "authority": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "owner"
+            ],
+            "properties": {
+              "owner": {
+                "type": "string"
+              },
+              "may_create": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "may_not_create": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "failure": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "reason_code",
+              "safe_message"
+            ],
+            "properties": {
+              "reason_code": {
+                "type": "string"
+              },
+              "safe_message": {
+                "type": "string"
+              }
+            }
+          },
+          "unproven": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "required_receipt_type",
+              "responsible_authority",
+              "implementation_dependency",
+              "reason"
+            ],
+            "properties": {
+              "required_receipt_type": {
+                "type": "string"
+              },
+              "responsible_authority": {
+                "type": "string"
+              },
+              "implementation_dependency": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          },
+          "stage_record_digest": {
+            "type": "string"
+          },
+          "previous_stage_record": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "stage_id",
+              "stage_record_digest"
+            ],
+            "properties": {
+              "stage_id": {
+                "type": "string"
+              },
+              "stage_record_digest": {
+                "type": "string"
+              }
+            }
+          },
+          "depends_on_outputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "stage_id"
+              ],
+              "properties": {
+                "stage_id": {
+                  "type": "string"
+                },
+                "output_digest": {
+                  "type": "string"
+                },
+                "required_output": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "missing"
+                  ]
+                }
+              }
+            }
+          },
+          "required_evidence_class": {
+            "type": "string",
+            "enum": [
+              "component",
+              "observed_live",
+              "terminal_product",
+              "human_accepted"
+            ]
+          }
         }
       }
     },
-    "unproven_downstream": { "type": "array", "items": { "type": "string" } }
+    "unproven_downstream": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "implementation_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "reviewed_commit",
+        "components"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "enum": [
+            "BicameralAI/bicameral-integrations"
+          ]
+        },
+        "reviewed_commit": {
+          "type": "string"
+        },
+        "exact_head_validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "head_commit",
+            "receipt_id",
+            "generated_at"
+          ],
+          "properties": {
+            "head_commit": {
+              "type": "string"
+            },
+            "receipt_id": {
+              "type": "string"
+            },
+            "generated_at": {
+              "type": "string"
+            }
+          }
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "blob_sha256"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "blob_sha256": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "raw_sample_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "repository_owned",
+        "public_content",
+        "permitted_raw_values"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "repository_owned": {
+          "type": "boolean"
+        },
+        "public_content": {
+          "type": "boolean"
+        },
+        "permitted_raw_values": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "category",
+              "value_digest",
+              "allowed_stage_ids"
+            ],
+            "properties": {
+              "category": {
+                "type": "string"
+              },
+              "value_digest": {
+                "type": "string"
+              },
+              "allowed_stage_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

@@ -124,3 +124,97 @@ def test_env_hook_is_inert_without_explicit_reset() -> None:
     finally:
         del os.environ["BICAMERAL_REDACTION_TEST_SLEEP_S"]
         _WORKER.reset_for_tests()
+
+
+def test_concurrent_caller_lock_wait_counts_against_its_own_budget(
+    hung_worker: None,
+) -> None:
+    """A second caller queued behind a hung worker times out on ITS deadline,
+    bounded by budget + the documented cleanup tolerance."""
+    import threading
+    import time
+
+    from adapter.core.redaction_receipt import _WorkerManager
+
+    results: dict[str, object] = {}
+
+    def first() -> None:
+        try:
+            guarded_sanitize_observation(_observation("holder"), budget_seconds=4.0)
+        except RedactionFailure as failure:
+            results["first"] = failure.reason
+
+    def second() -> None:
+        started = time.monotonic()
+        try:
+            guarded_sanitize_observation(_observation("queued"), budget_seconds=0.5)
+        except RedactionFailure as failure:
+            results["second"] = failure.reason
+        results["second_elapsed"] = time.monotonic() - started
+
+    a = threading.Thread(target=first)
+    a.start()
+    time.sleep(0.4)  # let the first caller take the lock and hang in the worker
+    b = threading.Thread(target=second)
+    b.start()
+    b.join(timeout=15)
+    a.join(timeout=15)
+
+    assert results["second"] == "timeout"
+    # Bound: own budget (0.5) + documented cleanup tolerance + generous CI
+    # scheduling slack. Never the first caller's 4s budget.
+    tolerance = _WorkerManager.CLEANUP_TOLERANCE_SECONDS
+    assert float(results["second_elapsed"]) <= 0.5 + tolerance / 2 + 1.5
+    assert results["first"] == "timeout"
+    assert _SENSITIVE not in str(results)
+
+
+def test_concurrent_timeout_storm_is_bounded_and_recovers(
+    hung_worker: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Five concurrent short-budget callers all fail within their own bounds
+    (no unbounded queue), forced termination leaves no live child, and a later
+    healthy request succeeds."""
+    import threading
+    import time
+
+    outcomes: list[str] = []
+    elapsed: list[float] = []
+    lock = threading.Lock()
+
+    def caller(index: int) -> None:
+        started = time.monotonic()
+        try:
+            guarded_sanitize_observation(_observation(f"storm-{index}"), budget_seconds=0.4)
+            with lock:
+                outcomes.append("ok")
+        except RedactionFailure as failure:
+            with lock:
+                outcomes.append(failure.reason)
+        with lock:
+            elapsed.append(time.monotonic() - started)
+
+    threads = [threading.Thread(target=caller, args=(i,)) for i in range(5)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=30)
+
+    assert outcomes.count("timeout") == 5
+    from adapter.core.redaction_receipt import _WorkerManager
+
+    bound = 0.4 + _WorkerManager.CLEANUP_TOLERANCE_SECONDS + 2.0
+    assert all(value <= bound for value in elapsed), elapsed
+    assert not _WORKER.worker_alive()  # no orphan child after the storm
+
+    monkeypatch.delenv("BICAMERAL_REDACTION_TEST_SLEEP_S", raising=False)
+    _WORKER.reset_for_tests()
+    sanitized, _ = guarded_sanitize_observation(_observation("post-storm"))
+    assert "[redacted:email]" in sanitized.excerpt
+
+
+def test_forced_termination_records_typed_value_free_outcome(hung_worker: None) -> None:
+    with pytest.raises(RedactionFailure):
+        guarded_sanitize_observation(_observation("victim"), budget_seconds=0.3)
+    assert _WORKER.last_cleanup_outcome in {"terminated", "killed"}
+    assert _SENSITIVE not in _WORKER.last_cleanup_outcome

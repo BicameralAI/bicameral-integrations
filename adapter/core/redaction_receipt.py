@@ -274,17 +274,26 @@ def _worker_loop(conn: Any) -> None:
 
 
 class _WorkerManager:
-    """Bounded, recyclable sanitizer worker (GH #269 round-3 objective 1).
+    """Bounded, recyclable sanitizer worker (GH #269 rounds 3-4).
 
-    Exactly one child process serves sanitization. On timeout the child is
-    HARD-TERMINATED and discarded, so a stuck sanitizer can never occupy a
-    worker permanently: the next call spawns a fresh child, repeated timeouts
-    cannot starve later healthy requests, and cleanup (terminate + join) is
-    deterministic. Calls are serialized under a lock — resource consumption is
-    bounded at one worker process regardless of caller concurrency. Workers are
-    daemonic and additionally terminated atexit, so process shutdown never
+    Exactly one child process serves sanitization. The caller's
+    ``budget_seconds`` is ONE absolute monotonic deadline covering the whole
+    guarded operation — lock acquisition, worker availability/spawn, payload
+    send, worker execution, and response — so a concurrent caller waiting on
+    the lock can never silently exceed its own budget. On timeout the child is
+    hard-terminated (terminate, bounded join, then kill where the platform
+    supports it, bounded join again) and discarded; cleanup is bounded by
+    ``CLEANUP_TOLERANCE_SECONDS``, the only documented amount by which a
+    caller may exceed its declared budget. Repeated timeouts recycle rather
+    than accumulate workers, so a timeout storm cannot starve later healthy
+    requests. Workers are daemonic and atexit-terminated: shutdown never
     hangs on abandoned sanitizer work.
     """
+
+    # Documented cleanup tolerance: terminate-join (2s) + kill-join (2s) plus
+    # scheduling margin. This is a hard bound, never a second unbounded wait.
+    CLEANUP_TOLERANCE_SECONDS = 5.0
+    _JOIN_GRACE_SECONDS = 2.0
 
     def __init__(self) -> None:
         self._lock = threading.Lock()
@@ -292,6 +301,7 @@ class _WorkerManager:
         self._process: multiprocessing.process.BaseProcess | None = None
         # Platform pipe types diverge (PipeConnection on Windows); typed loosely.
         self._conn: Any = None
+        self.last_cleanup_outcome = ""
         atexit.register(self._shutdown)
 
     def _spawn(self) -> None:
@@ -302,19 +312,48 @@ class _WorkerManager:
         self._process, self._conn = process, parent
 
     def _kill(self) -> None:
-        if self._conn is not None:
-            try:
-                self._conn.close()
-            except OSError:
-                pass
-        if self._process is not None and self._process.is_alive():
-            self._process.terminate()
-            self._process.join(timeout=2.0)
-        self._process, self._conn = None, None
+        """Bounded forced termination; records a typed, value-free outcome."""
+        outcome = "no_worker"
+        try:
+            if self._conn is not None:
+                try:
+                    self._conn.close()
+                except OSError:
+                    pass
+            process = self._process
+            if process is not None and process.is_alive():
+                outcome = "terminated"
+                try:
+                    process.terminate()
+                    process.join(timeout=self._JOIN_GRACE_SECONDS)
+                    if process.is_alive():
+                        kill = getattr(process, "kill", None)
+                        if callable(kill):
+                            outcome = "killed"
+                            kill()
+                        else:  # pragma: no cover - all supported platforms have kill()
+                            outcome = "terminate_only_platform"
+                        process.join(timeout=self._JOIN_GRACE_SECONDS)
+                    if process.is_alive():  # pragma: no cover - defensive
+                        outcome = "kill_failed"
+                except (OSError, ValueError):  # pragma: no cover - defensive
+                    outcome = "cleanup_error"
+            if process is not None:
+                try:
+                    process.close()
+                except (OSError, ValueError):
+                    pass
+        finally:
+            # References are cleared even when termination raised.
+            self._process, self._conn = None, None
+            self.last_cleanup_outcome = outcome
 
     def _shutdown(self) -> None:  # pragma: no cover - interpreter exit path
-        with self._lock:
-            self._kill()
+        if self._lock.acquire(timeout=self._JOIN_GRACE_SECONDS):
+            try:
+                self._kill()
+            finally:
+                self._lock.release()
 
     def reset_for_tests(self) -> None:
         """Discard the current worker so the next call spawns with the current
@@ -329,7 +368,20 @@ class _WorkerManager:
     def call(
         self, observation: Observation, completed_at: str | None, budget_seconds: float
     ) -> tuple[Observation, dict[str, object]]:
-        with self._lock:
+        import time
+
+        deadline = time.monotonic() + budget_seconds
+
+        def remaining() -> float:
+            return deadline - time.monotonic()
+
+        # Lock acquisition consumes the caller's own budget: a caller queued
+        # behind a hung worker times out on ITS deadline, never on the hung
+        # caller's, so concurrent callers cannot form an unbounded queue.
+        lock_wait = remaining()
+        if lock_wait <= 0 or not self._lock.acquire(timeout=lock_wait):
+            raise RedactionFailure("timeout")
+        try:
             if self._process is None or not self._process.is_alive():
                 self._kill()
                 self._spawn()
@@ -340,10 +392,12 @@ class _WorkerManager:
                 # Unpicklable observation content cannot enter the worker.
                 self._kill()
                 raise RedactionFailure("unsupported_payload") from None
-            if not self._conn.poll(budget_seconds):
-                # HARD termination: the stuck worker is killed and replaced,
-                # never abandoned. Its partial work dies with the process, so
-                # timed-out work can never later mutate shared state.
+            poll_wait = remaining()
+            if poll_wait <= 0 or not self._conn.poll(poll_wait):
+                # HARD termination within the documented cleanup tolerance:
+                # the stuck worker is killed and replaced, never abandoned.
+                # Its partial work dies with the process, so timed-out work
+                # can never later mutate shared state.
                 self._kill()
                 raise RedactionFailure("timeout")
             try:
@@ -355,6 +409,8 @@ class _WorkerManager:
                 raise RedactionFailure(str(payload))
             sanitized, receipt = payload
             return sanitized, receipt
+        finally:
+            self._lock.release()
 
 
 _WORKER = _WorkerManager()
