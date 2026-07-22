@@ -1,0 +1,43 @@
+{
+  "acquisition": "operator-run local file read of CODE_OF_CONDUCT.md",
+  "captured_at": "2026-07-22T17:04:27Z",
+  "mode": "passive_import",
+  "original_content_sha256": "sha256:3b36a0c8088c06b1a40208b3e7050df0da9312306eee229842d352c51fccc3bc",
+  "original_retention": "raw bytes discarded after sanitization; the digest above is the only, irreversible representation",
+  "provider": "local_directory",
+  "provider_schema_version": "filesystem/utf-8-text",
+  "redaction": {
+    "categories": {
+      "pii": 1
+    },
+    "engine": "bicameral-stdlib-redaction",
+    "engine_version": "1.0.0",
+    "ruleset_digest": "sha256:b5c6c583fb6c939a47f70f66c65a44a9c9dc4de291fe018a597cc03267bb9141",
+    "ruleset_id": "fx-sec-001-plus-pii-v1"
+  },
+  "sanitized_content_sha256": "sha256:7627df93f40264159ac7cf7d71012a8a74255bc498dfb203fd91ac3fe319f169",
+  "sanitized_payload_sha256": "sha256:71f5b20e6d6a9cfa2bbbd1502a7f8b279dcc8b30285449623b3528b4dc1822da",
+  "source_license_or_retention_note": "MIT (this repository's own committed file); retention: sanitized recording only, original digest retained",
+  "structural_fields_proof": {
+    "fields": {
+      "mode": {
+        "raw": "passive",
+        "sanitized": "passive"
+      },
+      "ref": {
+        "raw": "local-ffdbe3a1e7ee93ca",
+        "sanitized": "local-ffdbe3a1e7ee93ca"
+      },
+      "source_id": {
+        "raw": "local_directory",
+        "sanitized": "local_directory"
+      },
+      "timestamp": {
+        "raw": "2026-07-22T16:50:42.427500+00:00",
+        "sanitized": "2026-07-22T16:50:42.427500+00:00"
+      }
+    },
+    "method": "parse-both-and-compare",
+    "preserved": true
+  }
+}

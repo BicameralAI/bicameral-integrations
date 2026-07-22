@@ -50,3 +50,5 @@ jobs:
         run: python scripts/validate_mod_config.py
       - name: Ingest schema pin + conformance gate
         run: python scripts/validate_ingest_schema_pin.py
+      - name: Alpha ingest manifest (closed schema + honesty semantics)
+        run: python scripts/validate_alpha_ingest_manifest.py

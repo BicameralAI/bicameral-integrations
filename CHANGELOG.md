@@ -5,6 +5,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Added
+
+- Alpha ingest manifest (`ingest/alpha-ingest-manifest.json`) with a closed
+  fail-closed schema and CI validator: six connector/mode routes (GitHub
+  webhook + honestly-missing active poll, Linear webhook + GraphQL poll,
+  local_directory passive import, google_drive bounded document fetch) with a
+  multi-axis conformance state that can never collapse into one `verified`
+  boolean or overstate evidence (#258).
+- One reusable 12-checkpoint real-data conformance harness
+  (`runtime/ingest_conformance_harness.py`) consuming manifest entries;
+  goldens regenerate through the same construction path. First recorded REAL
+  capture: local_directory passive import of this repo's own
+  CODE_OF_CONDUCT.md through the genuine operator-run file-read boundary, with
+  sanitization ledger and structural-preservation proof (#258, #260).
+- Capture sanitization tooling (`scripts/capture_sanitize.py`), operator-run
+  real GatewaySink delivery receipts (`scripts/real_gateway_delivery.py`,
+  201-only success, binds both commits + digests), and Linear GraphQL
+  live-wire verification (`scripts/linear_live_wire.py`) — gateway and
+  live-wire states stay `unproven`/UNVERIFIED until real runs exist.
+- Guarded redaction boundary entry
+  (`redaction_receipt.guarded_sanitize_observation`) completing the GH #260
+  typed-failure envelope (engine_unavailable, invalid_ruleset,
+  oversized_payload, timeout, receipt_generation_failure) plus
+  `receipt_digest` with an explicit completed_at-excluded digest domain.
+
+### Changed
+
+- Documentation truthfulness: connector-table "live-poll client built"
+  rephrased to "reference poll client in the library; live HTTP boundary
+  operator-run"; README now states flip-ready is a Beta-ladder state, not
+  Live and not customer value, and points at the per-route evidence manifest.
+
 ### Security
 
 - **Granola** connector PII correction (L2): the verbatim transcript + title are now

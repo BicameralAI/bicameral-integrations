@@ -225,3 +225,80 @@ def sanitize_observation(
         .replace("+00:00", "Z"),
     }
     return sanitized, receipt
+
+
+# ---------------------------------------------------------------------------
+# Guarded boundary entry (GH #260 typed-failure completion)
+# ---------------------------------------------------------------------------
+
+_GATE_MAX_BYTES = 1_048_576  # 1 MiB serialized-observation budget
+_GATE_BUDGET_SECONDS = 5.0
+
+
+def guarded_sanitize_observation(
+    observation: Observation,
+    *,
+    completed_at: str | None = None,
+    max_bytes: int = _GATE_MAX_BYTES,
+    budget_seconds: float = _GATE_BUDGET_SECONDS,
+    engine: object | None = True,
+) -> tuple[Observation, dict[str, object]]:
+    """``sanitize_observation`` with the full GH #260 typed-failure envelope.
+
+    Adds the boundary guards the inner sanitizer does not own, each failing
+    closed with a typed :class:`RedactionFailure` reason (no envelope, no sink
+    call, no cursor advancement may follow):
+
+    - ``engine_unavailable`` — the redaction engine is not importable/configured;
+    - ``invalid_ruleset`` — the deterministic ruleset identity cannot be
+      established (empty digest/id would make receipts unverifiable);
+    - ``oversized_payload`` — serialized observation content exceeds the budget;
+    - ``timeout`` — sanitization exceeded its wall-clock budget;
+    - ``receipt_generation_failure`` — the receipt could not be built/serialized;
+    - plus the inner sanitizer's own ``unsupported_*``, ``sensitive_*``, and
+      structural reasons, which pass through unchanged. Content the engine
+      cannot safely transform surfaces as ``sensitive_identity_field`` /
+      ``sensitive_metadata_key`` (prohibited content, rejected).
+    """
+    import time as _time
+
+    if engine is None:
+        raise RedactionFailure("engine_unavailable")
+    if not RULESET_ID or not RULESET_DIGEST.startswith("sha256:"):
+        raise RedactionFailure("invalid_ruleset")
+
+    try:
+        serialized = json.dumps(
+            _canonical(_observation_payload(observation)),
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+        )
+    except RedactionFailure:
+        raise
+    except (TypeError, ValueError):
+        raise RedactionFailure("unsupported_payload") from None
+    if len(serialized.encode("utf-8")) > max_bytes:
+        raise RedactionFailure("oversized_payload")
+
+    started = _time.monotonic()
+    sanitized, receipt = sanitize_observation(observation, completed_at=completed_at)
+    if _time.monotonic() - started > budget_seconds:
+        raise RedactionFailure("timeout")
+
+    try:
+        json.dumps(receipt, sort_keys=True, separators=(",", ":"))
+    except (TypeError, ValueError):
+        raise RedactionFailure("receipt_generation_failure") from None
+    return sanitized, receipt
+
+
+def receipt_digest(receipt: dict[str, object]) -> str:
+    """Deterministic ``sha256:`` identity of a receipt.
+
+    Digest domain: every receipt field EXCEPT ``completed_at`` — the only
+    observation timestamp, explicitly excluded so the same logical sanitized
+    output yields the same receipt identity across runs (GH #260).
+    """
+    payload = {key: value for key, value in receipt.items() if key != "completed_at"}
+    return _digest(payload)
