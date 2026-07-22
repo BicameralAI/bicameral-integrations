@@ -24,6 +24,9 @@ jobs:
     steps:
       - name: Checkout caller
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          # Full history: bundle provenance tests verify reviewed_commit ancestry.
+          fetch-depth: 0
       - name: Fetch governance tooling (pinned)
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
