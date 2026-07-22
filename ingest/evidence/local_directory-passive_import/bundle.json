@@ -1,6 +1,6 @@
 {
-  "bundle_id": "sha256:c22fbf7e2607462f80440b6ce27d0d8b8d0e1f38b6f0607543c6c59127444c8e",
-  "completed_at": "2026-07-22T19:06:26Z",
+  "bundle_id": "sha256:e39ae952c5b36e53814f83c2f24fcd35e1547971b7bc1e412a7022f87431e944",
+  "completed_at": "2026-07-22T19:37:26Z",
   "contract": {
     "contract_id": "external-ingest.request.v2",
     "semantic_fingerprint": "sha256:a133dd9ec689ac530fb045195ef0e4f0a0fa94960bf8b5fbbc863db2e18e71b9"
@@ -45,7 +45,7 @@
         "path": "scripts/generate_information_cycle_bundle.py"
       },
       {
-        "blob_sha256": "sha256:5779524d632362098a1754f7e3f7ec003a6f5b5efd60c0c61890097fe4f52715",
+        "blob_sha256": "sha256:ec0113bd71fbbace333fd32cd0f2c38e210d80f09eeece6992f4f2c16919bf27",
         "path": "scripts/validate_information_cycle_bundle.py"
       },
       {
@@ -54,10 +54,10 @@
       }
     ],
     "repository": "BicameralAI/bicameral-integrations",
-    "reviewed_commit": "8c973f6b940a2061980d8f3a4277c4dedf5add0d"
+    "reviewed_commit": "18937b2baa1a95ec574d7c71c52bba3c331af6b6"
   },
   "integrations": {
-    "commit": "8c973f6b940a2061980d8f3a4277c4dedf5add0d",
+    "commit": "18937b2baa1a95ec574d7c71c52bba3c331af6b6",
     "repository": "BicameralAI/bicameral-integrations"
   },
   "raw_sample_policy": {
@@ -1255,7 +1255,7 @@
       }
     }
   ],
-  "started_at": "2026-07-22T19:06:26Z",
+  "started_at": "2026-07-22T19:37:26Z",
   "unproven_downstream": [
     "gateway_negotiation",
     "bot_acceptance",
