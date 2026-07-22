@@ -364,6 +364,21 @@ def raw_sample_errors(bundle: dict, repo: Path) -> list[str]:
     return errs
 
 
+def assert_exact_head(repo: Path, expected_head: str) -> list[str]:
+    """The exact-head guard: the checked-out HEAD must BE the expected head.
+    GitHub's synthetic refs/pull/<n>/merge commit can therefore never be
+    emitted or labeled as exact-head evidence — it is not the PR head SHA."""
+    code, out = _git(repo, "rev-parse", "HEAD")
+    actual = out.decode().strip() if code == 0 else ""
+    if actual != expected_head:
+        return [
+            f"checked-out HEAD {actual[:12]} is not the expected head "
+            f"{expected_head[:12]}; refusing to emit an exact-head receipt "
+            "(synthetic merge commits are not exact-head evidence)"
+        ]
+    return []
+
+
 def emit_head_receipt(bundle: dict, repo: Path, out_path: Path) -> dict:
     """The separate exact-current-head validation receipt (honest
     self-reference: generated AFTER the bundle exists, at the actual head)."""
@@ -405,6 +420,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("bundle")
     parser.add_argument("--emit-head-receipt", default=None)
+    parser.add_argument(
+        "--expected-head",
+        default=None,
+        help=(
+            "Required with --emit-head-receipt in CI: the exact head SHA the "
+            "receipt must bind. Emission fails unless git HEAD == expected."
+        ),
+    )
     args = parser.parse_args()
     path = Path(args.bundle)
     errs = validate_bundle(path)
@@ -421,7 +444,16 @@ def main() -> int:
         "record chain + output lineage + provenance intact"
     )
     if args.emit_head_receipt:
+        if args.expected_head:
+            guard = assert_exact_head(_REPO, args.expected_head)
+            if guard:
+                for err in guard:
+                    print(f"- {err}", file=sys.stderr)
+                return 1
         receipt = emit_head_receipt(bundle, _REPO, Path(args.emit_head_receipt))
+        if args.expected_head and receipt["head_commit"] != args.expected_head:
+            print("- emitted receipt does not bind the expected head", file=sys.stderr)
+            return 1
         print(f"exact-head validation receipt: {receipt['receipt_id']} (head {receipt['head_commit'][:12]})")
     return 0
 

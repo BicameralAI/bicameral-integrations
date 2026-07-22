@@ -348,3 +348,13 @@ def test_bundle_id_tamper_fails() -> None:
     bundle = copy.deepcopy(_BUNDLE)
     bundle["run_id"] = "edited-after-sealing"
     assert any("bundle_id does not match" in e for e in _errors(bundle))
+
+
+def test_merge_ref_can_never_be_labeled_exact_head() -> None:
+    """Regression (GH #269 round 5): emitting an exact-head receipt from a
+    checkout whose HEAD is not the expected head (e.g. GitHub's synthetic
+    refs/pull/<n>/merge commit) must fail closed."""
+    synthetic = "a" * 40
+    errors = validator.assert_exact_head(_REPO, synthetic)
+    assert errors and "not the expected head" in errors[0]
+    assert validator.assert_exact_head(_REPO, _HEAD) == []
