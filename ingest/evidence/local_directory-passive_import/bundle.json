@@ -1,14 +1,78 @@
 {
-  "bundle_id": "sha256:f6b18b77e1952fb90a5f072b6329238b0437261f03b3a7645c6d99a0dc1a214f",
-  "completed_at": "2026-07-22T18:34:20Z",
+  "bundle_id": "sha256:c22fbf7e2607462f80440b6ce27d0d8b8d0e1f38b6f0607543c6c59127444c8e",
+  "completed_at": "2026-07-22T19:06:26Z",
   "contract": {
     "contract_id": "external-ingest.request.v2",
     "semantic_fingerprint": "sha256:a133dd9ec689ac530fb045195ef0e4f0a0fa94960bf8b5fbbc863db2e18e71b9"
   },
   "evidence_class": "component",
+  "implementation_provenance": {
+    "components": [
+      {
+        "blob_sha256": "sha256:99fc4abc6802f02d9a74ed2aa8d3c9848f18be6a523c85dccd1bc167eb3d04ee",
+        "path": "adapter/core/redaction_receipt.py"
+      },
+      {
+        "blob_sha256": "sha256:e59ecec7b2c3cedeb2460dc56bbf1d4538e6644c8c0400c4d4250d7f81c91e6b",
+        "path": "adapter/core/pipeline.py"
+      },
+      {
+        "blob_sha256": "sha256:aa44bd88795bd0bb5aba3b93bbe1dee0460cce420c7eaf0661f748715d01f83a",
+        "path": "adapter/core/heuristics.py"
+      },
+      {
+        "blob_sha256": "sha256:c46ecc153382dd4fc864834117f77f62cb5b6fbf20fd0bd4cc5888338fed12d7",
+        "path": "connectors/local_directory/connector.py"
+      },
+      {
+        "blob_sha256": "sha256:bbdbc2ab3655efc6be5c751e9a348f61074d6248b16212580a9f65104e23af1b",
+        "path": "runtime/ingest_conformance_harness.py"
+      },
+      {
+        "blob_sha256": "sha256:73e1b13621c3765446ac8f3f6cc023da6a4c9b7a9c23fd53819345f7aacc5f41",
+        "path": "runtime/gateway_mapping.py"
+      },
+      {
+        "blob_sha256": "sha256:9b8bc3aecf39cf69dc1a308261d34b6000574ea06d749a6314ce66a414ef7085",
+        "path": "runtime/cursor_policy.py"
+      },
+      {
+        "blob_sha256": "sha256:3c0aff1302e21b0b3610092805b7b97baad6db37f64e69b02a7d6b9d660ecd12",
+        "path": "scripts/capture_sanitize.py"
+      },
+      {
+        "blob_sha256": "sha256:75303c9fd9b0a731160c9dacad2841eb04d488fd479c1d02cff968c0f3995527",
+        "path": "scripts/generate_information_cycle_bundle.py"
+      },
+      {
+        "blob_sha256": "sha256:5779524d632362098a1754f7e3f7ec003a6f5b5efd60c0c61890097fe4f52715",
+        "path": "scripts/validate_information_cycle_bundle.py"
+      },
+      {
+        "blob_sha256": "sha256:bc33a6bb33329babe513f8590286494873c2be3b326ece6032aeaa42c0e75ff8",
+        "path": "ingest/_schema/information-cycle-evidence-bundle.schema.json"
+      }
+    ],
+    "repository": "BicameralAI/bicameral-integrations",
+    "reviewed_commit": "8c973f6b940a2061980d8f3a4277c4dedf5add0d"
+  },
   "integrations": {
-    "commit": "fd7f4dc3e86e35d9e1a841b66130442302a1be0a",
+    "commit": "8c973f6b940a2061980d8f3a4277c4dedf5add0d",
     "repository": "BicameralAI/bicameral-integrations"
+  },
+  "raw_sample_policy": {
+    "permitted_raw_values": [
+      {
+        "allowed_stage_ids": [
+          "raw_acquisition"
+        ],
+        "category": "public_contact_email",
+        "value_digest": "sha256:bc80cea65aa176e68e85c3984987892b110bf18d0c655aaae507d0df181410cd"
+      }
+    ],
+    "public_content": true,
+    "repository_owned": true,
+    "source": "CODE_OF_CONDUCT.md"
   },
   "route": {
     "connector_id": "local_directory",
@@ -52,6 +116,7 @@
       },
       "sequence": 1,
       "stage_id": "raw_acquisition",
+      "stage_record_digest": "sha256:663f3f5facfc65020aa5389b0f7bad1c53e72cd8bae10283f076fe7305731b3a",
       "status": "passed",
       "transformation": {
         "carried_forward": [
@@ -79,6 +144,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:db3b8c7c77c7ac427a5ca2fbf3e24b34ec84306e0e27c53c6233425cadeb16e3",
+          "stage_id": "raw_acquisition"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:cf25c3ec57e87eed7954e717574cf03b3bee9dc13a5447d9d424c9b92a6dcec7",
@@ -110,12 +181,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:db3b8c7c77c7ac427a5ca2fbf3e24b34ec84306e0e27c53c6233425cadeb16e3",
-        "stage_id": "raw_acquisition"
+      "previous_stage_record": {
+        "stage_id": "raw_acquisition",
+        "stage_record_digest": "sha256:663f3f5facfc65020aa5389b0f7bad1c53e72cd8bae10283f076fe7305731b3a"
       },
       "sequence": 2,
       "stage_id": "acquisition_verification",
+      "stage_record_digest": "sha256:c128b83db71ff9780f21a3170aa050af4801d52047ab09e23256aa897dd9d56e",
       "status": "passed",
       "transformation": {
         "implementation": {
@@ -138,6 +210,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:db3b8c7c77c7ac427a5ca2fbf3e24b34ec84306e0e27c53c6233425cadeb16e3",
+          "stage_id": "raw_acquisition"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:db3b8c7c77c7ac427a5ca2fbf3e24b34ec84306e0e27c53c6233425cadeb16e3",
@@ -164,12 +242,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:d7bdaaf0ad03ff9ada6a6621124a89ffe1a138d0144b86825c845b143c6d2ce3",
-        "stage_id": "acquisition_verification"
+      "previous_stage_record": {
+        "stage_id": "acquisition_verification",
+        "stage_record_digest": "sha256:c128b83db71ff9780f21a3170aa050af4801d52047ab09e23256aa897dd9d56e"
       },
       "sequence": 3,
       "stage_id": "sanitized_capture",
+      "stage_record_digest": "sha256:428ec3967f341e185b223974310917d3a6c097ce84fcfb315652f28a24311e73",
       "status": "passed",
       "transformation": {
         "changes": [
@@ -202,6 +281,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:06534dffe21bc69765f6e53c5fe703470609f4286f11176e79b8ddacad84c371",
+          "stage_id": "sanitized_capture"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:955f387be64f6a0a30655dc36df4de6b21934189fac0b4b06e4fd0e113f97ca6",
@@ -223,12 +308,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:06534dffe21bc69765f6e53c5fe703470609f4286f11176e79b8ddacad84c371",
-        "stage_id": "sanitized_capture"
+      "previous_stage_record": {
+        "stage_id": "sanitized_capture",
+        "stage_record_digest": "sha256:428ec3967f341e185b223974310917d3a6c097ce84fcfb315652f28a24311e73"
       },
       "sequence": 4,
       "stage_id": "provider_fact_extraction",
+      "stage_record_digest": "sha256:fac87de8e8cf15540b5868fb98c320ba8aa2e0a0e1e8cf21fbaf182a690f3623",
       "status": "passed",
       "transformation": {
         "extracted": [
@@ -273,6 +359,16 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:1585173c060b8845c9445b1e152d27580ff697486a658f5ea17abf0e18f22c51",
+          "stage_id": "provider_fact_extraction"
+        },
+        {
+          "output_digest": "sha256:06534dffe21bc69765f6e53c5fe703470609f4286f11176e79b8ddacad84c371",
+          "stage_id": "sanitized_capture"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:3bcf6e2effea3d921a514aee9ce65969848559b42768d1dffb034b8bb5884931",
@@ -299,12 +395,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:1585173c060b8845c9445b1e152d27580ff697486a658f5ea17abf0e18f22c51",
-        "stage_id": "provider_fact_extraction"
+      "previous_stage_record": {
+        "stage_id": "provider_fact_extraction",
+        "stage_record_digest": "sha256:fac87de8e8cf15540b5868fb98c320ba8aa2e0a0e1e8cf21fbaf182a690f3623"
       },
       "sequence": 5,
       "stage_id": "provider_neutral_observation",
+      "stage_record_digest": "sha256:b464385bdd4e0d457d8155074c143bfcdefab5dd6f556444e730188545ca9beb",
       "status": "passed",
       "transformation": {
         "added_metadata": [
@@ -352,6 +449,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:d0b8cd7ff5b47ad40fbbab85fee504b3a2c1dfe002b5d84ac25c74c9a027dac3",
+          "stage_id": "provider_neutral_observation"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:d0b8cd7ff5b47ad40fbbab85fee504b3a2c1dfe002b5d84ac25c74c9a027dac3",
@@ -373,12 +476,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:d0b8cd7ff5b47ad40fbbab85fee504b3a2c1dfe002b5d84ac25c74c9a027dac3",
-        "stage_id": "provider_neutral_observation"
+      "previous_stage_record": {
+        "stage_id": "provider_neutral_observation",
+        "stage_record_digest": "sha256:b464385bdd4e0d457d8155074c143bfcdefab5dd6f556444e730188545ca9beb"
       },
       "sequence": 6,
       "stage_id": "guarded_redaction",
+      "stage_record_digest": "sha256:3106ec617ce782e97d79bf8a2fe4993122a71d3926bfa6135a8546df9f4c7647",
       "status": "passed",
       "transformation": {
         "changes": [],
@@ -404,6 +508,16 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:887b03302c30dc46147559774cd1a1a3837fb25b9881d8f221f86335b0c1af4a",
+          "stage_id": "guarded_redaction"
+        },
+        {
+          "output_digest": "sha256:d0b8cd7ff5b47ad40fbbab85fee504b3a2c1dfe002b5d84ac25c74c9a027dac3",
+          "stage_id": "provider_neutral_observation"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:3633a1d97266670aa318e082ac9be5325b51786ec9d24f0e18f0f3ec0f43c4b3",
@@ -430,12 +544,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:887b03302c30dc46147559774cd1a1a3837fb25b9881d8f221f86335b0c1af4a",
-        "stage_id": "guarded_redaction"
+      "previous_stage_record": {
+        "stage_id": "guarded_redaction",
+        "stage_record_digest": "sha256:3106ec617ce782e97d79bf8a2fe4993122a71d3926bfa6135a8546df9f4c7647"
       },
       "sequence": 7,
       "stage_id": "sanitized_observation",
+      "stage_record_digest": "sha256:cb50a5e67a31c45ae175b62ff7f9dc732a16fa23532a97f396063bd9507213d0",
       "status": "passed",
       "transformation": {
         "carried_forward": [
@@ -467,6 +582,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
+          "stage_id": "sanitized_observation"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
@@ -488,12 +609,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
-        "stage_id": "sanitized_observation"
+      "previous_stage_record": {
+        "stage_id": "sanitized_observation",
+        "stage_record_digest": "sha256:cb50a5e67a31c45ae175b62ff7f9dc732a16fa23532a97f396063bd9507213d0"
       },
       "sequence": 8,
       "stage_id": "redaction_receipt",
+      "stage_record_digest": "sha256:1e26b11b8769110f8cd28db9f0879a51570a79a386ca34968b2cf25443d11292",
       "status": "passed",
       "transformation": {
         "implementation": {
@@ -516,6 +638,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
+          "stage_id": "sanitized_observation"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
@@ -537,12 +665,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:f86cabd49e7a1ee958de57ac6bb5eaf14c25fbdc845b06b6c917c631dbc4aab1",
-        "stage_id": "redaction_receipt"
+      "previous_stage_record": {
+        "stage_id": "redaction_receipt",
+        "stage_record_digest": "sha256:1e26b11b8769110f8cd28db9f0879a51570a79a386ca34968b2cf25443d11292"
       },
       "sequence": 9,
       "stage_id": "integration_advisories",
+      "stage_record_digest": "sha256:a0031d35ff81d59ff50ec160f5f4aa3e0d63a99f8d2baa81f2b9639c2f3e8d60",
       "status": "passed",
       "transformation": {
         "implementation": {
@@ -565,6 +694,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
+          "stage_id": "sanitized_observation"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
@@ -586,12 +721,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:eee406e01d76290f535621fecd9c883ce0332dd2ae221b476718614fe6941058",
-        "stage_id": "integration_advisories"
+      "previous_stage_record": {
+        "stage_id": "integration_advisories",
+        "stage_record_digest": "sha256:a0031d35ff81d59ff50ec160f5f4aa3e0d63a99f8d2baa81f2b9639c2f3e8d60"
       },
       "sequence": 10,
       "stage_id": "universal_normalization",
+      "stage_record_digest": "sha256:a2473121c9e0a1314f70a8a2b5972d13edeea18eacd0265869772f31f3d7cb02",
       "status": "passed",
       "transformation": {
         "implementation": {
@@ -651,6 +787,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:4caa44650076e0f50307d6e6aff9498328a555476358af5eb2cedf6eaf3caa68",
+          "stage_id": "universal_normalization"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:4caa44650076e0f50307d6e6aff9498328a555476358af5eb2cedf6eaf3caa68",
@@ -672,12 +814,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:4caa44650076e0f50307d6e6aff9498328a555476358af5eb2cedf6eaf3caa68",
-        "stage_id": "universal_normalization"
+      "previous_stage_record": {
+        "stage_id": "universal_normalization",
+        "stage_record_digest": "sha256:a2473121c9e0a1314f70a8a2b5972d13edeea18eacd0265869772f31f3d7cb02"
       },
       "sequence": 11,
       "stage_id": "universal_advisories",
+      "stage_record_digest": "sha256:cdfa0c3420bc8926de0ddf28d1004893e9139aa1ff4d45d2a3576633bd4ac750",
       "status": "passed",
       "transformation": {
         "implementation": {
@@ -700,6 +843,16 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:f34eda8b6c3d0991b8f6bc5915d46ee1a828687df555316fd08b730b051b30ab",
+          "stage_id": "universal_advisories"
+        },
+        {
+          "output_digest": "sha256:4caa44650076e0f50307d6e6aff9498328a555476358af5eb2cedf6eaf3caa68",
+          "stage_id": "universal_normalization"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:2198be0157504bcef9dcf1a297238cf675aef89a65fbc17e65708cef37fcee8b",
@@ -726,12 +879,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:f34eda8b6c3d0991b8f6bc5915d46ee1a828687df555316fd08b730b051b30ab",
-        "stage_id": "universal_advisories"
+      "previous_stage_record": {
+        "stage_id": "universal_advisories",
+        "stage_record_digest": "sha256:cdfa0c3420bc8926de0ddf28d1004893e9139aa1ff4d45d2a3576633bd4ac750"
       },
       "sequence": 12,
       "stage_id": "adapter_emission",
+      "stage_record_digest": "sha256:d9d161dd243ae70f8dd7f7028a592646656716ac262848b87ad4151b6bc19d0b",
       "status": "passed",
       "transformation": {
         "implementation": {
@@ -754,6 +908,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:f7e53f976fc7b3f0b7f6980988d9cc0d6ae8f208fa1820615859841777c1f541",
+          "stage_id": "adapter_emission"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:f7e53f976fc7b3f0b7f6980988d9cc0d6ae8f208fa1820615859841777c1f541",
@@ -775,12 +935,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:f7e53f976fc7b3f0b7f6980988d9cc0d6ae8f208fa1820615859841777c1f541",
-        "stage_id": "adapter_emission"
+      "previous_stage_record": {
+        "stage_id": "adapter_emission",
+        "stage_record_digest": "sha256:d9d161dd243ae70f8dd7f7028a592646656716ac262848b87ad4151b6bc19d0b"
       },
       "sequence": 13,
       "stage_id": "external_ingest_envelope",
+      "stage_record_digest": "sha256:36db4ef8666d39714445f76bc235281e0105f418c9637edaf8a3ff87af5c47dc",
       "status": "passed",
       "transformation": {
         "authority_stripped": [
@@ -838,6 +999,12 @@
         ],
         "owner": "integrations"
       },
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+          "stage_id": "external_ingest_envelope"
+        }
+      ],
       "evidence_class": "component",
       "input": {
         "aggregate_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
@@ -859,12 +1026,13 @@
           }
         ]
       },
-      "previous_stage": {
-        "output_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
-        "stage_id": "external_ingest_envelope"
+      "previous_stage_record": {
+        "stage_id": "external_ingest_envelope",
+        "stage_record_digest": "sha256:36db4ef8666d39714445f76bc235281e0105f418c9637edaf8a3ff87af5c47dc"
       },
       "sequence": 14,
       "stage_id": "cursor_or_delivery_decision",
+      "stage_record_digest": "sha256:f2da2b4fd0d2ec617decac98792b942d30852a0056728bf5153b94e3d52dce43",
       "status": "passed",
       "transformation": {
         "implementation": {
@@ -883,13 +1051,21 @@
         ],
         "owner": "integrations (protocol) + bot (capabilities endpoint)"
       },
-      "evidence_class": "observed_live",
-      "previous_stage": {
-        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
-        "stage_id": "cursor_or_delivery_decision"
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+          "stage_id": "external_ingest_envelope"
+        }
+      ],
+      "evidence_class": "none",
+      "previous_stage_record": {
+        "stage_id": "cursor_or_delivery_decision",
+        "stage_record_digest": "sha256:f2da2b4fd0d2ec617decac98792b942d30852a0056728bf5153b94e3d52dce43"
       },
+      "required_evidence_class": "observed_live",
       "sequence": 15,
       "stage_id": "gateway_negotiation",
+      "stage_record_digest": "sha256:e29c04212a1daf5c8747c66993bd1447954e1825e8794fddae679667108fa9e6",
       "status": "unproven",
       "unproven": {
         "implementation_dependency": "accepted Integrations PR #262 external-ingest protocol lifecycle",
@@ -906,13 +1082,26 @@
         ],
         "owner": "BicameralAI/bicameral-bot"
       },
-      "evidence_class": "observed_live",
-      "previous_stage": {
-        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
-        "stage_id": "gateway_negotiation"
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+          "stage_id": "external_ingest_envelope"
+        },
+        {
+          "required_output": "the receipt/output this prerequisite stage must first produce",
+          "stage_id": "gateway_negotiation",
+          "status": "missing"
+        }
+      ],
+      "evidence_class": "none",
+      "previous_stage_record": {
+        "stage_id": "gateway_negotiation",
+        "stage_record_digest": "sha256:e29c04212a1daf5c8747c66993bd1447954e1825e8794fddae679667108fa9e6"
       },
+      "required_evidence_class": "observed_live",
       "sequence": 16,
       "stage_id": "bot_acceptance",
+      "stage_record_digest": "sha256:b742812145ea1a12c8cd03d74d1f7b278fffce17f66215e60d4228e8d89751ea",
       "status": "unproven",
       "unproven": {
         "implementation_dependency": "real Bot endpoint + PR #262 response surface; credentialed run deferred",
@@ -929,13 +1118,26 @@
         ],
         "owner": "BicameralAI/bicameral-bot (Bot #856)"
       },
-      "evidence_class": "terminal_product",
-      "previous_stage": {
-        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
-        "stage_id": "bot_acceptance"
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+          "stage_id": "external_ingest_envelope"
+        },
+        {
+          "required_output": "the receipt/output this prerequisite stage must first produce",
+          "stage_id": "bot_acceptance",
+          "status": "missing"
+        }
+      ],
+      "evidence_class": "none",
+      "previous_stage_record": {
+        "stage_id": "bot_acceptance",
+        "stage_record_digest": "sha256:b742812145ea1a12c8cd03d74d1f7b278fffce17f66215e60d4228e8d89751ea"
       },
+      "required_evidence_class": "terminal_product",
       "sequence": 17,
       "stage_id": "durable_evidence",
+      "stage_record_digest": "sha256:c45b9caf432ac5681ecfcab1d0552bae63ec94bcae8ebe866f640c08411a951e",
       "status": "unproven",
       "unproven": {
         "implementation_dependency": "terminal Bot journey with a real delivery",
@@ -952,13 +1154,26 @@
         ],
         "owner": "BicameralAI/bicameral-bot (Bot #856) + Factory #282 witnessed journey"
       },
-      "evidence_class": "terminal_product",
-      "previous_stage": {
-        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
-        "stage_id": "durable_evidence"
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+          "stage_id": "external_ingest_envelope"
+        },
+        {
+          "required_output": "the receipt/output this prerequisite stage must first produce",
+          "stage_id": "durable_evidence",
+          "status": "missing"
+        }
+      ],
+      "evidence_class": "none",
+      "previous_stage_record": {
+        "stage_id": "durable_evidence",
+        "stage_record_digest": "sha256:c45b9caf432ac5681ecfcab1d0552bae63ec94bcae8ebe866f640c08411a951e"
       },
+      "required_evidence_class": "terminal_product",
       "sequence": 18,
       "stage_id": "candidate_or_decision_lifecycle",
+      "stage_record_digest": "sha256:c27de215d8a47f1a77b4d60c1be9b9d9fd0715df145ef12cfe67b1ef0b1df5ea",
       "status": "unproven",
       "unproven": {
         "implementation_dependency": "terminal provider-to-reviewed-Decision run",
@@ -975,13 +1190,26 @@
         ],
         "owner": "BicameralAI/bicameral-bot (Bot #869)"
       },
-      "evidence_class": "terminal_product",
-      "previous_stage": {
-        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
-        "stage_id": "candidate_or_decision_lifecycle"
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+          "stage_id": "external_ingest_envelope"
+        },
+        {
+          "required_output": "the receipt/output this prerequisite stage must first produce",
+          "stage_id": "candidate_or_decision_lifecycle",
+          "status": "missing"
+        }
+      ],
+      "evidence_class": "none",
+      "previous_stage_record": {
+        "stage_id": "candidate_or_decision_lifecycle",
+        "stage_record_digest": "sha256:c27de215d8a47f1a77b4d60c1be9b9d9fd0715df145ef12cfe67b1ef0b1df5ea"
       },
+      "required_evidence_class": "terminal_product",
       "sequence": 19,
       "stage_id": "recall_transformation",
+      "stage_record_digest": "sha256:d5d40e56e35f42d6fcd20d986d2b4d3896d0bdfe1d06e04fb144d0596e2a8727",
       "status": "unproven",
       "unproven": {
         "implementation_dependency": "Bot recall surface over durable evidence",
@@ -998,13 +1226,26 @@
         ],
         "owner": "host execution surfaces (mcp/cloud)"
       },
-      "evidence_class": "terminal_product",
-      "previous_stage": {
-        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
-        "stage_id": "recall_transformation"
+      "depends_on_outputs": [
+        {
+          "output_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+          "stage_id": "external_ingest_envelope"
+        },
+        {
+          "required_output": "the receipt/output this prerequisite stage must first produce",
+          "stage_id": "recall_transformation",
+          "status": "missing"
+        }
+      ],
+      "evidence_class": "none",
+      "previous_stage_record": {
+        "stage_id": "recall_transformation",
+        "stage_record_digest": "sha256:d5d40e56e35f42d6fcd20d986d2b4d3896d0bdfe1d06e04fb144d0596e2a8727"
       },
+      "required_evidence_class": "terminal_product",
       "sequence": 20,
       "stage_id": "agent_session_exposure",
+      "stage_record_digest": "sha256:17b00838b34e13a517afa2df9003130d5149b4adcc153d7a155e0b1e5054ea81",
       "status": "unproven",
       "unproven": {
         "implementation_dependency": "recall output exposed to a real agent session",
@@ -1014,7 +1255,7 @@
       }
     }
   ],
-  "started_at": "2026-07-22T18:34:20Z",
+  "started_at": "2026-07-22T19:06:26Z",
   "unproven_downstream": [
     "gateway_negotiation",
     "bot_acceptance",
