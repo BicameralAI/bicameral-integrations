@@ -52,3 +52,5 @@ jobs:
         run: python scripts/validate_ingest_schema_pin.py
       - name: Alpha ingest manifest (closed schema + honesty semantics)
         run: python scripts/validate_alpha_ingest_manifest.py
+      - name: Information-cycle evidence bundle (digest chain + honesty semantics)
+        run: python scripts/validate_information_cycle_bundle.py ingest/evidence/local_directory-passive_import/bundle.json

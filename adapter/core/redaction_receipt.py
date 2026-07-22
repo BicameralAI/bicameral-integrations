@@ -11,10 +11,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import TimeoutError as FuturesTimeout
+import atexit
+import multiprocessing
+import os
+import threading
 from dataclasses import replace
 from datetime import datetime, timezone
+from typing import Any
 
 from .observations import Observation
 from .redaction import redact_with_findings
@@ -234,10 +237,127 @@ def sanitize_observation(
 # ---------------------------------------------------------------------------
 
 _GATE_MAX_BYTES = 1_048_576  # 1 MiB serialized-observation budget
-# One shared worker pool for bounded-timeout sanitization; sized small because
-# sanitization is CPU-light and normalize() awaits each result synchronously.
-_GATE_EXECUTOR = ThreadPoolExecutor(max_workers=4, thread_name_prefix="redaction-gate")
 _GATE_BUDGET_SECONDS = 5.0
+
+
+def _worker_loop(conn: Any) -> None:
+    """Sanitizer worker: one recyclable child process.
+
+    Receives ``(observation, completed_at)`` pairs and replies with either
+    ``("ok", (sanitized, receipt))`` or ``("err", reason_code)``. Only typed
+    reason codes cross the process boundary on failure — never exception text,
+    never payload content — so a raw sensitive value cannot leak through the
+    failure channel. The test-only hang hook (environment variable
+    ``BICAMERAL_REDACTION_TEST_SLEEP_S``) exists so timeout isolation can be
+    proven without depending on a pathological input; production code never
+    sets it.
+    """
+    sleep_s = float(os.environ.get("BICAMERAL_REDACTION_TEST_SLEEP_S", "0") or 0)
+    while True:
+        try:
+            observation, completed_at = conn.recv()
+        except (EOFError, OSError):
+            return
+        if sleep_s:
+            import time
+
+            time.sleep(sleep_s)
+        try:
+            result = sanitize_observation(observation, completed_at=completed_at)
+        except RedactionFailure as failure:
+            conn.send(("err", failure.reason))
+        except Exception:
+            # Unknown engine crash: typed, value-free.
+            conn.send(("err", "engine_unavailable"))
+        else:
+            conn.send(("ok", result))
+
+
+class _WorkerManager:
+    """Bounded, recyclable sanitizer worker (GH #269 round-3 objective 1).
+
+    Exactly one child process serves sanitization. On timeout the child is
+    HARD-TERMINATED and discarded, so a stuck sanitizer can never occupy a
+    worker permanently: the next call spawns a fresh child, repeated timeouts
+    cannot starve later healthy requests, and cleanup (terminate + join) is
+    deterministic. Calls are serialized under a lock — resource consumption is
+    bounded at one worker process regardless of caller concurrency. Workers are
+    daemonic and additionally terminated atexit, so process shutdown never
+    hangs on abandoned sanitizer work.
+    """
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._ctx = multiprocessing.get_context("spawn")
+        self._process: multiprocessing.process.BaseProcess | None = None
+        # Platform pipe types diverge (PipeConnection on Windows); typed loosely.
+        self._conn: Any = None
+        atexit.register(self._shutdown)
+
+    def _spawn(self) -> None:
+        parent, child = self._ctx.Pipe()
+        process = self._ctx.Process(target=_worker_loop, args=(child,), daemon=True)
+        process.start()
+        child.close()
+        self._process, self._conn = process, parent
+
+    def _kill(self) -> None:
+        if self._conn is not None:
+            try:
+                self._conn.close()
+            except OSError:
+                pass
+        if self._process is not None and self._process.is_alive():
+            self._process.terminate()
+            self._process.join(timeout=2.0)
+        self._process, self._conn = None, None
+
+    def _shutdown(self) -> None:  # pragma: no cover - interpreter exit path
+        with self._lock:
+            self._kill()
+
+    def reset_for_tests(self) -> None:
+        """Discard the current worker so the next call spawns with the current
+        environment. Test seam only; production code never calls it."""
+        with self._lock:
+            self._kill()
+
+    def worker_alive(self) -> bool:
+        with self._lock:
+            return self._process is not None and self._process.is_alive()
+
+    def call(
+        self, observation: Observation, completed_at: str | None, budget_seconds: float
+    ) -> tuple[Observation, dict[str, object]]:
+        with self._lock:
+            if self._process is None or not self._process.is_alive():
+                self._kill()
+                self._spawn()
+            assert self._conn is not None
+            try:
+                self._conn.send((observation, completed_at))
+            except (ValueError, TypeError, AttributeError, OSError):
+                # Unpicklable observation content cannot enter the worker.
+                self._kill()
+                raise RedactionFailure("unsupported_payload") from None
+            if not self._conn.poll(budget_seconds):
+                # HARD termination: the stuck worker is killed and replaced,
+                # never abandoned. Its partial work dies with the process, so
+                # timed-out work can never later mutate shared state.
+                self._kill()
+                raise RedactionFailure("timeout")
+            try:
+                kind, payload = self._conn.recv()
+            except (EOFError, OSError):
+                self._kill()
+                raise RedactionFailure("engine_unavailable") from None
+            if kind == "err":
+                raise RedactionFailure(str(payload))
+            sanitized, receipt = payload
+            return sanitized, receipt
+
+
+_WORKER = _WorkerManager()
 
 
 def guarded_sanitize_observation(
@@ -258,7 +378,9 @@ def guarded_sanitize_observation(
     - ``invalid_ruleset`` — the deterministic ruleset identity cannot be
       established (empty digest/id would make receipts unverifiable);
     - ``oversized_payload`` — serialized observation content exceeds the budget;
-    - ``timeout`` — sanitization exceeded its wall-clock budget;
+    - ``timeout`` — sanitization exceeded its wall-clock budget; the worker
+      process is hard-terminated and recycled, so a stuck sanitizer cannot
+      reduce healthy throughput;
     - ``receipt_generation_failure`` — the receipt could not be built/serialized;
     - plus the inner sanitizer's own ``unsupported_*``, ``sensitive_*``, and
       structural reasons, which pass through unchanged. Content the engine
@@ -284,18 +406,11 @@ def guarded_sanitize_observation(
     if len(serialized.encode("utf-8")) > max_bytes:
         raise RedactionFailure("oversized_payload")
 
-    # Bounded enforcement: the sanitizer runs on a worker thread and the
-    # caller waits at most budget_seconds -- the budget is enforced BEFORE an
-    # unbounded call could return, not detected afterwards. (The worker may
-    # finish in the background; its result is discarded on timeout.)
-    future = _GATE_EXECUTOR.submit(
-        sanitize_observation, observation, completed_at=completed_at
-    )
-    try:
-        sanitized, receipt = future.result(timeout=budget_seconds)
-    except FuturesTimeout:
-        future.cancel()
-        raise RedactionFailure("timeout") from None
+    # Bounded enforcement with real termination: sanitization runs in a
+    # recyclable child process; on timeout the child is hard-terminated and
+    # replaced (see _WorkerManager). Caller latency AND resource consumption
+    # are both bounded — no abandoned thread backs this timeout claim.
+    sanitized, receipt = _WORKER.call(observation, completed_at, budget_seconds)
 
     try:
         json.dumps(receipt, sort_keys=True, separators=(",", ":"))

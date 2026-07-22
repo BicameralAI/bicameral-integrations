@@ -7,6 +7,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Information-cycle evidence bundle: a closed, versioned 20-stage ledger
+  (`ingest/_schema/information-cycle-evidence-bundle.schema.json`) with
+  cryptographic stage-to-stage digest links, per-stage transformation
+  mapping/redaction ledgers, authority boundaries, and honest `unproven`
+  downstream records (gateway negotiation awaits PR #262; Bot acceptance,
+  durable evidence, lifecycle, recall, and agent exposure belong to Bot,
+  Factory, and host surfaces; credentialed runs deferred). Generator uses
+  production code paths only; validator is CI-wired with negative coverage
+  for reordering, broken links, tampered digests, fabricated unproven
+  outputs, and evidence-class escalation.
+- Redaction timeout is now backed by a terminable, recyclable worker
+  process: a stuck sanitizer is hard-killed and replaced, repeated timeouts
+  cannot starve later healthy requests, and no raw value crosses the worker
+  boundary in failure output (isolation test suite included). The previous
+  thread-pool timeout could abandon workers and is removed.
+
 - Alpha ingest manifest (`ingest/alpha-ingest-manifest.json`) with a closed
   fail-closed schema and CI validator: six connector/mode routes (GitHub
   webhook + honestly-missing active poll, Linear webhook + GraphQL poll,

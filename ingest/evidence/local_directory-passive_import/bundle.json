@@ -1,0 +1,1026 @@
+{
+  "bundle_id": "sha256:f6b18b77e1952fb90a5f072b6329238b0437261f03b3a7645c6d99a0dc1a214f",
+  "completed_at": "2026-07-22T18:34:20Z",
+  "contract": {
+    "contract_id": "external-ingest.request.v2",
+    "semantic_fingerprint": "sha256:a133dd9ec689ac530fb045195ef0e4f0a0fa94960bf8b5fbbc863db2e18e71b9"
+  },
+  "evidence_class": "component",
+  "integrations": {
+    "commit": "fd7f4dc3e86e35d9e1a841b66130442302a1be0a",
+    "repository": "BicameralAI/bicameral-integrations"
+  },
+  "route": {
+    "connector_id": "local_directory",
+    "mode": "passive_import"
+  },
+  "run_id": "local_directory-passive_import-component-cycle",
+  "schema_version": 1,
+  "stages": [
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:5efd506125373524174baa62cac2b9d442be69a0078cd564d3f2127245234a07",
+        "artifacts": [
+          {
+            "digest": "sha256:20cef797fcd4eb354f349e7546d03936ef9f49233f14b1837cef4c3631a3cbf8",
+            "media_type": "text/markdown",
+            "path": "CODE_OF_CONDUCT.md"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:db3b8c7c77c7ac427a5ca2fbf3e24b34ec84306e0e27c53c6233425cadeb16e3",
+        "artifacts": [
+          {
+            "digest": "sha256:aa0787f8c91b6c9fd30ea55b608cc9d71b5232e3625e5478a44dd9a11e6fe8c9",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/01-raw-acquisition-payload.json"
+          }
+        ]
+      },
+      "sequence": 1,
+      "stage_id": "raw_acquisition",
+      "status": "passed",
+      "transformation": {
+        "carried_forward": [
+          "path",
+          "content",
+          "modified"
+        ],
+        "implementation": {
+          "path": "scripts/capture_sanitize.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "operator-run local file read (real passive-import boundary)",
+        "summary": "Reads the approved repo-owned source file from disk into the provider payload shape {path, content, modified}."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:cf25c3ec57e87eed7954e717574cf03b3bee9dc13a5447d9d424c9b92a6dcec7",
+        "artifacts": [
+          {
+            "digest": "sha256:aa0787f8c91b6c9fd30ea55b608cc9d71b5232e3625e5478a44dd9a11e6fe8c9",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/01-raw-acquisition-payload.json"
+          },
+          {
+            "digest": "sha256:9a1cbf11d91f31474821abbd5b1648225205abb148010883bb70e3344b75c7c8",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/02-acquisition-receipt.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:d7bdaaf0ad03ff9ada6a6621124a89ffe1a138d0144b86825c845b143c6d2ce3",
+        "artifacts": [
+          {
+            "digest": "sha256:9a1cbf11d91f31474821abbd5b1648225205abb148010883bb70e3344b75c7c8",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/02-acquisition-receipt.json"
+          },
+          {
+            "digest": "sha256:03ee87081d67b2d49f6f455c1192893fcfb1cc5911592fd89c9b4d493290573d",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/provider_verification.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:db3b8c7c77c7ac427a5ca2fbf3e24b34ec84306e0e27c53c6233425cadeb16e3",
+        "stage_id": "raw_acquisition"
+      },
+      "sequence": 2,
+      "stage_id": "acquisition_verification",
+      "status": "passed",
+      "transformation": {
+        "implementation": {
+          "path": "runtime/ingest_conformance_harness.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "acquisition receipt validation + canonical scan-root containment",
+        "summary": "Validates the receiver-authored acquisition receipt (original digest, verification over original bytes, replay window, receiver identity) and resolved-path scope containment."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:db3b8c7c77c7ac427a5ca2fbf3e24b34ec84306e0e27c53c6233425cadeb16e3",
+        "artifacts": [
+          {
+            "digest": "sha256:aa0787f8c91b6c9fd30ea55b608cc9d71b5232e3625e5478a44dd9a11e6fe8c9",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/01-raw-acquisition-payload.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:06534dffe21bc69765f6e53c5fe703470609f4286f11176e79b8ddacad84c371",
+        "artifacts": [
+          {
+            "digest": "sha256:ad76d0810562d75cbf5fb47c2a47cc6f58934d84f2cf5a3eceea861f8376ce6f",
+            "media_type": "application/json",
+            "path": "ingest/captures/local_directory-passive_import/capture.json"
+          },
+          {
+            "digest": "sha256:45849368cc1cb10db07cd02ba5d7a57d30051e005a3b461d75493b63cc483cd2",
+            "media_type": "application/json",
+            "path": "ingest/captures/local_directory-passive_import/sanitization-ledger.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:d7bdaaf0ad03ff9ada6a6621124a89ffe1a138d0144b86825c845b143c6d2ce3",
+        "stage_id": "acquisition_verification"
+      },
+      "sequence": 3,
+      "stage_id": "sanitized_capture",
+      "status": "passed",
+      "transformation": {
+        "changes": [
+          {
+            "action": "tokenized",
+            "category": "pii",
+            "count": 1,
+            "path": "payload.content"
+          }
+        ],
+        "implementation": {
+          "path": "scripts/capture_sanitize.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "deterministic sanitization of every string leaf + ledger",
+        "ruleset_digest": "sha256:b5c6c583fb6c939a47f70f66c65a44a9c9dc4de291fe018a597cc03267bb9141",
+        "ruleset_id": "fx-sec-001-plus-pii-v1",
+        "summary": "Applies the deterministic redaction engine to the raw payload; original bytes retained only as an irreversible sha256."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:955f387be64f6a0a30655dc36df4de6b21934189fac0b4b06e4fd0e113f97ca6",
+        "artifacts": [
+          {
+            "digest": "sha256:ad76d0810562d75cbf5fb47c2a47cc6f58934d84f2cf5a3eceea861f8376ce6f",
+            "media_type": "application/json",
+            "path": "ingest/captures/local_directory-passive_import/capture.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:1585173c060b8845c9445b1e152d27580ff697486a658f5ea17abf0e18f22c51",
+        "artifacts": [
+          {
+            "digest": "sha256:89dee740f7511bbe68f88670d23a515a9353b2d1d68ef9b2c650bd939a2d6a31",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/04-provider-facts.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:06534dffe21bc69765f6e53c5fe703470609f4286f11176e79b8ddacad84c371",
+        "stage_id": "sanitized_capture"
+      },
+      "sequence": 4,
+      "stage_id": "provider_fact_extraction",
+      "status": "passed",
+      "transformation": {
+        "extracted": [
+          "path",
+          "content",
+          "modified"
+        ],
+        "implementation": {
+          "path": "connectors/local_directory/connector.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "mappings": [
+          {
+            "operation": "copy",
+            "source_path": "payload.path",
+            "target_path": "facts.path"
+          },
+          {
+            "operation": "copy",
+            "source_path": "payload.modified",
+            "target_path": "facts.modified"
+          },
+          {
+            "operation": "measure",
+            "source_path": "payload.content",
+            "target_path": "facts.content_length"
+          }
+        ],
+        "name": "parse_file: provider fact extraction",
+        "summary": "Extracts the provider facts (path, content, modified) and derives the opaque identity token."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:3bcf6e2effea3d921a514aee9ce65969848559b42768d1dffb034b8bb5884931",
+        "artifacts": [
+          {
+            "digest": "sha256:89dee740f7511bbe68f88670d23a515a9353b2d1d68ef9b2c650bd939a2d6a31",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/04-provider-facts.json"
+          },
+          {
+            "digest": "sha256:ad76d0810562d75cbf5fb47c2a47cc6f58934d84f2cf5a3eceea861f8376ce6f",
+            "media_type": "application/json",
+            "path": "ingest/captures/local_directory-passive_import/capture.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:d0b8cd7ff5b47ad40fbbab85fee504b3a2c1dfe002b5d84ac25c74c9a027dac3",
+        "artifacts": [
+          {
+            "digest": "sha256:d248db094c5ebdad77f50949e9fda3c2d235dbc9015fd37040688d8cf5aff1fa",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/parsed_facts.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:1585173c060b8845c9445b1e152d27580ff697486a658f5ea17abf0e18f22c51",
+        "stage_id": "provider_fact_extraction"
+      },
+      "sequence": 5,
+      "stage_id": "provider_neutral_observation",
+      "status": "passed",
+      "transformation": {
+        "added_metadata": [
+          "source_ref.kind (redacted source_type_label)"
+        ],
+        "implementation": {
+          "path": "connectors/local_directory/connector.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "mappings": [
+          {
+            "operation": "sha256_token",
+            "source_path": "payload.path",
+            "target_path": "observation.source_ref.ref"
+          },
+          {
+            "operation": "sanitized_copy",
+            "source_path": "payload.content",
+            "target_path": "observation.excerpt"
+          },
+          {
+            "operation": "sanitized_copy",
+            "source_path": "payload.path(stem)",
+            "target_path": "observation.title"
+          },
+          {
+            "operation": "copy",
+            "source_path": "payload.modified",
+            "target_path": "observation.timestamp"
+          }
+        ],
+        "name": "parse_file: provider-neutral Observation",
+        "summary": "Organizes provider facts into the neutral Observation shape; connector-level redact-and-pass applies to free text."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:d0b8cd7ff5b47ad40fbbab85fee504b3a2c1dfe002b5d84ac25c74c9a027dac3",
+        "artifacts": [
+          {
+            "digest": "sha256:d248db094c5ebdad77f50949e9fda3c2d235dbc9015fd37040688d8cf5aff1fa",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/parsed_facts.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:887b03302c30dc46147559774cd1a1a3837fb25b9881d8f221f86335b0c1af4a",
+        "artifacts": [
+          {
+            "digest": "sha256:d1e9e5f11d901250bf9704e1336c5aa561451d75162fe3d8ee44ad80641ab2ba",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/06-redaction-changes.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:d0b8cd7ff5b47ad40fbbab85fee504b3a2c1dfe002b5d84ac25c74c9a027dac3",
+        "stage_id": "provider_neutral_observation"
+      },
+      "sequence": 6,
+      "stage_id": "guarded_redaction",
+      "status": "passed",
+      "transformation": {
+        "changes": [],
+        "implementation": {
+          "path": "adapter/core/redaction_receipt.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "guarded_sanitize_observation (inside pipeline.normalize)",
+        "ruleset_digest": "sha256:b5c6c583fb6c939a47f70f66c65a44a9c9dc4de291fe018a597cc03267bb9141",
+        "ruleset_id": "fx-sec-001-plus-pii-v1",
+        "summary": "Mandatory hard gate: engine/ruleset identity, size budget, terminable worker-process timeout, structural identity preservation; failures are typed and emit nothing downstream."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:3633a1d97266670aa318e082ac9be5325b51786ec9d24f0e18f0f3ec0f43c4b3",
+        "artifacts": [
+          {
+            "digest": "sha256:d248db094c5ebdad77f50949e9fda3c2d235dbc9015fd37040688d8cf5aff1fa",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/parsed_facts.json"
+          },
+          {
+            "digest": "sha256:d1e9e5f11d901250bf9704e1336c5aa561451d75162fe3d8ee44ad80641ab2ba",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/06-redaction-changes.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
+        "artifacts": [
+          {
+            "digest": "sha256:ecefa0564c0f8e39862f1dc5108e88005836f1344253b4f12d9ea9f31496c39f",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/observation.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:887b03302c30dc46147559774cd1a1a3837fb25b9881d8f221f86335b0c1af4a",
+        "stage_id": "guarded_redaction"
+      },
+      "sequence": 7,
+      "stage_id": "sanitized_observation",
+      "status": "passed",
+      "transformation": {
+        "carried_forward": [
+          "source_ref",
+          "timestamp",
+          "provider_event_id",
+          "mode"
+        ],
+        "deliberately_omitted": [
+          "original free-text values (irreversibly replaced)"
+        ],
+        "implementation": {
+          "path": "adapter/core/redaction_receipt.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "sanitized Observation materialization",
+        "summary": "The Observation after the hard gate: free text tokenized, structural identity byte-identical."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
+        "artifacts": [
+          {
+            "digest": "sha256:ecefa0564c0f8e39862f1dc5108e88005836f1344253b4f12d9ea9f31496c39f",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/observation.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:f86cabd49e7a1ee958de57ac6bb5eaf14c25fbdc845b06b6c917c631dbc4aab1",
+        "artifacts": [
+          {
+            "digest": "sha256:b8eb9a39a40b2ec2c405457896920c92cfc15575cdf75490ee506e264ba2713a",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/redaction_receipt.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
+        "stage_id": "sanitized_observation"
+      },
+      "sequence": 8,
+      "stage_id": "redaction_receipt",
+      "status": "passed",
+      "transformation": {
+        "implementation": {
+          "path": "adapter/core/redaction_receipt.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "deterministic value-free receipt",
+        "summary": "Receipt digest domain excludes completed_at; findings carry category+action+count only."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
+        "artifacts": [
+          {
+            "digest": "sha256:ecefa0564c0f8e39862f1dc5108e88005836f1344253b4f12d9ea9f31496c39f",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/observation.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:eee406e01d76290f535621fecd9c883ce0332dd2ae221b476718614fe6941058",
+        "artifacts": [
+          {
+            "digest": "sha256:37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/integration_advisories.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:f86cabd49e7a1ee958de57ac6bb5eaf14c25fbdc845b06b6c917c631dbc4aab1",
+        "stage_id": "redaction_receipt"
+      },
+      "sequence": 9,
+      "stage_id": "integration_advisories",
+      "status": "passed",
+      "transformation": {
+        "implementation": {
+          "path": "connectors/local_directory/connector.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "integration-specific advisory signals (shared schema)",
+        "summary": "local_directory emits no integration signals; the empty list is a valid, pinned result."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:9fb1f9926433884f426d1ab0ca203f4de614f53c43fbda352035f8eed587d262",
+        "artifacts": [
+          {
+            "digest": "sha256:ecefa0564c0f8e39862f1dc5108e88005836f1344253b4f12d9ea9f31496c39f",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/observation.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:4caa44650076e0f50307d6e6aff9498328a555476358af5eb2cedf6eaf3caa68",
+        "artifacts": [
+          {
+            "digest": "sha256:6b5fc377d1d1fa1c4a8f445be753cce4eae98443f3caaf786562a313510edaee",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/10-normalization-mapping.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:eee406e01d76290f535621fecd9c883ce0332dd2ae221b476718614fe6941058",
+        "stage_id": "integration_advisories"
+      },
+      "sequence": 10,
+      "stage_id": "universal_normalization",
+      "status": "passed",
+      "transformation": {
+        "implementation": {
+          "path": "adapter/core/pipeline.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "mappings": [
+          {
+            "operation": "copy",
+            "source_path": "observation.source_ref",
+            "target_path": "emission.evidence[0].source_ref"
+          },
+          {
+            "operation": "copy",
+            "source_path": "observation.excerpt",
+            "target_path": "emission.body"
+          },
+          {
+            "operation": "copy",
+            "source_path": "observation.excerpt",
+            "target_path": "emission.evidence[0].excerpt"
+          },
+          {
+            "operation": "copy",
+            "source_path": "observation.title",
+            "target_path": "emission.title"
+          },
+          {
+            "operation": "derive",
+            "source_path": "observation.mode",
+            "target_path": "emission.provenance.delivery_mode"
+          },
+          {
+            "operation": "copy",
+            "source_path": "observation.metadata",
+            "target_path": "emission.metadata"
+          },
+          {
+            "operation": "attach",
+            "source_path": "(redaction receipt)",
+            "target_path": "emission.metadata.redaction_receipt"
+          }
+        ],
+        "name": "normalize: single universal seam",
+        "summary": "Observation -> validated evidence emission; receipt attached to metadata; heuristics run fail-open."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:4caa44650076e0f50307d6e6aff9498328a555476358af5eb2cedf6eaf3caa68",
+        "artifacts": [
+          {
+            "digest": "sha256:6b5fc377d1d1fa1c4a8f445be753cce4eae98443f3caaf786562a313510edaee",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/10-normalization-mapping.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:f34eda8b6c3d0991b8f6bc5915d46ee1a828687df555316fd08b730b051b30ab",
+        "artifacts": [
+          {
+            "digest": "sha256:37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/universal_advisories.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:4caa44650076e0f50307d6e6aff9498328a555476358af5eb2cedf6eaf3caa68",
+        "stage_id": "universal_normalization"
+      },
+      "sequence": 11,
+      "stage_id": "universal_advisories",
+      "status": "passed",
+      "transformation": {
+        "implementation": {
+          "path": "adapter/core/heuristics.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "universal fail-open advisory evaluation",
+        "summary": "Deterministic universal signals annotate/rank/route; evidence is never dropped; malformed advisory data becomes a diagnostic."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:2198be0157504bcef9dcf1a297238cf675aef89a65fbc17e65708cef37fcee8b",
+        "artifacts": [
+          {
+            "digest": "sha256:37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/universal_advisories.json"
+          },
+          {
+            "digest": "sha256:6b5fc377d1d1fa1c4a8f445be753cce4eae98443f3caaf786562a313510edaee",
+            "media_type": "application/json",
+            "path": "ingest/evidence/local_directory-passive_import/10-normalization-mapping.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:f7e53f976fc7b3f0b7f6980988d9cc0d6ae8f208fa1820615859841777c1f541",
+        "artifacts": [
+          {
+            "digest": "sha256:78b03fabd9771cac7151ed4d443abf60f356daecc23b94614f572b38a0975915",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/adapter_emission.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:f34eda8b6c3d0991b8f6bc5915d46ee1a828687df555316fd08b730b051b30ab",
+        "stage_id": "universal_advisories"
+      },
+      "sequence": 12,
+      "stage_id": "adapter_emission",
+      "status": "passed",
+      "transformation": {
+        "implementation": {
+          "path": "adapter/core/pipeline.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "validate_emissions: ADR-0005 contract + sensitive hard screen",
+        "summary": "Contract-validated evidence emission; per-leaf sensitive screen is the un-bypassable backstop."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:f7e53f976fc7b3f0b7f6980988d9cc0d6ae8f208fa1820615859841777c1f541",
+        "artifacts": [
+          {
+            "digest": "sha256:78b03fabd9771cac7151ed4d443abf60f356daecc23b94614f572b38a0975915",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/adapter_emission.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+        "artifacts": [
+          {
+            "digest": "sha256:cfa62a6ad75b9638f949ae73b8aa89ed2f35d012f562992a802df13e54441c83",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/external_ingest_envelope.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:f7e53f976fc7b3f0b7f6980988d9cc0d6ae8f208fa1820615859841777c1f541",
+        "stage_id": "adapter_emission"
+      },
+      "sequence": 13,
+      "stage_id": "external_ingest_envelope",
+      "status": "passed",
+      "transformation": {
+        "authority_stripped": [
+          "confidence (dimensional, dropped)",
+          "unscreened metadata (dropped)",
+          "level/snapshot/accepted fields (never sent)"
+        ],
+        "downstream_may": [
+          "Bot may accept/deduplicate/project; envelope carries no lifecycle authority"
+        ],
+        "implementation": {
+          "path": "runtime/gateway_mapping.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "mappings": [
+          {
+            "operation": "copy",
+            "source_path": "emission.body",
+            "target_path": "envelope.content"
+          },
+          {
+            "operation": "copy",
+            "source_path": "emission.source_id",
+            "target_path": "envelope.source_system"
+          },
+          {
+            "operation": "copy",
+            "source_path": "emission.evidence[].excerpt",
+            "target_path": "envelope.evidence[].excerpt"
+          },
+          {
+            "operation": "flatten_labels",
+            "source_path": "emission.advisories",
+            "target_path": "envelope.candidate_hints[0].labels"
+          },
+          {
+            "operation": "attach",
+            "source_path": "emission.metadata.redaction_receipt",
+            "target_path": "envelope.redaction_receipt"
+          }
+        ],
+        "name": "emission_to_external_envelope: authority stripping",
+        "summary": "Maps the emission to the pinned v2 envelope; advisories/provenance flatten into non-authoritative candidate-hint labels."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [
+          "evidence artifacts"
+        ],
+        "may_not_create": [
+          "candidates",
+          "Decisions",
+          "canonical Product state"
+        ],
+        "owner": "integrations"
+      },
+      "evidence_class": "component",
+      "input": {
+        "aggregate_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+        "artifacts": [
+          {
+            "digest": "sha256:cfa62a6ad75b9638f949ae73b8aa89ed2f35d012f562992a802df13e54441c83",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/external_ingest_envelope.json"
+          }
+        ]
+      },
+      "output": {
+        "aggregate_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
+        "artifacts": [
+          {
+            "digest": "sha256:655fd90583ea93c72acc9d76d6d682f4dd83b0f471fca2793727c7e6a8aaecb8",
+            "media_type": "application/json",
+            "path": "ingest/golden/local_directory-passive_import/delivery_or_cursor_receipt.json"
+          }
+        ]
+      },
+      "previous_stage": {
+        "output_digest": "sha256:1518b530489a64acb03432a461ca9db399d275615d9d6d9f15d6928306259abd",
+        "stage_id": "external_ingest_envelope"
+      },
+      "sequence": 14,
+      "stage_id": "cursor_or_delivery_decision",
+      "status": "passed",
+      "transformation": {
+        "implementation": {
+          "path": "runtime/cursor_policy.py",
+          "repository": "BicameralAI/bicameral-integrations"
+        },
+        "name": "resolve_cursor_action: two-phase-commit verdicts",
+        "summary": "201 -> ADVANCE; transport/5xx -> RETRY (no advance); sensitive 422 -> QUARANTINE. Durable checkpoint owner remains the operator runtime."
+      }
+    },
+    {
+      "authority": {
+        "may_create": [],
+        "may_not_create": [
+          "evidence fabrication by Integrations"
+        ],
+        "owner": "integrations (protocol) + bot (capabilities endpoint)"
+      },
+      "evidence_class": "observed_live",
+      "previous_stage": {
+        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
+        "stage_id": "cursor_or_delivery_decision"
+      },
+      "sequence": 15,
+      "stage_id": "gateway_negotiation",
+      "status": "unproven",
+      "unproven": {
+        "implementation_dependency": "accepted Integrations PR #262 external-ingest protocol lifecycle",
+        "reason": "PR #262 is the authoritative protocol target and has not merged; no parallel implementation is created here.",
+        "required_receipt_type": "capability-negotiation record + closed gateway delivery receipt (/api/v2, contract fingerprint match, HTTP 201)",
+        "responsible_authority": "integrations (protocol) + bot (capabilities endpoint)"
+      }
+    },
+    {
+      "authority": {
+        "may_create": [],
+        "may_not_create": [
+          "evidence fabrication by Integrations"
+        ],
+        "owner": "BicameralAI/bicameral-bot"
+      },
+      "evidence_class": "observed_live",
+      "previous_stage": {
+        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
+        "stage_id": "gateway_negotiation"
+      },
+      "sequence": 16,
+      "stage_id": "bot_acceptance",
+      "status": "unproven",
+      "unproven": {
+        "implementation_dependency": "real Bot endpoint + PR #262 response surface; credentialed run deferred",
+        "reason": "Only the real Bot can author an acceptance identity; local derivation is prohibited.",
+        "required_receipt_type": "Bot-authored acceptance identity from the real /api/v2 response",
+        "responsible_authority": "BicameralAI/bicameral-bot"
+      }
+    },
+    {
+      "authority": {
+        "may_create": [],
+        "may_not_create": [
+          "evidence fabrication by Integrations"
+        ],
+        "owner": "BicameralAI/bicameral-bot (Bot #856)"
+      },
+      "evidence_class": "terminal_product",
+      "previous_stage": {
+        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
+        "stage_id": "bot_acceptance"
+      },
+      "sequence": 17,
+      "stage_id": "durable_evidence",
+      "status": "unproven",
+      "unproven": {
+        "implementation_dependency": "terminal Bot journey with a real delivery",
+        "reason": "Durable evidence is Bot-owned canonical state; Integrations holds no authority here.",
+        "required_receipt_type": "Bot durable-evidence record (evidence CAS + canonical EvidenceAccepted)",
+        "responsible_authority": "BicameralAI/bicameral-bot (Bot #856)"
+      }
+    },
+    {
+      "authority": {
+        "may_create": [],
+        "may_not_create": [
+          "evidence fabrication by Integrations"
+        ],
+        "owner": "BicameralAI/bicameral-bot (Bot #856) + Factory #282 witnessed journey"
+      },
+      "evidence_class": "terminal_product",
+      "previous_stage": {
+        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
+        "stage_id": "durable_evidence"
+      },
+      "sequence": 18,
+      "stage_id": "candidate_or_decision_lifecycle",
+      "status": "unproven",
+      "unproven": {
+        "implementation_dependency": "terminal provider-to-reviewed-Decision run",
+        "reason": "Candidate and Decision lifecycle is Bot/Factory authority; deferred to the witnessed journey.",
+        "required_receipt_type": "candidate/Decision lifecycle records with promotion + replay proof",
+        "responsible_authority": "BicameralAI/bicameral-bot (Bot #856) + Factory #282 witnessed journey"
+      }
+    },
+    {
+      "authority": {
+        "may_create": [],
+        "may_not_create": [
+          "evidence fabrication by Integrations"
+        ],
+        "owner": "BicameralAI/bicameral-bot (Bot #869)"
+      },
+      "evidence_class": "terminal_product",
+      "previous_stage": {
+        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
+        "stage_id": "candidate_or_decision_lifecycle"
+      },
+      "sequence": 19,
+      "stage_id": "recall_transformation",
+      "status": "unproven",
+      "unproven": {
+        "implementation_dependency": "Bot recall surface over durable evidence",
+        "reason": "Recall transformation evidence requires accepted durable evidence first.",
+        "required_receipt_type": "RecallPacket + transformation-debug trace (Bot #869)",
+        "responsible_authority": "BicameralAI/bicameral-bot (Bot #869)"
+      }
+    },
+    {
+      "authority": {
+        "may_create": [],
+        "may_not_create": [
+          "evidence fabrication by Integrations"
+        ],
+        "owner": "host execution surfaces (mcp/cloud)"
+      },
+      "evidence_class": "terminal_product",
+      "previous_stage": {
+        "output_digest": "sha256:7b6f394533b5208c81a5f6a057cfb67454a89f4a0cb202c213d370a506735e15",
+        "stage_id": "recall_transformation"
+      },
+      "sequence": 20,
+      "stage_id": "agent_session_exposure",
+      "status": "unproven",
+      "unproven": {
+        "implementation_dependency": "recall output exposed to a real agent session",
+        "reason": "Exposure evidence belongs to the host surfaces after recall exists; credentialed run deferred.",
+        "required_receipt_type": "agent-session exposure record (host execution surface)",
+        "responsible_authority": "host execution surfaces (mcp/cloud)"
+      }
+    }
+  ],
+  "started_at": "2026-07-22T18:34:20Z",
+  "unproven_downstream": [
+    "gateway_negotiation",
+    "bot_acceptance",
+    "durable_evidence",
+    "candidate_or_decision_lifecycle",
+    "recall_transformation",
+    "agent_session_exposure"
+  ]
+}

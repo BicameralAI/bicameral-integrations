@@ -30,6 +30,21 @@ Observation, universal normalization, universal advisories, AdapterEmission,
 ExternalIngestEnvelope, cursor behavior, GatewaySink. Missing captures skip
 with a typed reason; they never fake a pass.
 
+- `evidence/` — complete information-cycle evidence bundles: one
+  cryptographically linked 20-stage ledger per route
+  (`_schema/information-cycle-evidence-bundle.schema.json`) showing exactly how
+  information changes at every stage from raw acquisition through the
+  ExternalIngestEnvelope and cursor decision, with per-stage inputs, outputs,
+  digests, mapping/redaction ledgers, and authority boundaries. Stages 15-20
+  (gateway negotiation, Bot acceptance, durable evidence, candidate/Decision
+  lifecycle, recall, agent-session exposure) are explicit `unproven` records
+  naming the required future receipt, responsible authority, and dependency
+  (gateway negotiation depends on PR #262; credentialed evidence runs are
+  deferred). Generate with `scripts/generate_information_cycle_bundle.py`
+  (production code paths only) and validate with
+  `scripts/validate_information_cycle_bundle.py` (CI-wired). The goldens alone
+  are checkpoint snapshots; the BUNDLE is the transformation story.
+
 Operator commands (require credentials this repo never holds):
 
 - real Bot delivery + binding receipt: `scripts/real_gateway_delivery.py`

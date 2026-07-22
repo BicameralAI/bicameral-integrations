@@ -1,0 +1,6 @@
+{
+  "changes": [],
+  "engine": "bicameral-stdlib-redaction",
+  "note": "original values are never recorded; placeholders replace them in the sanitized observation",
+  "ruleset_id": "fx-sec-001-plus-pii-v1"
+}

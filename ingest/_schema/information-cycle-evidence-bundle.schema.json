@@ -1,0 +1,140 @@
+{
+  "$comment": "Closed schema for one ingress information-cycle evidence bundle (GH #269 round 3, objective 2). Structural layer only; scripts/validate_information_cycle_bundle.py enforces the cross-field contract: contiguous ordering, the exact 20-stage ledger, previous-stage digest links, artifact/aggregate digest recomputation, upstream-failure propagation, unproven honesty (no fabricated outputs), and evidence-class escalation rules. bundle_id digest domain: the canonical bundle content EXCLUDING bundle_id, started_at, and completed_at (the only excluded observation timestamps). Artifact digests are sha256 over LF-normalized file bytes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "run_id",
+    "route",
+    "evidence_class",
+    "integrations",
+    "contract",
+    "started_at",
+    "completed_at",
+    "stages",
+    "unproven_downstream"
+  ],
+  "properties": {
+    "schema_version": { "type": "integer", "enum": [1] },
+    "bundle_id": { "type": "string" },
+    "run_id": { "type": "string" },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["connector_id", "mode"],
+      "properties": {
+        "connector_id": { "type": "string" },
+        "mode": { "type": "string" }
+      }
+    },
+    "evidence_class": {
+      "type": "string",
+      "enum": ["component", "observed_live", "terminal_product", "human_accepted"]
+    },
+    "integrations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string", "enum": ["BicameralAI/bicameral-integrations"] },
+        "commit": { "type": "string" }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_id", "semantic_fingerprint"],
+      "properties": {
+        "contract_id": { "type": "string" },
+        "semantic_fingerprint": { "type": "string" }
+      }
+    },
+    "started_at": { "type": "string" },
+    "completed_at": { "type": "string" },
+    "stages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage_id", "sequence", "status", "evidence_class", "authority"],
+        "properties": {
+          "stage_id": {
+            "type": "string",
+            "enum": [
+              "raw_acquisition",
+              "acquisition_verification",
+              "sanitized_capture",
+              "provider_fact_extraction",
+              "provider_neutral_observation",
+              "guarded_redaction",
+              "sanitized_observation",
+              "redaction_receipt",
+              "integration_advisories",
+              "universal_normalization",
+              "universal_advisories",
+              "adapter_emission",
+              "external_ingest_envelope",
+              "cursor_or_delivery_decision",
+              "gateway_negotiation",
+              "bot_acceptance",
+              "durable_evidence",
+              "candidate_or_decision_lifecycle",
+              "recall_transformation",
+              "agent_session_exposure"
+            ]
+          },
+          "sequence": { "type": "integer" },
+          "status": { "type": "string", "enum": ["passed", "failed", "unproven", "not_applicable"] },
+          "evidence_class": {
+            "type": "string",
+            "enum": ["component", "observed_live", "terminal_product", "human_accepted"]
+          },
+          "input": { "type": "object", "additionalProperties": false, "required": ["artifacts", "aggregate_digest"], "properties": {
+            "artifacts": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "digest", "media_type"], "properties": {
+              "path": { "type": "string" }, "digest": { "type": "string" }, "media_type": { "type": "string" } } } },
+            "aggregate_digest": { "type": "string" } } },
+          "transformation": { "type": "object", "additionalProperties": false, "required": ["name", "implementation"], "properties": {
+            "name": { "type": "string" },
+            "implementation": { "type": "object", "additionalProperties": false, "required": ["repository", "path"], "properties": {
+              "repository": { "type": "string" }, "commit": { "type": "string" }, "path": { "type": "string" } } },
+            "version": { "type": "string" },
+            "contract_or_schema": { "type": "string" },
+            "ruleset_id": { "type": "string" },
+            "ruleset_digest": { "type": "string" },
+            "summary": { "type": "string" },
+            "extracted": { "type": "array", "items": { "type": "string" } },
+            "added_metadata": { "type": "array", "items": { "type": "string" } },
+            "authority_stripped": { "type": "array", "items": { "type": "string" } },
+            "carried_forward": { "type": "array", "items": { "type": "string" } },
+            "deliberately_omitted": { "type": "array", "items": { "type": "string" } },
+            "downstream_may": { "type": "array", "items": { "type": "string" } },
+            "mappings": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["source_path", "target_path", "operation"], "properties": {
+              "source_path": { "type": "string" }, "target_path": { "type": "string" }, "operation": { "type": "string" } } } },
+            "changes": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "category", "action", "count"], "properties": {
+              "path": { "type": "string" }, "category": { "type": "string" }, "action": { "type": "string" }, "count": { "type": "integer" } } } }
+          } },
+          "output": { "type": "object", "additionalProperties": false, "required": ["artifacts", "aggregate_digest"], "properties": {
+            "artifacts": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "digest", "media_type"], "properties": {
+              "path": { "type": "string" }, "digest": { "type": "string" }, "media_type": { "type": "string" } } } },
+            "aggregate_digest": { "type": "string" } } },
+          "previous_stage": { "type": "object", "additionalProperties": false, "required": ["stage_id", "output_digest"], "properties": {
+            "stage_id": { "type": "string" }, "output_digest": { "type": "string" } } },
+          "authority": { "type": "object", "additionalProperties": false, "required": ["owner"], "properties": {
+            "owner": { "type": "string" },
+            "may_create": { "type": "array", "items": { "type": "string" } },
+            "may_not_create": { "type": "array", "items": { "type": "string" } } } },
+          "warnings": { "type": "array", "items": { "type": "string" } },
+          "failure": { "type": "object", "additionalProperties": false, "required": ["reason_code", "safe_message"], "properties": {
+            "reason_code": { "type": "string" }, "safe_message": { "type": "string" } } },
+          "unproven": { "type": "object", "additionalProperties": false, "required": ["required_receipt_type", "responsible_authority", "implementation_dependency", "reason"], "properties": {
+            "required_receipt_type": { "type": "string" },
+            "responsible_authority": { "type": "string" },
+            "implementation_dependency": { "type": "string" },
+            "reason": { "type": "string" } } }
+        }
+      }
+    },
+    "unproven_downstream": { "type": "array", "items": { "type": "string" } }
+  }
+}
