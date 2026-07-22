@@ -7,6 +7,14 @@ library) calls to drive a connector's ingest → verify → normalize → emit p
 
 from .delivery import PollConnector, WebhookConnector, deliver_poll, deliver_webhook
 from .gateway_mapping import emission_to_external_envelope
+from .google_oauth import OAuthRefreshError, RefreshTokenSecretResolver
+from .local_config import (
+    ConfigError,
+    FileSecretResolver,
+    LocalConfig,
+    load_config,
+    resolver_from,
+)
 from .poll_auth import ApiKeyHeaderAuth, BasicAuth, BearerAuth, NoAuth, PollError
 from .poll_client import (
     HttpTransport,
@@ -27,20 +35,13 @@ from .poll_specs import (
     build_openai_admin_spec,
     build_servicenow_spec,
 )
-from .google_oauth import OAuthRefreshError, RefreshTokenSecretResolver
-from .local_config import (
-    ConfigError,
-    FileSecretResolver,
-    LocalConfig,
-    load_config,
-    resolver_from,
-)
 from .secrets import MappingSecretResolver, SecretResolver
 from .sinks import (
     CollectingSink,
     EmissionSink,
     GatewayEmissionError,
     GatewayEmissionGated,
+    GatewayRedactionGated,
     GatewaySink,
 )
 
@@ -53,6 +54,7 @@ __all__ = [
     "CollectingSink",
     "GatewaySink",
     "GatewayEmissionGated",
+    "GatewayRedactionGated",
     "GatewayEmissionError",
     "emission_to_external_envelope",
     "SecretResolver",

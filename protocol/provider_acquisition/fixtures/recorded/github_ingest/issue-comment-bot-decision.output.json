@@ -1,0 +1,93 @@
+{
+  "cursor": {
+    "last_provider_event_id": "recorded-delivery-bot-001",
+    "repository_id": "987654321",
+    "schema_version": 1,
+    "updated_at": "2026-07-17T05:11:00Z"
+  },
+  "emission": {
+    "adapter_version": "github-issue-ingest/0.1.0",
+    "advisories": [
+      {
+        "code": "bot_authored",
+        "message": "GitHub identifies the source author as an automation identity.",
+        "metadata": {
+          "basis": "github_actor_type_or_login_suffix",
+          "confidence": "high",
+          "recommended_effect": "annotate",
+          "schema_version": 1,
+          "scope": "integration"
+        }
+      }
+    ],
+    "emission_type": "evidence",
+    "evidence_id": "github:987654321:issue_comment:24681013:b22d34c884337a4bf2cff291a0df3ea5bbdb0574fb0f503e4a4244c3268766c0",
+    "provenance": {
+      "delivery_mode": "webhook",
+      "provider_event_id": "recorded-delivery-bot-001",
+      "provider_resource_id": "issue_comment:24681013",
+      "verification": "signed"
+    }
+  },
+  "external_ingest_envelope": {
+    "candidate_hints": [
+      {
+        "body": "Decision: keep ingress heuristics fail-open; preserve evidence and rank downstream.",
+        "labels": [
+          "emission_type:evidence",
+          "advisory:bot_authored",
+          "advisory_v1:bot_authored:integration:high:annotate:github_actor_type_or_login_suffix",
+          "delivery:webhook",
+          "verification:signed",
+          "provider_event_id:recorded-delivery-bot-001",
+          "provider_resource_id:issue_comment:24681013"
+        ],
+        "title": "Implement incremental GitHub issue ingest"
+      }
+    ],
+    "content": "Decision: keep ingress heuristics fail-open; preserve evidence and rank downstream.",
+    "evidence": [
+      {
+        "excerpt": "Decision: keep ingress heuristics fail-open; preserve evidence and rank downstream."
+      }
+    ],
+    "source_system": "github",
+    "source_uri": "https://github.com/BicamerAI/bicameral-integrations/issues/256#issuecomment-24681013"
+  },
+  "observation": {
+    "evidence_id": "github:987654321:issue_comment:24681013:b22d34c884337a4bf2cff291a0df3ea5bbdb0574fb0f503e4a4244c3268766c0",
+    "excerpt": "Decision: keep ingress heuristics fail-open; preserve evidence and rank downstream.",
+    "integration_advisories": [
+      {
+        "basis": "github_actor_type_or_login_suffix",
+        "code": "bot_authored",
+        "confidence": "high",
+        "explanation": "GitHub identifies the source author as an automation identity.",
+        "recommended_effect": "annotate",
+        "schema_version": 1,
+        "scope": "integration"
+      }
+    ],
+    "mode": "webhook",
+    "normalized": {
+      "action": "created",
+      "content_truncated": false,
+      "event_name": "issue_comment",
+      "issue_id": "24681012",
+      "issue_number": "256",
+      "repository_full_name": "BicameralAI/bicameral-integrations",
+      "repository_id": "987654321",
+      "source_version": "b22d34c884337a4bf2cff291a0df3ea5bbdb0574fb0f503e4a4244c3268766c0",
+      "title_truncated": false,
+      "tombstone": false
+    },
+    "provider_event_id": "recorded-delivery-bot-001",
+    "provider_resource_id": "issue_comment:24681013",
+    "source_ref": {
+      "kind": "issue_comment",
+      "ref": "BicameralAI/bicameral-integrations#issues/256:issue_comment:24681013:v:b22d34c884337a4bf2cff291a0df3ea5bbdb0574fb0f503e4a4244c3268766c0",
+      "source_id": "github",
+      "url": "https://github.com/BicamerAI/bicameral-integrations/issues/256#issuecomment-24681013"
+    }
+  }
+}
