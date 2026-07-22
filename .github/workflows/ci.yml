@@ -52,5 +52,12 @@ jobs:
         run: python scripts/validate_ingest_schema_pin.py
       - name: Alpha ingest manifest (closed schema + honesty semantics)
         run: python scripts/validate_alpha_ingest_manifest.py
-      - name: Information-cycle evidence bundle (digest chain + honesty semantics)
-        run: python scripts/validate_information_cycle_bundle.py ingest/evidence/local_directory-passive_import/bundle.json
+      - name: Information-cycle evidence bundle (record chain + lineage + provenance + exact-head receipt)
+        run: python scripts/validate_information_cycle_bundle.py ingest/evidence/local_directory-passive_import/bundle.json --emit-head-receipt /tmp/exact-head-validation-receipt.json
+      - name: Upload exact-head validation receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: information-cycle-exact-head-receipt
+          path: /tmp/exact-head-validation-receipt.json
+          if-no-files-found: ignore

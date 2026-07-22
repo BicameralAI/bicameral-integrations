@@ -164,7 +164,9 @@ def test_concurrent_caller_lock_wait_counts_against_its_own_budget(
     # Bound: own budget (0.5) + documented cleanup tolerance + generous CI
     # scheduling slack. Never the first caller's 4s budget.
     tolerance = _WorkerManager.CLEANUP_TOLERANCE_SECONDS
-    assert float(results["second_elapsed"]) <= 0.5 + tolerance / 2 + 1.5
+    second_elapsed = results["second_elapsed"]
+    assert isinstance(second_elapsed, float)
+    assert second_elapsed <= 0.5 + tolerance / 2 + 1.5
     assert results["first"] == "timeout"
     assert _SENSITIVE not in str(results)
 

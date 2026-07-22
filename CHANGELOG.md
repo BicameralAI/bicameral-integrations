@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Round-4 evidence and runtime integrity: the redaction timeout is now ONE
+  end-to-end monotonic deadline (lock wait included; bounded terminate->kill
+  cleanup with a documented tolerance; concurrent-caller tests); the evidence
+  bundle binds implementation provenance to an ancestor reviewed commit with
+  per-component blob digests plus a CI-emitted exact-head validation receipt;
+  stage-record chaining (tamper-evident for unproven/failed stages) is
+  separated from transformation-output lineage (output-less stages can never
+  be cited as emitting digests); a stage-scoped raw-sample allowlist replaces
+  the false "no PII anywhere" claim (the approved repo-owned raw value appears
+  only at raw_acquisition, by digest); unproven stages hold evidence_class
+  none and declare required_evidence_class, and the bundle class derives only
+  from evidence actually held.
+
 - Information-cycle evidence bundle: a closed, versioned 20-stage ledger
   (`ingest/_schema/information-cycle-evidence-bundle.schema.json`) with
   cryptographic stage-to-stage digest links, per-stage transformation

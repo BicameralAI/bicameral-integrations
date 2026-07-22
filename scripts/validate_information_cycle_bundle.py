@@ -41,7 +41,8 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import subprocess
+# Fixed-argv git plumbing only; no shell, no untrusted input.
+import subprocess  # nosec B404
 import sys
 from datetime import datetime, timezone
 from hashlib import sha256
