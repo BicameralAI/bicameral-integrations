@@ -1,0 +1,56 @@
+{
+  "schema": "bicameral-factory/spec-governance-result/v1",
+  "binding": {
+    "repository": "BicameralAI/bicameral-integrations",
+    "pr": 269,
+    "evaluated_head": "1db7dbde8ae9486e4e137208102d0606d36f797a",
+    "artifact_path": "ingest/alpha-ingest-manifest.json",
+    "artifact_sha256": "3414721db3a6c27ba8d636a3890b081affb2716de7a2afb06a936a1bdf48ee1d",
+    "artifact_state": "added",
+    "result_id": "sha256:dc33dbb64251a360f5f0f6041d3805c79a9f5d71f0a45dfd259c502130a324f0"
+  },
+  "skill": {
+    "name": "bic:spec-governance-gate",
+    "revision": "sha256:e25904a38582defdde6623b180245808a705341b2aa82d0d53596e4b5b0669f0"
+  },
+  "dimensions": {
+    "runtime": {
+      "status": "passed",
+      "evidence": [
+        "https://github.com/BicameralAI/bicameral-integrations/pull/269",
+        "runtime/ingest_conformance_harness.py",
+        "adapter/core/tests/test_redaction_boundary_guards.py"
+      ]
+    },
+    "state_machine": {
+      "status": "passed",
+      "evidence": [
+        "ingest/README.md",
+        "runtime/tests/test_alpha_ingest_conformance.py"
+      ]
+    },
+    "authority": {
+      "status": "passed",
+      "evidence": [
+        "ingest/alpha-ingest-manifest.json",
+        "https://github.com/BicameralAI/bicameral-integrations/issues/260"
+      ]
+    },
+    "user_journey": {
+      "status": "not_applicable",
+      "reason": "Ingress evidence tooling and boundary hardening; no user-visible product journey or surface changes."
+    }
+  },
+  "ux_impact": false,
+  "questions": [],
+  "lifecycle_ownership": {
+    "crossing": false,
+    "owner": null,
+    "decision_class": null
+  },
+  "warnings": [],
+  "status": "governance_ready",
+  "generated_at": "2026-07-22T19:30:00Z",
+  "generated_by": "bic:spec-governance-gate authoring review for integrations PR #269 Phase A (https://github.com/BicameralAI/bicameral-integrations/pull/269)",
+  "notes": "The July-29 alpha route matrix with honesty semantics enforced by scripts/validate_alpha_ingest_manifest.py."
+}

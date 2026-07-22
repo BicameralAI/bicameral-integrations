@@ -5,7 +5,13 @@
 .claude/
 .failsafe/
 .qor/
-.bicameral/
+# Operator-local state stays ignored, but committed governance evidence
+# (spec-governance results, Release Unit proposals, repo governance config)
+# is tracked explicitly.
+.bicameral/*
+!.bicameral/repo-governance.yaml
+!.bicameral/spec-governance/
+!.bicameral/release-units/
 CLAUDE.md
 GEMINI.md
 COPILOT.md
