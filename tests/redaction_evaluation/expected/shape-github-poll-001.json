@@ -1,0 +1,55 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 32,
+      "entity_id": "e001",
+      "field_path": "metadata.poll.items[0].title",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 20,
+      "subtype": "person"
+    },
+    {
+      "category": "pii",
+      "end": 62,
+      "entity_id": "e002",
+      "field_path": "metadata.poll.items[0].body",
+      "mandatory": false,
+      "replacement": "[redacted:email]",
+      "start": 31,
+      "subtype": "email"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:c0b0109d9439de57fe3cf03abeccbc52f4c98170c732d3b69af5e6395ace574e",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:eb92f37304734d63710c5965002ef59d624ed8dcc5ad6b0892f983c902b1099a",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:fdefe4b438f4482fbd658ae7269520b6fa3a552eb75871806bc193cc7602bb37",
+      "field_path": "provider_event_id"
+    },
+    {
+      "expected_value_sha256": "sha256:63ebe7c1b4ec0ca464047a7cb9b737bfefbfad8d4579c6e89b7ed075a65c8c03",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:e289eb06943acbbd03801016ac0a0edccedbd44f53847133e5107a721ac9a4c9",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:65c24df85cc375f604c14b7a7fd6fc0abb6301ed7f956095d167458a1877b885",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-github-poll-001",
+  "schema_version": 1
+}

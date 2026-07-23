@@ -1,0 +1,20 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 33,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:government_id]",
+      "start": 22,
+      "subtype": "government_id"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "govid-ssn-unlabeled-002",
+  "schema_version": 1
+}

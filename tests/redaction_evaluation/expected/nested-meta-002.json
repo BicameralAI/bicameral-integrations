@@ -1,0 +1,20 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 33,
+      "entity_id": "e001",
+      "field_path": "evidence_metadata.note",
+      "mandatory": false,
+      "replacement": "[redacted:phone]",
+      "start": 18,
+      "subtype": "phone"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "nested-meta-002",
+  "schema_version": 1
+}

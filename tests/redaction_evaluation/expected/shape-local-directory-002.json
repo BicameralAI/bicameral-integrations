@@ -1,0 +1,51 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 42,
+      "entity_id": "e001",
+      "field_path": "evidence_metadata.note",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 32,
+      "subtype": "person"
+    },
+    {
+      "category": "pii",
+      "end": 56,
+      "entity_id": "e002",
+      "field_path": "metadata.file.content",
+      "mandatory": false,
+      "replacement": "[redacted:email]",
+      "start": 34,
+      "subtype": "email"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:9959ff9622ac718ee18ee624e9ed23d7ae99310addf4cab1522709c5dac548a5",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:87abea193dc75379ce1600372022c424d15f1026367d80b1d34027cdec605719",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:87abea193dc75379ce1600372022c424d15f1026367d80b1d34027cdec605719",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:3314d07ce07b3df906a17c950479c0996dd5b17e45478c31deb785c8ce1d92ca",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:8118fcb4ef053b595a88adbaa3711b2f61be7300ad26f8a40b9ff940670c1cc6",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-local-directory-002",
+  "schema_version": 1
+}

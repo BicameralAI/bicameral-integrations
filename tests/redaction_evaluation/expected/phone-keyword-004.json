@@ -1,0 +1,20 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 31,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:phone]",
+      "start": 18,
+      "subtype": "phone"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "phone-keyword-004",
+  "schema_version": 1
+}

@@ -1,0 +1,4 @@
+# Digest-referenced evaluation artifacts keep exact bytes across platforms.
+*.json -text
+*.csv -text
+*.md -text

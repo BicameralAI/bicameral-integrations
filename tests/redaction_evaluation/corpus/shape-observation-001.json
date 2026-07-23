@@ -1,0 +1,22 @@
+{
+  "observation": {
+    "author": "triage-bot",
+    "evidence_id": "ev-obs-3101",
+    "evidence_metadata": {},
+    "excerpt": "Handoff recorded: Sable Norwick now triages intake and forwards summaries to sable.norwick@example.com.",
+    "metadata": {},
+    "mode": "active",
+    "provider_event_id": "d0e1f2a3-b4c5-4d6e-9f70-819203a1b2c3",
+    "provider_resource_id": "obs-3101",
+    "source_ref": {
+      "kind": "relay",
+      "ref": "relay/obs-3101",
+      "source_id": "observation-relay",
+      "url": ""
+    },
+    "timestamp": "2026-06-23T08:00:00Z",
+    "title": "Intake triage handoff"
+  },
+  "record_id": "shape-observation-001",
+  "source_shape": "observation"
+}

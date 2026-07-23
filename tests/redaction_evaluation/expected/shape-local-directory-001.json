@@ -1,0 +1,51 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 28,
+      "entity_id": "e001",
+      "field_path": "metadata.file.content",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 15,
+      "subtype": "person"
+    },
+    {
+      "category": "pii",
+      "end": 72,
+      "entity_id": "e002",
+      "field_path": "metadata.file.content",
+      "mandatory": false,
+      "replacement": "[redacted:phone]",
+      "start": 57,
+      "subtype": "phone"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:9959ff9622ac718ee18ee624e9ed23d7ae99310addf4cab1522709c5dac548a5",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:6c9ba47dfc1057087b4654951bf000b6e87bebed648029ead52cbee2f0a7351d",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:6c9ba47dfc1057087b4654951bf000b6e87bebed648029ead52cbee2f0a7351d",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:e4f8d4fb6a86dd78de4f71a0bda9a05c1bdb13546d40812fa8e1659b2b808cf6",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:4bc6bf504ecdef48a40ded0d51d1ab1afc6cc33c93d0bd1c8902d031f723bf50",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-local-directory-001",
+  "schema_version": 1
+}

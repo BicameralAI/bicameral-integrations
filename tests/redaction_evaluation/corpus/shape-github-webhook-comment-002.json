@@ -1,0 +1,37 @@
+{
+  "observation": {
+    "author": "rowan-ellery-ops",
+    "evidence_id": "ev-gh-comment-9002",
+    "evidence_metadata": {},
+    "excerpt": "Comment asks for a call before the release cut.",
+    "metadata": {
+      "webhook": {
+        "action": "created",
+        "comment": {
+          "body": "Call me at +1 202 555 0177 before the release cut.",
+          "id": 9002,
+          "user": {
+            "login": "rowan-ellery-ops"
+          }
+        },
+        "issue": {
+          "number": 502,
+          "title": "Release cut checklist"
+        }
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "3c4d5e6f-7081-4b2c-9d0e-1f2a3b4c5d6e",
+    "provider_resource_id": "IC_kwDOExample9002",
+    "source_ref": {
+      "kind": "issue_comment",
+      "ref": "issues/502",
+      "source_id": "github",
+      "url": "https://github.com/example-org/sample-service/issues/502"
+    },
+    "timestamp": "2026-06-19T09:12:00Z",
+    "title": "Release cut checklist"
+  },
+  "record_id": "shape-github-webhook-comment-002",
+  "source_shape": "github_webhook"
+}

@@ -1,0 +1,28 @@
+{
+  "observation": {
+    "author": "fetcher",
+    "evidence_id": "ev-doc-logistics-v1",
+    "evidence_metadata": {},
+    "excerpt": "Bounded fetch captured the logistics appendix.",
+    "metadata": {
+      "fetch": {
+        "body": "Hardware returns go to 14 Larkspur Court, Fable City, OR 97401 with a printed label.",
+        "content_type": "text/markdown",
+        "url": "https://example.com/docs/logistics"
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "c9d0e1f2-a3b4-4c5d-8e6f-70819203a1b2",
+    "provider_resource_id": "doc-logistics-v1",
+    "source_ref": {
+      "kind": "document",
+      "ref": "docs/logistics",
+      "source_id": "document-fetch",
+      "url": "https://example.com/docs/logistics"
+    },
+    "timestamp": "2026-06-22T10:30:00Z",
+    "title": "Logistics appendix"
+  },
+  "record_id": "shape-bounded-document-fetch-002",
+  "source_shape": "bounded_document_fetch"
+}

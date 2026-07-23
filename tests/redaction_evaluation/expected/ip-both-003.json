@@ -1,0 +1,30 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 28,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:ip]",
+      "start": 19,
+      "subtype": "ip"
+    },
+    {
+      "category": "pii",
+      "end": 44,
+      "entity_id": "e002",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:ip]",
+      "start": 32,
+      "subtype": "ip"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "ip-both-003",
+  "schema_version": 1
+}

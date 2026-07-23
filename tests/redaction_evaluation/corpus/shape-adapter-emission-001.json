@@ -1,0 +1,32 @@
+{
+  "observation": {
+    "author": "adapter",
+    "evidence_id": "ev-em-7301",
+    "evidence_metadata": {},
+    "excerpt": "Emission drafted for the contact rotation.",
+    "metadata": {
+      "emission": {
+        "body": "Route pages to sable.norwick@example.com until Friday.",
+        "evidence": [
+          {
+            "excerpt": "Pager test from +1 202 555 0195 succeeded."
+          }
+        ],
+        "title": "Contact rotation for Sable Norwick"
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "a3b4c5d6-e7f8-4a91-8203-a1b2c3d4e5f6",
+    "provider_resource_id": "em-7301",
+    "source_ref": {
+      "kind": "emission",
+      "ref": "emissions/em-7301",
+      "source_id": "adapter",
+      "url": ""
+    },
+    "timestamp": "2026-06-24T12:00:00Z",
+    "title": "Contact rotation emission"
+  },
+  "record_id": "shape-adapter-emission-001",
+  "source_shape": "adapter_emission"
+}

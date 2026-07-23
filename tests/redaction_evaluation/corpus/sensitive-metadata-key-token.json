@@ -1,0 +1,28 @@
+{
+  "eval_directives": {
+    "obfuscated_object": {
+      "b64rev": "fSJ5bGV0YWlkZW1taSBldGF0b3IiOiJldG9uIiwibmFjcyBlaHQgZ25pcnVkIGRlZ2dhbGYiOiIxMDAwMDAwMDBFTFBNQVhFQUlLQSJ7",
+      "path": "metadata"
+    }
+  },
+  "observation": {
+    "author": "",
+    "evidence_id": "",
+    "evidence_metadata": {},
+    "excerpt": "Metadata carried an unsafe key name.",
+    "metadata": {},
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "",
+    "source_ref": {
+      "kind": "note",
+      "ref": "",
+      "source_id": "synthetic-notes",
+      "url": ""
+    },
+    "timestamp": "2026-07-01T12:00:00Z",
+    "title": ""
+  },
+  "record_id": "sensitive-metadata-key-token",
+  "source_shape": "failure_fixture"
+}

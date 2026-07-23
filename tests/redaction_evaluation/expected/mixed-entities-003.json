@@ -1,0 +1,30 @@
+{
+  "expected_entities": [
+    {
+      "category": "secret",
+      "end": 44,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": true,
+      "replacement": "[redacted:gitlab-pat]",
+      "start": 18,
+      "subtype": "gitlab-pat"
+    },
+    {
+      "category": "pii",
+      "end": 75,
+      "entity_id": "e002",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 63,
+      "subtype": "person"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "mixed-entities-003",
+  "schema_version": 1
+}

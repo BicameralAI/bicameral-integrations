@@ -1,0 +1,44 @@
+{
+  "observation": {
+    "author": "Avery Winslow",
+    "evidence_id": "ev-gh-issue-483",
+    "evidence_metadata": {},
+    "excerpt": "Issue reports a leaked token in reproduction steps.",
+    "metadata": {
+      "webhook": {
+        "action": "opened",
+        "issue": {
+          "body": {
+            "__b64rev__": "LnNwZXRzIG5vaXRjdWRvcnBlciBlaHQgb3RuaSBkZWthZWwgdDAwMDAwMDBlbHBtYXhFZWxwbWF4RWVscG1heEVlbHBtYXhFX3BoZyBuZWtvdCBjaXNzYWxjIEE="
+          },
+          "created_at": "2026-06-18T10:04:52Z",
+          "html_url": "https://github.com/example-org/sample-service/issues/483",
+          "number": 483,
+          "title": "Token leak report",
+          "user": {
+            "login": "avery-winslow-sx"
+          }
+        },
+        "repository": {
+          "full_name": "example-org/sample-service"
+        },
+        "sender": {
+          "login": "avery-winslow-sx"
+        }
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "1c9d8e7f-6a5b-4c3d-2e1f-0a9b8c7d6e5f",
+    "provider_resource_id": "I_kwDOExample483",
+    "source_ref": {
+      "kind": "issue",
+      "ref": "issues/483",
+      "source_id": "github",
+      "url": "https://github.com/example-org/sample-service/issues/483"
+    },
+    "timestamp": "2026-06-18T10:05:00Z",
+    "title": "Token leak report"
+  },
+  "record_id": "shape-github-webhook-issue-002",
+  "source_shape": "github_webhook"
+}

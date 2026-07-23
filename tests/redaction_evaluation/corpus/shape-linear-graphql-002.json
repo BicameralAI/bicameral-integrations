@@ -1,0 +1,35 @@
+{
+  "observation": {
+    "author": "sync-bot",
+    "evidence_id": "ev-lin-eng-208",
+    "evidence_metadata": {},
+    "excerpt": "GraphQL sync surfaced a pasted integration token.",
+    "metadata": {
+      "graphql": {
+        "data": {
+          "issue": {
+            "description": {
+              "__b64rev__": "LnR4ZXQgcmFlbGMgbmkgbmVrb3QwY2l0ZWh0bnlzLTAwMDAwMDAwMDAwMC1ieG94IGRldHNhcCBldG9uIG5vaXRhcmdldG5pIGVoVA=="
+            },
+            "id": "e4f5a6b7-c8d9-4e0f-9a1b-2c3d4e5f6071",
+            "identifier": "ENG-208",
+            "title": "Integration note cleanup"
+          }
+        }
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "a7b8c9d0-e1f2-4a3b-8c4d-5e6f70819203",
+    "provider_resource_id": "e4f5a6b7-c8d9-4e0f-9a1b-2c3d4e5f6071",
+    "source_ref": {
+      "kind": "issue",
+      "ref": "ENG-208",
+      "source_id": "linear",
+      "url": "https://linear.app/example/issue/ENG-208"
+    },
+    "timestamp": "2026-06-21T11:20:00Z",
+    "title": "Integration note cleanup"
+  },
+  "record_id": "shape-linear-graphql-002",
+  "source_shape": "linear_graphql"
+}

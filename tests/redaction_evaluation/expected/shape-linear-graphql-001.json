@@ -1,0 +1,55 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 20,
+      "entity_id": "e001",
+      "field_path": "metadata.graphql.data.issue.description",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 7,
+      "subtype": "person"
+    },
+    {
+      "category": "pii",
+      "end": 69,
+      "entity_id": "e002",
+      "field_path": "metadata.graphql.data.issue.description",
+      "mandatory": false,
+      "replacement": "[redacted:email]",
+      "start": 46,
+      "subtype": "email"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:7f2fe580edb35154041fa3d4b41dd6d3adaef0c85d2ff6309f1d4b520eeecda3",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:074f1f0bcf3deab73da092acfaaeb33614aaf7a44de79f5be63ebf90546594d7",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:90cb5fe937eea47a5516b3498aef46690dc351c38f51492921c5c808341c86c8",
+      "field_path": "provider_event_id"
+    },
+    {
+      "expected_value_sha256": "sha256:a6bd1bfb58c03d34304df19c30b118112bdf9e0dbd8ada7acc43bdf94b7e06e5",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:be9da0787c879ba0a057ff01d298747d5280f25ecd24ba6e777aa4f0d05ec516",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:6a1174530bcdbf2eacc64cd8547118715276db6d80a8d72a5779a9b6ab9448ef",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-linear-graphql-001",
+  "schema_version": 1
+}

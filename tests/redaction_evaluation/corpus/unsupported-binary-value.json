@@ -1,0 +1,30 @@
+{
+  "eval_directives": {
+    "binary_field": {
+      "base64": "AAECAwQFBgc=",
+      "path": "metadata.blob"
+    }
+  },
+  "observation": {
+    "author": "",
+    "evidence_id": "",
+    "evidence_metadata": {},
+    "excerpt": "Attachment ingest carried an undecodable payload.",
+    "metadata": {
+      "blob": "AAECAwQFBgc="
+    },
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "",
+    "source_ref": {
+      "kind": "note",
+      "ref": "",
+      "source_id": "synthetic-notes",
+      "url": ""
+    },
+    "timestamp": "2026-07-01T12:00:00Z",
+    "title": ""
+  },
+  "record_id": "unsupported-binary-value",
+  "source_shape": "failure_fixture"
+}

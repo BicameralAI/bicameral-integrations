@@ -1,0 +1,9 @@
+{
+  "expected_entities": [],
+  "expected_failure_reason": "nondeterministic_backend_output",
+  "expected_outcome": "failed_closed",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "nondeterministic-output-probe",
+  "schema_version": 1
+}

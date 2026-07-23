@@ -1,0 +1,22 @@
+{
+  "observation": {
+    "author": "Juniper Hale",
+    "evidence_id": "ev-obs-3103",
+    "evidence_metadata": {},
+    "excerpt": "Billing review paused for account 77245980 pending confirmation.",
+    "metadata": {},
+    "mode": "active",
+    "provider_event_id": "f2a3b4c5-d6e7-4f80-8192-03a1b2c3d4e5",
+    "provider_resource_id": "obs-3103",
+    "source_ref": {
+      "kind": "relay",
+      "ref": "relay/obs-3103",
+      "source_id": "observation-relay",
+      "url": ""
+    },
+    "timestamp": "2026-06-23T09:00:00Z",
+    "title": "Billing review pause"
+  },
+  "record_id": "shape-observation-003",
+  "source_shape": "observation"
+}

@@ -1,0 +1,55 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 37,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:ip]",
+      "start": 26,
+      "subtype": "ip"
+    },
+    {
+      "category": "pii",
+      "end": 75,
+      "entity_id": "e002",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:phone]",
+      "start": 60,
+      "subtype": "phone"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:a7650b5c87c4c04a6ab979b3c9f1bceef7ef74b7327b50c03fcd82b01329ab5c",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:1281b9da6ac7cba0c31d03e24e19a9e49d1b2d4286b34607195a58365d8f333c",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:b65329b0ff30542ddc3228ff28462b21152f3efae3c8c4a674fd944ebdfc32ce",
+      "field_path": "provider_event_id"
+    },
+    {
+      "expected_value_sha256": "sha256:47212fa06cc4fb4dc627fd9c9a9260d926a3963bf0bffc8c9e640a79e4ee49ee",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:20ad4343fc73669b5f9b341043a27db9c316f83946c2d54cd71901e238e50318",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:d47ac68f17cbc0c5db13e8ed29b01bef1172fb4282f282a9f25a31ec2bfa3255",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-observation-002",
+  "schema_version": 1
+}

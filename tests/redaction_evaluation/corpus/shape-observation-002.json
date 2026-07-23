@@ -1,0 +1,22 @@
+{
+  "observation": {
+    "author": "alerting",
+    "evidence_id": "ev-obs-3102",
+    "evidence_metadata": {},
+    "excerpt": "Latency alert raised from 192.0.2.120; the on-call pager is +1 202 555 0171.",
+    "metadata": {},
+    "mode": "active",
+    "provider_event_id": "e1f2a3b4-c5d6-4e7f-8081-9203a1b2c3d4",
+    "provider_resource_id": "obs-3102",
+    "source_ref": {
+      "kind": "relay",
+      "ref": "relay/obs-3102",
+      "source_id": "observation-relay",
+      "url": ""
+    },
+    "timestamp": "2026-06-23T08:30:00Z",
+    "title": "Latency alert"
+  },
+  "record_id": "shape-observation-002",
+  "source_shape": "observation"
+}

@@ -1,0 +1,26 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 100,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:ip]",
+      "start": 90,
+      "subtype": "ip"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [
+    {
+      "assertion_id": "preserve-001",
+      "field_path": "excerpt",
+      "required_substring": "pin the collector to a static address next quarter"
+    }
+  ],
+  "protected_fields": [],
+  "record_id": "proposal-ip-001",
+  "schema_version": 1
+}

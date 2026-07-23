@@ -1,0 +1,28 @@
+{
+  "observation": {
+    "author": "fetcher",
+    "evidence_id": "ev-doc-rollout-v3",
+    "evidence_metadata": {},
+    "excerpt": "Bounded fetch captured the rollout document.",
+    "metadata": {
+      "fetch": {
+        "body": "The rollout doc lists Rowan Ellery as approver; send questions to rollout-desk@example.com.",
+        "content_type": "text/markdown",
+        "url": "https://example.com/docs/rollout"
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "b8c9d0e1-f2a3-4b4c-9d5e-6f7081920a1b",
+    "provider_resource_id": "doc-rollout-v3",
+    "source_ref": {
+      "kind": "document",
+      "ref": "docs/rollout",
+      "source_id": "document-fetch",
+      "url": "https://example.com/docs/rollout"
+    },
+    "timestamp": "2026-06-22T10:00:00Z",
+    "title": "Rollout document"
+  },
+  "record_id": "shape-bounded-document-fetch-001",
+  "source_shape": "bounded_document_fetch"
+}

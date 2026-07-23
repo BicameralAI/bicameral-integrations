@@ -1,0 +1,36 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 74,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 61,
+      "subtype": "person"
+    },
+    {
+      "category": "pii",
+      "end": 101,
+      "entity_id": "e002",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:email]",
+      "start": 76,
+      "subtype": "email"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [
+    {
+      "assertion_id": "preserve-001",
+      "field_path": "excerpt",
+      "required_substring": "keep the event store local-only for alpha"
+    }
+  ],
+  "protected_fields": [],
+  "record_id": "decision-person-email-001",
+  "schema_version": 1
+}

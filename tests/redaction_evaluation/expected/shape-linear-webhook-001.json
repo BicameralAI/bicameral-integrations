@@ -1,0 +1,55 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 31,
+      "entity_id": "e001",
+      "field_path": "metadata.webhook.data.description",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 18,
+      "subtype": "person"
+    },
+    {
+      "category": "pii",
+      "end": 70,
+      "entity_id": "e002",
+      "field_path": "metadata.webhook.data.description",
+      "mandatory": false,
+      "replacement": "[redacted:email]",
+      "start": 45,
+      "subtype": "email"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:7f2fe580edb35154041fa3d4b41dd6d3adaef0c85d2ff6309f1d4b520eeecda3",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:799dd8ca192aa56cc53622524772b1860127872763e20ecc0e039413da7e183f",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:e4a493409ea5c294ad12c6a0ad32c9b3ba5080be48eb0a348a38a3c115de540e",
+      "field_path": "provider_event_id"
+    },
+    {
+      "expected_value_sha256": "sha256:a89017a4d1840e7a15d28b26c2ae86dafd8a5d567ffb9a24be9b5c12ab878444",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:c08c7aea2f4dd7bd9c33b37bf0298b181d469c7d4e56c81e4d7ac0fa1b2c2188",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:46c2e50d6b5832b7ae7c722385459d93447f52bb08b9005f3ceb5f47cee2bdea",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-linear-webhook-001",
+  "schema_version": 1
+}

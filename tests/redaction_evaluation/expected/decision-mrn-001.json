@@ -1,0 +1,26 @@
+{
+  "expected_entities": [
+    {
+      "category": "phi",
+      "end": 94,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": true,
+      "replacement": "[redacted:mrn]",
+      "start": 81,
+      "subtype": "mrn"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [
+    {
+      "assertion_id": "preserve-001",
+      "field_path": "excerpt",
+      "required_substring": "intake forms are archived after ninety days"
+    }
+  ],
+  "protected_fields": [],
+  "record_id": "decision-mrn-001",
+  "schema_version": 1
+}

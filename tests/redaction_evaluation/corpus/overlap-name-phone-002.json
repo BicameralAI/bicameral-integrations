@@ -1,0 +1,22 @@
+{
+  "observation": {
+    "author": "",
+    "evidence_id": "",
+    "evidence_metadata": {},
+    "excerpt": "Reach Rowan Ellery(+1 202 555 0164) before Friday.",
+    "metadata": {},
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "",
+    "source_ref": {
+      "kind": "note",
+      "ref": "",
+      "source_id": "synthetic-notes",
+      "url": ""
+    },
+    "timestamp": "2026-07-01T12:00:00Z",
+    "title": ""
+  },
+  "record_id": "overlap-name-phone-002",
+  "source_shape": "plain_text"
+}

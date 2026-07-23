@@ -1,0 +1,22 @@
+{
+  "observation": {
+    "author": "",
+    "evidence_id": "",
+    "evidence_metadata": {},
+    "excerpt": "Requirement: every incident gets a named scribe. Rowan Ellery volunteers and reads rowan.ellery+alerts@example.org during drills.",
+    "metadata": {},
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "",
+    "source_ref": {
+      "kind": "note",
+      "ref": "",
+      "source_id": "synthetic-notes",
+      "url": ""
+    },
+    "timestamp": "2026-07-01T12:00:00Z",
+    "title": ""
+  },
+  "record_id": "requirement-email-person-001",
+  "source_shape": "observation"
+}

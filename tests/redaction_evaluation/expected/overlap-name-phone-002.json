@@ -1,0 +1,30 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 18,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 6,
+      "subtype": "person"
+    },
+    {
+      "category": "pii",
+      "end": 34,
+      "entity_id": "e002",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:phone]",
+      "start": 19,
+      "subtype": "phone"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "overlap-name-phone-002",
+  "schema_version": 1
+}

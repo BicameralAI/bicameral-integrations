@@ -1,0 +1,33 @@
+{
+  "observation": {
+    "author": "sync-bot",
+    "evidence_id": "ev-lin-eng-207",
+    "evidence_metadata": {},
+    "excerpt": "GraphQL sync pulled one issue for cleanup.",
+    "metadata": {
+      "graphql": {
+        "data": {
+          "issue": {
+            "description": "Remove Marlowe Quist from the CC list and use ops-handoff@example.org instead.",
+            "id": "d3e4f5a6-b7c8-4d9e-8f0a-1b2c3d4e5f60",
+            "identifier": "ENG-207",
+            "title": "Export contact cleanup"
+          }
+        }
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "f6a7b8c9-d0e1-4f2a-9b3c-4d5e6f708192",
+    "provider_resource_id": "d3e4f5a6-b7c8-4d9e-8f0a-1b2c3d4e5f60",
+    "source_ref": {
+      "kind": "issue",
+      "ref": "ENG-207",
+      "source_id": "linear",
+      "url": "https://linear.app/example/issue/ENG-207"
+    },
+    "timestamp": "2026-06-21T11:00:00Z",
+    "title": "Export contact cleanup"
+  },
+  "record_id": "shape-linear-graphql-001",
+  "source_shape": "linear_graphql"
+}

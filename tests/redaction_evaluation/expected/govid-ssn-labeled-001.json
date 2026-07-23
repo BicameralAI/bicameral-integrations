@@ -1,0 +1,20 @@
+{
+  "expected_entities": [
+    {
+      "category": "phi",
+      "end": 34,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": true,
+      "replacement": "[redacted:ssn_label]",
+      "start": 18,
+      "subtype": "ssn_label"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "govid-ssn-labeled-001",
+  "schema_version": 1
+}

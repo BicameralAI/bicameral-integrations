@@ -1,0 +1,20 @@
+{
+  "expected_entities": [
+    {
+      "category": "phi",
+      "end": 43,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": true,
+      "replacement": "[redacted:patient_id]",
+      "start": 25,
+      "subtype": "patient_id"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "phi-patient-id-002",
+  "schema_version": 1
+}
