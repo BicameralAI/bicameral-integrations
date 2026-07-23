@@ -21,7 +21,7 @@ jobs:
       - name: Install tools
         # Keep Ruff aligned with .pre-commit-config.yaml so lint results are
         # repository-defined rather than dependent on the latest release.
-        run: python -m pip install --upgrade pip ruff==0.15.5 mypy pytest
+        run: python -m pip install --upgrade pip ruff==0.15.5 mypy pytest jsonschema==4.25.1
       - name: Ruff
         run: ruff check adapter connectors runtime mods
       - name: Mypy
@@ -38,7 +38,7 @@ jobs:
       - name: Pytest
         run: |
           set -o pipefail
-          pytest adapter/core/tests connectors runtime mods scripts/tests tests/redteam -q 2>&1 | tee /tmp/pytest.log
+          pytest adapter/core/tests connectors runtime mods scripts/tests tests/redteam tests/redaction_evaluation -q 2>&1 | tee /tmp/pytest.log
       - name: Upload pytest diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -52,3 +52,7 @@ jobs:
         run: python scripts/validate_mod_config.py
       - name: Ingest schema pin + conformance gate
         run: python scripts/validate_ingest_schema_pin.py
+      - name: Redaction evaluation corpus and annotation gate
+        run: python scripts/validate_redaction_evaluation_contract.py
+      - name: Redaction evaluation review and decision gate
+        run: python scripts/validate_redaction_evaluation_governance.py
