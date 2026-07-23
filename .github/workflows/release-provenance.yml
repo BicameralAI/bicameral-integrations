@@ -1,0 +1,28 @@
+name: Release provenance
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  descriptor:
+    name: integrations-release-descriptor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Emit and verify descriptor
+        run: |
+          python scripts/tests/test_emit_release_descriptor.py
+          python scripts/emit_release_descriptor.py
+          python scripts/emit_release_descriptor.py --verify release-artifacts/integrations-release-descriptor.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: integrations-release-descriptor-${{ github.sha }}
+          path: release-artifacts/integrations-release-descriptor.json
+          if-no-files-found: error
+          retention-days: 90

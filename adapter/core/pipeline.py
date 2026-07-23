@@ -8,9 +8,18 @@ import unicodedata
 from collections.abc import Iterable
 
 from .capabilities import SourceMode
-from .emissions import AdapterEmission, ProviderProvenance, SourceEvidence, SourceRef
+from .emissions import (
+    AdapterEmission,
+    AdvisoryResult,
+    ProviderProvenance,
+    RoutingHint,
+    SourceEvidence,
+    SourceRef,
+)
+from .heuristics import evaluate_fail_open
 from .observations import Observation
 from .redaction import redact
+from .redaction_receipt import sanitize_observation
 from .sensitive import detect_sensitive
 
 _DELIVERY_MODE: dict[SourceMode, str] = {
@@ -21,9 +30,7 @@ _DELIVERY_MODE: dict[SourceMode, str] = {
 }
 
 _SOURCE_ID_RE = re.compile(r"^[A-Za-z0-9._-]+$")
-_MAX_SOURCE_ID = (
-    128  # a degenerate long source_id must not become the wire `source_type` (#61)
-)
+_MAX_SOURCE_ID = 128
 _EMISSION_TYPES = frozenset({"candidate", "evidence", "hint", "advisory"})
 
 
@@ -32,33 +39,26 @@ class EmissionContractError(ValueError):
 
 
 def _is_blank(text: str) -> bool:
-    """True when ``text`` has no visible character — only whitespace or Unicode format
-    chars (``Cf``: zero-width space U+200B, BOM U+FEFF, RTL/LTR marks). ``str.strip()``
-    alone leaves a zero-width excerpt looking non-blank (#61)."""
+    """True when text has no visible character."""
     return not any(not c.isspace() and unicodedata.category(c) != "Cf" for c in text)
 
 
 def _require_str(value: object, label: str) -> str:
-    """A wire-bound field must be a ``str`` — fail CLOSED with the contract error rather than
-    let a hand-built non-str field raise a raw ``TypeError``/``AttributeError`` deeper in the
-    validator (mod purple-team SG-2026-06-12-F: enforce the contract at the shared boundary,
-    don't assume it). The boundary is uniformly ``EmissionContractError`` for every consumer."""
+    """Require a string at the shared wire boundary."""
     if not isinstance(value, str):
         raise EmissionContractError(f"{label}_not_str: {type(value).__name__}")
     return value
 
 
 def _assert_emission_types(emission: AdapterEmission) -> None:
-    """Type-guard every field the validator/screen will dereference, fail-closed. A frozen
-    dataclass does not enforce its annotations at runtime, so a hand-built emission can carry a
-    non-str ``source_id``/``emission_type``, a non-iterable ``evidence``, or a ``None``/dict
-    ``source_ref`` — each would otherwise raise a RAW exception (re.match TypeError, unhashable
-    membership, ``.url`` AttributeError) instead of the contract's ``EmissionContractError``."""
+    """Runtime type guard for every field consumed by validation or wire mapping."""
     _require_str(emission.source_id, "source_id")
     _require_str(emission.emission_type, "emission_type")
     _require_str(emission.adapter_version, "adapter_version")
     _require_str(emission.title, "title")
     _require_str(emission.body, "body")
+    if not isinstance(emission.metadata, dict):
+        raise EmissionContractError(f"metadata_not_dict: {type(emission.metadata).__name__}")
     if not isinstance(emission.evidence, (list, tuple)):
         raise EmissionContractError(
             f"evidence_not_sequence: {type(emission.evidence).__name__}"
@@ -73,29 +73,57 @@ def _assert_emission_types(emission: AdapterEmission) -> None:
         _require_str(ev.excerpt, "excerpt")
         _require_str(ev.author, "author")
         _require_str(ev.timestamp, "timestamp")
+        _require_str(ev.evidence_id, "evidence_id")
+        if not isinstance(ev.metadata, dict):
+            raise EmissionContractError(
+                f"evidence_metadata_not_dict: {type(ev.metadata).__name__}"
+            )
         _require_str(ev.source_ref.url, "source_ref.url")
         _require_str(ev.source_ref.ref, "source_ref.ref")
         _require_str(ev.source_ref.source_id, "source_ref.source_id")
+        _require_str(ev.source_ref.kind, "source_ref.kind")
+    if not isinstance(emission.routing_hints, (list, tuple)):
+        raise EmissionContractError(
+            f"routing_hints_not_sequence: {type(emission.routing_hints).__name__}"
+        )
+    for hint in emission.routing_hints:
+        if not isinstance(hint, RoutingHint):
+            raise EmissionContractError(f"routing_hint_invalid: {type(hint).__name__}")
+        _require_str(hint.role, "routing_hint.role")
+        _require_str(hint.reason, "routing_hint.reason")
+        _require_str(hint.priority, "routing_hint.priority")
+    if not isinstance(emission.advisories, (list, tuple)):
+        raise EmissionContractError(
+            f"advisories_not_sequence: {type(emission.advisories).__name__}"
+        )
+    for advisory in emission.advisories:
+        if not isinstance(advisory, AdvisoryResult):
+            raise EmissionContractError(f"advisory_invalid: {type(advisory).__name__}")
+        _require_str(advisory.kind, "advisory.kind")
+        _require_str(advisory.message, "advisory.message")
+        if not isinstance(advisory.metadata, dict):
+            raise EmissionContractError(
+                f"advisory_metadata_not_dict: {type(advisory.metadata).__name__}"
+            )
+    if emission.provenance is not None:
+        if not isinstance(emission.provenance, ProviderProvenance):
+            raise EmissionContractError(
+                f"provenance_invalid: {type(emission.provenance).__name__}"
+            )
+        _require_str(emission.provenance.delivery_mode, "provenance.delivery_mode")
+        _require_str(emission.provenance.verification, "provenance.verification")
+        _require_str(emission.provenance.provider_event_id, "provenance.provider_event_id")
+        _require_str(
+            emission.provenance.provider_resource_id,
+            "provenance.provider_resource_id",
+        )
 
 
 def validate_emissions(emissions: Iterable[AdapterEmission]) -> list[AdapterEmission]:
-    """Enforce the ADR-0005 emission contract before mods or the bot-gateway
-    bridge consume the emissions.
-
-    Per emission: stable ``source_id`` (``[A-Za-z0-9._-]+``); at least one
-    ``SourceEvidence`` carrying a non-empty excerpt (evidence preserved); a
-    recorded non-empty ``adapter_version``; ``emission_type`` within the
-    non-authoritative set; and ``confidence`` either absent or a dimensional
-    ``ConfidenceSurface`` (never a single opaque score).
-
-    Returns the validated list; raises ``EmissionContractError`` on the first
-    violation.
-    """
+    """Enforce the neutral emission contract before mods or gateway delivery."""
     validated = list(emissions)
     for emission in validated:
-        _assert_emission_types(
-            emission
-        )  # uniform fail-closed boundary (SG-2026-06-12-F)
+        _assert_emission_types(emission)
         if not _SOURCE_ID_RE.match(emission.source_id):
             raise EmissionContractError(f"source_id_invalid: {emission.source_id!r}")
         if len(emission.source_id) > _MAX_SOURCE_ID:
@@ -117,11 +145,7 @@ def validate_emissions(emissions: Iterable[AdapterEmission]) -> list[AdapterEmis
 
 
 def _metadata_strings(value: object) -> list[str]:
-    """Every string leaf AND dict key of a (possibly nested) metadata value, for the
-    per-leaf sensitive screen. Visits dict keys+values, recurses list/tuple/set, and
-    stringifies non-str scalars — a secret in a key, a nested value, a container item, or
-    a malicious ``__str__`` must not escape. (Intentionally duplicates ``mods.contract.
-    _flatten_strings``; adapter must not import ``mods`` — change both together.)"""
+    """Return every string leaf and dict key from nested metadata."""
     if isinstance(value, str):
         return [value] if value else []
     if isinstance(value, dict):
@@ -136,21 +160,7 @@ def _metadata_strings(value: object) -> list[str]:
 
 
 def _screen_sensitive(emission: AdapterEmission) -> None:
-    """Reject an emission carrying a secret / PHI / PAN. mcp parity: sensitive
-    data is a HARD gate — never forwarded to a mod or the gateway. The scanned content
-    covers EVERY wire-bound field: ``title``/``body``/``excerpt`` plus ``source_id`` (→ wire
-    ``source_type``) and each evidence ``source_ref.url``/``ref``/``source_id``/``kind`` (a secret
-    in a provider URL/ref/id/kind is otherwise forwarded to a mod as the in-process emission, and a
-    URL/ref as the gateway ``source`` — #52), and every ``metadata`` leaf+key (preserved in-process
-    for mods — ADR-0014), plus each evidence ``author``/``timestamp`` (untrusted provider data —
-    purple-team CONFIG-3). ``kind`` was the lone ``SourceRef`` sibling outside the screen — a
-    payload-/operator-derived ``kind`` (e.g. local_directory ``source_type_label``, jira/linear event
-    type) reached the mod-input boundary un-screened until purple-team #170 (SG-2026-06-13-C).
-    EVERY field is scanned **per leaf** (core fields included, not joined into one blob):
-    a single join could fabricate ``_is_id_preceded`` PAN suppression across two independent
-    leaves — a false negative (purple-team PII-1). The raised detail uses the redacted
-    excerpt, so a raw value cannot leak (#53).
-    """
+    """Reject any wire- or mod-bound field carrying configured sensitive data."""
     core = [emission.title, emission.body, emission.source_id]
     for ev in emission.evidence:
         core.extend(
@@ -162,14 +172,30 @@ def _screen_sensitive(emission: AdapterEmission) -> None:
                 ev.source_ref.kind,
                 ev.author,
                 ev.timestamp,
+                ev.evidence_id,
             ]
         )
-    # Scan EACH wire-bound field as its own unit (NOT one joined blob): a trailing ID-label
-    # in one field (e.g. excerpt ending `ref=`) must not fabricate `_is_id_preceded` PAN
-    # suppression for a Luhn-valid PAN at the start of an adjacent field (purple-team PII-1,
-    # 2026-06-11). Within-field suppression (`order_id: <run>` in ONE field) is preserved.
-    units = [p for p in core if p]
+    for hint in emission.routing_hints:
+        core.extend([hint.role, hint.reason, hint.priority])
+    for advisory in emission.advisories:
+        core.extend([advisory.kind, advisory.message])
+    if emission.provenance is not None:
+        core.extend(
+            [
+                emission.provenance.delivery_mode,
+                emission.provenance.verification,
+                emission.provenance.provider_event_id,
+                emission.provenance.provider_resource_id,
+            ]
+        )
+
+    units = [part for part in core if part]
     units.extend(_metadata_strings(emission.metadata))
+    for ev in emission.evidence:
+        units.extend(_metadata_strings(ev.metadata))
+    for advisory in emission.advisories:
+        units.extend(_metadata_strings(advisory.metadata))
+
     for unit in units:
         hits = detect_sensitive(unit)
         if hits:
@@ -183,14 +209,21 @@ def _screen_sensitive(emission: AdapterEmission) -> None:
 def normalize(
     observations: Iterable[Observation], *, adapter_version: str
 ) -> list[AdapterEmission]:
-    """Universal normalization seam: provider-neutral Observations into
-    reviewable AdapterEmissions.
+    """Normalize every provider-neutral Observation through one mandatory seam.
 
-    The single shared normalizer every connector feeds (ADR-0004); provider
-    parsing stays in connectors. Emissions bridge downstream to the
-    bicameral-bot gateway (not MCP). Output is contract-validated before return.
+    The universal sequence is:
+
+    ``verified Observation -> required redaction -> AdapterEmission -> fail-open heuristics -> validation``.
+
+    Provider-specific parsers may add structured advisory inputs, but they may
+    not bypass shared redaction, normalization, or preserve raw sensitive data.
     """
-    emissions = [_emission_from(obs, adapter_version) for obs in observations]
+    emissions: list[AdapterEmission] = []
+    for observation in observations:
+        sanitized, receipt = sanitize_observation(observation)
+        emission = _emission_from(sanitized, adapter_version)
+        emission.metadata["redaction_receipt"] = receipt
+        emissions.append(evaluate_fail_open(emission))
     return validate_emissions(emissions)
 
 
@@ -198,7 +231,8 @@ def _provenance_from(obs: Observation) -> ProviderProvenance:
     """Derive non-authoritative provider provenance from an Observation."""
     mode = _DELIVERY_MODE.get(obs.mode, "poll")
     verification = "signed" if obs.mode == SourceMode.WEBHOOK else "unsigned"
-    resource_id = redact(obs.source_ref.ref) if obs.source_ref.ref else ""
+    resource = obs.provider_resource_id or obs.source_ref.ref
+    resource_id = redact(resource) if resource else ""
     event_id = redact(obs.provider_event_id) if obs.provider_event_id else ""
     return ProviderProvenance(
         delivery_mode=mode,  # type: ignore[arg-type]
@@ -209,25 +243,22 @@ def _provenance_from(obs: Observation) -> ProviderProvenance:
 
 
 def _emission_from(obs: Observation, adapter_version: str) -> AdapterEmission:
-    """Build one AdapterEmission from an Observation, preserving its evidence."""
+    """Build one evidence emission while preserving recorded source identity."""
     evidence = SourceEvidence(
         source_ref=obs.source_ref,
         excerpt=obs.excerpt,
         author=obs.author,
         timestamp=obs.timestamp,
+        evidence_id=obs.evidence_id,
+        metadata=dict(obs.evidence_metadata),
     )
     return AdapterEmission(
         source_id=obs.source_ref.source_id,
         title=obs.title,
         body=obs.excerpt,
         evidence=(evidence,),
-        # A connector emits raw EVIDENCE, never a candidate decision — candidate-extraction
-        # and promotion are downstream (bot) concerns (SG-2026-06-18-D; SDK evidence contract,
-        # GH #187). `"candidate"` stays a valid hand-built type; the connector default is `"evidence"`.
         emission_type="evidence",
         adapter_version=adapter_version,
         provenance=_provenance_from(obs),
-        metadata=dict(
-            obs.metadata
-        ),  # preserve connector metadata (ADR-0014); defensive copy
+        metadata=dict(obs.metadata),
     )

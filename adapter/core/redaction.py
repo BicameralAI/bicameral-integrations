@@ -10,17 +10,17 @@ residual (not auto-scrubbed). It returns text that PASSES
 hard screen, which stays the un-bypassable backstop: if the redactor ever misses a
 secret, the gate still rejects the emission (defense in depth).
 
-The catalog pass runs **LAST** (after email/phone), so ``redact_catalog`` evaluates
-the final digit layout and ``detect_sensitive(redact(x)) == []`` holds **by
-construction** — no later step can surface or fragment a digit run into a detectable
-PAN. Redaction is irreversible (placeholders); stdlib ``re`` only.
+The catalog runs both before and after the generic PII passes. The first pass prevents
+a phone-like substring from fragmenting a secret or PAN token. The final pass preserves
+the invariant that ``detect_sensitive(redact(x)) == []`` even if a later transform
+changes digit adjacency. Redaction is irreversible and uses deterministic placeholders.
 """
 
 from __future__ import annotations
 
 import re
 
-from .sensitive import redact_catalog
+from .sensitive import detect_sensitive, redact_catalog
 
 # RFC-bounded quantifiers (local <=64, label <=63, TLD <=63) cap the per-anchor scan to a
 # constant, so a long local/domain run with no terminating `.TLD` fails in O(1) per position
@@ -46,14 +46,33 @@ _PHONE_CONTEXT_RE = re.compile(
 )
 
 
-def redact(text: str) -> str:
-    """Scrub email + phone + secret/PHI/PAN, returning emit-safe text.
+def redact_with_findings(text: str) -> tuple[str, dict[str, int]]:
+    """Scrub text and return category counts without returning matched values."""
 
-    Order is email -> phone (+/00 international, then keyword-anchored national) -> ``redact_catalog``
-    (catalog LAST): the catalog pass evaluates the final string, so ``detect_sensitive(redact(x)) == []``
-    by construction. FX-SEC-001 (``_screen_sensitive``) remains the backstop regardless.
-    """
-    out = _EMAIL_RE.sub("[redacted:email]", text)
-    out = _PHONE_RE.sub("[redacted:phone]", out)
-    out = _PHONE_CONTEXT_RE.sub(r"\1[redacted:phone]", out)  # keep the keyword, scrub the number
-    return redact_catalog(out)
+    catalog_hits = detect_sensitive(text)
+    secret_count = sum(1 for hit in catalog_hits if hit.cls == "secret")
+    phi_count = sum(1 for hit in catalog_hits if hit.cls == "phi")
+    pan_count = sum(1 for hit in catalog_hits if hit.cls == "pan")
+
+    # Protect catalog-shaped values first so broad PII patterns cannot fragment them.
+    out = redact_catalog(text)
+    out, email_count = _EMAIL_RE.subn("[redacted:email]", out)
+    out, phone_count = _PHONE_RE.subn("[redacted:phone]", out)
+    out, contextual_phone_count = _PHONE_CONTEXT_RE.subn(
+        r"\1[redacted:phone]", out
+    )
+    # Defense in depth: ensure later substitutions did not expose a catalog match.
+    out = redact_catalog(out)
+
+    findings = {
+        "credential": pan_count,
+        "pii": email_count + phone_count + contextual_phone_count + phi_count,
+        "secret": secret_count,
+    }
+    return out, {category: count for category, count in findings.items() if count > 0}
+
+
+def redact(text: str) -> str:
+    """Scrub generic PII and catalog classes, returning emit-safe text."""
+
+    return redact_with_findings(text)[0]

@@ -1,7 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExternalIngestEnvelope",
-  "description": "External/source-system evidence submission contract.\n\nExternal integrations (Jira, Linear, Slack, GitHub webhooks, etc.) use this envelope to submit evidence, candidates, hints, and signals.  The envelope is **not** a `ToolRequest` — it enters the daemon through a separate validation path (the external ingest gate) and cannot carry or trigger:\n\n- Review commands (`accept_candidate`, `reject_candidate`, `approve_signoff`, etc.) - Canonical decisions or event-store writes - Signoff approval or compliance resolution - Policy grants or local actor/session authority - Blocking governance results\n\nThe daemon validates the envelope, projects candidates/evidence through policy, and returns only advisory governance results.",
   "type": "object",
   "required": [
     "content",
@@ -10,7 +9,6 @@
   ],
   "properties": {
     "candidate_hints": {
-      "description": "Candidate suggestions — advisory only, not canonical authority.",
       "default": [],
       "type": "array",
       "items": {
@@ -18,36 +16,40 @@
       }
     },
     "content": {
-      "description": "Captured content snapshot.",
       "type": "string"
     },
     "content_hash": {
-      "description": "Content hash (SHA-256). Daemon verifies if provided, computes if omitted.",
       "type": [
         "string",
         "null"
       ]
     },
     "evidence": {
-      "description": "Evidence excerpts within the content.",
       "default": [],
       "type": "array",
       "items": {
         "$ref": "#/definitions/ExternalEvidenceItem"
       }
     },
+    "redaction_receipt": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ExternalRedactionReceipt"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "source_system": {
-      "description": "Source system identifier (e.g. `jira`, `linear`, `slack`, `github`).",
       "type": "string"
     },
     "source_uri": {
-      "description": "Source URI for provenance.",
       "type": "string"
     }
   },
   "definitions": {
     "ExternalCandidateHint": {
-      "description": "A candidate hint from an external source — advisory, not authority.",
       "type": "object",
       "required": [
         "body",
@@ -76,7 +78,6 @@
       }
     },
     "ExternalEvidenceItem": {
-      "description": "An evidence excerpt from an external source.",
       "type": "object",
       "required": [
         "excerpt"
@@ -107,6 +108,80 @@
           ],
           "format": "uint",
           "minimum": 0.0
+        }
+      }
+    },
+    "ExternalRedactionFinding": {
+      "type": "object",
+      "required": [
+        "action",
+        "category",
+        "count"
+      ],
+      "properties": {
+        "action": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false
+    },
+    "ExternalRedactionReceipt": {
+      "type": "object",
+      "required": [
+        "completed_at",
+        "engine",
+        "engine_version",
+        "input_digest",
+        "output_digest",
+        "ruleset_digest",
+        "ruleset_id",
+        "schema_version",
+        "structural_fields_preserved"
+      ],
+      "properties": {
+        "completed_at": {
+          "type": "string"
+        },
+        "engine": {
+          "type": "string"
+        },
+        "engine_version": {
+          "type": "string"
+        },
+        "findings": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExternalRedactionFinding"
+          }
+        },
+        "input_digest": {
+          "type": "string"
+        },
+        "output_digest": {
+          "type": "string"
+        },
+        "ruleset_digest": {
+          "type": "string"
+        },
+        "ruleset_id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "structural_fields_preserved": {
+          "type": "boolean"
         }
       }
     }
