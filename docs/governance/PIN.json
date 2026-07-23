@@ -1,0 +1,58 @@
+{
+  "$comment": "Immutable provenance for shared inter-repo contracts consumed by bicameral-integrations (#251 / bicameral-factory#243). Records the pinned bicameral-factory governance-doctrine commit and the producer/consumer ownership of every shared contract or reusable workflow. Drift is detected by scripts/validate_governance_pin.py: any contract with a local mirror must match its recorded content_sha256.",
+  "factory_governance": {
+    "producer": "BicameralAI/bicameral-factory",
+    "consumer": "BicameralAI/bicameral-integrations",
+    "commit": "12d16bd12e06c6bb3296c529d47fa90f0c86755f",
+    "doctrine": [
+      {
+        "path": "playbooks/devin-bicameral-factory-run.md",
+        "sha256": "7fc3fc9010f04f745282a5219c40932f35ce004dbb2e324e09a55af4664d50d1"
+      },
+      {
+        "path": "blueprints/factory-run-signals/artifact-boundary.md",
+        "sha256": "d9ee7c1714bd20e576a2fa28e1bcba958e5dfa6a46dc82314504b18943d91f46"
+      }
+    ]
+  },
+  "shared_contracts": [
+    {
+      "contract_id": "external-ingest-envelope-v2",
+      "producer": "BicameralAI/bicameral-bot",
+      "consumer": "BicameralAI/bicameral-integrations",
+      "role": "consumer",
+      "upstream_repo": "BicameralAI/bicameral-bot",
+      "upstream_path": "protocol/schemas/v2/external-ingest-request.schema.json",
+      "upstream_commit": "5c24c60fcba8ed9d04ab5dd6fd0977dcddd9bd57",
+      "local_path": "runtime/schemas/external_ingest_request_v2.schema.json",
+      "content_sha256": "336bfadee0ea4e5dcb26493d116cbb829e01fa20b9746b726e192a8a6088db78",
+      "drift_gate": "scripts/validate_ingest_schema_pin.py"
+    },
+    {
+      "contract_id": "repo-governance-metadata",
+      "producer": "BicameralAI/bicameral-factory",
+      "consumer": "BicameralAI/bicameral-integrations",
+      "role": "consumer",
+      "upstream_repo": "BicameralAI/bicameral-factory",
+      "upstream_path": "schemas/repo-governance.schema.json",
+      "upstream_commit": "12d16bd12e06c6bb3296c529d47fa90f0c86755f",
+      "upstream_sha256": "94a5b04d4279a84494fd441233e68637afa39d8d522728f10d92b7b355c92498",
+      "local_path": null,
+      "content_sha256": null,
+      "note": "Consumed by reference (no local mirror). The development_governance/customer_distribution/observed_state extension (bicameral-factory#243) merged in bicameral-factory#250 at the pinned reviewed commit; .bicameral/repo-governance.yaml now validates against it upstream."
+    },
+    {
+      "contract_id": "factory-attestation-schema",
+      "producer": "BicameralAI/bicameral-factory",
+      "consumer": "BicameralAI/bicameral-integrations",
+      "role": "consumer",
+      "upstream_repo": "BicameralAI/bicameral-factory",
+      "upstream_path": "schemas/factory-attestation.schema.json",
+      "upstream_commit": "12d16bd12e06c6bb3296c529d47fa90f0c86755f",
+      "local_path": "docs/governance/factory-attestation.schema.json",
+      "content_sha256": "2eedc015d697002cd78fb601fe9fb41d5c9d436f5860dd96739c4c50319ac420",
+      "drift_gate": "scripts/validate_governance_pin.py",
+      "note": "Pinned mirror of the Factory attestation schema. Tracked attestations under .bicameral/factory-attestations/*.json are validated against this mirror by scripts/validate_factory_attestation.py (integrations#249 owner decision)."
+    }
+  ]
+}

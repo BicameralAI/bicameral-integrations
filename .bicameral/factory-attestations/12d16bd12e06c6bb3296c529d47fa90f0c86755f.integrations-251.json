@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "factory_repo": "BicameralAI/bicameral-factory",
+  "factory_commit": "12d16bd12e06c6bb3296c529d47fa90f0c86755f",
+  "loaded_context": [
+    "README.md",
+    "CONTRIBUTING.md",
+    "playbooks/devin-bicameral-factory-run.md",
+    "blueprints/factory-run-signals/artifact-boundary.md",
+    "blueprints/factory-run-signals/domain-entity-candidates.md",
+    "blueprints/factory-run-signals/factory-learning-signals.md",
+    "blueprints/factory-run-signals/minimum-product-validation.md",
+    "schemas/repo-governance.schema.json"
+  ],
+  "context_evidence": {
+    "README.md": {
+      "source": "agent-declared",
+      "reason": "Baseline factory guidance for the Bicameral Factory Run."
+    },
+    "CONTRIBUTING.md": {
+      "source": "agent-declared",
+      "reason": "PAMA contribution and demotion-loop rules."
+    },
+    "playbooks/devin-bicameral-factory-run.md": {
+      "source": "agent-declared",
+      "reason": "Canonical Factory Run playbook followed for this session."
+    },
+    "blueprints/factory-run-signals/artifact-boundary.md": {
+      "source": "agent-declared",
+      "reason": "Product PR artifact-boundary evidence contract."
+    },
+    "schemas/repo-governance.schema.json": {
+      "source": "agent-declared",
+      "reason": "Repo-governance descriptor schema (extended in bicameral-factory#250)."
+    }
+  },
+  "local_setup_divergence": {
+    "checked": true,
+    "resolution": "none",
+    "notes": "No local-only prompts, aliases, MCP servers, editor rules, scripts, or environment assumptions affected this PR."
+  },
+  "roadmap_reconciliation": {
+    "checked": true,
+    "issue_number": 243,
+    "issue_type": "validating",
+    "project_status": "In Progress",
+    "pr_links_checked": true,
+    "pr_body_links_issue": true,
+    "pr_links": [
+      "https://github.com/BicameralAI/bicameral-integrations/pull/252",
+      "https://github.com/BicameralAI/bicameral-factory/pull/250"
+    ],
+    "post_work_comment_url": null,
+    "notes": "Factory #243 is the roadmap context for the customer/contributor governance boundary; implemented in integrations#251 (PR #252) with the companion schema extension in bicameral-factory#250 (merged)."
+  },
+  "state_refinement": {
+    "checked": true,
+    "release_state": "Separate the public customer distribution from contributor-only Factory governance: deterministic fail-closed release-inventory boundary, refined repo descriptor, pinned inter-repo contracts with drift detection, and tracked factory attestations validated in-repo.",
+    "states_added": [
+      "CustomerDistributionBoundary",
+      "InterRepoContractPin",
+      "ObservedVsDesiredGovernanceState",
+      "TrackedFactoryAttestation"
+    ],
+    "states_deferred": [],
+    "invariants": [
+      "Integrations are evidence-only adapters: they emit candidates, evidence, hints, signals, and advisories but never own canonical state.",
+      "The customer release artifact never carries .bicameral/** or contributor-only development material.",
+      "Tracked factory attestations are validated fail-closed on filename, schema, factory-commit reconciliation, roadmap reconciliation, and state refinement.",
+      "Only .bicameral/repo-governance.yaml and .bicameral/factory-attestations/*.json are commit-permitted under .bicameral/."
+    ],
+    "minimization_review": {
+      "reviewed": true,
+      "rejected_or_collapsed_states": [
+        "In-tree attestation storage was previously rejected pending the governance-owner decision; it is now accepted (integrations#249) with a fail-closed validator and release exclusion."
+      ],
+      "rationale": "The release keeps the smallest honest lifecycle: attestations become a tracked, validated, release-excluded state rather than an unbounded .bicameral/ allowance."
+    },
+    "notes": "State-refinement reconciled against the integrations#249 governance-owner decision."
+  },
+  "end_of_session_capture": {
+    "run": true,
+    "factory_pr": "https://github.com/BicameralAI/bicameral-factory/pull/250",
+    "notes": "Companion Factory schema extension captured as bicameral-factory#250 (merged)."
+  },
+  "attested_by": "devin-ai-integration[bot] (Bicameral Factory Run)",
+  "timestamp": "2026-07-16T19:10:14Z",
+  "target_repo": "BicameralAI/bicameral-integrations",
+  "target_branch": "devin/1784153710-integrations-251-boundary",
+  "agent": "devin-feature-agent",
+  "session": "https://app.devin.ai/sessions/ccc2d485389b4f6d9cffc27ef2b13555"
+}

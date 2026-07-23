@@ -31,7 +31,7 @@ was never the read; it was the **governed write landing in the wrong chain**.
 1. **Cross-repo reads are always permitted.** A dev cycle may read any repo, issue, or external source it
    needs to do its work.
 2. **Governed writes follow the owning repo.** Every tamper-evident or first-class governance artifact —
-   META_LEDGER entry, ADR, gate artifact (`.qor/gates/**`), research brief that *is* the owning record,
+   META_LEDGER entry, ADR, local gate artifact, research brief that *is* the owning record,
    FEATURE_INDEX row — must be committed to the repo whose code, contract, or issue the decision governs.
    If research done in repo A is in service of repo B's decision, the owning record lands in **B**; A may
    keep at most a clearly-labelled **handoff** (a transmittal, not the owning record).
