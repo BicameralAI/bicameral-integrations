@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "generated_for": "ADR-0020 issues #277/#278",
+  "research_date": "2026-07-23",
+  "source_policy": "primary-sources-only",
+  "implemented": [
+    {
+      "candidate_id": "bicameral-stdlib-v1",
+      "family": "bicameral-stdlib",
+      "packages": {"python-stdlib-re": "builtin"},
+      "models": {},
+      "license": "MIT",
+      "python_support": "repo-supported interpreters",
+      "os_support": ["windows", "linux", "macos"],
+      "offline": true,
+      "deterministic": true,
+      "maintenance": "in-repo, reviewed at PR #269 head fd69ff2742363b5d619bc073b8e8490c0f50733d",
+      "package_bytes_estimate": 0,
+      "model_bytes_estimate": 0,
+      "known_limitations": [
+        "no person, address, dob, government-id, ip, or contextual detection",
+        "bare national phone numbers without dialing prefix or keyword are a documented residual"
+      ],
+      "vulnerability_posture": "no third-party code",
+      "verdict": "implemented-baseline"
+    },
+    {
+      "candidate_id": "presidio-spacy-lg-v1",
+      "family": "presidio",
+      "packages": {
+        "presidio-analyzer": "2.2.364",
+        "presidio-anonymizer": "2.2.364",
+        "spacy": "3.8.14",
+        "en_core_web_lg": "3.8.0",
+        "en_core_web_sm": "3.8.0"
+      },
+      "models": {"en_core_web_lg": "3.8.0 (MIT, OntoNotes 5)"},
+      "license": "MIT (presidio, spacy, models)",
+      "python_support": ">=3.10,<3.15",
+      "os_support": ["windows", "linux", "macos"],
+      "offline": true,
+      "offline_caveats": [
+        "tldextract public-suffix-list fetch on the URL recognizer path (presidio issue #1205); URL recognizer excluded from this configuration"
+      ],
+      "deterministic": "per pinned platform/environment (Explosion discussion #11169)",
+      "maintenance": "active, ~quarterly; transferred Microsoft -> Data Privacy Stack community org 2026-06 (release 2.2.363)",
+      "package_bytes_estimate": "analyzer wheel ~266KB + spacy/numpy stack",
+      "model_bytes_estimate": 400556032,
+      "known_limitations": [
+        "no completeness guarantee (project FAQ)",
+        "recognizer coverage English/US biased",
+        "one NER model per language"
+      ],
+      "vulnerability_posture": "zero OSV advisories for presidio packages and base spacy as of 2026-07-23",
+      "verdict": "implemented"
+    },
+    {
+      "candidate_id": "presidio-gliner-pii-v1",
+      "family": "presidio-gliner",
+      "packages": {
+        "presidio-analyzer": "2.2.364",
+        "gliner": "0.2.27",
+        "torch": "2.13.0+cpu",
+        "transformers": "5.6.2",
+        "onnxruntime": "1.27.0",
+        "en_core_web_sm": "3.8.0"
+      },
+      "models": {
+        "urchade/gliner_multi_pii-v1": "revision 1fcf13e85f4eef5394e1fcd406cf2ca9ea82351d (Apache-2.0, synthetic training data urchade/synthetic-pii-ner-mistral-v1, pytorch_model.bin 1155900362 bytes, mdeberta-v3-base backbone ~289M params)"
+      },
+      "license": "Apache-2.0 (gliner + model set); MIT (presidio)",
+      "python_support": ">=3.10 full stack on 3.13 (torch cp313 windows wheels since 2.6.0)",
+      "os_support": ["windows", "linux", "macos"],
+      "offline": true,
+      "offline_caveats": [
+        "requires HF_HUB_OFFLINE=1, TRANSFORMERS_OFFLINE=1, HF_HUB_DISABLE_TELEMETRY=1 and commit-pinned revision after one-time provisioning"
+      ],
+      "deterministic": "forward pass + threshold, no sampling; per pinned platform; cross-platform bit identity not promised by PyTorch",
+      "maintenance": "gliner active but pre-1.0; presidio GLiNERRecognizer predefined since 2.2.360",
+      "package_bytes_estimate": "torch CPU stack, several hundred MB installed",
+      "model_bytes_estimate": 1155900362,
+      "known_limitations": [
+        "384 word-token window requires chunking with offset remapping",
+        "zero-shot recall sensitive to exact label wording; labels frozen in configuration digest",
+        "published PII benchmarks are on synthetic distributions",
+        "flagship checkpoint ships only pytorch_model.bin, no safetensors"
+      ],
+      "vulnerability_posture": "torch CVE-2025-32434 (torch.load RCE, fixed 2.6.0) controlling; mitigated via torch 2.13.0 + revision pin; transformers >=4.53 covers CVE-2025-6921; no gliner CVEs known",
+      "verdict": "implemented"
+    },
+    {
+      "candidate_id": "datafog-regex-v1",
+      "family": "datafog",
+      "packages": {"datafog": "4.8.0"},
+      "models": {},
+      "license": "MIT LICENSE file; Apache-2.0 PyPI classifier (inconsistency recorded)",
+      "python_support": ">=3.10,<3.14 (3.13 certified)",
+      "os_support": ["windows", "linux", "macos"],
+      "offline": true,
+      "deterministic": true,
+      "maintenance": "active (4.8.0 2026-07-06; beta uploads 2026-07-23); small single-vendor community",
+      "package_bytes_estimate": "small; pydantic-only dependencies",
+      "model_bytes_estimate": 0,
+      "known_limitations": [
+        "no person-name or address detection in the regex core",
+        "secrets coverage narrower than the Bicameral catalog"
+      ],
+      "vulnerability_posture": "none known for the core",
+      "verdict": "implemented"
+    }
+  ],
+  "rejected_before_implementation": [
+    {
+      "candidate": "scrubadub",
+      "version": "2.0.1",
+      "reason": "abandoned since 2023-09-01; python classifiers stop at 3.9; textblob==0.15.3 pin",
+      "evidence": "https://pypi.org/project/scrubadub/ and repo commit history"
+    },
+    {
+      "candidate": "llm-guard",
+      "version": "0.3.16",
+      "reason": "repository archived read-only 2026-07-09; requires_python <3.13; wraps presidio+torch internally",
+      "evidence": "https://github.com/protectai/llm-guard"
+    },
+    {
+      "candidate": "piiranha-v1",
+      "version": "iiiorg/piiranha-v1-detect-personal-information",
+      "reason": "model license CC-BY-NC-ND-4.0 incompatible with distribution",
+      "evidence": "https://huggingface.co/iiiorg/piiranha-v1-detect-personal-information"
+    },
+    {
+      "candidate": "pii-anonymizer",
+      "version": "0.2.5",
+      "reason": "abandoned since 2023-01; requires pyspark; classifiers 3.10/3.11 only",
+      "evidence": "https://pypi.org/project/pii-anonymizer/"
+    },
+    {
+      "candidate": "commonregex",
+      "version": "1.5.4",
+      "reason": "unmaintained since 2014",
+      "evidence": "https://pypi.org/project/commonregex/"
+    }
+  ],
+  "reference_only": [
+    {
+      "candidate": "detect-secrets",
+      "version": "1.5.0",
+      "reason": "secrets-only, zero PII coverage; documented as possible future complement",
+      "eligible_as_standalone_detector": false
+    },
+    {"candidate": "pii-codex", "version": "0.6.1", "reason": "scoring layer over presidio, not a detector"},
+    {"candidate": "anonipy", "version": "0.6.1", "reason": "wraps spacy+gliner; duplicates the GLiNER lane"},
+    {"candidate": "flair", "version": "0.15.1", "reason": "general NER, no PII typing"},
+    {"candidate": "stanza", "version": "1.14.0", "reason": "general NER, no PII typing"},
+    {"candidate": "hosted-pii-services", "version": "n/a", "reason": "ineligible for the required alpha boundary: credential, availability, network, privacy-boundary dependencies"}
+  ]
+}
