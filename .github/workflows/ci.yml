@@ -38,7 +38,7 @@ jobs:
       - name: Pytest
         run: |
           set -o pipefail
-          pytest adapter/core/tests connectors runtime mods scripts/tests tests/redteam -q 2>&1 | tee /tmp/pytest.log
+          pytest adapter/core/tests connectors runtime mods scripts/tests tests/redteam tests/redaction_evaluation -q 2>&1 | tee /tmp/pytest.log
       - name: Upload pytest diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
