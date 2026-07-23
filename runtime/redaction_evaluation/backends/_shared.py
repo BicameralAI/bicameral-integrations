@@ -175,3 +175,33 @@ def build_bicameral_recognizers() -> list[Any]:
             )
         )
     return recognizers
+
+
+def chunk_text_by_chars(
+    text: str, window_chars: int, overlap_chars: int
+) -> list[tuple[int, str]]:
+    """Deterministic (offset, window) pairs covering the whole text.
+
+    spaCy-backed NLP engines refuse documents above ``nlp.max_length``
+    (1,000,000 chars) and their memory cost grows sharply with document
+    size, so long admitted fields are analyzed in character windows split
+    at whitespace boundaries when possible. The overlap keeps entities
+    that straddle a window boundary detectable; ``resolve_findings``
+    dedupes double reports from the overlap region.
+    """
+
+    if len(text) <= window_chars:
+        return [(0, text)]
+    chunks: list[tuple[int, str]] = []
+    start = 0
+    while start < len(text):
+        end = min(len(text), start + window_chars)
+        if end < len(text):
+            boundary = text.rfind(" ", start + window_chars // 2, end)
+            if boundary > start:
+                end = boundary
+        chunks.append((start, text[start:end]))
+        if end >= len(text):
+            break
+        start = max(start + 1, end - overlap_chars)
+    return chunks

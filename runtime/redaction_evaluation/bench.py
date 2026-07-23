@@ -48,6 +48,8 @@ _OFFLINE_ENV = {
     "HF_HUB_DISABLE_TELEMETRY": "1",
 }
 _WARMUP_CALLS = 20
+_MIN_WARM_SAMPLES = 10
+_WARM_CLASS_BUDGET_SECONDS = 60.0
 _SAMPLE_INTERVAL_SECONDS = 0.05
 _HANG_BUDGET_SECONDS = 1.0
 _PAYLOAD_CLASS_ORDER = ("small", "medium", "large", "max_admitted")
@@ -575,6 +577,7 @@ def run_benchmarks(
         warm_latency: dict[str, Any] = {}
         throughput_rps = 0.0
         medium_total_seconds = 0.0
+        medium_iterations = 1
         cpu_percent_avg: float | None = None
         try:
             for class_name in _PAYLOAD_CLASS_ORDER:
@@ -585,23 +588,38 @@ def run_benchmarks(
                     process.cpu_percent(None)
                 durations: list[float] = []
                 loop_started = time.perf_counter()
+                # Bounded loop: heavy model backends on the large payload
+                # classes would take hours at a fixed iteration count. The
+                # loop stops at the per-class time budget once the minimum
+                # sample size is reached; the measured count is recorded so
+                # the percentiles stay honest about their sample basis.
                 for _ in range(warm_iterations):
                     call_started = time.perf_counter()
                     backend.analyze(text, field_path="excerpt", policy=active_policy)
                     durations.append(time.perf_counter() - call_started)
+                    if (
+                        len(durations) >= _MIN_WARM_SAMPLES
+                        and time.perf_counter() - loop_started
+                        >= _WARM_CLASS_BUDGET_SECONDS
+                    ):
+                        break
                 loop_seconds = time.perf_counter() - loop_started
+                measured = len(durations)
                 if class_name == "medium":
                     cpu_percent_avg = float(process.cpu_percent(None))
                     medium_total_seconds = loop_seconds
-                    throughput_rps = warm_iterations / loop_seconds
+                    medium_iterations = measured
+                    throughput_rps = measured / loop_seconds
                 ascending = sorted(durations)
                 warm_latency[class_name] = {
                     "p50": _percentile(ascending, 50.0) * 1000.0,
                     "p95": _percentile(ascending, 95.0) * 1000.0,
                     "p99": _percentile(ascending, 99.0) * 1000.0,
-                    "iterations": warm_iterations,
+                    "iterations": measured,
+                    "iteration_cap": warm_iterations,
+                    "time_budget_seconds": _WARM_CLASS_BUDGET_SECONDS,
                 }
-            serial_expectation = (medium_total_seconds / warm_iterations) * 100.0
+            serial_expectation = (medium_total_seconds / medium_iterations) * 100.0
             concurrency = _measure_concurrency(
                 backend, payloads["medium"], active_policy, serial_expectation
             )

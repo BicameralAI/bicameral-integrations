@@ -25,6 +25,7 @@ from ..seam import (
 )
 from ._shared import (
     bicameral_catalog_manifest,
+    chunk_text_by_chars,
     bicameral_recognizer_names,
     build_bicameral_recognizers,
     require_pinned_version,
@@ -36,6 +37,13 @@ _SPACY_PIN = "3.8.14"
 _MODEL_NAME = "en_core_web_lg"
 _MODEL_PIN = "3.8.0"
 _SCORE_THRESHOLD = 0.4
+# spaCy refuses documents above nlp.max_length (1,000,000 chars) and its NER
+# memory cost grows sharply with document size, so long admitted fields are
+# analyzed in deterministic character windows split at whitespace boundaries.
+# The overlap keeps entities that straddle a window boundary detectable; the
+# shared overlap resolver dedupes double reports from the overlap region.
+_CHUNK_CHARS = 100_000
+_CHUNK_OVERLAP_CHARS = 200
 _SPACY_ENTITIES = ("PERSON", "LOCATION")
 _PHONE_REGIONS = ("US", "GB", "DE", "FR", "IL", "IN", "CA", "BR")
 
@@ -92,6 +100,10 @@ _LABEL_MAP = LabelMap(
 )
 
 
+def _chunk_text(text: str) -> list[tuple[int, str]]:
+    return chunk_text_by_chars(text, _CHUNK_CHARS, _CHUNK_OVERLAP_CHARS)
+
+
 class PresidioSpacyBackend:
     """Presidio AnalyzerEngine candidate with a pinned spaCy lg NLP engine."""
 
@@ -132,6 +144,11 @@ class PresidioSpacyBackend:
                 "score_threshold": _SCORE_THRESHOLD,
                 "allow_list": [],
                 "bicameral_catalog": bicameral_catalog_manifest(),
+                "long_text_chunking": {
+                    "window_chars": _CHUNK_CHARS,
+                    "overlap_chars": _CHUNK_OVERLAP_CHARS,
+                    "boundary": "whitespace-preferred",
+                },
                 "label_map": _LABEL_MAP.map_id,
             },
         )
@@ -233,12 +250,18 @@ class PresidioSpacyBackend:
             raise BackendUnavailable("backend_unavailable")
         if not text:
             return []
-        results = self._analyzer.analyze(text=text, language="en")
-        candidates = [
-            (str(result.entity_type), int(result.start), int(result.end),
-             float(result.score))
-            for result in results
-        ]
+        candidates: list[tuple[str, int, int, float]] = []
+        for chunk_start, chunk_text in _chunk_text(text):
+            results = self._analyzer.analyze(text=chunk_text, language="en")
+            candidates.extend(
+                (
+                    str(result.entity_type),
+                    chunk_start + int(result.start),
+                    chunk_start + int(result.end),
+                    float(result.score),
+                )
+                for result in results
+            )
         return resolve_findings(
             candidates,
             label_map=_LABEL_MAP,

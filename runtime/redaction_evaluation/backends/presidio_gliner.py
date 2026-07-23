@@ -38,6 +38,7 @@ from ..seam import (
     BackendUnavailable,
 )
 from ._shared import (
+    chunk_text_by_chars,
     bicameral_catalog_manifest,
     bicameral_recognizer_names,
     build_bicameral_recognizers,
@@ -102,6 +103,12 @@ _SPACY_LABELS_TO_IGNORE = (
     "TIME",
     "WORK_OF_ART",
 )
+
+# Character-window pre-chunking protects the spaCy tokenization engine from
+# documents above nlp.max_length; the GLiNER word-window chunker then runs
+# inside each character window.
+_NLP_CHUNK_CHARS = 100_000
+_NLP_CHUNK_OVERLAP_CHARS = 200
 
 _LABEL_MAP = LabelMap(
     map_id="presidio-gliner-labels-v1",
@@ -298,6 +305,11 @@ class PresidioGlinerBackend:
                 "score_threshold": _SCORE_THRESHOLD,
                 "allow_list": [],
                 "bicameral_catalog": bicameral_catalog_manifest(),
+                "nlp_text_chunking": {
+                    "window_chars": _NLP_CHUNK_CHARS,
+                    "overlap_chars": _NLP_CHUNK_OVERLAP_CHARS,
+                    "boundary": "whitespace-preferred",
+                },
                 "label_map": _LABEL_MAP.map_id,
             },
         )
@@ -401,12 +413,20 @@ class PresidioGlinerBackend:
             raise BackendUnavailable("backend_unavailable")
         if not text:
             return []
-        results = self._analyzer.analyze(text=text, language="en")
-        candidates = [
-            (str(result.entity_type), int(result.start), int(result.end),
-             float(result.score))
-            for result in results
-        ]
+        candidates: list[tuple[str, int, int, float]] = []
+        for chunk_start, chunk_text in chunk_text_by_chars(
+            text, _NLP_CHUNK_CHARS, _NLP_CHUNK_OVERLAP_CHARS
+        ):
+            results = self._analyzer.analyze(text=chunk_text, language="en")
+            candidates.extend(
+                (
+                    str(result.entity_type),
+                    chunk_start + int(result.start),
+                    chunk_start + int(result.end),
+                    float(result.score),
+                )
+                for result in results
+            )
         return resolve_findings(
             candidates,
             label_map=_LABEL_MAP,

@@ -323,7 +323,10 @@ def cmd_aggregate(args: argparse.Namespace) -> int:
     _write_json(out_dir / "hard-gates.json", hard_gates_json)
     _write_json(out_dir / "candidate-matrix.json", matrix)
     (out_dir / "entity-results.csv").write_text(csv_text, encoding="utf-8")
-    (out_dir / "recommendation.md").write_text(
+    # The auto-draft never overwrites the authored recommendation: the final
+    # recommendation is owner-facing judgment layered on these aggregates,
+    # while the draft is regenerated evidence.
+    (out_dir / "recommendation-draft.md").write_text(
         _recommendation_draft(matrix), encoding="utf-8"
     )
     print(f"aggregates written to {out_dir}")
@@ -492,7 +495,9 @@ def cmd_all(args: argparse.Namespace) -> int:
             print("bench module not importable; skipping benchmark-results.json")
         else:
             benchmarks = {
-                candidate_id: bench.run_benchmarks(candidate_id, REPO_ROOT, policy)
+                candidate_id: bench.run_benchmarks(
+                    candidate_id, repo_root=REPO_ROOT, policy=policy
+                )
                 for candidate_id in candidate_ids
             }
             _write_json(
@@ -507,7 +512,9 @@ def cmd_all(args: argparse.Namespace) -> int:
         else:
             _write_json(
                 out_dir / "offline-proof.json",
-                netguard.offline_proof(candidate_ids, REPO_ROOT, policy),
+                netguard.offline_proof(
+                    candidate_ids, repo_root=REPO_ROOT, policy=policy
+                ),
             )
 
     if not args.skip_inventory:
