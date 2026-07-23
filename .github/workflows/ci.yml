@@ -54,3 +54,5 @@ jobs:
         run: python scripts/validate_ingest_schema_pin.py
       - name: Redaction evaluation corpus and annotation gate
         run: python scripts/validate_redaction_evaluation_contract.py
+      - name: Redaction evaluation review and decision gate
+        run: python scripts/validate_redaction_evaluation_governance.py
