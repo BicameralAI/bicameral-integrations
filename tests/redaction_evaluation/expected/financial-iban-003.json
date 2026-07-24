@@ -1,0 +1,20 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 52,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:financial_id]",
+      "start": 25,
+      "subtype": "financial_id"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "financial-iban-003",
+  "schema_version": 1
+}

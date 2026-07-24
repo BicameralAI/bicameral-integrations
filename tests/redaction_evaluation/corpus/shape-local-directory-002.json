@@ -1,0 +1,29 @@
+{
+  "observation": {
+    "author": "importer",
+    "evidence_id": "ev-dir-retro-0621",
+    "evidence_metadata": {
+      "note": "Imported from a drive shared by Dana Frost."
+    },
+    "excerpt": "Retro notes imported with reviewer provenance.",
+    "metadata": {
+      "file": {
+        "content": "Retro action: send the summary to dana.frost@example.org by Thursday.",
+        "path": "notes/retro-2026-06-21.md"
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "notes/retro-2026-06-21.md",
+    "source_ref": {
+      "kind": "file",
+      "ref": "notes/retro-2026-06-21.md",
+      "source_id": "local-directory",
+      "url": ""
+    },
+    "timestamp": "2026-06-21T09:00:00Z",
+    "title": "Retro 2026-06-21"
+  },
+  "record_id": "shape-local-directory-002",
+  "source_shape": "local_directory"
+}

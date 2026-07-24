@@ -1,0 +1,20 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 30,
+      "entity_id": "e001",
+      "field_path": "metadata.comments[0].body",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 17,
+      "subtype": "person"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "nested-meta-003",
+  "schema_version": 1
+}

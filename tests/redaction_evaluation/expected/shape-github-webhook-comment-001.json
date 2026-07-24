@@ -1,0 +1,55 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 18,
+      "entity_id": "e001",
+      "field_path": "metadata.webhook.comment.body",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 8,
+      "subtype": "person"
+    },
+    {
+      "category": "pii",
+      "end": 45,
+      "entity_id": "e002",
+      "field_path": "metadata.webhook.comment.body",
+      "mandatory": false,
+      "replacement": "[redacted:email]",
+      "start": 23,
+      "subtype": "email"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:aea85016c1ec0c25487f5fc1a3aad9e545bf2bda98f28a375945114a9920f5fb",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:b9bb3839834c8cc8143f19b749e90e81c6eccc3d409e35b5f363c5da167ae2af",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:08b7797f38d18cf65783fd647183bf8b09b3cd3af606973c0fa1a9a1389cb956",
+      "field_path": "provider_event_id"
+    },
+    {
+      "expected_value_sha256": "sha256:4b069553ea370e984abeb7f5b26ba28a2681ff69d3d2ce4f416992a5f9883615",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:b60397f70ccc607feccd9789206c496d1588c4b1c8a73c36443f89fef47fed2a",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:5b54b3dd76afc83c02d8775e94ed9702e8fadfba61a17a5bbea6ca260ef4dda8",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-github-webhook-comment-001",
+  "schema_version": 1
+}

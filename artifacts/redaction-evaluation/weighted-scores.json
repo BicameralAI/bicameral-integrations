@@ -1,0 +1,130 @@
+{
+  "advisory": true,
+  "candidates": [
+    {
+      "aggregate_state": "passed",
+      "candidate_id": "bicameral-stdlib-v1",
+      "maintainability_reason": "zero deps, in-repo; every new entity class is hand-written regex work",
+      "packaging_deductions": [],
+      "scores": {
+        "detection": 17.0732,
+        "maintainability_seam": 7.0,
+        "packaging_operational": 10.0,
+        "performance_resource": 9.2373,
+        "precision_preservation": 20.0,
+        "security_failure": 20.0
+      },
+      "selection_eligible": true,
+      "total": 83.3105
+    },
+    {
+      "aggregate_state": "passed",
+      "candidate_id": "datafog-regex-v1",
+      "maintainability_reason": "single-vendor small project; allowlist-only extension surface",
+      "packaging_deductions": [
+        {
+          "points": 1.0,
+          "reason": "LICENSE file vs PyPI classifier inconsistency unresolved"
+        },
+        {
+          "points": 3.0,
+          "reason": "fail-closed record loss on every catalog-secret record (measured)"
+        }
+      ],
+      "scores": {
+        "detection": 13.0165,
+        "maintainability_seam": 5.0,
+        "packaging_operational": 6.0,
+        "performance_resource": 8.1986,
+        "precision_preservation": 15.5,
+        "security_failure": 0.0
+      },
+      "selection_eligible": true,
+      "total": 47.7151
+    },
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "presidio-gliner-pii-v1",
+      "maintainability_reason": "gliner pre-1.0 no semver promise; zero-shot labels wording-sensitive",
+      "packaging_deductions": [
+        {
+          "points": 2.0,
+          "reason": "1.16GB unsigned .bin checkpoint; backbone tokenizer revision not pinnable through gliner API"
+        },
+        {
+          "points": 1.0,
+          "reason": "HF cache + offline env flags required for offline determinism"
+        },
+        {
+          "points": 1.0,
+          "reason": "MPL-2.0 certifi flagged review_required in license closure"
+        },
+        {
+          "points": 1.0,
+          "reason": "torch>=2.6 CVE floor must be enforced in packaging"
+        }
+      ],
+      "scores": {
+        "detection": 27.5956,
+        "maintainability_seam": 6.0,
+        "packaging_operational": 5.0,
+        "performance_resource": 0.0616,
+        "precision_preservation": 17.3131,
+        "security_failure": 20.0
+      },
+      "selection_eligible": false,
+      "total": 75.9703
+    },
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "presidio-spacy-lg-v1",
+      "maintainability_reason": "active community project, first-class recognizer API behind the seam; governance moved to community org 2026-06",
+      "packaging_deductions": [
+        {
+          "points": 1.0,
+          "reason": "382MB model wheel provisioning + pinned-URL install step"
+        },
+        {
+          "points": 1.0,
+          "reason": "MPL-2.0 certifi flagged review_required in license closure"
+        }
+      ],
+      "scores": {
+        "detection": 26.951,
+        "maintainability_seam": 8.0,
+        "packaging_operational": 8.0,
+        "performance_resource": 0.1744,
+        "precision_preservation": 18.6087,
+        "security_failure": 20.0
+      },
+      "selection_eligible": false,
+      "total": 81.7341
+    }
+  ],
+  "evaluation_input_sha256": "sha256:b00e02728e6e6ed24e582ce0f6cbf181e5298f2af58b5b4a1c65b5e4cd5a6229",
+  "schema_version": 1,
+  "score_basis": {
+    "formulas": {
+      "detection": "30 * totals.f2 (0 when null)",
+      "maintainability_seam": "judged score from the MAINTAINABILITY table, reason stated",
+      "packaging_operational": "10 minus the itemized PACKAGING_DEDUCTIONS entries (floored at 0)",
+      "performance_resource": "10 * mean over axes [warm p95 medium latency ms, isolated peak bytes, package+model total bytes, cold init median seconds] of min(1, best/candidate); best = smallest positive value; zero-cost axis scores 1.0; missing measurement scores 0.0",
+      "precision_preservation": "10 * totals.precision + 10 * mean(decision_preservation.pass_ratio, 1 - min(1, (destructive_false_positives + clean_records_modified) / 10))",
+      "security_failure": "20 * expected_outcome_agreement.matches/records; forced 0 when post_screen_escapes > 0 or repeated_output_mismatches > 0 or protected_field_mutations > 0"
+    },
+    "inputs": [
+      "metrics.json",
+      "hard-gates.json",
+      "benchmark-results.json",
+      "memory-isolated.json"
+    ],
+    "weights": {
+      "detection": 30.0,
+      "maintainability_seam": 10.0,
+      "packaging_operational": 10.0,
+      "performance_resource": 10.0,
+      "precision_preservation": 20.0,
+      "security_failure": 20.0
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "observation": {
+    "author": "ops-bot",
+    "evidence_id": "ev-lin-eng-142",
+    "evidence_metadata": {},
+    "excerpt": "Linear issue created for the on-call rotation.",
+    "metadata": {
+      "webhook": {
+        "action": "create",
+        "data": {
+          "description": "Rotate on-call to Sable Norwick reachable at sable.norwick@example.com.",
+          "id": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+          "identifier": "ENG-142",
+          "title": "Update the on-call contact"
+        },
+        "organizationId": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+        "type": "Issue",
+        "webhookTimestamp": 1750341720
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "d4e5f6a7-b8c9-4d0e-9f1a-2b3c4d5e6f70",
+    "provider_resource_id": "b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+    "source_ref": {
+      "kind": "issue",
+      "ref": "ENG-142",
+      "source_id": "linear",
+      "url": "https://linear.app/example/issue/ENG-142"
+    },
+    "timestamp": "2026-06-19T14:02:00Z",
+    "title": "Update the on-call contact"
+  },
+  "record_id": "shape-linear-webhook-001",
+  "source_shape": "linear_webhook"
+}

@@ -1,0 +1,30 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 38,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 25,
+      "subtype": "person"
+    },
+    {
+      "category": "pii",
+      "end": 12,
+      "entity_id": "e002",
+      "field_path": "title",
+      "mandatory": false,
+      "replacement": "[redacted:person]",
+      "start": 0,
+      "subtype": "person"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "person-title-002",
+  "schema_version": 1
+}

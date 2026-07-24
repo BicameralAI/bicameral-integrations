@@ -1,0 +1,22 @@
+{
+  "observation": {
+    "author": "",
+    "evidence_id": "",
+    "evidence_metadata": {},
+    "excerpt": "Requirement: alpha hardware ships only within the pilot region. Courier drop-off at 14 Larkspur Court, Fable City, OR 97401.",
+    "metadata": {},
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "",
+    "source_ref": {
+      "kind": "note",
+      "ref": "",
+      "source_id": "synthetic-notes",
+      "url": ""
+    },
+    "timestamp": "2026-07-01T12:00:00Z",
+    "title": ""
+  },
+  "record_id": "requirement-address-001",
+  "source_shape": "observation"
+}

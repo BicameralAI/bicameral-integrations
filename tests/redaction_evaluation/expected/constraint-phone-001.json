@@ -1,0 +1,26 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 93,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:phone]",
+      "start": 78,
+      "subtype": "phone"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [
+    {
+      "assertion_id": "preserve-001",
+      "field_path": "excerpt",
+      "required_substring": "sync intervals stay at 15 minutes or slower"
+    }
+  ],
+  "protected_fields": [],
+  "record_id": "constraint-phone-001",
+  "schema_version": 1
+}

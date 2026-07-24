@@ -1,0 +1,9 @@
+{
+  "expected_entities": [],
+  "expected_failure_reason": null,
+  "expected_outcome": "unchanged",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "neg-timestamp-003",
+  "schema_version": 1
+}

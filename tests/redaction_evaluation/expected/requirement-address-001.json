@@ -1,0 +1,26 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 123,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": false,
+      "replacement": "[redacted:address]",
+      "start": 84,
+      "subtype": "address"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [
+    {
+      "assertion_id": "preserve-001",
+      "field_path": "excerpt",
+      "required_substring": "alpha hardware ships only within the pilot region"
+    }
+  ],
+  "protected_fields": [],
+  "record_id": "requirement-address-001",
+  "schema_version": 1
+}

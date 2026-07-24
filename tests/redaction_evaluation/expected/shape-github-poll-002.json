@@ -1,0 +1,45 @@
+{
+  "expected_entities": [
+    {
+      "category": "credential",
+      "end": 41,
+      "entity_id": "e001",
+      "field_path": "metadata.poll.items[0].body",
+      "mandatory": true,
+      "replacement": "[redacted:pan]",
+      "start": 25,
+      "subtype": "pan"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:aea85016c1ec0c25487f5fc1a3aad9e545bf2bda98f28a375945114a9920f5fb",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:0f03d96d94bfc3e6a6b367059b4fe356cb27aab69c0252f9638e6b4a7b5ebe5c",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:11388936caa9532069c473d0c8fd7d8c87f78b37eafe84f9c2f3d639e502136b",
+      "field_path": "provider_event_id"
+    },
+    {
+      "expected_value_sha256": "sha256:82e645a2e1dde2e63efd85727d2cfea498492520a117b647abfb55426835f60e",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:27321006a44d18c276b45508450901dc1f7df12dd78bfdcb1053ae26403efc4b",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:0911723957bd60235844c33163d07dafad38afaf4494e3339fbd5b202024793d",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-github-poll-002",
+  "schema_version": 1
+}

@@ -1,0 +1,22 @@
+{
+  "observation": {
+    "author": "",
+    "evidence_id": "",
+    "evidence_metadata": {},
+    "excerpt": "Deployed commit 3f9c2b7e1a4d5c6f8091a2b3c4d5e6f708192a3b to staging.",
+    "metadata": {},
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "",
+    "source_ref": {
+      "kind": "note",
+      "ref": "",
+      "source_id": "synthetic-notes",
+      "url": ""
+    },
+    "timestamp": "2026-07-01T12:00:00Z",
+    "title": ""
+  },
+  "record_id": "neg-git-sha-001",
+  "source_shape": "plain_text"
+}

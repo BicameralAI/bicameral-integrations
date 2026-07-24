@@ -1,0 +1,20 @@
+{
+  "expected_entities": [
+    {
+      "category": "credential",
+      "end": 39,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": true,
+      "replacement": "[redacted:pan]",
+      "start": 24,
+      "subtype": "pan"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "financial-pan-amex-002",
+  "schema_version": 1
+}

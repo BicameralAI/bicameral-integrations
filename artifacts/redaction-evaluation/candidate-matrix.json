@@ -1,0 +1,81 @@
+{
+  "candidates": [
+    {
+      "aggregate_state": "passed",
+      "candidate_id": "bicameral-stdlib-v1",
+      "configuration_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
+      "corpus_digest": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
+      "engine_version": "1.0.0",
+      "family": "bicameral-stdlib",
+      "hard_gates_passed": true,
+      "models": {},
+      "packages": {
+        "python-stdlib-re": "builtin"
+      },
+      "pending_gate_ids": [],
+      "selection_eligible": true
+    },
+    {
+      "aggregate_state": "passed",
+      "candidate_id": "datafog-regex-v1",
+      "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+      "corpus_digest": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
+      "engine_version": "4.8.0",
+      "family": "datafog",
+      "hard_gates_passed": true,
+      "models": {},
+      "packages": {
+        "datafog": "4.8.0"
+      },
+      "pending_gate_ids": [],
+      "selection_eligible": true
+    },
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "presidio-gliner-pii-v1",
+      "configuration_digest": "sha256:e422a21203a54fd8a2747668fd5d95ca8db56f457838941df327112b830a264d",
+      "corpus_digest": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
+      "engine_version": "2.2.364",
+      "family": "presidio-gliner",
+      "hard_gates_passed": false,
+      "models": {
+        "en_core_web_sm": "3.8.0",
+        "urchade/gliner_multi_pii-v1": "1fcf13e85f4eef5394e1fcd406cf2ca9ea82351d",
+        "urchade/gliner_multi_pii-v1#pytorch_model.bin": "sha256:3003753fba99e40645cf088c7367a2c6211fc174897dc64f1f9c147c29d18d2d"
+      },
+      "packages": {
+        "gliner": "0.2.27",
+        "presidio-analyzer": "2.2.364",
+        "spacy": "3.8.14",
+        "torch": "2.13.0+cpu",
+        "transformers": "5.6.2"
+      },
+      "pending_gate_ids": [
+        "license-compatible"
+      ],
+      "selection_eligible": false
+    },
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "presidio-spacy-lg-v1",
+      "configuration_digest": "sha256:5d43bf7c0de4b7ff083947dde3bbb12910635075a802ed02886d515e3cc8afb0",
+      "corpus_digest": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
+      "engine_version": "2.2.364",
+      "family": "presidio",
+      "hard_gates_passed": false,
+      "models": {
+        "en_core_web_lg": "3.8.0"
+      },
+      "packages": {
+        "presidio-analyzer": "2.2.364",
+        "spacy": "3.8.14"
+      },
+      "pending_gate_ids": [
+        "license-compatible"
+      ],
+      "selection_eligible": false
+    }
+  ],
+  "evaluation_input_sha256": "sha256:b00e02728e6e6ed24e582ce0f6cbf181e5298f2af58b5b4a1c65b5e4cd5a6229",
+  "schema_version": 1
+}

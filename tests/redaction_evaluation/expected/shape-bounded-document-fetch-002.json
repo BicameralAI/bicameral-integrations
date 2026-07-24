@@ -1,0 +1,45 @@
+{
+  "expected_entities": [
+    {
+      "category": "pii",
+      "end": 62,
+      "entity_id": "e001",
+      "field_path": "metadata.fetch.body",
+      "mandatory": false,
+      "replacement": "[redacted:address]",
+      "start": 23,
+      "subtype": "address"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:6660644afa34410075be814f24b637b3f3fa20c769e4ba7ec322d67eb1ca621a",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:553c1dbed56886781712488604ae0b4beacca9e4dbc5860fddb0e7d61948b165",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:e2955e6d79842aeae530cdeec4b0b071d5ef87e6878c24190928f70fda4e7e2f",
+      "field_path": "provider_event_id"
+    },
+    {
+      "expected_value_sha256": "sha256:2cd3761cf825740535aab28d165ca7889108f6dcb4d1773fba9667c8526e50fa",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:51af5ea5c51c19880cb0732f8c13a60d08e53f5fd5d904cbf46e55e3075370c8",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:70bf0dd95171a05ee8094228f8539c7419a867abef56c5b3ef7c1fb1974e1b43",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-bounded-document-fetch-002",
+  "schema_version": 1
+}

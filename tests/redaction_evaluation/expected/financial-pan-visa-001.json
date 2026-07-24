@@ -1,0 +1,20 @@
+{
+  "expected_entities": [
+    {
+      "category": "credential",
+      "end": 37,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": true,
+      "replacement": "[redacted:pan]",
+      "start": 21,
+      "subtype": "pan"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "financial-pan-visa-001",
+  "schema_version": 1
+}

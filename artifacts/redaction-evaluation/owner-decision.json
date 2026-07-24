@@ -1,0 +1,98 @@
+{
+  "architecture_update_required": false,
+  "decided_at": "2026-07-24T08:00:00Z",
+  "decision_id": "adr-0020-alpha-redaction-backend-decision",
+  "decision_owner": "Kevin Knapp",
+  "eligible_candidates": [
+    "bicameral-stdlib-v1",
+    "datafog-regex-v1"
+  ],
+  "evidence_bindings": {
+    "adversarial_review_sha256": "sha256:ac51c842b7662f470a7e41d42ad16106f524632619c1588e2dc49764f24a8692",
+    "benchmarks_sha256": "sha256:823d9d4f2126403f395c4277ea692b3d2f02c12de8e591b4ab28b47bf7167456",
+    "candidate_matrix_sha256": "sha256:698217cba85821dff63b065fa01ad7c2e429a5e3c99cc88a5970fcd04fbfe1da",
+    "corpus_sha256": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
+    "dependency_report_sha256": "sha256:330b65d4f16c40287afb1f5ef57d7998825be012a52027a2731eba57d8808ebc",
+    "evaluation_head_sha": "17796b3e0ffc2623e8a3bbcc053bf482ebddd1e7",
+    "evaluation_pr_number": 288,
+    "evaluation_repository": "BicameralAI/bicameral-integrations",
+    "hard_gates_sha256": "sha256:73d2aebf65187f6bd6a73321e59e3388d0ae6398f1e229910d5832f8d295a553",
+    "license_report_sha256": "sha256:2d74d46f4db21f3d48fc587bdba70bc4930d4483b49786d263c4ecc0311c409e",
+    "metrics_sha256": "sha256:7f33b435c0dd8c825df65d9cb7788a4f0a06a03d0c032f0f9e21878cf1a054df",
+    "parent_pr_269_head_sha": "fd69ff2742363b5d619bc073b8e8490c0f50733d",
+    "vulnerability_report_sha256": "sha256:db46f1e9931c9233ac7f640caf11bbc3e53a2b64135c68fa74cca5e33438e4f0"
+  },
+  "ineligible_candidates": [
+    {
+      "candidate_id": "presidio-gliner-pii-v1",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/hard-gates.json"
+      ],
+      "failed_gate_ids": [
+        "license-compatible"
+      ]
+    },
+    {
+      "candidate_id": "presidio-spacy-lg-v1",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/hard-gates.json"
+      ],
+      "failed_gate_ids": [
+        "license-compatible"
+      ]
+    }
+  ],
+  "measured_summary": {
+    "baseline_candidate_id": "bicameral-stdlib-v1",
+    "material_tradeoffs": [
+      "Retention keeps precision 1.000, zero destructive false positives, 8/8 decision preservation, every payload class inside the 5-second production budget, and zero new dependencies.",
+      "The measured cost of retention is contextual-class misses on the synthetic corpus (recall 0.514: person names, addresses, bare IPs, account handles), which the owner scopes outside the universal alpha requirement.",
+      "The qualified replacement presidio-spacy-lg-v1 raises recall to 0.908 with 8/8 decision preservation but costs 1.11 GB memory, a 12.6 s cold start requiring a prewarmed-worker posture, and enforced-termination loss at the 1 MiB admission ceiling.",
+      "The replacement stays formally ineligible until the MPL-2.0 (certifi) license review resolves its pending license-compatible gate."
+    ],
+    "recommendation_confidence": "high",
+    "recommended_candidate_id": "bicameral-stdlib-v1",
+    "score_summary": [
+      {
+        "candidate_id": "bicameral-stdlib-v1",
+        "eligible": true,
+        "weighted_score": 83.3105
+      },
+      {
+        "candidate_id": "datafog-regex-v1",
+        "eligible": true,
+        "weighted_score": 47.7151
+      },
+      {
+        "candidate_id": "presidio-gliner-pii-v1",
+        "eligible": false,
+        "weighted_score": null
+      },
+      {
+        "candidate_id": "presidio-spacy-lg-v1",
+        "eligible": false,
+        "weighted_score": null
+      }
+    ]
+  },
+  "migration_disposition": "no_change",
+  "migration_issue": null,
+  "outcome": "retain_baseline",
+  "owner_judgment": "Retain the current Bicameral engine for the alpha ingress boundary. presidio-spacy-lg-v1 is the qualified governed replacement candidate. Generalized contextual PII detection is outside the universal alpha requirement. The backend selection is not reopened unless measured evidence directly falsifies these assumptions.",
+  "production_evidence_rebind_required": false,
+  "rationale": "The exact-head evaluation validates every decision assumption: the retained engine protects all mandatory secrets and credentials with zero post-screen escapes and perfect precision, meets the production deadline on every admitted payload class through the governed worker boundary, and fails closed with typed reasons on all fifteen failure fixtures. The measured consequence of retention, contextual-class misses on the synthetic corpus, is quantified and scoped outside the universal alpha requirement. A qualified replacement exists and is fully characterized should contextual coverage become a requirement; its activation is gated only by the MPL-2.0 license owner review and a separately governed implementation change.",
+  "release_authority_granted": false,
+  "rollback_requirements": [
+    "No migration is performed; the production engine, ruleset digest, and receipts are unchanged, so no rollback path is required.",
+    "Any future activation of the qualified replacement requires a separately governed implementation issue and PR with pinned packages and model wheel, a prewarmed-worker deployment posture, budget treatment for the maximum-admitted payload class, regenerated tests, receipts, and evidence digests, and a pin-revert rollback."
+  ],
+  "schema_version": 1,
+  "selected_candidate_id": null,
+  "status": "accepted",
+  "unresolved_uncertainty": [
+    "Synthetic-corpus recall and precision will differ on real provider traffic; the comparative ordering is the reliable product.",
+    "Model-lane determinism across platforms is verified per pinned environment only.",
+    "The MPL-2.0 (certifi) review flag keeps both Presidio lanes ineligible until the owner records the license call.",
+    "The datafog LICENSE-file versus PyPI-classifier inconsistency remains unresolved upstream."
+  ]
+}

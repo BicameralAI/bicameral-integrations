@@ -1,0 +1,27 @@
+{
+  "observation": {
+    "author": "importer",
+    "evidence_id": "ev-dir-standup-0620",
+    "evidence_metadata": {},
+    "excerpt": "Standup notes imported from the shared drive.",
+    "metadata": {
+      "file": {
+        "content": "Standup notes: Avery Winslow owns the demo, backup phone +1 202 555 0186.",
+        "path": "notes/standup-2026-06-20.md"
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "notes/standup-2026-06-20.md",
+    "source_ref": {
+      "kind": "file",
+      "ref": "notes/standup-2026-06-20.md",
+      "source_id": "local-directory",
+      "url": ""
+    },
+    "timestamp": "2026-06-20T09:00:00Z",
+    "title": "Standup 2026-06-20"
+  },
+  "record_id": "shape-local-directory-001",
+  "source_shape": "local_directory"
+}

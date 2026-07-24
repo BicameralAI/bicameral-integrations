@@ -1,0 +1,22 @@
+{
+  "observation": {
+    "author": "",
+    "evidence_id": "",
+    "evidence_metadata": {},
+    "excerpt": "Deliveries pause at 82 Quill Hollow Road, Ashvale, VT 05901 while account 55103377 is audited.",
+    "metadata": {},
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "",
+    "source_ref": {
+      "kind": "note",
+      "ref": "",
+      "source_id": "synthetic-notes",
+      "url": ""
+    },
+    "timestamp": "2026-07-01T12:00:00Z",
+    "title": "Escalation for Sable Norwick"
+  },
+  "record_id": "mixed-entities-002",
+  "source_shape": "plain_text"
+}

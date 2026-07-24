@@ -1,0 +1,561 @@
+{
+  "by_category": {
+    "credential": {
+      "exact_span": 4,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 4
+    },
+    "phi": {
+      "exact_span": 4,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 4
+    },
+    "pii": {
+      "exact_span": 67,
+      "exact_span_accuracy": 0.881578947368421,
+      "f1": 0.853932584269663,
+      "f2": 0.8715596330275228,
+      "fn": 10,
+      "fp": 16,
+      "precision": 0.8260869565217391,
+      "recall": 0.8837209302325582,
+      "tp": 76
+    },
+    "secret": {
+      "exact_span": 14,
+      "exact_span_accuracy": 0.9333333333333333,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 15
+    }
+  },
+  "by_class": {
+    "decision_preservation": {
+      "exact_span": 9,
+      "exact_span_accuracy": 0.9,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 10
+    },
+    "mixed_entities": {
+      "exact_span": 6,
+      "exact_span_accuracy": 0.8571428571428571,
+      "f1": 0.7777777777777778,
+      "f2": 0.7777777777777778,
+      "fn": 2,
+      "fp": 2,
+      "precision": 0.7777777777777778,
+      "recall": 0.7777777777777778,
+      "tp": 7
+    },
+    "nested_metadata": {
+      "exact_span": 35,
+      "exact_span_accuracy": 0.9459459459459459,
+      "f1": 0.8705882352941177,
+      "f2": 0.9158415841584159,
+      "fn": 2,
+      "fp": 9,
+      "precision": 0.8043478260869565,
+      "recall": 0.9487179487179487,
+      "tp": 37
+    },
+    "overlapping_entities": {
+      "exact_span": 1,
+      "exact_span_accuracy": 0.3333333333333333,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 3
+    },
+    "positive_detection": {
+      "exact_span": 89,
+      "exact_span_accuracy": 0.898989898989899,
+      "f1": 0.8839285714285715,
+      "f2": 0.898366606170599,
+      "fn": 10,
+      "fp": 16,
+      "precision": 0.8608695652173913,
+      "recall": 0.908256880733945,
+      "tp": 99
+    },
+    "structural_identity": {
+      "exact_span": 35,
+      "exact_span_accuracy": 0.9459459459459459,
+      "f1": 0.8505747126436781,
+      "f2": 0.893719806763285,
+      "fn": 3,
+      "fp": 10,
+      "precision": 0.7872340425531915,
+      "recall": 0.925,
+      "tp": 37
+    }
+  },
+  "by_source_shape": {
+    "adapter_emission": {
+      "exact_span": 3,
+      "exact_span_accuracy": 1.0,
+      "f1": 0.8571428571428571,
+      "f2": 0.7894736842105263,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.75,
+      "tp": 3
+    },
+    "bounded_document_fetch": {
+      "exact_span": 2,
+      "exact_span_accuracy": 0.6666666666666666,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 3
+    },
+    "external_ingest_envelope": {
+      "exact_span": 3,
+      "exact_span_accuracy": 0.75,
+      "f1": 0.8,
+      "f2": 0.9090909090909091,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "tp": 4
+    },
+    "failure_fixture": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "github_poll": {
+      "exact_span": 3,
+      "exact_span_accuracy": 1.0,
+      "f1": 0.8571428571428571,
+      "f2": 0.9375,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 1.0,
+      "tp": 3
+    },
+    "github_webhook": {
+      "exact_span": 9,
+      "exact_span_accuracy": 1.0,
+      "f1": 0.7499999999999999,
+      "f2": 0.8823529411764706,
+      "fn": 0,
+      "fp": 6,
+      "precision": 0.6,
+      "recall": 1.0,
+      "tp": 9
+    },
+    "linear_graphql": {
+      "exact_span": 3,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 3
+    },
+    "linear_webhook": {
+      "exact_span": 3,
+      "exact_span_accuracy": 1.0,
+      "f1": 0.8571428571428571,
+      "f2": 0.7894736842105263,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.75,
+      "tp": 3
+    },
+    "local_directory": {
+      "exact_span": 4,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 4
+    },
+    "observation": {
+      "exact_span": 18,
+      "exact_span_accuracy": 0.9473684210526315,
+      "f1": 0.9500000000000001,
+      "f2": 0.9500000000000001,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.95,
+      "recall": 0.95,
+      "tp": 19
+    },
+    "plain_text": {
+      "exact_span": 40,
+      "exact_span_accuracy": 0.851063829787234,
+      "f1": 0.8785046728971964,
+      "f2": 0.8736059479553905,
+      "fn": 7,
+      "fp": 6,
+      "precision": 0.8867924528301887,
+      "recall": 0.8703703703703703,
+      "tp": 47
+    }
+  },
+  "by_subtype": {
+    "account_id": {
+      "exact_span": 0,
+      "exact_span_accuracy": null,
+      "exact_span_accuracy_note": "no_true_positives",
+      "f1": null,
+      "f1_note": "undefined_precision_or_recall",
+      "f2": null,
+      "f2_note": "undefined_precision_or_recall",
+      "fn": 4,
+      "fp": 0,
+      "precision": null,
+      "precision_note": "no_positive_predictions",
+      "recall": 0.0,
+      "tp": 0
+    },
+    "address": {
+      "exact_span": 0,
+      "exact_span_accuracy": 0.0,
+      "f1": 0.6086956521739131,
+      "f2": 0.7954545454545454,
+      "fn": 0,
+      "fp": 9,
+      "precision": 0.4375,
+      "recall": 1.0,
+      "tp": 7
+    },
+    "aws-access-key": {
+      "exact_span": 2,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+    },
+    "azure-storage-key": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "dob": {
+      "exact_span": 0,
+      "exact_span_accuracy": null,
+      "exact_span_accuracy_note": "no_true_positives",
+      "f1": null,
+      "f1_note": "undefined_precision_or_recall",
+      "f2": null,
+      "f2_note": "undefined_precision_or_recall",
+      "fn": 2,
+      "fp": 0,
+      "precision": null,
+      "precision_note": "no_positive_predictions",
+      "recall": 0.0,
+      "tp": 0
+    },
+    "email": {
+      "exact_span": 19,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 19
+    },
+    "financial_id": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "github-fine-grained-pat": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "github-pat": {
+      "exact_span": 2,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+    },
+    "gitlab-pat": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "google-api-key": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "government_id": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 0.6666666666666666,
+      "f2": 0.5555555555555556,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+    },
+    "ip": {
+      "exact_span": 7,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 7
+    },
+    "jwt": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "mrn": {
+      "exact_span": 2,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+    },
+    "npm-token": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "openai-key": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "pan": {
+      "exact_span": 4,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 4
+    },
+    "patient_id": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "pem-private-key": {
+      "exact_span": 0,
+      "exact_span_accuracy": 0.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "person": {
+      "exact_span": 26,
+      "exact_span_accuracy": 0.9629629629629629,
+      "f1": 0.84375,
+      "f2": 0.8766233766233766,
+      "fn": 3,
+      "fp": 7,
+      "precision": 0.7941176470588235,
+      "recall": 0.9,
+      "tp": 27
+    },
+    "phone": {
+      "exact_span": 13,
+      "exact_span_accuracy": 0.9285714285714286,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 14
+    },
+    "slack-token": {
+      "exact_span": 2,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+    },
+    "ssn_label": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    },
+    "stripe-live-key": {
+      "exact_span": 1,
+      "exact_span_accuracy": 1.0,
+      "f1": 1.0,
+      "f2": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+    }
+  },
+  "candidate_id": "presidio-spacy-lg-v1",
+  "corpus_digest": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
+  "preservation": {
+    "clean_records_modified": 0,
+    "decision_preservation": {
+      "failed_record_ids": [],
+      "pass_ratio": 1.0,
+      "passed": 8,
+      "records_evaluated": 8
+    },
+    "destructive_false_positives": 0,
+    "protected_field_mutations": 0
+  },
+  "schema_version": 1,
+  "security": {
+    "expected_outcome_agreement": {
+      "matches": 15,
+      "mismatched_record_ids": [],
+      "records": 15
+    },
+    "mandatory_entities_protected_on_failure": 0,
+    "outcome_mismatch_record_ids": [],
+    "post_screen_escapes": 0,
+    "repeated_output_mismatches": 0,
+    "schema_failures": 0
+  },
+  "totals": {
+    "exact_span": 89,
+    "exact_span_accuracy": 0.898989898989899,
+    "f1": 0.8839285714285715,
+    "f2": 0.898366606170599,
+    "fn": 10,
+    "fp": 16,
+    "precision": 0.8608695652173913,
+    "recall": 0.908256880733945,
+    "tp": 99
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "expected_entities": [],
+  "expected_failure_reason": "oversized_payload",
+  "expected_outcome": "failed_closed",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "oversized-payload",
+  "schema_version": 1
+}

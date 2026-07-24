@@ -1,0 +1,35 @@
+{
+  "observation": {
+    "author": "poller",
+    "evidence_id": "ev-gh-poll-511",
+    "evidence_metadata": {},
+    "excerpt": "Polling cycle surfaced a pasted card number.",
+    "metadata": {
+      "poll": {
+        "etag": "W/\"synthetic-etag-2\"",
+        "items": [
+          {
+            "body": {
+              "__b64rev__": "Lm5vaXRwaXJjc2VkIGVodCBvdG5pIDQ0NDQ1NTU1NTU1NTU1NTUgZGV0c2FwIHJlZHJvIHhvYmRuYXMgZWhU"
+            },
+            "number": 511,
+            "title": "Sandbox order confusion"
+          }
+        ]
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "5e6f7081-92a3-4d4e-1f2a-3b4c5d6e7f80",
+    "provider_resource_id": "poll-batch-511",
+    "source_ref": {
+      "kind": "poll",
+      "ref": "polls/issues",
+      "source_id": "github",
+      "url": "https://api.github.com/repos/example-org/sample-service/issues"
+    },
+    "timestamp": "2026-06-20T06:15:00Z",
+    "title": "Poll batch 511"
+  },
+  "record_id": "shape-github-poll-002",
+  "source_shape": "github_poll"
+}

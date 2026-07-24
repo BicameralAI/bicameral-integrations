@@ -1,0 +1,47 @@
+{
+  "candidates": [
+    {
+      "analyze_ok": true,
+      "attempted_connections": [],
+      "candidate_id": "bicameral-stdlib-v1",
+      "error": null,
+      "initialized": true,
+      "loopback_attempts": [],
+      "network_denial_caused_failure": false,
+      "passed": true
+    },
+    {
+      "analyze_ok": true,
+      "attempted_connections": [],
+      "candidate_id": "presidio-spacy-lg-v1",
+      "error": null,
+      "initialized": true,
+      "loopback_attempts": [],
+      "network_denial_caused_failure": false,
+      "passed": true
+    },
+    {
+      "analyze_ok": true,
+      "attempted_connections": [],
+      "candidate_id": "presidio-gliner-pii-v1",
+      "error": null,
+      "initialized": true,
+      "loopback_attempts": [],
+      "network_denial_caused_failure": false,
+      "passed": true
+    },
+    {
+      "analyze_ok": true,
+      "attempted_connections": [],
+      "candidate_id": "datafog-regex-v1",
+      "error": null,
+      "initialized": true,
+      "loopback_attempts": [],
+      "network_denial_caused_failure": false,
+      "passed": true
+    }
+  ],
+  "generated_by": "scripts/evaluate_redaction_backends.py",
+  "proof": "socket-deny",
+  "schema_version": 1
+}

@@ -1,0 +1,33 @@
+{
+  "observation": {
+    "author": "poller",
+    "evidence_id": "ev-gh-poll-510",
+    "evidence_metadata": {},
+    "excerpt": "Polling cycle returned one updated issue.",
+    "metadata": {
+      "poll": {
+        "etag": "W/\"synthetic-etag-1\"",
+        "items": [
+          {
+            "body": "Grant scoped access and notify rowan.ellery+alerts@example.org.",
+            "number": 510,
+            "title": "Access request from Rowan Ellery"
+          }
+        ]
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "4d5e6f70-8192-4c3d-0e1f-2a3b4c5d6e7f",
+    "provider_resource_id": "poll-batch-510",
+    "source_ref": {
+      "kind": "poll",
+      "ref": "polls/issues",
+      "source_id": "github",
+      "url": "https://api.github.com/repos/example-org/sample-service/issues"
+    },
+    "timestamp": "2026-06-20T06:00:00Z",
+    "title": "Poll batch 510"
+  },
+  "record_id": "shape-github-poll-001",
+  "source_shape": "github_poll"
+}

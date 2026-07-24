@@ -1,0 +1,31 @@
+{
+  "observation": {
+    "author": "",
+    "evidence_id": "",
+    "evidence_metadata": {},
+    "excerpt": "Thread imported with two comments.",
+    "metadata": {
+      "comments": [
+        {
+          "body": "Handoff owner is Marlowe Quist."
+        },
+        {
+          "body": "No blockers reported."
+        }
+      ]
+    },
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "",
+    "source_ref": {
+      "kind": "note",
+      "ref": "",
+      "source_id": "synthetic-notes",
+      "url": ""
+    },
+    "timestamp": "2026-07-01T12:00:00Z",
+    "title": ""
+  },
+  "record_id": "nested-meta-003",
+  "source_shape": "observation"
+}

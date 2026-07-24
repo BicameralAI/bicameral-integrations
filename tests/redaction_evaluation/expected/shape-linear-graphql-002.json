@@ -1,0 +1,45 @@
+{
+  "expected_entities": [
+    {
+      "category": "secret",
+      "end": 61,
+      "entity_id": "e001",
+      "field_path": "metadata.graphql.data.issue.description",
+      "mandatory": true,
+      "replacement": "[redacted:slack-token]",
+      "start": 28,
+      "subtype": "slack-token"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [],
+  "protected_fields": [
+    {
+      "expected_value_sha256": "sha256:4dd109ad15a2481c6cd88948a95b3116061fd1b966bef5c92481ec848e167829",
+      "field_path": "source_ref.source_id"
+    },
+    {
+      "expected_value_sha256": "sha256:e1add305619635c324be14d0db1c1d06011e9bd7b406f831fbefcb59ae1a412a",
+      "field_path": "source_ref.ref"
+    },
+    {
+      "expected_value_sha256": "sha256:15f58dc0f6941ebb8052a6411400a98638ee2c4362595b3210ad13804506b34b",
+      "field_path": "provider_event_id"
+    },
+    {
+      "expected_value_sha256": "sha256:86b5ac477190e03f287f712c18c19d20201e0d032c9d191284e8f19133c718a0",
+      "field_path": "provider_resource_id"
+    },
+    {
+      "expected_value_sha256": "sha256:36a9a2628adc14b83df37da033533b2532a84eda1a2bd314d33029e0cbb04dee",
+      "field_path": "evidence_id"
+    },
+    {
+      "expected_value_sha256": "sha256:6f9fe6bf7704ce0798eefaa324ffd3287a5090928b074e65d375fae634a0071c",
+      "field_path": "timestamp"
+    }
+  ],
+  "record_id": "shape-linear-graphql-002",
+  "schema_version": 1
+}

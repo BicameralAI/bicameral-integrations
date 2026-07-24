@@ -1,0 +1,1174 @@
+{
+  "corpus_id": "bicameral-redaction-evaluation-v1",
+  "description": "Synthetic candidate-neutral redaction evaluation corpus for the Bicameral boundary. Every value is fabricated; secret-shaped tokens are committed behind reversible byte-level obfuscation so no raw sensitive shape exists in repository bytes.",
+  "records": [
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/account-id-001.json",
+      "expected_sha256": "sha256:6c8cfa57219de074ed9e66e82f5656f62409e7613333db8b91ab000964612a6a",
+      "input_path": "tests/redaction_evaluation/corpus/account-id-001.json",
+      "input_sha256": "sha256:e9e95836c4b4111b6759250842cf9fb36f8fec18c36fcf13d6b821f2a6b5aed0",
+      "record_id": "account-id-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/account-id-002.json",
+      "expected_sha256": "sha256:f0aee9bfda3aab025cf331cfbea71adedd5c0d98d14fef6c1f881a240ce256a0",
+      "input_path": "tests/redaction_evaluation/corpus/account-id-002.json",
+      "input_sha256": "sha256:2b5bf1af7ecb09bc1e68ee40be28ab7d6b73ab4084681740c531062ee61fd6b0",
+      "record_id": "account-id-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/address-billing-003.json",
+      "expected_sha256": "sha256:15ee5074a81f690ca74a0536d1044bfcadf610d58d0a6434cedd448abc2444aa",
+      "input_path": "tests/redaction_evaluation/corpus/address-billing-003.json",
+      "input_sha256": "sha256:8f357ce628aefeff314a07c7c6eca34c69dd1d27a5039ed4fbf6b1b4634709c0",
+      "record_id": "address-billing-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/address-postal-002.json",
+      "expected_sha256": "sha256:c5c4370df9c9041507109072167e07f8eef429055a12b8a4e1b2d7f1c0f63e84",
+      "input_path": "tests/redaction_evaluation/corpus/address-postal-002.json",
+      "input_sha256": "sha256:f9c805c3120c68af8c7d80ef64244d5cd1655928f16678b1ea01b9467d09ee2d",
+      "record_id": "address-postal-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/address-street-001.json",
+      "expected_sha256": "sha256:74f40f487a86d60eddddb2cb31b4c8ec50afe6b0ccc6559f6a6c41ed9f1eaa53",
+      "input_path": "tests/redaction_evaluation/corpus/address-street-001.json",
+      "input_sha256": "sha256:5ebf74152457d21c61ab086d849a79b123be738867943b77801b8c6e45eb7233",
+      "record_id": "address-street-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "backend_crash"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/backend-exception.json",
+      "expected_sha256": "sha256:b740aece517fa6fc0a207cc483793f110b845b73c8b27e5ac55d27e3c0419f65",
+      "input_path": "tests/redaction_evaluation/corpus/backend-exception.json",
+      "input_sha256": "sha256:64b09580ead28fcce4c727333fb74aff7181309d027c6049579a9911bb7a4e6f",
+      "record_id": "backend-exception",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_unavailable"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/backend-initialization-failure.json",
+      "expected_sha256": "sha256:0ee90663ce39d0765c14e04008826c1c57528fdfe8da3dce38e0f76c2a207bea",
+      "input_path": "tests/redaction_evaluation/corpus/backend-initialization-failure.json",
+      "input_sha256": "sha256:8af43c1f70cb09b34683912a26c9123367a9ad354728cd552d545091189806cd",
+      "record_id": "backend-initialization-failure",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_invalid_configuration"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/backend-invalid-configuration.json",
+      "expected_sha256": "sha256:6b34e92069eecb227ca84d023666d63fc64ea4fe42288a53ffd5ef882d99b20b",
+      "input_path": "tests/redaction_evaluation/corpus/backend-invalid-configuration.json",
+      "input_sha256": "sha256:5b3c18da09d7ecb2bb6b15f39e1a3fc5aa3ce0f9654de417197fa48463b57ef8",
+      "record_id": "backend-invalid-configuration",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_unavailable"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/backend-missing-model.json",
+      "expected_sha256": "sha256:4ad1ff73b7a7a3b2b03125c89dba11775f2eeb470a9178ebdd198ba4d86a85de",
+      "input_path": "tests/redaction_evaluation/corpus/backend-missing-model.json",
+      "input_sha256": "sha256:ed902e41c13f520739c88511fbb1731136f5997bf38baca0d333ddf749deedea",
+      "record_id": "backend-missing-model",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_timeout"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/backend-timeout.json",
+      "expected_sha256": "sha256:6dda687d9190ecb4371d67f7bad12dd5673eb3509c9ad062f1e07e8d1694d73f",
+      "input_path": "tests/redaction_evaluation/corpus/backend-timeout.json",
+      "input_sha256": "sha256:06154a927ba02901b944b18570b6e545364607584768a2deabff8b2cfe5aa5d8",
+      "record_id": "backend-timeout",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "concurrency_timeout_storm"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/concurrent-timeout-storm.json",
+      "expected_sha256": "sha256:a6a23a2812fc4c1653a48143693b0208b3918012d527ca9db4085388efa47dde",
+      "input_path": "tests/redaction_evaluation/corpus/concurrent-timeout-storm.json",
+      "input_sha256": "sha256:6963e9450e3d1d65598d7551061c28a32fa108433f6bd5b4190453a15eb1cea3",
+      "record_id": "concurrent-timeout-storm",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/constraint-phone-001.json",
+      "expected_sha256": "sha256:6c0de86b5611afe54c8b1c8ec5970619d5ac2b842adc313c44a9a221fa92d187",
+      "input_path": "tests/redaction_evaluation/corpus/constraint-phone-001.json",
+      "input_sha256": "sha256:d928ada818c952500905c4d69e02b19234c7d40299b6ec8cd6aa330a455b22ac",
+      "record_id": "constraint-phone-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/constraint-secret-001.json",
+      "expected_sha256": "sha256:897a5706d93dced736e0912aeaccc394443d65813f136bab066fb7ba24567e40",
+      "input_path": "tests/redaction_evaluation/corpus/constraint-secret-001.json",
+      "input_sha256": "sha256:4439d26da4222e619bf6055a127eda0cbf706bf20783e81d3c57f0ff9d4b93c8",
+      "record_id": "constraint-secret-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/decision-mrn-001.json",
+      "expected_sha256": "sha256:991da13034523da2a373ad7a64476f8b3a35a3cc6c506963ea68ca9faba0b757",
+      "input_path": "tests/redaction_evaluation/corpus/decision-mrn-001.json",
+      "input_sha256": "sha256:03e2776ed6f173f4067c2689b0ef61b3dbbfb94fcb772635436ca404fc4d0db2",
+      "record_id": "decision-mrn-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/decision-person-email-001.json",
+      "expected_sha256": "sha256:a3eb306153f6fe344419277751fc175b4b109cf3202591371a85f16ecb1fa51b",
+      "input_path": "tests/redaction_evaluation/corpus/decision-person-email-001.json",
+      "input_sha256": "sha256:0427bc964a6c6a1d712ea61d5aec1f91a2964a3311755d9e2bc9d96588360c96",
+      "record_id": "decision-person-email-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/deeply-nested-metadata-64.json",
+      "expected_sha256": "sha256:57c3f28ee4ad43fb7a4882c2748291bdc1612d16d505bb011ff3e8cc2ea70b4b",
+      "input_path": "tests/redaction_evaluation/corpus/deeply-nested-metadata-64.json",
+      "input_sha256": "sha256:097f0e1a4fa99db0b775c174b7efb2bdeea45466243dd69ce21dd291243db9dd",
+      "record_id": "deeply-nested-metadata-64",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/dob-prose-001.json",
+      "expected_sha256": "sha256:f3fc0984dfc43cffeef78949b69cb2010ad15b9dc6b3cba8b93662ad6118114a",
+      "input_path": "tests/redaction_evaluation/corpus/dob-prose-001.json",
+      "input_sha256": "sha256:91e4e4c76bf892ff2297ddd964bcab1a0b8f945cb01f6235a3904c6d19145a1a",
+      "record_id": "dob-prose-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/dob-prose-002.json",
+      "expected_sha256": "sha256:911f7bfcdb4aa22ea0cad1561c6c9fac669917ee1538b92a4982bb84e5543f42",
+      "input_path": "tests/redaction_evaluation/corpus/dob-prose-002.json",
+      "input_sha256": "sha256:4fccc6b1d587637b0a0511e1396170ec9a7682fa17655635314ff18728f7616e",
+      "record_id": "dob-prose-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/email-plain-001.json",
+      "expected_sha256": "sha256:bc093acb42a56fe3f0caa602af2ee13d98df31d3a15e48b42f3bfafb82bddc0b",
+      "input_path": "tests/redaction_evaluation/corpus/email-plain-001.json",
+      "input_sha256": "sha256:0b4a77fe8bd5c04d7656ef202eb5acbe1c5768ac73208093bbbf091f91f7159f",
+      "record_id": "email-plain-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/email-subaddress-002.json",
+      "expected_sha256": "sha256:d617cd861d74f7ed0e28adae829ac89213e85fc7a73377a6565a9669aa2f5eb1",
+      "input_path": "tests/redaction_evaluation/corpus/email-subaddress-002.json",
+      "input_sha256": "sha256:3984c1393b18a8f0421be2b687690fba9408405d7e5a405a506aa48537c17cbf",
+      "record_id": "email-subaddress-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/email-with-name-003.json",
+      "expected_sha256": "sha256:be1d57097f9f9fc382845c87251812a4e494d612db8eb47e7853d29c5cda6863",
+      "input_path": "tests/redaction_evaluation/corpus/email-with-name-003.json",
+      "input_sha256": "sha256:453fec6dbf2897f7856be12ed511888e78e027bd0b8286cb165ed53598dd0ae2",
+      "record_id": "email-with-name-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/financial-iban-003.json",
+      "expected_sha256": "sha256:406d8eb567e04a6018b5dd553f4abb270bf7da324a36900167bb5041e2ac5874",
+      "input_path": "tests/redaction_evaluation/corpus/financial-iban-003.json",
+      "input_sha256": "sha256:24868ce659ce4319143dfcb762a6eed6278adbae4311978361ba7c44f75fa3a7",
+      "record_id": "financial-iban-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/financial-pan-amex-002.json",
+      "expected_sha256": "sha256:344a91edc26a0f4b88c012ae03894fdb89020a4fe9b1bf6c9663b696650037ee",
+      "input_path": "tests/redaction_evaluation/corpus/financial-pan-amex-002.json",
+      "input_sha256": "sha256:68fbe29880216eaf39ef2224861dc669f3252dda3c78d6d696b8ccf557d4b01d",
+      "record_id": "financial-pan-amex-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/financial-pan-visa-001.json",
+      "expected_sha256": "sha256:634e439e73e9b200490d2c9d45f7a6f6ee916655f143e5549f639779f3789504",
+      "input_path": "tests/redaction_evaluation/corpus/financial-pan-visa-001.json",
+      "input_sha256": "sha256:afc107391b5862acb25aa57618dbcb48fea05dbb1826f910c6b82fce74d10089",
+      "record_id": "financial-pan-visa-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/govid-passport-003.json",
+      "expected_sha256": "sha256:ed6be188c0f62bae486e3d351bfb593f00ada2d6b0b5b5678b17633c5f104eaf",
+      "input_path": "tests/redaction_evaluation/corpus/govid-passport-003.json",
+      "input_sha256": "sha256:9960f5b8f29504ae5f84dab252e2682a167ef99afae4a419e8be279f5dcfe4a1",
+      "record_id": "govid-passport-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/govid-ssn-labeled-001.json",
+      "expected_sha256": "sha256:d41f19d4fc779dea5ea372b419b259765846b2377711120df7b0142fd5ae1f38",
+      "input_path": "tests/redaction_evaluation/corpus/govid-ssn-labeled-001.json",
+      "input_sha256": "sha256:c7c1dd79a69f5b219707836ee92f82d919195f3d38b4afa47e200d003649bb0d",
+      "record_id": "govid-ssn-labeled-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/govid-ssn-unlabeled-002.json",
+      "expected_sha256": "sha256:e22a5bffe6b7d4a268b13536ca630c5d9ae13b1ffea4c725ca95ab8b817fcb90",
+      "input_path": "tests/redaction_evaluation/corpus/govid-ssn-unlabeled-002.json",
+      "input_sha256": "sha256:75515ceb214a0a7f80875b15ef79a39e8dc5ab9d823f826aca4b24c1fd4a16f9",
+      "record_id": "govid-ssn-unlabeled-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/ip-both-003.json",
+      "expected_sha256": "sha256:221350eb84e186fe40a3b5b4f8c4952a6a0186e4b6c900aa3134f698946cb473",
+      "input_path": "tests/redaction_evaluation/corpus/ip-both-003.json",
+      "input_sha256": "sha256:7c2fc6a7b616fe59d4b2dbc02ea9a8dd80b0f100359d0f7b856abc1a9931c9c4",
+      "record_id": "ip-both-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/ip-v4-001.json",
+      "expected_sha256": "sha256:27791b322b5813376dbd76ab1a09b89ae2b09fec5205947457df2d2319ed68a0",
+      "input_path": "tests/redaction_evaluation/corpus/ip-v4-001.json",
+      "input_sha256": "sha256:4216090beedef3c840e9c91a24d3e4d86cb8bbf0fa31d91cbae5ee4ee789dfa0",
+      "record_id": "ip-v4-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/ip-v6-002.json",
+      "expected_sha256": "sha256:d8461c79fd60c2a96c47feb6cdc4cb6c57bfc1d5bd9a1ffc02436c65d5a1b9bc",
+      "input_path": "tests/redaction_evaluation/corpus/ip-v6-002.json",
+      "input_sha256": "sha256:5a1632a1e9e7b5440989aa0d8547cdc334e61c0a4e1b2a2b8c57fb72b4f83a7b",
+      "record_id": "ip-v6-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "malformed_backend_findings"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/malformed-spans-out-of-range.json",
+      "expected_sha256": "sha256:8371677432caf658b1e76b2510e020aad3645c672dded4e1f633be7047e9d047",
+      "input_path": "tests/redaction_evaluation/corpus/malformed-spans-out-of-range.json",
+      "input_sha256": "sha256:9366257c94885aab556b5fdb77e5a0802e0802174dcadda28b3b9fa5b6c0b7c4",
+      "record_id": "malformed-spans-out-of-range",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "malformed_backend_findings"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/malformed-spans-overlapping.json",
+      "expected_sha256": "sha256:b1f1039e9a376f18bd9e166072bbccf5d6d0075f6124a9ad872a80843a7336df",
+      "input_path": "tests/redaction_evaluation/corpus/malformed-spans-overlapping.json",
+      "input_sha256": "sha256:578ab7785e49d28ebb33708aedaed2b1afa4f4e27a1f2f5d5b3660fe8b5a4992",
+      "record_id": "malformed-spans-overlapping",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "malformed_input"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/malformed-unicode-lone-surrogate.json",
+      "expected_sha256": "sha256:be2c615a8a2c7c94358b748708bdab09c5c9ae01ee5137882d8dddc0ab8891b6",
+      "input_path": "tests/redaction_evaluation/corpus/malformed-unicode-lone-surrogate.json",
+      "input_sha256": "sha256:0449717fa10acabfcdf3dbbf40f4d1c1c10bafd421dec7571cb3a22a6092f95b",
+      "record_id": "malformed-unicode-lone-surrogate",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "mixed_entities"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/mixed-entities-001.json",
+      "expected_sha256": "sha256:13b6c3bbbe150e5528c6d7888824379db050b4b2ed7f96224fff058bb46df543",
+      "input_path": "tests/redaction_evaluation/corpus/mixed-entities-001.json",
+      "input_sha256": "sha256:0133518a6cb8008cc965053dfce476e15e87900028bf650ca0fd861cc8e2c6e3",
+      "record_id": "mixed-entities-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "mixed_entities"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/mixed-entities-002.json",
+      "expected_sha256": "sha256:f0bda406840ac19c6eb8f75c60709a7ed26fbdf63304a73c37f5d6d396914540",
+      "input_path": "tests/redaction_evaluation/corpus/mixed-entities-002.json",
+      "input_sha256": "sha256:18dab9d9fe1595f890337eed4eab024f9c92adc50b91e26c75d305617f1ae747",
+      "record_id": "mixed-entities-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "mixed_entities"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/mixed-entities-003.json",
+      "expected_sha256": "sha256:9d4fc786329f2822d78242c51f08edc585f5f38ea2b81c3275468a448654055d",
+      "input_path": "tests/redaction_evaluation/corpus/mixed-entities-003.json",
+      "input_sha256": "sha256:07dc134ceda7affdd7a5fd7e75dc5088afb75807d27549cb735f9b8d5eb995aa",
+      "record_id": "mixed-entities-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-code-snippet-012.json",
+      "expected_sha256": "sha256:8a84d74012a90f6b34b27a9e836fd317c790a4fdef0f1f1454650923c6b1d02e",
+      "input_path": "tests/redaction_evaluation/corpus/neg-code-snippet-012.json",
+      "input_sha256": "sha256:31f64201a03154cdaaf9afb0862339623c0c4cd0367ac8c7d9b12e0148426cf4",
+      "record_id": "neg-code-snippet-012",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-contract-id-005.json",
+      "expected_sha256": "sha256:80e8a0dd985f8869f5f5fe80b13e87942939d64a40ade568878f6eb26ad69101",
+      "input_path": "tests/redaction_evaluation/corpus/neg-contract-id-005.json",
+      "input_sha256": "sha256:eb06caa53f081be444a08cb6dfc5bb03323501c3e136cf747cf0b8ce4fa4ae00",
+      "record_id": "neg-contract-id-005",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-file-path-008.json",
+      "expected_sha256": "sha256:ad6a4c28949472d6c1fda0afafee89d42b3f45cc9a95b8c7b28ec39150770224",
+      "input_path": "tests/redaction_evaluation/corpus/neg-file-path-008.json",
+      "input_sha256": "sha256:68ae65fb69421d371bfa8b20c54bd9aef7c9d634639151c28e5889d2215fbb3b",
+      "record_id": "neg-file-path-008",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-fingerprint-004.json",
+      "expected_sha256": "sha256:8be3d2a7a5d15a88168936bf027ceabc94a8aa80051c819741b8191e7d84498e",
+      "input_path": "tests/redaction_evaluation/corpus/neg-fingerprint-004.json",
+      "input_sha256": "sha256:4eb02bab0f4f1a3b4e761709a144f39b358ee0b99b2225d992d255ab3a21e7ac",
+      "record_id": "neg-fingerprint-004",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-git-sha-001.json",
+      "expected_sha256": "sha256:623a7abcc4d650c9aacc697b03619eb67c5ce6ecbfb5965a5ac43dbd1eab5e11",
+      "input_path": "tests/redaction_evaluation/corpus/neg-git-sha-001.json",
+      "input_sha256": "sha256:9085559488190e15876d50600d8ab8edce7990b2b2cfbc4bcd17dcdd6997aa1b",
+      "record_id": "neg-git-sha-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-issue-refs-007.json",
+      "expected_sha256": "sha256:26ae1bb024b83f819ee07142f384494adc99b53209c6882fc11f7f8420d44305",
+      "input_path": "tests/redaction_evaluation/corpus/neg-issue-refs-007.json",
+      "input_sha256": "sha256:53813a7a5f1f2dc843cee5524909e1f11820b61f81c562adefcba745bb8c2190",
+      "record_id": "neg-issue-refs-007",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-numeric-labeled-013.json",
+      "expected_sha256": "sha256:271b8d3b8584497f0b40cea506e07984e083186d62b1916894928520bf579b85",
+      "input_path": "tests/redaction_evaluation/corpus/neg-numeric-labeled-013.json",
+      "input_sha256": "sha256:a90fa75c7da999554f14cc77704c639b4e30e62d172ba02cf390fba68c411b5e",
+      "record_id": "neg-numeric-labeled-013",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-provider-resource-014.json",
+      "expected_sha256": "sha256:f4b91a4a36f6912c9bf254a09a021b00b7558ef8a8bc669a2cf284f3f658131e",
+      "input_path": "tests/redaction_evaluation/corpus/neg-provider-resource-014.json",
+      "input_sha256": "sha256:1e8feaf977d750e32f8eb8d1a3f4d15c3434bd96370e7c9c1ba06b583814b6c0",
+      "record_id": "neg-provider-resource-014",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-receipt-id-006.json",
+      "expected_sha256": "sha256:2bf46b2d5c7f7bb06f397e0e52efdee3b2d3d19db9270615bec83c81b9c59a24",
+      "input_path": "tests/redaction_evaluation/corpus/neg-receipt-id-006.json",
+      "input_sha256": "sha256:c53d2ab59fe91d8f8c5dc74352f1345d96a717abc1829f41c0e2c51c0e8d8d53",
+      "record_id": "neg-receipt-id-006",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-repo-name-009.json",
+      "expected_sha256": "sha256:4ecb37a8016b7fbe4dac9d4ff1a33ec76537d9b28e8cdebae05288bcc3415ebd",
+      "input_path": "tests/redaction_evaluation/corpus/neg-repo-name-009.json",
+      "input_sha256": "sha256:04068223b6b4e21de8e644cf9f14eef7bdeb78960307dd91bce309824b55cfeb",
+      "record_id": "neg-repo-name-009",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-timestamp-003.json",
+      "expected_sha256": "sha256:225b6733d1e5bf2d9d0ff52fa76619c8d60a618b326ad366185ab2c1fa949145",
+      "input_path": "tests/redaction_evaluation/corpus/neg-timestamp-003.json",
+      "input_sha256": "sha256:11fc933966b57113e50f2c79ac330a6d46b24b6f6defffc5c7bf437864669337",
+      "record_id": "neg-timestamp-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-url-010.json",
+      "expected_sha256": "sha256:b9fb3ae7040b6ec31c7e5fb8886b1563755435a216920b62626ff9769f79869d",
+      "input_path": "tests/redaction_evaluation/corpus/neg-url-010.json",
+      "input_sha256": "sha256:6c545ffad502d8183c60d317a17be1b40ee447a31eb0ee99c4ca3ab5d34b666c",
+      "record_id": "neg-url-010",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-uuid-002.json",
+      "expected_sha256": "sha256:ef8a3bb6636d935581aecebdfe401d2ef52af8569c7305f8c0c16a9cfa9594c0",
+      "input_path": "tests/redaction_evaluation/corpus/neg-uuid-002.json",
+      "input_sha256": "sha256:6c363abececf0ee584e3240c5a3b312b719a9e1155452cd58ee41115f78ceeee",
+      "record_id": "neg-uuid-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/neg-version-011.json",
+      "expected_sha256": "sha256:5f8d399670e24a1703553ebcfc99a355426dca774b63628d94a6e4a591f96f6b",
+      "input_path": "tests/redaction_evaluation/corpus/neg-version-011.json",
+      "input_sha256": "sha256:b0ac961f7ed9e0e50ea201436b3ef0ed4a9bff810a3f4089e1a3b1b6f1817d7e",
+      "record_id": "neg-version-011",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/nested-meta-001.json",
+      "expected_sha256": "sha256:850eb9addf0bb8b76e7e876ea88b85d918e8735b2d5d2b99f735568d46dfe02a",
+      "input_path": "tests/redaction_evaluation/corpus/nested-meta-001.json",
+      "input_sha256": "sha256:ba28098c1bde587fa1003af04e56aabb863fce6c1de5e5d476636020146fa3a6",
+      "record_id": "nested-meta-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/nested-meta-002.json",
+      "expected_sha256": "sha256:c072457d4503af8a53ac9f0ea96cb95f1230e5ce70024bd457de66a8c1e100fc",
+      "input_path": "tests/redaction_evaluation/corpus/nested-meta-002.json",
+      "input_sha256": "sha256:8f103a2f0562bba0e876caa717a9d2b29dc75559b957c1066d42bf890b9695d6",
+      "record_id": "nested-meta-002",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/nested-meta-003.json",
+      "expected_sha256": "sha256:09ad02661e217dfd065ed092a8de0273d224258dfafef03dc6a432cb801b1b7a",
+      "input_path": "tests/redaction_evaluation/corpus/nested-meta-003.json",
+      "input_sha256": "sha256:2625fb9d0a2f6b8cb064df7b3cf5a28402ff420abe4248b5d32b2e7fbe0f80a1",
+      "record_id": "nested-meta-003",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "nondeterminism_probe"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/nondeterministic-output-probe.json",
+      "expected_sha256": "sha256:af13413e6e95a19289aa0b283c6cbd949a2c62d2a2186016c07e07655976e975",
+      "input_path": "tests/redaction_evaluation/corpus/nondeterministic-output-probe.json",
+      "input_sha256": "sha256:6625742bfb8d36ca078bace1b204ef0fcd64bb8e5e914ad561df0644c66fc7dc",
+      "record_id": "nondeterministic-output-probe",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "overlapping_entities"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/overlap-email-person-001.json",
+      "expected_sha256": "sha256:7856fc7d489a0c69d0e0f6daa96ef388c807b14eac8d2eecaed26c52a6490913",
+      "input_path": "tests/redaction_evaluation/corpus/overlap-email-person-001.json",
+      "input_sha256": "sha256:e81ad2094a2e4088dae2576c0c2d8271c7c9e6d1626934b37f0a57b7b782aa30",
+      "record_id": "overlap-email-person-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "overlapping_entities"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/overlap-name-phone-002.json",
+      "expected_sha256": "sha256:8acee633781cb99da1a3187efd18dedf4f91214a64be4f6626e6a946990c878b",
+      "input_path": "tests/redaction_evaluation/corpus/overlap-name-phone-002.json",
+      "input_sha256": "sha256:b67ed930ac1d0595787d0fd81d2f838ccee2623fdf01dddb718acc3029dd5535",
+      "record_id": "overlap-name-phone-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "oversized_payload"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/oversized-payload.json",
+      "expected_sha256": "sha256:797ce1acdd9f623d95bbb8ed593be90da3aa21c3d9e29c1ff37c919ba080a7ab",
+      "input_path": "tests/redaction_evaluation/corpus/oversized-payload.json",
+      "input_sha256": "sha256:36fb70d7a83b8c895177a638ffff2c3b5374160b1aed6bd5377dd97e3127dac6",
+      "record_id": "oversized-payload",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/person-multi-003.json",
+      "expected_sha256": "sha256:fbe9ea0c7685472a59eec9ec60f2e06419a5c5145ef3cbb541ab040fae69cfbb",
+      "input_path": "tests/redaction_evaluation/corpus/person-multi-003.json",
+      "input_sha256": "sha256:afc995d75f779744599380c8b90891412080fa1a2f185fd3ee10b60e45c34c3c",
+      "record_id": "person-multi-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/person-plain-001.json",
+      "expected_sha256": "sha256:f0c5009efebdfaf04a6fa1472a75809de8ab10f72c67a38f42396bf163ff0ca3",
+      "input_path": "tests/redaction_evaluation/corpus/person-plain-001.json",
+      "input_sha256": "sha256:4c0c3e694055c41ca1fef9638b656021ddff0fd383ffb4f5f3754615f1fa1a99",
+      "record_id": "person-plain-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/person-title-002.json",
+      "expected_sha256": "sha256:2f2d2c7c9a44d4969583c3b17c6dc7f81a0a00e4d86283dfa1507e762e42024d",
+      "input_path": "tests/redaction_evaluation/corpus/person-title-002.json",
+      "input_sha256": "sha256:39fed726d023ce55c66b689145eda4c31e483abcbc5a516386f322ace305aac8",
+      "record_id": "person-title-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/phi-mrn-001.json",
+      "expected_sha256": "sha256:d4e8b809e340e5814ab4d1f04ee613df36b27155e9f2178d59ee038d7579fbd5",
+      "input_path": "tests/redaction_evaluation/corpus/phi-mrn-001.json",
+      "input_sha256": "sha256:70073364a0f76d31f01d2def535413b77bc43c4a7cb860821eff6dce06212cd8",
+      "record_id": "phi-mrn-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/phi-patient-id-002.json",
+      "expected_sha256": "sha256:e465e04cb8389a6d33dabf07e0c58dc5d8214dca0f6707338b7d37866425c427",
+      "input_path": "tests/redaction_evaluation/corpus/phi-patient-id-002.json",
+      "input_sha256": "sha256:755b023ee646c2ecb2c1b606d7612a823977373e455ef20afba5c9f751052750",
+      "record_id": "phi-patient-id-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/phone-intl-00-003.json",
+      "expected_sha256": "sha256:e568a5ba5e9b44a042228d235183f3b3e02ce866d01658ec8e1c7cbe04cef5b2",
+      "input_path": "tests/redaction_evaluation/corpus/phone-intl-00-003.json",
+      "input_sha256": "sha256:e915dbc8dbda18b727238e07ac2a63ed2cca73783c4c40c2b17612223146a858",
+      "record_id": "phone-intl-00-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/phone-intl-plus-002.json",
+      "expected_sha256": "sha256:f900cc8978211e645e5de74627d9674a3b97b76330338b394e80f407274f86d5",
+      "input_path": "tests/redaction_evaluation/corpus/phone-intl-plus-002.json",
+      "input_sha256": "sha256:c09bc991a57a632a5c9122a276fbf84e32e9df3d129fa4cf5d5631c8d7363d94",
+      "record_id": "phone-intl-plus-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/phone-keyword-004.json",
+      "expected_sha256": "sha256:5b3e3a827a0761204711a770153303b1c0fd17249450ce066709debeba2e9dbd",
+      "input_path": "tests/redaction_evaluation/corpus/phone-keyword-004.json",
+      "input_sha256": "sha256:6a0dc4a86b7d0a4748f5136e246fff689e75171906e65b46838c9610c3a968cc",
+      "record_id": "phone-keyword-004",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/phone-nanp-001.json",
+      "expected_sha256": "sha256:959294d3111fc14b6fabcba81b279e20ade59f4c41e6caece131a2c6da40ab9b",
+      "input_path": "tests/redaction_evaluation/corpus/phone-nanp-001.json",
+      "input_sha256": "sha256:1393d10067aa4f1a988b05b442453a7bccd442accc629c130abf9c6984b4cea7",
+      "record_id": "phone-nanp-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/proposal-ip-001.json",
+      "expected_sha256": "sha256:8c017ee4ebffe9dbe1778219231b44dfe3749b587d0ed42fc4a00d888f0c1478",
+      "input_path": "tests/redaction_evaluation/corpus/proposal-ip-001.json",
+      "input_sha256": "sha256:9da4314be5e371e43c55833ce9754914c3b69263d6d0d25cfba0eed023d4b968",
+      "record_id": "proposal-ip-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/proposal-pan-001.json",
+      "expected_sha256": "sha256:731c952f870aae606ef89aac34f67b258efaea8cfa1dab04ad123f666654949b",
+      "input_path": "tests/redaction_evaluation/corpus/proposal-pan-001.json",
+      "input_sha256": "sha256:d5f0e7885d0af89e4ec18decbc3f6765c80a4fefc0ffb8b8f8bd8a1b6b91ece2",
+      "record_id": "proposal-pan-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/requirement-address-001.json",
+      "expected_sha256": "sha256:3054c3677874731817395e6a7babb047c48f823ba06bfc82e7e0db7c7444cbc1",
+      "input_path": "tests/redaction_evaluation/corpus/requirement-address-001.json",
+      "input_sha256": "sha256:70336bfc8e2f04270e2323a1058ad56e1e19d408f3e7b4fe131dde422fcd219f",
+      "record_id": "requirement-address-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/requirement-email-person-001.json",
+      "expected_sha256": "sha256:216357612b9fd189da065f4b2f9a9d258f96e60ef9f896758d4efcf46d7bac9b",
+      "input_path": "tests/redaction_evaluation/corpus/requirement-email-person-001.json",
+      "input_sha256": "sha256:e5375facf7dc5e19ae2b1a590b99bb3d11e99b9165f59bbe1d8edbf71d1c2cac",
+      "record_id": "requirement-email-person-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/secret-aws-github-001.json",
+      "expected_sha256": "sha256:bdabbac72595a864551955c499817461fcade2a35eb419e523ac6853858dd47f",
+      "input_path": "tests/redaction_evaluation/corpus/secret-aws-github-001.json",
+      "input_sha256": "sha256:0e77440ee8bebe63932a7952748a1c5950ece21445ef7c974e0551cb568536dc",
+      "record_id": "secret-aws-github-001",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/secret-github-fine-grained-005.json",
+      "expected_sha256": "sha256:364647c6c53bd7909d6e04ef6787ef54ab2d0fb15b4eba0abd21d5da738481cc",
+      "input_path": "tests/redaction_evaluation/corpus/secret-github-fine-grained-005.json",
+      "input_sha256": "sha256:9cfe49161c99cba94dc98743f9ce3d1fce7891cf0a3e9d0957e694847805d35c",
+      "record_id": "secret-github-fine-grained-005",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/secret-jwt-002.json",
+      "expected_sha256": "sha256:f019fe8c37481b20f6e7fbbde19e2d67c59e37ee7744d8b2702dd75cc4d59e26",
+      "input_path": "tests/redaction_evaluation/corpus/secret-jwt-002.json",
+      "input_sha256": "sha256:44511f1670a3636f7a0f629923dbfb48b267969d716a1958144a9d5dd5b0794e",
+      "record_id": "secret-jwt-002",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/secret-openai-npm-006.json",
+      "expected_sha256": "sha256:53078ff1a8e130522c094ada03e193f0a0c98ad0ac01cfd6b93e14df8d1446a8",
+      "input_path": "tests/redaction_evaluation/corpus/secret-openai-npm-006.json",
+      "input_sha256": "sha256:78df46ca05e0583157f9248b029d055a6ee1b51be3d11b4b4436b2846ee70680",
+      "record_id": "secret-openai-npm-006",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/secret-slack-google-003.json",
+      "expected_sha256": "sha256:96597cc7d360063e086ecad265f7a8d9df6c540300a73ce49556064ac5c1abf6",
+      "input_path": "tests/redaction_evaluation/corpus/secret-slack-google-003.json",
+      "input_sha256": "sha256:16be8aa6fd6a04da2177979164ae1d0dd52d63a93d77025049355e2e86bc13ff",
+      "record_id": "secret-slack-google-003",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/secret-stripe-pem-004.json",
+      "expected_sha256": "sha256:dade5088ca679f222277c1c1ad4dabc086b8a445d15c486d7239eda5863eb675",
+      "input_path": "tests/redaction_evaluation/corpus/secret-stripe-pem-004.json",
+      "input_sha256": "sha256:1c88def7a791dcceb8bc7e25a6eb698bf0406ecabdb76ff26256f302ec25ad14",
+      "record_id": "secret-stripe-pem-004",
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "sensitive_metadata_key"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/sensitive-metadata-key-phi.json",
+      "expected_sha256": "sha256:b09b5537c10b6cd6d7fc752a63c900442458764343a21b6310332f1410795821",
+      "input_path": "tests/redaction_evaluation/corpus/sensitive-metadata-key-phi.json",
+      "input_sha256": "sha256:a62b5be2f18c7cc41fe1f6a1702ef0849e5e25e20ba30f5d8eeb4b65bfea94ee",
+      "record_id": "sensitive-metadata-key-phi",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "sensitive_metadata_key"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/sensitive-metadata-key-token.json",
+      "expected_sha256": "sha256:0d2cf61914a1cddffd527325338d737cf910fd0242f954b98306566fcc6bdcda",
+      "input_path": "tests/redaction_evaluation/corpus/sensitive-metadata-key-token.json",
+      "input_sha256": "sha256:11987704aa73e644d33ba328ae791a45ae6497217746d85046d439e700f99172",
+      "record_id": "sensitive-metadata-key-token",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-adapter-emission-001.json",
+      "expected_sha256": "sha256:c5c14d329997fc5bddb09645504feb145772398402540f4d387e7f9b48bc65ad",
+      "input_path": "tests/redaction_evaluation/corpus/shape-adapter-emission-001.json",
+      "input_sha256": "sha256:71f2bdf77ae3fbabcebe054afe357b7df85f20d2fcd41ad45aa2a843b7fbc206",
+      "record_id": "shape-adapter-emission-001",
+      "source_shape": "adapter_emission"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-adapter-emission-002.json",
+      "expected_sha256": "sha256:ed1f106b13b6e97d6d986e0f5d8627e64cb6ff174681ee778bf1b23a27237b2e",
+      "input_path": "tests/redaction_evaluation/corpus/shape-adapter-emission-002.json",
+      "input_sha256": "sha256:d0710dab8c8221844cf7b552c9c14014693a4bc742c709cdce838deaa68c8c24",
+      "record_id": "shape-adapter-emission-002",
+      "source_shape": "adapter_emission"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-bounded-document-fetch-001.json",
+      "expected_sha256": "sha256:c4d14494aba9242cdbb38a9d4dffa0b03bdbacec43d09036f8c32fbfe317f928",
+      "input_path": "tests/redaction_evaluation/corpus/shape-bounded-document-fetch-001.json",
+      "input_sha256": "sha256:8017254c3750d4479777d92b67ea6d6f76dc5c557470cfbba89bcc8c26d43878",
+      "record_id": "shape-bounded-document-fetch-001",
+      "source_shape": "bounded_document_fetch"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-bounded-document-fetch-002.json",
+      "expected_sha256": "sha256:fcf6d233e54f5d67d9caa3a262984a91cf8d3b79a3d910f66c6fc7b9b3c054df",
+      "input_path": "tests/redaction_evaluation/corpus/shape-bounded-document-fetch-002.json",
+      "input_sha256": "sha256:72b03600652bf154b5451f6f762a3e099b3730cbda647a9748a0e01339990edb",
+      "record_id": "shape-bounded-document-fetch-002",
+      "source_shape": "bounded_document_fetch"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-external-ingest-envelope-001.json",
+      "expected_sha256": "sha256:7c077846a4a91c94fea09f53a48a5de18105a34ab932a12efdb17515bd2271d1",
+      "input_path": "tests/redaction_evaluation/corpus/shape-external-ingest-envelope-001.json",
+      "input_sha256": "sha256:694d2473362400c1b6a9916cc436f2341c3a197ca6be5065491b6c680fd074a9",
+      "record_id": "shape-external-ingest-envelope-001",
+      "source_shape": "external_ingest_envelope"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-external-ingest-envelope-002.json",
+      "expected_sha256": "sha256:1beca317050d44c38b2df8b9a7776705c998e6d4acc509461eaeee01097843ae",
+      "input_path": "tests/redaction_evaluation/corpus/shape-external-ingest-envelope-002.json",
+      "input_sha256": "sha256:491c72e7ab9dcd4b824bd16f8e651f900d75c2370ebe6199ab826c1c52bfe639",
+      "record_id": "shape-external-ingest-envelope-002",
+      "source_shape": "external_ingest_envelope"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-github-poll-001.json",
+      "expected_sha256": "sha256:b49f24f037428f6e0befc76ae934326b413b3369ec5abc17ca1549a3eb4af129",
+      "input_path": "tests/redaction_evaluation/corpus/shape-github-poll-001.json",
+      "input_sha256": "sha256:87bfdfa13a7083b07c7a2c58f226ed7ea578a1ef3a2cfa4ffffb6d8a7a40a5e4",
+      "record_id": "shape-github-poll-001",
+      "source_shape": "github_poll"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-github-poll-002.json",
+      "expected_sha256": "sha256:b8dd0137933f6d3323aa58ac2d75fae42a3ff793396d748e5052fdf7f45ed06a",
+      "input_path": "tests/redaction_evaluation/corpus/shape-github-poll-002.json",
+      "input_sha256": "sha256:100cf1050690d4210f3058e0c2d0c0a6347c876bc4183f61c8db35fe478c10d4",
+      "record_id": "shape-github-poll-002",
+      "source_shape": "github_poll"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-github-webhook-comment-001.json",
+      "expected_sha256": "sha256:10c5bae003cf18eb573f831aa3f3bfb5de48ab62bd6eb6c091dd21afac7a49a9",
+      "input_path": "tests/redaction_evaluation/corpus/shape-github-webhook-comment-001.json",
+      "input_sha256": "sha256:e83b97214a7c0e608206c6a5db25fdbe980ea8e471f9ac55e9fc312cd8f949f0",
+      "record_id": "shape-github-webhook-comment-001",
+      "source_shape": "github_webhook"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-github-webhook-comment-002.json",
+      "expected_sha256": "sha256:6c9bb3b084c6dda71637080157948c2462e66fc8515f7ee79727b2ca988ea12d",
+      "input_path": "tests/redaction_evaluation/corpus/shape-github-webhook-comment-002.json",
+      "input_sha256": "sha256:2695ff0026078f91477173e948bb9f2201c371cf44fc918df72751503a91195b",
+      "record_id": "shape-github-webhook-comment-002",
+      "source_shape": "github_webhook"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-github-webhook-issue-001.json",
+      "expected_sha256": "sha256:b5400bb8dc3d1c96b1780e745081211fc37a4036ee2e7a94e4d8c65792af626f",
+      "input_path": "tests/redaction_evaluation/corpus/shape-github-webhook-issue-001.json",
+      "input_sha256": "sha256:89f6c2a94c0bb131a23d0f66d78feddec775c17a0f4a6089dc2bc2dad50fbff5",
+      "record_id": "shape-github-webhook-issue-001",
+      "source_shape": "github_webhook"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-github-webhook-issue-002.json",
+      "expected_sha256": "sha256:7f07ab51117f94a93152bb8c5de80f2feddbcd486327cd2451517e584743ce82",
+      "input_path": "tests/redaction_evaluation/corpus/shape-github-webhook-issue-002.json",
+      "input_sha256": "sha256:4b1c65a9c49d90f38abd9c2bf4ebf6d2a00d2d196f033f4f14b6590bb245d4bd",
+      "record_id": "shape-github-webhook-issue-002",
+      "source_shape": "github_webhook"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-linear-graphql-001.json",
+      "expected_sha256": "sha256:11523d4f92e05183b8293030b9078c55a3afae8fc0068d4886872b3bfd57d762",
+      "input_path": "tests/redaction_evaluation/corpus/shape-linear-graphql-001.json",
+      "input_sha256": "sha256:a90b80da589c1920e5995256be9e7a786aaea2a1aa9bebe9f46c326eca2b2438",
+      "record_id": "shape-linear-graphql-001",
+      "source_shape": "linear_graphql"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-linear-graphql-002.json",
+      "expected_sha256": "sha256:0728197082ba7cf2c1577eb300bf61a80b7aac614961ad40865ef780a013174f",
+      "input_path": "tests/redaction_evaluation/corpus/shape-linear-graphql-002.json",
+      "input_sha256": "sha256:f9d1335d5c28d13723985c531d78a12957ff714936c2ce295d1a48f7a2a13a18",
+      "record_id": "shape-linear-graphql-002",
+      "source_shape": "linear_graphql"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-linear-webhook-001.json",
+      "expected_sha256": "sha256:94a40ec7f7fcf68cb1548266dfd1bb6d2200cadbc9ac36cb35918412979dc9ab",
+      "input_path": "tests/redaction_evaluation/corpus/shape-linear-webhook-001.json",
+      "input_sha256": "sha256:94d2e3e3114f0b2502202073863d9bbe049bac4f494eb799afe10a2c40c51ad0",
+      "record_id": "shape-linear-webhook-001",
+      "source_shape": "linear_webhook"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-linear-webhook-002.json",
+      "expected_sha256": "sha256:0f07f603997310c6a728981dd3d4a2bbb8666dd4eb3a1ce3b05a2b2d3ec507ae",
+      "input_path": "tests/redaction_evaluation/corpus/shape-linear-webhook-002.json",
+      "input_sha256": "sha256:914cc1982ec31c14a5135828cb560afa8f2f1f9a73e0a2d4b8040a3413bc94a3",
+      "record_id": "shape-linear-webhook-002",
+      "source_shape": "linear_webhook"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-local-directory-001.json",
+      "expected_sha256": "sha256:46f03fb77f7c552cb1f21e3699e416706f60bf0890a05fe8543a16b78880aedd",
+      "input_path": "tests/redaction_evaluation/corpus/shape-local-directory-001.json",
+      "input_sha256": "sha256:6585a4a2bb5efaf3e7f11a69d2591d2141a07b72f5aab0487daa65926c69143e",
+      "record_id": "shape-local-directory-001",
+      "source_shape": "local_directory"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity",
+        "nested_metadata"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-local-directory-002.json",
+      "expected_sha256": "sha256:a0bebb2184201fdc14eb835704740d6218b8a765707afb2981dff4071d3fbd1f",
+      "input_path": "tests/redaction_evaluation/corpus/shape-local-directory-002.json",
+      "input_sha256": "sha256:de9173d61d4c1893724a5388d34f9f52d70fa2859c66855e9c03a7d678fd1d62",
+      "record_id": "shape-local-directory-002",
+      "source_shape": "local_directory"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-observation-001.json",
+      "expected_sha256": "sha256:8a544fe0b49c406a8d3d1ba3aa2fe4062b89a4965b20e8fb8dacccff61afcd8c",
+      "input_path": "tests/redaction_evaluation/corpus/shape-observation-001.json",
+      "input_sha256": "sha256:77ed3b87bdda10783fc35f60850c6f297f112d5ed4047b6436125d4069cedd99",
+      "record_id": "shape-observation-001",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-observation-002.json",
+      "expected_sha256": "sha256:fde2c569449a2f72f1a37705e08831ecde9794eb4df794a28c98ad73c05dcacb",
+      "input_path": "tests/redaction_evaluation/corpus/shape-observation-002.json",
+      "input_sha256": "sha256:87da6d5027456d5fbd61279bfdc401e865b73545b2338454a6fdd63ef7d3154a",
+      "record_id": "shape-observation-002",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/shape-observation-003.json",
+      "expected_sha256": "sha256:e1a4bbb6d199d944a625b87e509fd0d1f35eed706467238fcc0e218a71ec546f",
+      "input_path": "tests/redaction_evaluation/corpus/shape-observation-003.json",
+      "input_sha256": "sha256:b0d28f7768d43563a878d88410ce1267c440c0715e77b76944e1a9296a194369",
+      "record_id": "shape-observation-003",
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "unsupported_binary"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/unsupported-binary-value.json",
+      "expected_sha256": "sha256:49382593e45ceb82148047cb32cb4024fa296c0cb8920b83feb3cea2373a558c",
+      "input_path": "tests/redaction_evaluation/corpus/unsupported-binary-value.json",
+      "input_sha256": "sha256:50c0e00dc649753077dc1000078956216410a99be87c35e0b7d121cf3c3e76be",
+      "record_id": "unsupported-binary-value",
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_crash"
+      ],
+      "expected_path": "tests/redaction_evaluation/expected/worker-crash.json",
+      "expected_sha256": "sha256:86e17cef6403d075ea4159735e6250d59f1829a9748672c9ead8991f1127ee63",
+      "input_path": "tests/redaction_evaluation/corpus/worker-crash.json",
+      "input_sha256": "sha256:9a1e45b6134834e869a2a992a691475c84199b9e46637e1650d122ff7e7e2929",
+      "record_id": "worker-crash",
+      "source_shape": "failure_fixture"
+    }
+  ],
+  "schema_version": 1
+}

@@ -1,0 +1,3 @@
+# Digest-pinned evaluation fixtures: bytes must be identical on every platform.
+*.json -text
+*.csv -text

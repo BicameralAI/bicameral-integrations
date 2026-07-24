@@ -1,0 +1,9 @@
+{
+  "expected_entities": [],
+  "expected_failure_reason": "backend_crash",
+  "expected_outcome": "failed_closed",
+  "preservation_assertions": [],
+  "protected_fields": [],
+  "record_id": "backend-exception",
+  "schema_version": 1
+}

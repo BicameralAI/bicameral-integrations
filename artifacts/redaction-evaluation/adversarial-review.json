@@ -1,0 +1,204 @@
+{
+  "artifact_bundle_sha256": "sha256:5a224be386ba3c8c071ba4f0d67245c891c63fa9531cbb2be6ca7c26ebc22243",
+  "candidate_ids": [
+    "bicameral-stdlib-v1",
+    "datafog-regex-v1",
+    "presidio-gliner-pii-v1",
+    "presidio-spacy-lg-v1"
+  ],
+  "checks": [
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "corpus-digests-verified",
+      "evidence_refs": [
+        "tests/redaction_evaluation/corpus-manifest.json",
+        "artifacts/redaction-evaluation/corpus-manifest.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "aggregates-reproduce",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/metrics.json",
+        "artifacts/redaction-evaluation/entity-results.csv",
+        "artifacts/redaction-evaluation/hard-gates.json",
+        "artifacts/redaction-evaluation/candidate-matrix.json",
+        "artifacts/redaction-evaluation/evaluation-input.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "weighted-scores-reproduce",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/weighted-scores.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "artifact-manifest-clean",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/artifact-manifest.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "recommendation-bindings-verified",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/recommendation.md"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "external-verdicts-merged",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/candidate-results",
+        "artifacts/redaction-evaluation/offline-proof.json",
+        "artifacts/redaction-evaluation/license-report.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "eligibility-consistency",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/hard-gates.json",
+        "artifacts/redaction-evaluation/candidate-matrix.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "hard-gate-states-recorded",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/hard-gates.json"
+      ],
+      "notes": "bicameral-stdlib-v1: pending=[-]; datafog-regex-v1: pending=[-]; presidio-gliner-pii-v1: pending=[license-compatible]; presidio-spacy-lg-v1: pending=[license-compatible]",
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "determinism-clean",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/candidate-results",
+        "artifacts/redaction-evaluation/hard-gates.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "offline-proof-clean",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/offline-proof.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "no-raw-leakage-gate",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/hard-gates.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    },
+    {
+      "affected_candidate_ids": [],
+      "affected_record_ids": [],
+      "check_id": "receipt-validation-gate",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/hard-gates.json"
+      ],
+      "raw_values_included": false,
+      "status": "passed"
+    }
+  ],
+  "corpus_sha256": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
+  "evidence_refs": [
+    "artifacts/redaction-evaluation/artifact-manifest.json",
+    "artifacts/redaction-evaluation/candidate-matrix.json",
+    "artifacts/redaction-evaluation/candidate-results",
+    "artifacts/redaction-evaluation/corpus-manifest.json",
+    "artifacts/redaction-evaluation/entity-results.csv",
+    "artifacts/redaction-evaluation/evaluation-input.json",
+    "artifacts/redaction-evaluation/hard-gates.json",
+    "artifacts/redaction-evaluation/license-report.json",
+    "artifacts/redaction-evaluation/metrics.json",
+    "artifacts/redaction-evaluation/offline-proof.json",
+    "artifacts/redaction-evaluation/recommendation.md",
+    "artifacts/redaction-evaluation/weighted-scores.json",
+    "tests/redaction_evaluation/corpus-manifest.json"
+  ],
+  "parent_baseline": {
+    "head_sha": "fd69ff2742363b5d619bc073b8e8490c0f50733d",
+    "pr_number": 269
+  },
+  "raw_values_included": false,
+  "review_id": "adr-0020-exact-head-review-17796b3e0ffc",
+  "reviewed_at": "2026-07-24T08:30:00Z",
+  "reviewed_pr": {
+    "base_ref": "feat/alpha-ingest-real-data-redaction",
+    "head_sha": "17796b3e0ffc2623e8a3bbcc053bf482ebddd1e7",
+    "number": 288,
+    "repository": "BicameralAI/bicameral-integrations"
+  },
+  "schema_version": 1,
+  "unresolved_discrepancies": [
+    {
+      "candidate_ids": [
+        "presidio-gliner-pii-v1"
+      ],
+      "discrepancy_id": "license-review-pending-presidio-gliner-pii-v1",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/hard-gates.json",
+        "artifacts/redaction-evaluation/license-report.json"
+      ],
+      "implementation_required": false,
+      "owner_decision_required": true,
+      "record_ids": [],
+      "severity": "high",
+      "summary": "presidio-gliner-pii-v1 has pending hard gate(s) [license-compatible] awaiting an explicit owner call; the candidate is not selection-eligible until resolved."
+    },
+    {
+      "candidate_ids": [
+        "presidio-spacy-lg-v1"
+      ],
+      "discrepancy_id": "license-review-pending-presidio-spacy-lg-v1",
+      "evidence_refs": [
+        "artifacts/redaction-evaluation/hard-gates.json",
+        "artifacts/redaction-evaluation/license-report.json"
+      ],
+      "implementation_required": false,
+      "owner_decision_required": true,
+      "record_ids": [],
+      "severity": "high",
+      "summary": "presidio-spacy-lg-v1 has pending hard gate(s) [license-compatible] awaiting an explicit owner call; the candidate is not selection-eligible until resolved."
+    }
+  ],
+  "verdict": "owner_decision_ready"
+}

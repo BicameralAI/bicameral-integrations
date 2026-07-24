@@ -1,0 +1,31 @@
+{
+  "observation": {
+    "author": "ingest",
+    "evidence_id": "ev-env-8401",
+    "evidence_metadata": {},
+    "excerpt": "Envelope staged for external ingest review.",
+    "metadata": {
+      "envelope": {
+        "candidate_hints": [
+          {
+            "body": "Hint references dana.frost@example.org for follow-up."
+          }
+        ],
+        "content": "Envelope drafted by Avery Winslow for review."
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "c5d6e7f8-a9b0-4cb3-8425-c3d4e5f60718",
+    "provider_resource_id": "env-8401",
+    "source_ref": {
+      "kind": "envelope",
+      "ref": "envelopes/env-8401",
+      "source_id": "external-ingest",
+      "url": ""
+    },
+    "timestamp": "2026-06-25T13:00:00Z",
+    "title": "External ingest draft"
+  },
+  "record_id": "shape-external-ingest-envelope-001",
+  "source_shape": "external_ingest_envelope"
+}

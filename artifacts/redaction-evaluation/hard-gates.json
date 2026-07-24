@@ -1,0 +1,1210 @@
+{
+  "candidates": [
+    {
+      "aggregate_state": "passed",
+      "candidate_id": "bicameral-stdlib-v1",
+      "failed_gate_ids": [],
+      "gates": [
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "raw_values_checked": 109
+          },
+          "gate_id": "no-raw-leakage",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "mandatory_entities_checked": 23
+          },
+          "gate_id": "mandatory-secret-protection",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 101
+          },
+          "gate_id": "identity-preservation",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": "artifact:offline-proof.json",
+          "gate_id": "no-undeclared-network",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 2
+          },
+          "gate_id": "fail-closed-unavailable",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 1
+          },
+          "gate_id": "fail-closed-invalid-config",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "bicameral-stdlib-v1",
+            "configuration_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
+            "records_checked": 2,
+            "worker_pids": [
+              74628
+            ]
+          },
+          "gate_id": "fail-closed-crash",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "bicameral-stdlib-v1",
+            "configuration_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
+            "production_deadline_probes": [
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 0.7602999976370484,
+                "enforced_termination": false,
+                "outcome": "unchanged",
+                "payload_class": "small",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 2.1179000032134354,
+                "enforced_termination": false,
+                "outcome": "sanitized",
+                "payload_class": "medium",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 13.053900009253994,
+                "enforced_termination": false,
+                "outcome": "sanitized",
+                "payload_class": "large",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 3755.430900011561,
+                "enforced_termination": false,
+                "outcome": "sanitized",
+                "payload_class": "max_admitted",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 344.50969999306835,
+                "enforced_termination": false,
+                "outcome": "unchanged",
+                "payload_class": "small",
+                "probe": "cold_worker"
+              }
+            ],
+            "records_checked": 2,
+            "worker_pids": [
+              42012,
+              62364,
+              70836,
+              73740,
+              74628,
+              75116
+            ]
+          },
+          "gate_id": "fail-closed-timeout",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 5
+          },
+          "gate_id": "fail-closed-unsupported-content",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "basis": "observed sink/cursor boundary calls per record",
+            "failed_closed_records": 15,
+            "success_records_checked": 86
+          },
+          "gate_id": "no-envelope-no-cursor-on-failure",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "mismatched_records": 0
+          },
+          "gate_id": "deterministic-output",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "bicameral-stdlib-v1",
+            "configuration_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
+            "storms": [
+              {
+                "all_timed_out": true,
+                "candidate_id": "bicameral-stdlib-v1",
+                "cleanup_ok": true,
+                "configuration_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
+                "orphans": 0,
+                "prewarm_before_seconds": 1.1099997209385037e-05,
+                "recovered": true,
+                "recovery_prewarm_seconds": 0.33835009999165777,
+                "storm_concurrency": 8,
+                "worker_pids": [
+                  42012,
+                  70836,
+                  73740,
+                  74628,
+                  75116
+                ]
+              }
+            ],
+            "worker_pids": [
+              42012,
+              70836,
+              73740,
+              74628,
+              75116
+            ]
+          },
+          "gate_id": "bounded-cleanup-no-orphans",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "engine_version": "1.0.0",
+            "models": {},
+            "packages": {
+              "python-stdlib-re": "builtin"
+            }
+          },
+          "gate_id": "provenance-pinned",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": "artifact:license-report.json",
+          "gate_id": "license-compatible",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "receipts": [
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "bicameral-stdlib-v1",
+                  "engine_version": "1.0.0",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:49e5fd10660da6e64a391a2405f599b6464319826ecb613dd59e2c6ec0cfeccf",
+                  "output_digest": "sha256:0d93f5251cd7fcaf96af34e65735f778898ee030fb9b399a843830b7610c9065",
+                  "ruleset_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
+                  "ruleset_id": "candidate-eval-bicameral-stdlib-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "constraint-phone-001"
+              },
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "bicameral-stdlib-v1",
+                  "engine_version": "1.0.0",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "secret",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:5495dbe8238b9e900093fe74f6602c83fc6fbb526f7f2f2cec6bda896447c685",
+                  "output_digest": "sha256:af765fb30acbbd8f05f0eacf6670196f66f4e1e225ac903b1527d0c2f27d4c81",
+                  "ruleset_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
+                  "ruleset_id": "candidate-eval-bicameral-stdlib-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "constraint-secret-001"
+              },
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "bicameral-stdlib-v1",
+                  "engine_version": "1.0.0",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "phi",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:cda1c356d20dcecd5c4db51cbe124f5cec66f61a9c93d596d16c86141de5fdeb",
+                  "output_digest": "sha256:3ad3d2ce97487a90c52c1c5eaef53586e612a467eeb5c1ce88fab6122dc736e0",
+                  "ruleset_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
+                  "ruleset_id": "candidate-eval-bicameral-stdlib-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "decision-mrn-001"
+              }
+            ],
+            "sample_records": [
+              "constraint-phone-001",
+              "constraint-secret-001",
+              "decision-mrn-001"
+            ],
+            "validation": "jsonschema definitions.ExternalRedactionReceipt AND runtime.sinks._require_redaction_receipt"
+          },
+          "gate_id": "receipt-contract-compatible",
+          "raw_values_included": false,
+          "status": "passed"
+        }
+      ],
+      "passed": true,
+      "pending_gate_ids": []
+    },
+    {
+      "aggregate_state": "passed",
+      "candidate_id": "datafog-regex-v1",
+      "failed_gate_ids": [],
+      "gates": [
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "raw_values_checked": 109
+          },
+          "gate_id": "no-raw-leakage",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "mandatory_entities_checked": 23
+          },
+          "gate_id": "mandatory-secret-protection",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 101
+          },
+          "gate_id": "identity-preservation",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": "artifact:offline-proof.json",
+          "gate_id": "no-undeclared-network",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 2
+          },
+          "gate_id": "fail-closed-unavailable",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 1
+          },
+          "gate_id": "fail-closed-invalid-config",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "datafog-regex-v1",
+            "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+            "records_checked": 2,
+            "worker_pids": [
+              75848
+            ]
+          },
+          "gate_id": "fail-closed-crash",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "datafog-regex-v1",
+            "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+            "production_deadline_probes": [
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 0.8148999913828447,
+                "enforced_termination": false,
+                "outcome": "unchanged",
+                "payload_class": "small",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 1.509599998826161,
+                "enforced_termination": false,
+                "outcome": "failed_closed:post_screen_escape",
+                "payload_class": "medium",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 10.675700003048405,
+                "enforced_termination": false,
+                "outcome": "failed_closed:post_screen_escape",
+                "payload_class": "large",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 3609.470199997304,
+                "enforced_termination": false,
+                "outcome": "failed_closed:post_screen_escape",
+                "payload_class": "max_admitted",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 637.2999000013806,
+                "enforced_termination": false,
+                "outcome": "unchanged",
+                "payload_class": "small",
+                "probe": "cold_worker"
+              }
+            ],
+            "records_checked": 2,
+            "worker_pids": [
+              68168,
+              75848,
+              76668
+            ]
+          },
+          "gate_id": "fail-closed-timeout",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 5
+          },
+          "gate_id": "fail-closed-unsupported-content",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "basis": "observed sink/cursor boundary calls per record",
+            "failed_closed_records": 30,
+            "success_records_checked": 71
+          },
+          "gate_id": "no-envelope-no-cursor-on-failure",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "mismatched_records": 0
+          },
+          "gate_id": "deterministic-output",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "datafog-regex-v1",
+            "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+            "storms": [
+              {
+                "all_timed_out": true,
+                "candidate_id": "datafog-regex-v1",
+                "cleanup_ok": true,
+                "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+                "orphans": 0,
+                "prewarm_before_seconds": 1.1900003300979733e-05,
+                "recovered": true,
+                "recovery_prewarm_seconds": 0.7018176999990828,
+                "storm_concurrency": 8,
+                "worker_pids": [
+                  75848,
+                  76668
+                ]
+              }
+            ],
+            "worker_pids": [
+              75848,
+              76668
+            ]
+          },
+          "gate_id": "bounded-cleanup-no-orphans",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "engine_version": "4.8.0",
+            "models": {},
+            "packages": {
+              "datafog": "4.8.0"
+            }
+          },
+          "gate_id": "provenance-pinned",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": "artifact:license-report.json",
+          "gate_id": "license-compatible",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "receipts": [
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "datafog-regex-v1",
+                  "engine_version": "4.8.0",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:49e5fd10660da6e64a391a2405f599b6464319826ecb613dd59e2c6ec0cfeccf",
+                  "output_digest": "sha256:0d93f5251cd7fcaf96af34e65735f778898ee030fb9b399a843830b7610c9065",
+                  "ruleset_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+                  "ruleset_id": "candidate-eval-datafog-regex-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "constraint-phone-001"
+              },
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "datafog-regex-v1",
+                  "engine_version": "4.8.0",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:4f0d74601a9183eaec2926b2aa68d02a12747fb0a9853a3d2608801844b3fe23",
+                  "output_digest": "sha256:a4450c031c7a69d9214c263d6e4f7fcb4ac57e341c00fbdc99fc78bdb9148e50",
+                  "ruleset_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+                  "ruleset_id": "candidate-eval-datafog-regex-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "decision-person-email-001"
+              },
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "datafog-regex-v1",
+                  "engine_version": "4.8.0",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:cce24d04c4f04770a08e72a653e3835200e30e0fc59d23e9e107340a5873909c",
+                  "output_digest": "sha256:d49583ea7f16b130552f8cf23f11f9f84a1cda025e81be888403ed6e29a9e581",
+                  "ruleset_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+                  "ruleset_id": "candidate-eval-datafog-regex-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "deeply-nested-metadata-64"
+              }
+            ],
+            "sample_records": [
+              "constraint-phone-001",
+              "decision-person-email-001",
+              "deeply-nested-metadata-64"
+            ],
+            "validation": "jsonschema definitions.ExternalRedactionReceipt AND runtime.sinks._require_redaction_receipt"
+          },
+          "gate_id": "receipt-contract-compatible",
+          "raw_values_included": false,
+          "status": "passed"
+        }
+      ],
+      "passed": true,
+      "pending_gate_ids": []
+    },
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "presidio-gliner-pii-v1",
+      "failed_gate_ids": [],
+      "gates": [
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "raw_values_checked": 109
+          },
+          "gate_id": "no-raw-leakage",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "mandatory_entities_checked": 23
+          },
+          "gate_id": "mandatory-secret-protection",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 101
+          },
+          "gate_id": "identity-preservation",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": "artifact:offline-proof.json",
+          "gate_id": "no-undeclared-network",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 2
+          },
+          "gate_id": "fail-closed-unavailable",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 1
+          },
+          "gate_id": "fail-closed-invalid-config",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "presidio-gliner-pii-v1",
+            "configuration_digest": "sha256:e422a21203a54fd8a2747668fd5d95ca8db56f457838941df327112b830a264d",
+            "records_checked": 2,
+            "worker_pids": [
+              70816
+            ]
+          },
+          "gate_id": "fail-closed-crash",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "presidio-gliner-pii-v1",
+            "configuration_digest": "sha256:e422a21203a54fd8a2747668fd5d95ca8db56f457838941df327112b830a264d",
+            "production_deadline_probes": [
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 566.4109000063036,
+                "enforced_termination": false,
+                "outcome": "unchanged",
+                "payload_class": "small",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 1422.0629000046756,
+                "enforced_termination": false,
+                "outcome": "sanitized",
+                "payload_class": "medium",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 5135.103800013894,
+                "enforced_termination": true,
+                "outcome": "backend_timeout",
+                "payload_class": "large",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 5148.549399993499,
+                "enforced_termination": true,
+                "outcome": "backend_timeout",
+                "payload_class": "max_admitted",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 5029.267300007632,
+                "enforced_termination": true,
+                "outcome": "backend_timeout",
+                "payload_class": "small",
+                "probe": "cold_worker"
+              }
+            ],
+            "records_checked": 2,
+            "worker_pids": [
+              28196,
+              70816,
+              75224
+            ]
+          },
+          "gate_id": "fail-closed-timeout",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 5
+          },
+          "gate_id": "fail-closed-unsupported-content",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "basis": "observed sink/cursor boundary calls per record",
+            "failed_closed_records": 15,
+            "success_records_checked": 86
+          },
+          "gate_id": "no-envelope-no-cursor-on-failure",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "mismatched_records": 0
+          },
+          "gate_id": "deterministic-output",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "presidio-gliner-pii-v1",
+            "configuration_digest": "sha256:e422a21203a54fd8a2747668fd5d95ca8db56f457838941df327112b830a264d",
+            "storms": [
+              {
+                "all_timed_out": true,
+                "candidate_id": "presidio-gliner-pii-v1",
+                "cleanup_ok": true,
+                "configuration_digest": "sha256:e422a21203a54fd8a2747668fd5d95ca8db56f457838941df327112b830a264d",
+                "orphans": 0,
+                "prewarm_before_seconds": 1.1399999493733048e-05,
+                "recovered": true,
+                "recovery_prewarm_seconds": 20.148883800007752,
+                "storm_concurrency": 8,
+                "worker_pids": [
+                  70816,
+                  75224
+                ]
+              }
+            ],
+            "worker_pids": [
+              70816,
+              75224
+            ]
+          },
+          "gate_id": "bounded-cleanup-no-orphans",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "engine_version": "2.2.364",
+            "models": {
+              "en_core_web_sm": "3.8.0",
+              "urchade/gliner_multi_pii-v1": "1fcf13e85f4eef5394e1fcd406cf2ca9ea82351d",
+              "urchade/gliner_multi_pii-v1#pytorch_model.bin": "sha256:3003753fba99e40645cf088c7367a2c6211fc174897dc64f1f9c147c29d18d2d"
+            },
+            "packages": {
+              "gliner": "0.2.27",
+              "presidio-analyzer": "2.2.364",
+              "spacy": "3.8.14",
+              "torch": "2.13.0+cpu",
+              "transformers": "5.6.2"
+            }
+          },
+          "gate_id": "provenance-pinned",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": "artifact:license-report",
+          "gate_id": "license-compatible",
+          "raw_values_included": false,
+          "status": "pending"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "receipts": [
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "presidio-gliner-pii-v1",
+                  "engine_version": "2.2.364",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:12b8e13e0f3aeb5b4b2a27d5575171b3a0f1fa52212984e6a36b3793225f2439",
+                  "output_digest": "sha256:587e17927c80eb328eb16d6062911fe06712f002a008bea0f5bdbacc304378b3",
+                  "ruleset_digest": "sha256:e422a21203a54fd8a2747668fd5d95ca8db56f457838941df327112b830a264d",
+                  "ruleset_id": "candidate-eval-presidio-gliner-pii-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "account-id-001"
+              },
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "presidio-gliner-pii-v1",
+                  "engine_version": "2.2.364",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:bcaef0f5425fb3380eb6f3a438992a3d4eaaf0b1ea77e321e21ec76bfb776828",
+                  "output_digest": "sha256:a7ef235ba94f695b456849ecf9ed1700991871af831007bbdc76786b5f1e6b11",
+                  "ruleset_digest": "sha256:e422a21203a54fd8a2747668fd5d95ca8db56f457838941df327112b830a264d",
+                  "ruleset_id": "candidate-eval-presidio-gliner-pii-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "account-id-002"
+              },
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "presidio-gliner-pii-v1",
+                  "engine_version": "2.2.364",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:1d550c734ba6b0335b1250ae4d950d85dde595b4e93dcc4d4be05a0dd72fa515",
+                  "output_digest": "sha256:a3251bcb5bb87b237a99e4070e0b44397cb13d608973c7078e2ea3131a43006a",
+                  "ruleset_digest": "sha256:e422a21203a54fd8a2747668fd5d95ca8db56f457838941df327112b830a264d",
+                  "ruleset_id": "candidate-eval-presidio-gliner-pii-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "address-billing-003"
+              }
+            ],
+            "sample_records": [
+              "account-id-001",
+              "account-id-002",
+              "address-billing-003"
+            ],
+            "validation": "jsonschema definitions.ExternalRedactionReceipt AND runtime.sinks._require_redaction_receipt"
+          },
+          "gate_id": "receipt-contract-compatible",
+          "raw_values_included": false,
+          "status": "passed"
+        }
+      ],
+      "passed": false,
+      "pending_gate_ids": [
+        "license-compatible"
+      ]
+    },
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "presidio-spacy-lg-v1",
+      "failed_gate_ids": [],
+      "gates": [
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "raw_values_checked": 109
+          },
+          "gate_id": "no-raw-leakage",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "mandatory_entities_checked": 23
+          },
+          "gate_id": "mandatory-secret-protection",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 101
+          },
+          "gate_id": "identity-preservation",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": "artifact:offline-proof.json",
+          "gate_id": "no-undeclared-network",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 2
+          },
+          "gate_id": "fail-closed-unavailable",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 1
+          },
+          "gate_id": "fail-closed-invalid-config",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "presidio-spacy-lg-v1",
+            "configuration_digest": "sha256:5d43bf7c0de4b7ff083947dde3bbb12910635075a802ed02886d515e3cc8afb0",
+            "records_checked": 2,
+            "worker_pids": [
+              73128
+            ]
+          },
+          "gate_id": "fail-closed-crash",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "presidio-spacy-lg-v1",
+            "configuration_digest": "sha256:5d43bf7c0de4b7ff083947dde3bbb12910635075a802ed02886d515e3cc8afb0",
+            "production_deadline_probes": [
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 43.48909998952877,
+                "enforced_termination": false,
+                "outcome": "unchanged",
+                "payload_class": "small",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 129.68840000394266,
+                "enforced_termination": false,
+                "outcome": "sanitized",
+                "payload_class": "medium",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 407.51109999837354,
+                "enforced_termination": false,
+                "outcome": "sanitized",
+                "payload_class": "large",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 5089.8096000018995,
+                "enforced_termination": true,
+                "outcome": "backend_timeout",
+                "payload_class": "max_admitted",
+                "probe": "warm"
+              },
+              {
+                "budget_seconds": 5.0,
+                "duration_ms": 5034.623700004886,
+                "enforced_termination": true,
+                "outcome": "backend_timeout",
+                "payload_class": "small",
+                "probe": "cold_worker"
+              }
+            ],
+            "records_checked": 2,
+            "worker_pids": [
+              73128,
+              74944,
+              75204
+            ]
+          },
+          "gate_id": "fail-closed-timeout",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "records_checked": 5
+          },
+          "gate_id": "fail-closed-unsupported-content",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "basis": "observed sink/cursor boundary calls per record",
+            "failed_closed_records": 15,
+            "success_records_checked": 86
+          },
+          "gate_id": "no-envelope-no-cursor-on-failure",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "mismatched_records": 0
+          },
+          "gate_id": "deterministic-output",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "candidate_id": "presidio-spacy-lg-v1",
+            "configuration_digest": "sha256:5d43bf7c0de4b7ff083947dde3bbb12910635075a802ed02886d515e3cc8afb0",
+            "storms": [
+              {
+                "all_timed_out": true,
+                "candidate_id": "presidio-spacy-lg-v1",
+                "cleanup_ok": true,
+                "configuration_digest": "sha256:5d43bf7c0de4b7ff083947dde3bbb12910635075a802ed02886d515e3cc8afb0",
+                "orphans": 0,
+                "prewarm_before_seconds": 1.170000177808106e-05,
+                "recovered": true,
+                "recovery_prewarm_seconds": 13.432966099993791,
+                "storm_concurrency": 8,
+                "worker_pids": [
+                  73128,
+                  75204
+                ]
+              }
+            ],
+            "worker_pids": [
+              73128,
+              75204
+            ]
+          },
+          "gate_id": "bounded-cleanup-no-orphans",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "engine_version": "2.2.364",
+            "models": {
+              "en_core_web_lg": "3.8.0"
+            },
+            "packages": {
+              "presidio-analyzer": "2.2.364",
+              "spacy": "3.8.14"
+            }
+          },
+          "gate_id": "provenance-pinned",
+          "raw_values_included": false,
+          "status": "passed"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": "artifact:license-report",
+          "gate_id": "license-compatible",
+          "raw_values_included": false,
+          "status": "pending"
+        },
+        {
+          "affected_record_ids": [],
+          "evidence": {
+            "receipts": [
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "presidio-spacy-lg-v1",
+                  "engine_version": "2.2.364",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:1d550c734ba6b0335b1250ae4d950d85dde595b4e93dcc4d4be05a0dd72fa515",
+                  "output_digest": "sha256:8cb0154fa9b36df8b94abe024b7ea9f39e6f6df5281d10424cdf65532d69e581",
+                  "ruleset_digest": "sha256:5d43bf7c0de4b7ff083947dde3bbb12910635075a802ed02886d515e3cc8afb0",
+                  "ruleset_id": "candidate-eval-presidio-spacy-lg-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "address-billing-003"
+              },
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "presidio-spacy-lg-v1",
+                  "engine_version": "2.2.364",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 3
+                    }
+                  ],
+                  "input_digest": "sha256:f1c1889723644b191f3609bd1a5e0513797f3e5c8906116ca766d8a19eea8f0f",
+                  "output_digest": "sha256:f3f8d7171235eac6a3e1f98fdf6e7577f501d8576bf07bc99007e813c25c753d",
+                  "ruleset_digest": "sha256:5d43bf7c0de4b7ff083947dde3bbb12910635075a802ed02886d515e3cc8afb0",
+                  "ruleset_id": "candidate-eval-presidio-spacy-lg-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "address-postal-002"
+              },
+              {
+                "errors": [],
+                "receipt": {
+                  "completed_at": "2026-01-01T00:00:00Z",
+                  "engine": "presidio-spacy-lg-v1",
+                  "engine_version": "2.2.364",
+                  "findings": [
+                    {
+                      "action": "tokenized",
+                      "category": "pii",
+                      "count": 1
+                    }
+                  ],
+                  "input_digest": "sha256:36a804bf1a19c1fd834cfeecde6de3041d5fce7f05162150e91c6b1687be88b0",
+                  "output_digest": "sha256:779dc040c5474101d1bfe6609885e6d03d09c19e4717e397775f8682e4bc6562",
+                  "ruleset_digest": "sha256:5d43bf7c0de4b7ff083947dde3bbb12910635075a802ed02886d515e3cc8afb0",
+                  "ruleset_id": "candidate-eval-presidio-spacy-lg-v1",
+                  "schema_version": 1,
+                  "structural_fields_preserved": true
+                },
+                "record_id": "address-street-001"
+              }
+            ],
+            "sample_records": [
+              "address-billing-003",
+              "address-postal-002",
+              "address-street-001"
+            ],
+            "validation": "jsonschema definitions.ExternalRedactionReceipt AND runtime.sinks._require_redaction_receipt"
+          },
+          "gate_id": "receipt-contract-compatible",
+          "raw_values_included": false,
+          "status": "passed"
+        }
+      ],
+      "passed": false,
+      "pending_gate_ids": [
+        "license-compatible"
+      ]
+    }
+  ],
+  "evaluation_input_sha256": "sha256:b00e02728e6e6ed24e582ce0f6cbf181e5298f2af58b5b4a1c65b5e4cd5a6229",
+  "schema_version": 1
+}

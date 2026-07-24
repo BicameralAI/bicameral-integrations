@@ -1,0 +1,25 @@
+{
+  "artifacts": {
+    "benchmark-results.json": "sha256:823d9d4f2126403f395c4277ea692b3d2f02c12de8e591b4ab28b47bf7167456",
+    "candidate-matrix.json": "sha256:698217cba85821dff63b065fa01ad7c2e429a5e3c99cc88a5970fcd04fbfe1da",
+    "candidate-research-matrix.json": "sha256:de12c64cefc27b99b236a779a190420f3d90f12939ea8d269797e97c60f6fb24",
+    "candidate-results/bicameral-stdlib-v1.json": "sha256:b736d57d76e97a92a10697ee00e2682fcd65ada5e53262105605dee7061368b2",
+    "candidate-results/datafog-regex-v1.json": "sha256:cd3d19eabd012047c632913f9dfff2e9814143c517c7fb19e1e728daab00ad22",
+    "candidate-results/presidio-gliner-pii-v1.json": "sha256:4a513ed2500a4da82526b9c72563d8623e6d3252eec18e1986ab9b8f99a89e77",
+    "candidate-results/presidio-spacy-lg-v1.json": "sha256:8432d95529be9f5ab05d2588e8033a391754401c5a56ef119ab655c4224efb04",
+    "corpus-manifest.json": "sha256:0caf6e9fd3083115dd4607c701d1234ce68bfb6a071c6710bb3783d2ec9e6ba2",
+    "dependency-report.json": "sha256:330b65d4f16c40287afb1f5ef57d7998825be012a52027a2731eba57d8808ebc",
+    "entity-results.csv": "sha256:2f18028e90723f2773204c08d770807b3a1e517e9e982e7d60a2c8e5b1073b9f",
+    "environment.json": "sha256:99350c4d46b30030a085905e5c9cc905870da80322657596445ce6215c92caba",
+    "evaluation-input.json": "sha256:3d5668ad6c851ad39700feabea329fb22f7f0e6491c32ddd606d1fcbaa6aeb20",
+    "hard-gates.json": "sha256:73d2aebf65187f6bd6a73321e59e3388d0ae6398f1e229910d5832f8d295a553",
+    "license-report.json": "sha256:2d74d46f4db21f3d48fc587bdba70bc4930d4483b49786d263c4ecc0311c409e",
+    "memory-isolated.json": "sha256:8caeabf28abda362bdeb073cfb4dca42a5b65f061af1f8fd426b91ff567c42e5",
+    "metrics.json": "sha256:7f33b435c0dd8c825df65d9cb7788a4f0a06a03d0c032f0f9e21878cf1a054df",
+    "offline-proof.json": "sha256:9d291690c91a296a30ac06106f80e7972a4f39750873ec604f32b3d87a471e3b",
+    "recommendation.md": "sha256:c812c94879e87ca6604cf0e925868d5651c38b06d6ec99b97e8074850fe90a0b",
+    "vulnerability-report.json": "sha256:db46f1e9931c9233ac7f640caf11bbc3e53a2b64135c68fa74cca5e33438e4f0",
+    "weighted-scores.json": "sha256:ce49875a1703efe50b5747d46b5fa4694ae41f2a6e9d940463142d136ac10cc2"
+  },
+  "schema_version": 1
+}

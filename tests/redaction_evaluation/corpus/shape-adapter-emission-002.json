@@ -1,0 +1,34 @@
+{
+  "observation": {
+    "author": "adapter",
+    "evidence_id": "ev-em-7302",
+    "evidence_metadata": {},
+    "excerpt": "Emission flagged a storage connection string.",
+    "metadata": {
+      "emission": {
+        "body": {
+          "__b64rev__": "Lm1pdGFicmV2IDswZWxwbWF4RTBlbHBtYXhFMGVscG1heEUwZWxwbWF4RTBlbHBtYXhFPXllS3RudW9jY0E7ZXJvdHNodG55cz1lbWFOdG51b2NjQTtzcHR0aD1sb2NvdG9yUHN0bmlvcGRuRXRsdWFmZUQgZGVkZGVibWUgZ2lmbm9jIGduaWdhdHMgZWhU"
+        },
+        "evidence": [
+          {
+            "excerpt": "Config diff attached for review."
+          }
+        ],
+        "title": "Storage connection audit"
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "b4c5d6e7-f8a9-4ba2-9314-b2c3d4e5f607",
+    "provider_resource_id": "em-7302",
+    "source_ref": {
+      "kind": "emission",
+      "ref": "emissions/em-7302",
+      "source_id": "adapter",
+      "url": ""
+    },
+    "timestamp": "2026-06-24T12:30:00Z",
+    "title": "Storage connection audit"
+  },
+  "record_id": "shape-adapter-emission-002",
+  "source_shape": "adapter_emission"
+}

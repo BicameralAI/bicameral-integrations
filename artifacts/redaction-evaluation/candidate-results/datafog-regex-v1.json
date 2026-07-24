@@ -1,0 +1,4115 @@
+{
+  "candidate_id": "datafog-regex-v1",
+  "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+  "corpus_digest": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
+  "determinism": {
+    "mismatched_record_ids": [],
+    "repeats": 5
+  },
+  "execution": {
+    "candidate_id": "datafog-regex-v1",
+    "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+    "mode": "candidate-worker-subprocess",
+    "per_record_budget_seconds": 20.0,
+    "prewarm_events": [
+      {
+        "phase": "initial",
+        "seconds": 0.6229950000124518,
+        "worker_pid": 68168
+      },
+      {
+        "phase": "after-record:backend-timeout",
+        "seconds": 0.7061695000011241,
+        "worker_pid": 76668
+      },
+      {
+        "phase": "after-record:worker-crash",
+        "seconds": 0.6287849999935133,
+        "worker_pid": 72988
+      }
+    ],
+    "production_deadline_probes": [
+      {
+        "budget_seconds": 5.0,
+        "cleanup": null,
+        "duration_ms": 0.8148999913828447,
+        "enforced_termination": false,
+        "outcome": "unchanged",
+        "payload_class": "small",
+        "probe": "warm"
+      },
+      {
+        "budget_seconds": 5.0,
+        "cleanup": null,
+        "duration_ms": 1.509599998826161,
+        "enforced_termination": false,
+        "outcome": "failed_closed:post_screen_escape",
+        "payload_class": "medium",
+        "probe": "warm"
+      },
+      {
+        "budget_seconds": 5.0,
+        "cleanup": null,
+        "duration_ms": 10.675700003048405,
+        "enforced_termination": false,
+        "outcome": "failed_closed:post_screen_escape",
+        "payload_class": "large",
+        "probe": "warm"
+      },
+      {
+        "budget_seconds": 5.0,
+        "cleanup": null,
+        "duration_ms": 3609.470199997304,
+        "enforced_termination": false,
+        "outcome": "failed_closed:post_screen_escape",
+        "payload_class": "max_admitted",
+        "probe": "warm"
+      },
+      {
+        "budget_seconds": 5.0,
+        "cleanup": null,
+        "duration_ms": 637.2999000013806,
+        "enforced_termination": false,
+        "outcome": "unchanged",
+        "payload_class": "small",
+        "probe": "cold_worker"
+      }
+    ],
+    "worker_pid": 68168,
+    "worker_pids": [
+      68168,
+      76668,
+      75848,
+      72988,
+      76212
+    ],
+    "worker_prewarm_seconds": 0.6229950000124518
+  },
+  "hard_gates": {
+    "aggregate_state": "passed",
+    "candidate_id": "datafog-regex-v1",
+    "failed_gate_ids": [],
+    "gates": [
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "raw_values_checked": 109
+        },
+        "gate_id": "no-raw-leakage",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "mandatory_entities_checked": 23
+        },
+        "gate_id": "mandatory-secret-protection",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "records_checked": 101
+        },
+        "gate_id": "identity-preservation",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": "artifact:offline-proof.json",
+        "gate_id": "no-undeclared-network",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "records_checked": 2
+        },
+        "gate_id": "fail-closed-unavailable",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "records_checked": 1
+        },
+        "gate_id": "fail-closed-invalid-config",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "candidate_id": "datafog-regex-v1",
+          "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+          "records_checked": 2,
+          "worker_pids": [
+            75848
+          ]
+        },
+        "gate_id": "fail-closed-crash",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "candidate_id": "datafog-regex-v1",
+          "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+          "production_deadline_probes": [
+            {
+              "budget_seconds": 5.0,
+              "duration_ms": 0.8148999913828447,
+              "enforced_termination": false,
+              "outcome": "unchanged",
+              "payload_class": "small",
+              "probe": "warm"
+            },
+            {
+              "budget_seconds": 5.0,
+              "duration_ms": 1.509599998826161,
+              "enforced_termination": false,
+              "outcome": "failed_closed:post_screen_escape",
+              "payload_class": "medium",
+              "probe": "warm"
+            },
+            {
+              "budget_seconds": 5.0,
+              "duration_ms": 10.675700003048405,
+              "enforced_termination": false,
+              "outcome": "failed_closed:post_screen_escape",
+              "payload_class": "large",
+              "probe": "warm"
+            },
+            {
+              "budget_seconds": 5.0,
+              "duration_ms": 3609.470199997304,
+              "enforced_termination": false,
+              "outcome": "failed_closed:post_screen_escape",
+              "payload_class": "max_admitted",
+              "probe": "warm"
+            },
+            {
+              "budget_seconds": 5.0,
+              "duration_ms": 637.2999000013806,
+              "enforced_termination": false,
+              "outcome": "unchanged",
+              "payload_class": "small",
+              "probe": "cold_worker"
+            }
+          ],
+          "records_checked": 2,
+          "worker_pids": [
+            68168,
+            75848,
+            76668
+          ]
+        },
+        "gate_id": "fail-closed-timeout",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "records_checked": 5
+        },
+        "gate_id": "fail-closed-unsupported-content",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "basis": "observed sink/cursor boundary calls per record",
+          "failed_closed_records": 30,
+          "success_records_checked": 71
+        },
+        "gate_id": "no-envelope-no-cursor-on-failure",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "mismatched_records": 0
+        },
+        "gate_id": "deterministic-output",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "candidate_id": "datafog-regex-v1",
+          "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+          "storms": [
+            {
+              "all_timed_out": true,
+              "candidate_id": "datafog-regex-v1",
+              "cleanup_ok": true,
+              "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+              "orphans": 0,
+              "prewarm_before_seconds": 1.1900003300979733e-05,
+              "recovered": true,
+              "recovery_prewarm_seconds": 0.7018176999990828,
+              "storm_concurrency": 8,
+              "worker_pids": [
+                75848,
+                76668
+              ]
+            }
+          ],
+          "worker_pids": [
+            75848,
+            76668
+          ]
+        },
+        "gate_id": "bounded-cleanup-no-orphans",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "engine_version": "4.8.0",
+          "models": {},
+          "packages": {
+            "datafog": "4.8.0"
+          }
+        },
+        "gate_id": "provenance-pinned",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": "artifact:license-report.json",
+        "gate_id": "license-compatible",
+        "raw_values_included": false,
+        "status": "passed"
+      },
+      {
+        "affected_record_ids": [],
+        "evidence": {
+          "receipts": [
+            {
+              "errors": [],
+              "receipt": {
+                "completed_at": "2026-01-01T00:00:00Z",
+                "engine": "datafog-regex-v1",
+                "engine_version": "4.8.0",
+                "findings": [
+                  {
+                    "action": "tokenized",
+                    "category": "pii",
+                    "count": 1
+                  }
+                ],
+                "input_digest": "sha256:49e5fd10660da6e64a391a2405f599b6464319826ecb613dd59e2c6ec0cfeccf",
+                "output_digest": "sha256:0d93f5251cd7fcaf96af34e65735f778898ee030fb9b399a843830b7610c9065",
+                "ruleset_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+                "ruleset_id": "candidate-eval-datafog-regex-v1",
+                "schema_version": 1,
+                "structural_fields_preserved": true
+              },
+              "record_id": "constraint-phone-001"
+            },
+            {
+              "errors": [],
+              "receipt": {
+                "completed_at": "2026-01-01T00:00:00Z",
+                "engine": "datafog-regex-v1",
+                "engine_version": "4.8.0",
+                "findings": [
+                  {
+                    "action": "tokenized",
+                    "category": "pii",
+                    "count": 1
+                  }
+                ],
+                "input_digest": "sha256:4f0d74601a9183eaec2926b2aa68d02a12747fb0a9853a3d2608801844b3fe23",
+                "output_digest": "sha256:a4450c031c7a69d9214c263d6e4f7fcb4ac57e341c00fbdc99fc78bdb9148e50",
+                "ruleset_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+                "ruleset_id": "candidate-eval-datafog-regex-v1",
+                "schema_version": 1,
+                "structural_fields_preserved": true
+              },
+              "record_id": "decision-person-email-001"
+            },
+            {
+              "errors": [],
+              "receipt": {
+                "completed_at": "2026-01-01T00:00:00Z",
+                "engine": "datafog-regex-v1",
+                "engine_version": "4.8.0",
+                "findings": [
+                  {
+                    "action": "tokenized",
+                    "category": "pii",
+                    "count": 1
+                  }
+                ],
+                "input_digest": "sha256:cce24d04c4f04770a08e72a653e3835200e30e0fc59d23e9e107340a5873909c",
+                "output_digest": "sha256:d49583ea7f16b130552f8cf23f11f9f84a1cda025e81be888403ed6e29a9e581",
+                "ruleset_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+                "ruleset_id": "candidate-eval-datafog-regex-v1",
+                "schema_version": 1,
+                "structural_fields_preserved": true
+              },
+              "record_id": "deeply-nested-metadata-64"
+            }
+          ],
+          "sample_records": [
+            "constraint-phone-001",
+            "decision-person-email-001",
+            "deeply-nested-metadata-64"
+          ],
+          "validation": "jsonschema definitions.ExternalRedactionReceipt AND runtime.sinks._require_redaction_receipt"
+        },
+        "gate_id": "receipt-contract-compatible",
+        "raw_values_included": false,
+        "status": "passed"
+      }
+    ],
+    "passed": true,
+    "pending_gate_ids": []
+  },
+  "identity": {
+    "candidate_id": "datafog-regex-v1",
+    "configuration": {
+      "active_labels": [
+        "CREDIT_CARD",
+        "DOB",
+        "EMAIL",
+        "IP_ADDRESS",
+        "PHONE",
+        "SSN",
+        "ZIP"
+      ],
+      "annotator": "RegexAnnotator",
+      "augmentation": "none",
+      "engine": "datafog-regex",
+      "engine_options": {
+        "enabled_labels": "default",
+        "locales": []
+      },
+      "engine_version": "4.8.0",
+      "label_map": "datafog-labels-v1",
+      "patterns_digest": "sha256:b530cbd5ea259b646d91ccdc19a1b38cc9b5ebf79b3789cef6bf0efc163c0200"
+    },
+    "engine_version": "4.8.0",
+    "family": "datafog",
+    "models": {},
+    "packages": {
+      "datafog": "4.8.0"
+    }
+  },
+  "policy": {
+    "admitted_text_fields": [
+      "excerpt",
+      "title",
+      "author"
+    ],
+    "admitted_tree_fields": [
+      "evidence_metadata",
+      "metadata"
+    ],
+    "categories": [
+      "secret",
+      "credential",
+      "pii",
+      "phi",
+      "prohibited_content"
+    ],
+    "identity_fields": [
+      "source_ref.source_id",
+      "source_ref.ref",
+      "source_ref.url",
+      "source_ref.kind",
+      "provider_event_id",
+      "provider_resource_id",
+      "evidence_id",
+      "timestamp"
+    ],
+    "max_payload_bytes": 1048576,
+    "overlap_rule": "max-overlap-greedy-1to1",
+    "per_record_budget_seconds": 20.0,
+    "policy_id": "bicameral-eval-policy-v1",
+    "replacement_template": "[redacted:{subtype}]"
+  },
+  "records": [
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.552199999219738,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:be896e695b6fa7fa1a9b25127a1256433b65f9f558701b2eec55661e28a7d732",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "account-id-001",
+      "repeat_digests": [
+        "sha256:73a9caa7fc172e3e0a5857f97031406a931761bc017990e17d56a61527ad6f84",
+        "sha256:73a9caa7fc172e3e0a5857f97031406a931761bc017990e17d56a61527ad6f84",
+        "sha256:73a9caa7fc172e3e0a5857f97031406a931761bc017990e17d56a61527ad6f84",
+        "sha256:73a9caa7fc172e3e0a5857f97031406a931761bc017990e17d56a61527ad6f84",
+        "sha256:73a9caa7fc172e3e0a5857f97031406a931761bc017990e17d56a61527ad6f84"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 68168
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4827999946428463,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:6a346b8857a95916ffc1c37d4736bcd7c6f515d17adc6b11b217a95a62d11c1e",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "account-id-002",
+      "repeat_digests": [
+        "sha256:81acc9c7c94d529d325128221e6cbd9dff6f6e4acccbf6c1eae43871c1c1afa3",
+        "sha256:81acc9c7c94d529d325128221e6cbd9dff6f6e4acccbf6c1eae43871c1c1afa3",
+        "sha256:81acc9c7c94d529d325128221e6cbd9dff6f6e4acccbf6c1eae43871c1c1afa3",
+        "sha256:81acc9c7c94d529d325128221e6cbd9dff6f6e4acccbf6c1eae43871c1c1afa3",
+        "sha256:81acc9c7c94d529d325128221e6cbd9dff6f6e4acccbf6c1eae43871c1c1afa3"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 68168
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4707000043708831,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:5eca144a0e1c58f23207bd70e992f4cb4520d5c924711a3aa9235cde75bab0fd",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "address-billing-003",
+      "repeat_digests": [
+        "sha256:4184095ee1b22af2eef7b21a3854231235501dfb4880d007352748c8316dc11d",
+        "sha256:4184095ee1b22af2eef7b21a3854231235501dfb4880d007352748c8316dc11d",
+        "sha256:4184095ee1b22af2eef7b21a3854231235501dfb4880d007352748c8316dc11d",
+        "sha256:4184095ee1b22af2eef7b21a3854231235501dfb4880d007352748c8316dc11d",
+        "sha256:4184095ee1b22af2eef7b21a3854231235501dfb4880d007352748c8316dc11d"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 68168
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4565999988699332,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:5d97cf2b541fc4c8088ac31cb656476ddcf9c5540dd1e73882d796dcd6728665",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "address-postal-002",
+      "repeat_digests": [
+        "sha256:ee204c39784c79811ae18f91a771c60dd795ae9953fac6e0438cda5994634148",
+        "sha256:ee204c39784c79811ae18f91a771c60dd795ae9953fac6e0438cda5994634148",
+        "sha256:ee204c39784c79811ae18f91a771c60dd795ae9953fac6e0438cda5994634148",
+        "sha256:ee204c39784c79811ae18f91a771c60dd795ae9953fac6e0438cda5994634148",
+        "sha256:ee204c39784c79811ae18f91a771c60dd795ae9953fac6e0438cda5994634148"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 68168
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.45730000420007855,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:a3e12a25a77a64e11d71561b149503a4acb4f37d2b2a9e67c6bcc9a64eea7ecb",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "address-street-001",
+      "repeat_digests": [
+        "sha256:f657a5ea55492b1d95d3cf02d2c2a69fd034902fa9e748c1afbb93c934dca8bc",
+        "sha256:f657a5ea55492b1d95d3cf02d2c2a69fd034902fa9e748c1afbb93c934dca8bc",
+        "sha256:f657a5ea55492b1d95d3cf02d2c2a69fd034902fa9e748c1afbb93c934dca8bc",
+        "sha256:f657a5ea55492b1d95d3cf02d2c2a69fd034902fa9e748c1afbb93c934dca8bc",
+        "sha256:f657a5ea55492b1d95d3cf02d2c2a69fd034902fa9e748c1afbb93c934dca8bc"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 68168
+    },
+    {
+      "classes": [
+        "backend_crash"
+      ],
+      "duration_ms": 0.11539999104570597,
+      "failure_reason": "backend_crash",
+      "fault": "exception",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "probe_scope": "finding_validation",
+      "record_id": "backend-exception",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_unavailable"
+      ],
+      "duration_ms": 0.012599994079209864,
+      "failure_reason": "backend_unavailable",
+      "fault": "init_failure",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "backend-initialization-failure",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_invalid_configuration"
+      ],
+      "duration_ms": 0.01069999416358769,
+      "failure_reason": "backend_invalid_configuration",
+      "fault": "invalid_configuration",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "backend-invalid-configuration",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_unavailable"
+      ],
+      "duration_ms": 0.010000003385357559,
+      "failure_reason": "backend_unavailable",
+      "fault": "missing_model",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "backend-missing-model",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_timeout"
+      ],
+      "cleanup": {
+        "candidate_id": "datafog-regex-v1",
+        "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+        "duration_ms": 21.515200001886114,
+        "outcome": "terminated",
+        "pid": 68168
+      },
+      "duration_ms": 2033.7124000070617,
+      "failure_reason": "backend_timeout",
+      "fault": "hang",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "backend-timeout",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "concurrency_timeout_storm"
+      ],
+      "duration_ms": 2752.5661999970907,
+      "failure_reason": "backend_timeout",
+      "fault": "timeout_storm",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "concurrent-timeout-storm",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture",
+      "storm": {
+        "all_timed_out": true,
+        "candidate_id": "datafog-regex-v1",
+        "cleanup_ok": true,
+        "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+        "orphans": 0,
+        "prewarm_before_seconds": 1.1900003300979733e-05,
+        "recovered": true,
+        "recovery_prewarm_seconds": 0.7018176999990828,
+        "storm_concurrency": 8,
+        "worker_pids": [
+          75848,
+          76668
+        ]
+      }
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "duration_ms": 0.49470001249574125,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:c6e6f1927fa44741955ad509112920308d317f9e33b28ddd638c422401ebb211",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 93,
+          "field_path": "excerpt",
+          "start": 78,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "preservation": {
+        "assertions_checked": 1,
+        "missing_assertion_ids": []
+      },
+      "record_id": "constraint-phone-001",
+      "repeat_digests": [
+        "sha256:c97433abc68ff92e7930d6541016ee59c51551bcb9ec60b007a55ce207d835ae",
+        "sha256:c97433abc68ff92e7930d6541016ee59c51551bcb9ec60b007a55ce207d835ae",
+        "sha256:c97433abc68ff92e7930d6541016ee59c51551bcb9ec60b007a55ce207d835ae",
+        "sha256:c97433abc68ff92e7930d6541016ee59c51551bcb9ec60b007a55ce207d835ae",
+        "sha256:c97433abc68ff92e7930d6541016ee59c51551bcb9ec60b007a55ce207d835ae"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "duration_ms": 0.37059999885968864,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "constraint-secret-001",
+      "repeat_digests": [],
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "duration_ms": 0.7286999898497015,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "decision-mrn-001",
+      "repeat_digests": [],
+      "source_shape": "observation"
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "duration_ms": 0.5016999930376187,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:190b9fbaaad487000d3ef51c27739f49dcf2810532a5f49528b9f94580dad467",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 101,
+          "field_path": "excerpt",
+          "start": 76,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "preservation": {
+        "assertions_checked": 1,
+        "missing_assertion_ids": []
+      },
+      "record_id": "decision-person-email-001",
+      "repeat_digests": [
+        "sha256:3ca82235704f0bf5fc880f69ec36fcba76fa98c596271d4ea8c946c5cb97dbe5",
+        "sha256:3ca82235704f0bf5fc880f69ec36fcba76fa98c596271d4ea8c946c5cb97dbe5",
+        "sha256:3ca82235704f0bf5fc880f69ec36fcba76fa98c596271d4ea8c946c5cb97dbe5",
+        "sha256:3ca82235704f0bf5fc880f69ec36fcba76fa98c596271d4ea8c946c5cb97dbe5",
+        "sha256:3ca82235704f0bf5fc880f69ec36fcba76fa98c596271d4ea8c946c5cb97dbe5"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection"
+      ],
+      "duration_ms": 1.8509000074118376,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:1094b12d23b6725bef4cba88e94d5711e08b153cca4645bcf6f89ee9f88774f2",
+        "metadata.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a": "sha256:1a1f04f56ca138f7217fbbe0a9cdf7b1387e01d5a1d1f08a09bd58ea378c16ee",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 41,
+          "field_path": "metadata.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a",
+          "start": 19,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "deeply-nested-metadata-64",
+      "repeat_digests": [
+        "sha256:7656be35b2b397b21436cb31b669a0dff0ca04ed4e21a8447ff84fac2b1514e5",
+        "sha256:7656be35b2b397b21436cb31b669a0dff0ca04ed4e21a8447ff84fac2b1514e5",
+        "sha256:7656be35b2b397b21436cb31b669a0dff0ca04ed4e21a8447ff84fac2b1514e5",
+        "sha256:7656be35b2b397b21436cb31b669a0dff0ca04ed4e21a8447ff84fac2b1514e5",
+        "sha256:7656be35b2b397b21436cb31b669a0dff0ca04ed4e21a8447ff84fac2b1514e5"
+      ],
+      "source_shape": "failure_fixture",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.44380000326782465,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:37b1e6725550e13c0638cc292c84a52cc613c5f20aeef7c61ccad1cf1a5f3a93",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "dob-prose-001",
+      "repeat_digests": [
+        "sha256:41316306ab1a1667e8111e980f99222724f582648c402dbed56f3e41327453f4",
+        "sha256:41316306ab1a1667e8111e980f99222724f582648c402dbed56f3e41327453f4",
+        "sha256:41316306ab1a1667e8111e980f99222724f582648c402dbed56f3e41327453f4",
+        "sha256:41316306ab1a1667e8111e980f99222724f582648c402dbed56f3e41327453f4",
+        "sha256:41316306ab1a1667e8111e980f99222724f582648c402dbed56f3e41327453f4"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4545999981928617,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:552dc0c9bbbf7ad00fe92e40d5663772d7b3002549eb2327214085be55f59ba7",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "DOB",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 29,
+          "field_path": "excerpt",
+          "start": 19,
+          "subtype": "dob"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "dob-prose-002",
+      "repeat_digests": [
+        "sha256:0f7e50c274a3c469da7f21e1e4d2283e33699b80a7ab0a881b857f56d3c32f44",
+        "sha256:0f7e50c274a3c469da7f21e1e4d2283e33699b80a7ab0a881b857f56d3c32f44",
+        "sha256:0f7e50c274a3c469da7f21e1e4d2283e33699b80a7ab0a881b857f56d3c32f44",
+        "sha256:0f7e50c274a3c469da7f21e1e4d2283e33699b80a7ab0a881b857f56d3c32f44",
+        "sha256:0f7e50c274a3c469da7f21e1e4d2283e33699b80a7ab0a881b857f56d3c32f44"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4560999950626865,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:ef4363dc254a56efc823cf950fe918596fe9cf72f1c449fde7f02370e1391e30",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 51,
+          "field_path": "excerpt",
+          "start": 26,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "email-plain-001",
+      "repeat_digests": [
+        "sha256:a303710a7fceafcc5830e10073ee56f98be1ea22f938e2fce2104346bcba9742",
+        "sha256:a303710a7fceafcc5830e10073ee56f98be1ea22f938e2fce2104346bcba9742",
+        "sha256:a303710a7fceafcc5830e10073ee56f98be1ea22f938e2fce2104346bcba9742",
+        "sha256:a303710a7fceafcc5830e10073ee56f98be1ea22f938e2fce2104346bcba9742",
+        "sha256:a303710a7fceafcc5830e10073ee56f98be1ea22f938e2fce2104346bcba9742"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4329999937908724,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:cb19107b412fbdc4acf71a8a806f7d89d4a282a248d01c2c2116cc8c4f1cdf0e",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 52,
+          "field_path": "excerpt",
+          "start": 21,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "email-subaddress-002",
+      "repeat_digests": [
+        "sha256:86408189cc68c37b37e3729a719e0201925fabe8da1b251214ac28b8c6e410f1",
+        "sha256:86408189cc68c37b37e3729a719e0201925fabe8da1b251214ac28b8c6e410f1",
+        "sha256:86408189cc68c37b37e3729a719e0201925fabe8da1b251214ac28b8c6e410f1",
+        "sha256:86408189cc68c37b37e3729a719e0201925fabe8da1b251214ac28b8c6e410f1",
+        "sha256:86408189cc68c37b37e3729a719e0201925fabe8da1b251214ac28b8c6e410f1"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4248000041116029,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:bed7467fff7ef630b27bc7ab9b27a1a61186b84ee44b1ccab3fe2e52a8643d79",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 40,
+          "field_path": "excerpt",
+          "start": 15,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "email-with-name-003",
+      "repeat_digests": [
+        "sha256:6a78e3cb888cf11692f7f68465dc688c9c81eb04cfe448e92782c6d991e2589a",
+        "sha256:6a78e3cb888cf11692f7f68465dc688c9c81eb04cfe448e92782c6d991e2589a",
+        "sha256:6a78e3cb888cf11692f7f68465dc688c9c81eb04cfe448e92782c6d991e2589a",
+        "sha256:6a78e3cb888cf11692f7f68465dc688c9c81eb04cfe448e92782c6d991e2589a",
+        "sha256:6a78e3cb888cf11692f7f68465dc688c9c81eb04cfe448e92782c6d991e2589a"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.44920000073034316,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:e046032e15ed0d04b7f8cf0e9dbf587143d944a394fd5dc5864802c24dc53d54",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "financial-iban-003",
+      "repeat_digests": [
+        "sha256:967c97aeaabbf5688fccbea22a92b91a67a48d2231694cf59ae1a5623ac10533",
+        "sha256:967c97aeaabbf5688fccbea22a92b91a67a48d2231694cf59ae1a5623ac10533",
+        "sha256:967c97aeaabbf5688fccbea22a92b91a67a48d2231694cf59ae1a5623ac10533",
+        "sha256:967c97aeaabbf5688fccbea22a92b91a67a48d2231694cf59ae1a5623ac10533",
+        "sha256:967c97aeaabbf5688fccbea22a92b91a67a48d2231694cf59ae1a5623ac10533"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4864999937126413,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:387aa056a8a4a58432a6026973a85586c5db074f149c9dd482363bfb12fc117e",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "CREDIT_CARD",
+          "category": "credential",
+          "confidence": 1.0,
+          "end": 39,
+          "field_path": "excerpt",
+          "start": 24,
+          "subtype": "pan"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "financial-pan-amex-002",
+      "repeat_digests": [
+        "sha256:da0c4412316e91a096290c0322acc4ee263193ead48036a4cd1c74e571910a8b",
+        "sha256:da0c4412316e91a096290c0322acc4ee263193ead48036a4cd1c74e571910a8b",
+        "sha256:da0c4412316e91a096290c0322acc4ee263193ead48036a4cd1c74e571910a8b",
+        "sha256:da0c4412316e91a096290c0322acc4ee263193ead48036a4cd1c74e571910a8b",
+        "sha256:da0c4412316e91a096290c0322acc4ee263193ead48036a4cd1c74e571910a8b"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.43590000132098794,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:c5259822d3781618e0729441b2dd9b1b96c76c2e21c6de9c6e653cc17af7d526",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "CREDIT_CARD",
+          "category": "credential",
+          "confidence": 1.0,
+          "end": 37,
+          "field_path": "excerpt",
+          "start": 21,
+          "subtype": "pan"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "financial-pan-visa-001",
+      "repeat_digests": [
+        "sha256:72dfeef9ae8cd11cdc767f091b60a1bb591c45c7f9825424ce1127fa5f751b9a",
+        "sha256:72dfeef9ae8cd11cdc767f091b60a1bb591c45c7f9825424ce1127fa5f751b9a",
+        "sha256:72dfeef9ae8cd11cdc767f091b60a1bb591c45c7f9825424ce1127fa5f751b9a",
+        "sha256:72dfeef9ae8cd11cdc767f091b60a1bb591c45c7f9825424ce1127fa5f751b9a",
+        "sha256:72dfeef9ae8cd11cdc767f091b60a1bb591c45c7f9825424ce1127fa5f751b9a"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.38610000046901405,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:93e78514a85287b5e00956d0c56ba1c0cbc36232f31e5d9ae7a1758381a9c67e",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "govid-passport-003",
+      "repeat_digests": [
+        "sha256:ce4d4d57a9e4f0e260990ce4d1a311311825df9283df532484522120d0ab10fc",
+        "sha256:ce4d4d57a9e4f0e260990ce4d1a311311825df9283df532484522120d0ab10fc",
+        "sha256:ce4d4d57a9e4f0e260990ce4d1a311311825df9283df532484522120d0ab10fc",
+        "sha256:ce4d4d57a9e4f0e260990ce4d1a311311825df9283df532484522120d0ab10fc",
+        "sha256:ce4d4d57a9e4f0e260990ce4d1a311311825df9283df532484522120d0ab10fc"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.36869999894406646,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "govid-ssn-labeled-001",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4565999988699332,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:2ab081b8b40475fa2e5bfad80f072978f5d23c217d3c60f7aec421a223a81512",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "SSN",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 33,
+          "field_path": "excerpt",
+          "start": 22,
+          "subtype": "government_id"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "govid-ssn-unlabeled-002",
+      "repeat_digests": [
+        "sha256:b107f751495a03534a33af0d9b7f8dbacad10bc615cc0562d3f2665fb5d96845",
+        "sha256:b107f751495a03534a33af0d9b7f8dbacad10bc615cc0562d3f2665fb5d96845",
+        "sha256:b107f751495a03534a33af0d9b7f8dbacad10bc615cc0562d3f2665fb5d96845",
+        "sha256:b107f751495a03534a33af0d9b7f8dbacad10bc615cc0562d3f2665fb5d96845",
+        "sha256:b107f751495a03534a33af0d9b7f8dbacad10bc615cc0562d3f2665fb5d96845"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4439999902388081,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:0de458c43e8a0fa8f37df32e8b4ff0a45eb1a0d60b3c3b15367834972587cea8",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "IP_ADDRESS",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 28,
+          "field_path": "excerpt",
+          "start": 19,
+          "subtype": "ip"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "ip-both-003",
+      "repeat_digests": [
+        "sha256:3c558da969ec8a41a0efb3cb7cdf420b62caf9166ea18d65d454d7ae64019bc3",
+        "sha256:3c558da969ec8a41a0efb3cb7cdf420b62caf9166ea18d65d454d7ae64019bc3",
+        "sha256:3c558da969ec8a41a0efb3cb7cdf420b62caf9166ea18d65d454d7ae64019bc3",
+        "sha256:3c558da969ec8a41a0efb3cb7cdf420b62caf9166ea18d65d454d7ae64019bc3",
+        "sha256:3c558da969ec8a41a0efb3cb7cdf420b62caf9166ea18d65d454d7ae64019bc3"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.8720999903744087,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:4ae1c65cf86b60832d28c93307e8f545a9cdf23392cd430202448264232f3593",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "IP_ADDRESS",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 28,
+          "field_path": "excerpt",
+          "start": 18,
+          "subtype": "ip"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "ip-v4-001",
+      "repeat_digests": [
+        "sha256:c3c7bafeb6cca7e8732fc504577ac667fd28c9fb190f5f0986e9cdd81d7fc8e5",
+        "sha256:c3c7bafeb6cca7e8732fc504577ac667fd28c9fb190f5f0986e9cdd81d7fc8e5",
+        "sha256:c3c7bafeb6cca7e8732fc504577ac667fd28c9fb190f5f0986e9cdd81d7fc8e5",
+        "sha256:c3c7bafeb6cca7e8732fc504577ac667fd28c9fb190f5f0986e9cdd81d7fc8e5",
+        "sha256:c3c7bafeb6cca7e8732fc504577ac667fd28c9fb190f5f0986e9cdd81d7fc8e5"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.5142000009072945,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:62e8b8372956d455d313356bc66e621b335028ebdb0d06e46ea4b9fa690bb239",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "ip-v6-002",
+      "repeat_digests": [
+        "sha256:bbd3179fa12454185461586cb8cd060d2f00a354ec42856eb65ab9a2b2a7684c",
+        "sha256:bbd3179fa12454185461586cb8cd060d2f00a354ec42856eb65ab9a2b2a7684c",
+        "sha256:bbd3179fa12454185461586cb8cd060d2f00a354ec42856eb65ab9a2b2a7684c",
+        "sha256:bbd3179fa12454185461586cb8cd060d2f00a354ec42856eb65ab9a2b2a7684c",
+        "sha256:bbd3179fa12454185461586cb8cd060d2f00a354ec42856eb65ab9a2b2a7684c"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "malformed_backend_findings"
+      ],
+      "duration_ms": 0.12119999155402184,
+      "failure_reason": "malformed_backend_findings",
+      "fault": "malformed_spans_out_of_range",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "probe_scope": "finding_validation",
+      "record_id": "malformed-spans-out-of-range",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "malformed_backend_findings"
+      ],
+      "duration_ms": 0.10849999671336263,
+      "failure_reason": "malformed_backend_findings",
+      "fault": "malformed_spans_overlapping",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "probe_scope": "finding_validation",
+      "record_id": "malformed-spans-overlapping",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "malformed_input"
+      ],
+      "duration_ms": 0.25689999165479094,
+      "failure_reason": "unsupported_payload",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "malformed-unicode-lone-surrogate",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "mixed_entities",
+        "positive_detection"
+      ],
+      "duration_ms": 0.5166000046301633,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:10239818d5756c23e93985d008b3164627d7ddc0c886ae858f30dbc5e828ad34",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 51,
+          "field_path": "excerpt",
+          "start": 29,
+          "subtype": "email"
+        },
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 70,
+          "field_path": "excerpt",
+          "start": 55,
+          "subtype": "phone"
+        },
+        {
+          "backend_label": "IP_ADDRESS",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 86,
+          "field_path": "excerpt",
+          "start": 76,
+          "subtype": "ip"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "mixed-entities-001",
+      "repeat_digests": [
+        "sha256:aa9e466379b7defa30b4ce228378628069254a496419f047995e244c57f1c49f",
+        "sha256:aa9e466379b7defa30b4ce228378628069254a496419f047995e244c57f1c49f",
+        "sha256:aa9e466379b7defa30b4ce228378628069254a496419f047995e244c57f1c49f",
+        "sha256:aa9e466379b7defa30b4ce228378628069254a496419f047995e244c57f1c49f",
+        "sha256:aa9e466379b7defa30b4ce228378628069254a496419f047995e244c57f1c49f"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "mixed_entities",
+        "positive_detection"
+      ],
+      "duration_ms": 0.5212999967625365,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:c032187253388270ea0dae8076976cd9cf4192e7c00334241cf33d5974f3364c",
+        "title": "sha256:9575b9024f5caa96c2e3b8649fced9d35d1ce0e28351d9f9ed2d7533c5679bf2"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "mixed-entities-002",
+      "repeat_digests": [
+        "sha256:585581f0d26c788f5db0c5a2395cd93fa137c4ec5872b62772f4fd61af00958a",
+        "sha256:585581f0d26c788f5db0c5a2395cd93fa137c4ec5872b62772f4fd61af00958a",
+        "sha256:585581f0d26c788f5db0c5a2395cd93fa137c4ec5872b62772f4fd61af00958a",
+        "sha256:585581f0d26c788f5db0c5a2395cd93fa137c4ec5872b62772f4fd61af00958a",
+        "sha256:585581f0d26c788f5db0c5a2395cd93fa137c4ec5872b62772f4fd61af00958a"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "mixed_entities",
+        "positive_detection"
+      ],
+      "duration_ms": 0.5067000020062551,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "mixed-entities-003",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.4504000098677352,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:e10a13380738d89ce0b6bfcc950ad7799fb2aefd436f083256d71ca661946304",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-code-snippet-012",
+      "repeat_digests": [
+        "sha256:be8f2e6faf9c2cd897acadb3a5e40a04101424363a6c33e884c3c1f8f44526a0",
+        "sha256:be8f2e6faf9c2cd897acadb3a5e40a04101424363a6c33e884c3c1f8f44526a0",
+        "sha256:be8f2e6faf9c2cd897acadb3a5e40a04101424363a6c33e884c3c1f8f44526a0",
+        "sha256:be8f2e6faf9c2cd897acadb3a5e40a04101424363a6c33e884c3c1f8f44526a0",
+        "sha256:be8f2e6faf9c2cd897acadb3a5e40a04101424363a6c33e884c3c1f8f44526a0"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.4765999910887331,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:8e4d52157518157f96285d56dfb4591ab18556b33a0e1a55a166a8e04a76383a",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-contract-id-005",
+      "repeat_digests": [
+        "sha256:45799965d423062e428070779859a27e1ba5450da3d065740bd5c4574094b817",
+        "sha256:45799965d423062e428070779859a27e1ba5450da3d065740bd5c4574094b817",
+        "sha256:45799965d423062e428070779859a27e1ba5450da3d065740bd5c4574094b817",
+        "sha256:45799965d423062e428070779859a27e1ba5450da3d065740bd5c4574094b817",
+        "sha256:45799965d423062e428070779859a27e1ba5450da3d065740bd5c4574094b817"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.4397000011522323,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:99a140660cd496a90d28cde75ed92014a4ed4fd73aa190c9aae7b953c5c1f8e6",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-file-path-008",
+      "repeat_digests": [
+        "sha256:078d46932cd210dec3d0dba1fd4bcbbc7a6b0d9c06df8059452a0baae9c05789",
+        "sha256:078d46932cd210dec3d0dba1fd4bcbbc7a6b0d9c06df8059452a0baae9c05789",
+        "sha256:078d46932cd210dec3d0dba1fd4bcbbc7a6b0d9c06df8059452a0baae9c05789",
+        "sha256:078d46932cd210dec3d0dba1fd4bcbbc7a6b0d9c06df8059452a0baae9c05789",
+        "sha256:078d46932cd210dec3d0dba1fd4bcbbc7a6b0d9c06df8059452a0baae9c05789"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.4621999978553504,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:86f50bdf443e121913b71b3360dfbed7c9564c60bb5747a45fa877143c31d19a",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-fingerprint-004",
+      "repeat_digests": [
+        "sha256:03f7844c3bd8419714497ca0f466521a09fd2ee829ccbe7d994793575b1c6cc7",
+        "sha256:03f7844c3bd8419714497ca0f466521a09fd2ee829ccbe7d994793575b1c6cc7",
+        "sha256:03f7844c3bd8419714497ca0f466521a09fd2ee829ccbe7d994793575b1c6cc7",
+        "sha256:03f7844c3bd8419714497ca0f466521a09fd2ee829ccbe7d994793575b1c6cc7",
+        "sha256:03f7844c3bd8419714497ca0f466521a09fd2ee829ccbe7d994793575b1c6cc7"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.40859999717213213,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:22c6084d26edcfdd6912c498b853772413d86262a654153c3be7ce6992ae57f9",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-git-sha-001",
+      "repeat_digests": [
+        "sha256:2042e0ea5e4afd7da924c4a7539327c310785a68146881ba8875471b4cfa0b81",
+        "sha256:2042e0ea5e4afd7da924c4a7539327c310785a68146881ba8875471b4cfa0b81",
+        "sha256:2042e0ea5e4afd7da924c4a7539327c310785a68146881ba8875471b4cfa0b81",
+        "sha256:2042e0ea5e4afd7da924c4a7539327c310785a68146881ba8875471b4cfa0b81",
+        "sha256:2042e0ea5e4afd7da924c4a7539327c310785a68146881ba8875471b4cfa0b81"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.4310000076657161,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:18f6c75928d6c45b957fe91b742db663b2668cab7c5f8da13e8a02024ca1186f",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-issue-refs-007",
+      "repeat_digests": [
+        "sha256:22356849cacafa245958594052386858140f83f37a3bfb45d4b9bdc20962315e",
+        "sha256:22356849cacafa245958594052386858140f83f37a3bfb45d4b9bdc20962315e",
+        "sha256:22356849cacafa245958594052386858140f83f37a3bfb45d4b9bdc20962315e",
+        "sha256:22356849cacafa245958594052386858140f83f37a3bfb45d4b9bdc20962315e",
+        "sha256:22356849cacafa245958594052386858140f83f37a3bfb45d4b9bdc20962315e"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.7609000022057444,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:3e56be6fb95b08d2b110f13769d395a03a2f7f6e05e6cac9580d145017491b5c",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "CREDIT_CARD",
+          "category": "credential",
+          "confidence": 1.0,
+          "end": 26,
+          "field_path": "excerpt",
+          "start": 10,
+          "subtype": "pan"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "neg-numeric-labeled-013",
+      "repeat_digests": [
+        "sha256:e8eedc2122a45afb667922cb58792a961f7c7644bc6197be038ee8bedcd46909",
+        "sha256:e8eedc2122a45afb667922cb58792a961f7c7644bc6197be038ee8bedcd46909",
+        "sha256:e8eedc2122a45afb667922cb58792a961f7c7644bc6197be038ee8bedcd46909",
+        "sha256:e8eedc2122a45afb667922cb58792a961f7c7644bc6197be038ee8bedcd46909",
+        "sha256:e8eedc2122a45afb667922cb58792a961f7c7644bc6197be038ee8bedcd46909"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.4262000002199784,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:b4ec77d2f3eb8b4ba5d75006b2e66b5bdd868e3466bb9a91216bddf60a73caa9",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-provider-resource-014",
+      "repeat_digests": [
+        "sha256:82b0790f5f4d6d2d381ef258e4c7a6e674c485a7e2f0893c90958fc60c468354",
+        "sha256:82b0790f5f4d6d2d381ef258e4c7a6e674c485a7e2f0893c90958fc60c468354",
+        "sha256:82b0790f5f4d6d2d381ef258e4c7a6e674c485a7e2f0893c90958fc60c468354",
+        "sha256:82b0790f5f4d6d2d381ef258e4c7a6e674c485a7e2f0893c90958fc60c468354",
+        "sha256:82b0790f5f4d6d2d381ef258e4c7a6e674c485a7e2f0893c90958fc60c468354"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.5168999923625961,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:ce9ae55aec79a902cae329c60c91e78097741b9e259ae4a32044e137d0b80c1f",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "DOB",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 23,
+          "field_path": "excerpt",
+          "start": 13,
+          "subtype": "dob"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "neg-receipt-id-006",
+      "repeat_digests": [
+        "sha256:13ae1c3a03c3fc847fffe2f49aabfce00611fe2308bae6724b55ee514b48863c",
+        "sha256:13ae1c3a03c3fc847fffe2f49aabfce00611fe2308bae6724b55ee514b48863c",
+        "sha256:13ae1c3a03c3fc847fffe2f49aabfce00611fe2308bae6724b55ee514b48863c",
+        "sha256:13ae1c3a03c3fc847fffe2f49aabfce00611fe2308bae6724b55ee514b48863c",
+        "sha256:13ae1c3a03c3fc847fffe2f49aabfce00611fe2308bae6724b55ee514b48863c"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.43539999751374125,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:4103aae8bc162ceec782b9bd7b14d0ff0d671b912b1ca8056f4d6b56ccd95e49",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-repo-name-009",
+      "repeat_digests": [
+        "sha256:503061590c68d950be245a20292bfc9b385ec085f3d858d5317bef5e45195fe3",
+        "sha256:503061590c68d950be245a20292bfc9b385ec085f3d858d5317bef5e45195fe3",
+        "sha256:503061590c68d950be245a20292bfc9b385ec085f3d858d5317bef5e45195fe3",
+        "sha256:503061590c68d950be245a20292bfc9b385ec085f3d858d5317bef5e45195fe3",
+        "sha256:503061590c68d950be245a20292bfc9b385ec085f3d858d5317bef5e45195fe3"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.6416999967768788,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:4a7e9fcb4ab92ba8de560920f72028800a850773612bcea145de9df11dae9adf",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-timestamp-003",
+      "repeat_digests": [
+        "sha256:2d41d625d83d7d17fb70ee6b7a02807079efeef7aea01d565756a80c432d2555",
+        "sha256:2d41d625d83d7d17fb70ee6b7a02807079efeef7aea01d565756a80c432d2555",
+        "sha256:2d41d625d83d7d17fb70ee6b7a02807079efeef7aea01d565756a80c432d2555",
+        "sha256:2d41d625d83d7d17fb70ee6b7a02807079efeef7aea01d565756a80c432d2555",
+        "sha256:2d41d625d83d7d17fb70ee6b7a02807079efeef7aea01d565756a80c432d2555"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.45110000064596534,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:475803505bad8eb43ae7f6cd705bd3c7a84dad188c315cf5fcf8e2bb015b2757",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-url-010",
+      "repeat_digests": [
+        "sha256:3c74110cecf55b31e7a420dd17e03d004b477b5ae8efc7ec3702120736c55f98",
+        "sha256:3c74110cecf55b31e7a420dd17e03d004b477b5ae8efc7ec3702120736c55f98",
+        "sha256:3c74110cecf55b31e7a420dd17e03d004b477b5ae8efc7ec3702120736c55f98",
+        "sha256:3c74110cecf55b31e7a420dd17e03d004b477b5ae8efc7ec3702120736c55f98",
+        "sha256:3c74110cecf55b31e7a420dd17e03d004b477b5ae8efc7ec3702120736c55f98"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.44069999421481043,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:16100b4004b903eef7ef2f158d9c1678d6798b5132cb2dd26f4b6e8aa8f70546",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-uuid-002",
+      "repeat_digests": [
+        "sha256:e2d849462c80b382d5cdb4d85287fcb2ad282c81e15026cd061e40466d755c3e",
+        "sha256:e2d849462c80b382d5cdb4d85287fcb2ad282c81e15026cd061e40466d755c3e",
+        "sha256:e2d849462c80b382d5cdb4d85287fcb2ad282c81e15026cd061e40466d755c3e",
+        "sha256:e2d849462c80b382d5cdb4d85287fcb2ad282c81e15026cd061e40466d755c3e",
+        "sha256:e2d849462c80b382d5cdb4d85287fcb2ad282c81e15026cd061e40466d755c3e"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "negative_control"
+      ],
+      "duration_ms": 0.4326999915065244,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:094ea6da4550689a64d4e1298d501a55c399f5c3fdb66f8174f9210feb1ffb33",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "neg-version-011",
+      "repeat_digests": [
+        "sha256:4fc67ccd9f2f0b584c63ca181da64cd43c8b51cdd44525449be5b63779faac94",
+        "sha256:4fc67ccd9f2f0b584c63ca181da64cd43c8b51cdd44525449be5b63779faac94",
+        "sha256:4fc67ccd9f2f0b584c63ca181da64cd43c8b51cdd44525449be5b63779faac94",
+        "sha256:4fc67ccd9f2f0b584c63ca181da64cd43c8b51cdd44525449be5b63779faac94",
+        "sha256:4fc67ccd9f2f0b584c63ca181da64cd43c8b51cdd44525449be5b63779faac94"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection"
+      ],
+      "duration_ms": 0.5935999943176284,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:cd55f5584c56208caa40dc557e899703307d5a43a28a99fdb2a6fc73f051cf5b",
+        "metadata.contact.channel": "sha256:145d8954cadc6d17ed7740b202c153100ffe268b566c4d49dc99e1e20521beee",
+        "metadata.contact.note": "sha256:74c5615435e43ba96bb61ff167e88cdfd7e6cb10075a4332c1590dfe80738392",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 54,
+          "field_path": "metadata.contact.note",
+          "start": 29,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "nested-meta-001",
+      "repeat_digests": [
+        "sha256:dd6ec5cb3943ec173681bc9d68356a7bbe1d4fc52ad89ad44339da2c759ee8fb",
+        "sha256:dd6ec5cb3943ec173681bc9d68356a7bbe1d4fc52ad89ad44339da2c759ee8fb",
+        "sha256:dd6ec5cb3943ec173681bc9d68356a7bbe1d4fc52ad89ad44339da2c759ee8fb",
+        "sha256:dd6ec5cb3943ec173681bc9d68356a7bbe1d4fc52ad89ad44339da2c759ee8fb",
+        "sha256:dd6ec5cb3943ec173681bc9d68356a7bbe1d4fc52ad89ad44339da2c759ee8fb"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection"
+      ],
+      "duration_ms": 0.5288999964250252,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "evidence_metadata.note": "sha256:f60bc99351791566b29a9eaf710d545d4771765d9ada907149ba86335fe45ed1",
+        "excerpt": "sha256:2ffca9153c58f5e6bc61789e26eb41185212d85c1bde9438a83b2038b250e582",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 33,
+          "field_path": "evidence_metadata.note",
+          "start": 18,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "nested-meta-002",
+      "repeat_digests": [
+        "sha256:1bdac0df80f0c9b006588e8c2618873aecbbc5aab921519feeeab2d4fc6fbab3",
+        "sha256:1bdac0df80f0c9b006588e8c2618873aecbbc5aab921519feeeab2d4fc6fbab3",
+        "sha256:1bdac0df80f0c9b006588e8c2618873aecbbc5aab921519feeeab2d4fc6fbab3",
+        "sha256:1bdac0df80f0c9b006588e8c2618873aecbbc5aab921519feeeab2d4fc6fbab3",
+        "sha256:1bdac0df80f0c9b006588e8c2618873aecbbc5aab921519feeeab2d4fc6fbab3"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection"
+      ],
+      "duration_ms": 0.5683000053977594,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:42c17544526a215d98f54b263bb3f76ae585f67c077bcc6cbe32bc06910fcc2f",
+        "metadata.comments[0].body": "sha256:20dd73f3399179277d07e5981035cbc69ff3c151d6a3bffb8ec784d9d1812fdd",
+        "metadata.comments[1].body": "sha256:317eef0beedda7691349bb952abc6fce44c66c414de8e3312577f89a33363b73",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "nested-meta-003",
+      "repeat_digests": [
+        "sha256:f78f8b2746405675075019f4750d83809c7375fcfb761be85f941ca6d8f973a8",
+        "sha256:f78f8b2746405675075019f4750d83809c7375fcfb761be85f941ca6d8f973a8",
+        "sha256:f78f8b2746405675075019f4750d83809c7375fcfb761be85f941ca6d8f973a8",
+        "sha256:f78f8b2746405675075019f4750d83809c7375fcfb761be85f941ca6d8f973a8",
+        "sha256:f78f8b2746405675075019f4750d83809c7375fcfb761be85f941ca6d8f973a8"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nondeterminism_probe"
+      ],
+      "duration_ms": 0.016699996194802225,
+      "failure_reason": "nondeterministic_backend_output",
+      "fault": "nondeterministic",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "probe_scope": "finding_validation",
+      "record_id": "nondeterministic-output-probe",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "overlapping_entities",
+        "positive_detection"
+      ],
+      "duration_ms": 0.4560000088531524,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:44b68047cd9096ac64f43abc48eba1462b58c6a602dc984c430ee8374301e3c1",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 29,
+          "field_path": "excerpt",
+          "start": 5,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "overlap-email-person-001",
+      "repeat_digests": [
+        "sha256:979972e5cbaf5dc360272f55ff96ff141bb4d1ba86915516d34554fd4bea67d7",
+        "sha256:979972e5cbaf5dc360272f55ff96ff141bb4d1ba86915516d34554fd4bea67d7",
+        "sha256:979972e5cbaf5dc360272f55ff96ff141bb4d1ba86915516d34554fd4bea67d7",
+        "sha256:979972e5cbaf5dc360272f55ff96ff141bb4d1ba86915516d34554fd4bea67d7",
+        "sha256:979972e5cbaf5dc360272f55ff96ff141bb4d1ba86915516d34554fd4bea67d7"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "overlapping_entities",
+        "positive_detection"
+      ],
+      "duration_ms": 0.4351999959908426,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:6907428fbece27d0ba392686a85158cb70b535d1f1feb6002475dccb998ed24b",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 34,
+          "field_path": "excerpt",
+          "start": 19,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "overlap-name-phone-002",
+      "repeat_digests": [
+        "sha256:334ebc788cfd1ede50e9cc425808b6da7f62d2773ad828c336da9a266da017dc",
+        "sha256:334ebc788cfd1ede50e9cc425808b6da7f62d2773ad828c336da9a266da017dc",
+        "sha256:334ebc788cfd1ede50e9cc425808b6da7f62d2773ad828c336da9a266da017dc",
+        "sha256:334ebc788cfd1ede50e9cc425808b6da7f62d2773ad828c336da9a266da017dc",
+        "sha256:334ebc788cfd1ede50e9cc425808b6da7f62d2773ad828c336da9a266da017dc"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "oversized_payload"
+      ],
+      "duration_ms": 6.786400001146831,
+      "failure_reason": "oversized_payload",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "oversized-payload",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.5451000033644959,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:1a355603b800ec736f2f3e1843a3e1e35cc9cefed7dfd84a0ba1be1e528be1c7",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "person-multi-003",
+      "repeat_digests": [
+        "sha256:6717e9405d09db16a23a3a80dcf3ddb26cb03604266ae362df5ab5161b023401",
+        "sha256:6717e9405d09db16a23a3a80dcf3ddb26cb03604266ae362df5ab5161b023401",
+        "sha256:6717e9405d09db16a23a3a80dcf3ddb26cb03604266ae362df5ab5161b023401",
+        "sha256:6717e9405d09db16a23a3a80dcf3ddb26cb03604266ae362df5ab5161b023401",
+        "sha256:6717e9405d09db16a23a3a80dcf3ddb26cb03604266ae362df5ab5161b023401"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.44010000419802964,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:d1141ca0c9f50a5bdbca15467fb7e837c36222b8eab8a419ff3a85dae87d2d4a",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "person-plain-001",
+      "repeat_digests": [
+        "sha256:ab683388421e8cf1a39decb9e15f00303e31d99bd0d20d67c3c902e334867022",
+        "sha256:ab683388421e8cf1a39decb9e15f00303e31d99bd0d20d67c3c902e334867022",
+        "sha256:ab683388421e8cf1a39decb9e15f00303e31d99bd0d20d67c3c902e334867022",
+        "sha256:ab683388421e8cf1a39decb9e15f00303e31d99bd0d20d67c3c902e334867022",
+        "sha256:ab683388421e8cf1a39decb9e15f00303e31d99bd0d20d67c3c902e334867022"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.44439999328460544,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:e55b601be57c57791163d24dbf5e0b2b75cb8c8a815a6192ff97206a4ac5a60a",
+        "title": "sha256:86ee8f15a809b39bfd5bbcea2713722708a8f6f4d24081c59a6b14debaf0a41c"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "person-title-002",
+      "repeat_digests": [
+        "sha256:05d73d5ffbb9744e36b09c61797de9f0f214128d85578fb3b82c2dd83d318de5",
+        "sha256:05d73d5ffbb9744e36b09c61797de9f0f214128d85578fb3b82c2dd83d318de5",
+        "sha256:05d73d5ffbb9744e36b09c61797de9f0f214128d85578fb3b82c2dd83d318de5",
+        "sha256:05d73d5ffbb9744e36b09c61797de9f0f214128d85578fb3b82c2dd83d318de5",
+        "sha256:05d73d5ffbb9744e36b09c61797de9f0f214128d85578fb3b82c2dd83d318de5"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.37569999403785914,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "phi-mrn-001",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.37209999572951347,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "phi-patient-id-002",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4287999909138307,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:35cc7f2e15fcf0881df5ac6a5c856eae64e3d24ad43940fc2a7f58dfde8cdf46",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "phone-intl-00-003",
+      "repeat_digests": [
+        "sha256:175d43fd7825f25620d0b4e4e63381e934a6798a062d449b7a3ce09be9edbd4f",
+        "sha256:175d43fd7825f25620d0b4e4e63381e934a6798a062d449b7a3ce09be9edbd4f",
+        "sha256:175d43fd7825f25620d0b4e4e63381e934a6798a062d449b7a3ce09be9edbd4f",
+        "sha256:175d43fd7825f25620d0b4e4e63381e934a6798a062d449b7a3ce09be9edbd4f",
+        "sha256:175d43fd7825f25620d0b4e4e63381e934a6798a062d449b7a3ce09be9edbd4f"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.45539998973254114,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:590882971a6a86dc92a85be0cdd0ddf80703f9eaf89b2a15c8006de3a594422c",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 50,
+          "field_path": "excerpt",
+          "start": 34,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "phone-intl-plus-002",
+      "repeat_digests": [
+        "sha256:a201293bd93fbba1ff121fa2cbc379184ce744bab279c7c26a2ed1e73a110e0d",
+        "sha256:a201293bd93fbba1ff121fa2cbc379184ce744bab279c7c26a2ed1e73a110e0d",
+        "sha256:a201293bd93fbba1ff121fa2cbc379184ce744bab279c7c26a2ed1e73a110e0d",
+        "sha256:a201293bd93fbba1ff121fa2cbc379184ce744bab279c7c26a2ed1e73a110e0d",
+        "sha256:a201293bd93fbba1ff121fa2cbc379184ce744bab279c7c26a2ed1e73a110e0d"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.44079999497625977,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:d8f3d694a5fa91517bb43d4ad1e1aac7e4932b9abbd3d277300728ab7e6d8065",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "phone-keyword-004",
+      "repeat_digests": [
+        "sha256:18c49f0e1d861f6a66b75d65f725bcb6375b817d03ea87e710b6f0343da6486e",
+        "sha256:18c49f0e1d861f6a66b75d65f725bcb6375b817d03ea87e710b6f0343da6486e",
+        "sha256:18c49f0e1d861f6a66b75d65f725bcb6375b817d03ea87e710b6f0343da6486e",
+        "sha256:18c49f0e1d861f6a66b75d65f725bcb6375b817d03ea87e710b6f0343da6486e",
+        "sha256:18c49f0e1d861f6a66b75d65f725bcb6375b817d03ea87e710b6f0343da6486e"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4611000040313229,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:e7e9fc4487c7ed962b38a67cbb8c774b0e90190efb74b6128a128dff67131358",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 38,
+          "field_path": "excerpt",
+          "start": 23,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "phone-nanp-001",
+      "repeat_digests": [
+        "sha256:e38153cfcfdc598bc007e28f6076fd6e732b334f97e3916b922a46a001a40414",
+        "sha256:e38153cfcfdc598bc007e28f6076fd6e732b334f97e3916b922a46a001a40414",
+        "sha256:e38153cfcfdc598bc007e28f6076fd6e732b334f97e3916b922a46a001a40414",
+        "sha256:e38153cfcfdc598bc007e28f6076fd6e732b334f97e3916b922a46a001a40414",
+        "sha256:e38153cfcfdc598bc007e28f6076fd6e732b334f97e3916b922a46a001a40414"
+      ],
+      "source_shape": "plain_text",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "duration_ms": 0.4800999886356294,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:9ece80ce98196acf488fdea377fe471acd4122146b26b29edfd3e248981e98fd",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "IP_ADDRESS",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 100,
+          "field_path": "excerpt",
+          "start": 90,
+          "subtype": "ip"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "preservation": {
+        "assertions_checked": 1,
+        "missing_assertion_ids": []
+      },
+      "record_id": "proposal-ip-001",
+      "repeat_digests": [
+        "sha256:24e15b53f8dab7994ec472c72a948f9cb0629ec513cd4584f04c72c6c840fdfb",
+        "sha256:24e15b53f8dab7994ec472c72a948f9cb0629ec513cd4584f04c72c6c840fdfb",
+        "sha256:24e15b53f8dab7994ec472c72a948f9cb0629ec513cd4584f04c72c6c840fdfb",
+        "sha256:24e15b53f8dab7994ec472c72a948f9cb0629ec513cd4584f04c72c6c840fdfb",
+        "sha256:24e15b53f8dab7994ec472c72a948f9cb0629ec513cd4584f04c72c6c840fdfb"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "duration_ms": 0.7019000040600076,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:92040e28fdbabee14332cd2b9acc0935be80cdfe27757b9a62de802ea9c72431",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "CREDIT_CARD",
+          "category": "credential",
+          "confidence": 1.0,
+          "end": 110,
+          "field_path": "excerpt",
+          "start": 94,
+          "subtype": "pan"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "preservation": {
+        "assertions_checked": 1,
+        "missing_assertion_ids": []
+      },
+      "record_id": "proposal-pan-001",
+      "repeat_digests": [
+        "sha256:8e6e5a3ff0a21b4abd24036ded03820b92c9fa6ab9130a8fda01ea9f87baca75",
+        "sha256:8e6e5a3ff0a21b4abd24036ded03820b92c9fa6ab9130a8fda01ea9f87baca75",
+        "sha256:8e6e5a3ff0a21b4abd24036ded03820b92c9fa6ab9130a8fda01ea9f87baca75",
+        "sha256:8e6e5a3ff0a21b4abd24036ded03820b92c9fa6ab9130a8fda01ea9f87baca75",
+        "sha256:8e6e5a3ff0a21b4abd24036ded03820b92c9fa6ab9130a8fda01ea9f87baca75"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "duration_ms": 0.4715999966720119,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:4a698d9a9816a6e401e81d95d4b1951abca6250f6865bcfc71d36b3196891d5a",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "preservation": {
+        "assertions_checked": 1,
+        "missing_assertion_ids": []
+      },
+      "record_id": "requirement-address-001",
+      "repeat_digests": [
+        "sha256:241ee89d6fc8770333758eb250e31b25b3057188ca4f746ef7996232e09e0247",
+        "sha256:241ee89d6fc8770333758eb250e31b25b3057188ca4f746ef7996232e09e0247",
+        "sha256:241ee89d6fc8770333758eb250e31b25b3057188ca4f746ef7996232e09e0247",
+        "sha256:241ee89d6fc8770333758eb250e31b25b3057188ca4f746ef7996232e09e0247",
+        "sha256:241ee89d6fc8770333758eb250e31b25b3057188ca4f746ef7996232e09e0247"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "decision_preservation",
+        "positive_detection"
+      ],
+      "duration_ms": 0.483600000734441,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126",
+        "excerpt": "sha256:94a49c7ad1ebafed481f7aef9bcd346a53679c99efcc25414d3b1f59b35424d8",
+        "title": "sha256:12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 114,
+          "field_path": "excerpt",
+          "start": 83,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "preservation": {
+        "assertions_checked": 1,
+        "missing_assertion_ids": []
+      },
+      "record_id": "requirement-email-person-001",
+      "repeat_digests": [
+        "sha256:21c5f79355fcfeb1f1a41c6ae487aa1dc921ddd17658c83f38b73e43a303d0ed",
+        "sha256:21c5f79355fcfeb1f1a41c6ae487aa1dc921ddd17658c83f38b73e43a303d0ed",
+        "sha256:21c5f79355fcfeb1f1a41c6ae487aa1dc921ddd17658c83f38b73e43a303d0ed",
+        "sha256:21c5f79355fcfeb1f1a41c6ae487aa1dc921ddd17658c83f38b73e43a303d0ed",
+        "sha256:21c5f79355fcfeb1f1a41c6ae487aa1dc921ddd17658c83f38b73e43a303d0ed"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4015000013168901,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 2,
+      "record_id": "secret-aws-github-001",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.404500009608455,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "secret-github-fine-grained-005",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.40240000816993415,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "secret-jwt-002",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.4304000030970201,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 2,
+      "record_id": "secret-openai-npm-006",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.39489999471697956,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 2,
+      "record_id": "secret-slack-google-003",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "positive_detection"
+      ],
+      "duration_ms": 0.46209999709390104,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "source_ref.kind": "sha256:86a431bb16ad4fc733f6a10364bdc60497b32ce829109d65a18aed9cc8cf1b54",
+        "source_ref.source_id": "sha256:e63db260443574c16b0dab98efcfe259a8e70dfbf4798a31d9ee0a6fd3a21df7",
+        "timestamp": "sha256:3996f5e2c9d6ce08827424cca853e6b9930c5565613ad84e72d090de5ea412df"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 2,
+      "record_id": "secret-stripe-pem-004",
+      "repeat_digests": [],
+      "source_shape": "plain_text"
+    },
+    {
+      "classes": [
+        "sensitive_metadata_key"
+      ],
+      "duration_ms": 0.45649999810848385,
+      "failure_reason": "sensitive_metadata_key",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "sensitive-metadata-key-phi",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "sensitive_metadata_key"
+      ],
+      "duration_ms": 0.331300005200319,
+      "failure_reason": "sensitive_metadata_key",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "sensitive-metadata-key-token",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.8048000017879531,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:31c56e333e4490ed9270192e3738f8e86ae92d6beea0496cc10386136e89cae4",
+        "excerpt": "sha256:9dac516fe21af41eca10a50ec63197e1b0ee61886bce37706f0ec105b54a5821",
+        "metadata.emission.body": "sha256:e12015c3f1cc836626f0e1369df11045d76d71aa703b2963f1bc7032d7968020",
+        "metadata.emission.evidence[0].excerpt": "sha256:fccf1122be412522cc68c44a103bb8363af45a80f80e89d0644ad784d489a6bf",
+        "metadata.emission.title": "sha256:7ae7d4ab16dd1d8310146b8bec7d37b70fd3f6672ac27cc9258736c1708e79da",
+        "title": "sha256:b21edee6eeab346ea0baef78fcf4482ef095fe919fb3d52838f610293afe1c63"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 40,
+          "field_path": "metadata.emission.body",
+          "start": 15,
+          "subtype": "email"
+        },
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 31,
+          "field_path": "metadata.emission.evidence[0].excerpt",
+          "start": 16,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:374e2ca9524700cb5ecf9dffce0980449e63a722c2d2f5b007d917f103349906",
+        "provider_event_id": "sha256:835c2ae6be90892376618c77d9d471638b80c532850086ca8190c4a3c3f65ec4",
+        "provider_resource_id": "sha256:ae7304f2adfc1c1fe95a463edff986697f6b166bf2941705bae601f2ab13ef7b",
+        "source_ref.kind": "sha256:f1c2c38b975e43f19e1a2165abd878c36cee4ad3efd523a44e1498a25589d342",
+        "source_ref.ref": "sha256:4fb5da21c64b34742798fbdbe8b8310ab61407a077de20aa145a12b5aa286fe3",
+        "source_ref.source_id": "sha256:31c56e333e4490ed9270192e3738f8e86ae92d6beea0496cc10386136e89cae4",
+        "timestamp": "sha256:0788c021b4876e34fb35b26cbecc93237d911abea5345a55f34b36739e6fb7c6"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-adapter-emission-001",
+      "repeat_digests": [
+        "sha256:6bc5008d6d70bb05eb5bff1ba244c3a5a5c23e91da5059995bf8f1d26bd6b6b9",
+        "sha256:6bc5008d6d70bb05eb5bff1ba244c3a5a5c23e91da5059995bf8f1d26bd6b6b9",
+        "sha256:6bc5008d6d70bb05eb5bff1ba244c3a5a5c23e91da5059995bf8f1d26bd6b6b9",
+        "sha256:6bc5008d6d70bb05eb5bff1ba244c3a5a5c23e91da5059995bf8f1d26bd6b6b9",
+        "sha256:6bc5008d6d70bb05eb5bff1ba244c3a5a5c23e91da5059995bf8f1d26bd6b6b9"
+      ],
+      "source_shape": "adapter_emission",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.6579000037163496,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "evidence_id": "sha256:6b1d33131c86e9fb2ef96f95d1b5a39d5c75ab4329a0abe3c099c1819711e1b4",
+        "provider_event_id": "sha256:3910441190f52ca27201962cf585a2dc61f819db336b49f07a05e24e2768905e",
+        "provider_resource_id": "sha256:ec64350cbdf0be270f00e38d724bbd1ebb59727c5e78d1954bee2307848cb5c0",
+        "source_ref.kind": "sha256:f1c2c38b975e43f19e1a2165abd878c36cee4ad3efd523a44e1498a25589d342",
+        "source_ref.ref": "sha256:83d32573f29748fb6f76dbfb6b176347977d632c9ea288c91ce53cea588343a7",
+        "source_ref.source_id": "sha256:31c56e333e4490ed9270192e3738f8e86ae92d6beea0496cc10386136e89cae4",
+        "timestamp": "sha256:29fa902742ff827ee38b175340e6ff57f313fa3a42137893bf6aa57b406cc63c"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "shape-adapter-emission-002",
+      "repeat_digests": [],
+      "source_shape": "adapter_emission"
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.7631999906152487,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:5e2e5226032d74329d761113f098dda5e227abe0a0cbc592415fbcd9500f5af6",
+        "excerpt": "sha256:01d6bbb2a2c8dfcd4cb372a9d3e5e6f02a1ff038351cc0a8948c921987772cfd",
+        "metadata.fetch.body": "sha256:deb96f39b1608105461b81e0ddc273666fbe6b7f79b812760960cc3c77fec085",
+        "metadata.fetch.content_type": "sha256:f480c6e33c122f28b3a7562b6e14da9e66e5ef984d4b2617701f290f0110b78e",
+        "metadata.fetch.url": "sha256:98ad80b956301d54a324790d7e7b0b4e4c8bb2826233d5c2b0bea1be7938a16d",
+        "title": "sha256:a8952d47f75f21601661e6666d901df7fd0fbd77360b82208599b2ceef7aa908"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 90,
+          "field_path": "metadata.fetch.body",
+          "start": 66,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:ebb0a075e62d00bcf06f58bb727dc9572d5d6c90158ba2b79ce4b6c13cbe02ec",
+        "provider_event_id": "sha256:ba9abdb4467911772e4edaaeac701f3b42adff5dca811f8a146e0753f4a7485e",
+        "provider_resource_id": "sha256:1a413a437a984487c02b184857b3f366ffe3a9e8b00e8f72e8888f27cb908d76",
+        "source_ref.kind": "sha256:64ac8e615520cd1ae43ab0d47cfc9e750a82d13f9c47d468dab7cd8c982b7859",
+        "source_ref.ref": "sha256:bedfb9e80b77cb62e01f63f0e0183143cf66220b519b09a2d9056484a37caee9",
+        "source_ref.source_id": "sha256:6660644afa34410075be814f24b637b3f3fa20c769e4ba7ec322d67eb1ca621a",
+        "source_ref.url": "sha256:98ad80b956301d54a324790d7e7b0b4e4c8bb2826233d5c2b0bea1be7938a16d",
+        "timestamp": "sha256:ce093b8fc5ba1beeaa40c1c50b0a18298bf9e0ad065925ff5c10644e6979c5dc"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-bounded-document-fetch-001",
+      "repeat_digests": [
+        "sha256:8a30aee1472e67aabdd3e8cfb6141863fc2fef86bc585b52f81cec01418c31b3",
+        "sha256:8a30aee1472e67aabdd3e8cfb6141863fc2fef86bc585b52f81cec01418c31b3",
+        "sha256:8a30aee1472e67aabdd3e8cfb6141863fc2fef86bc585b52f81cec01418c31b3",
+        "sha256:8a30aee1472e67aabdd3e8cfb6141863fc2fef86bc585b52f81cec01418c31b3",
+        "sha256:8a30aee1472e67aabdd3e8cfb6141863fc2fef86bc585b52f81cec01418c31b3"
+      ],
+      "source_shape": "bounded_document_fetch",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.7532000017818063,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:5e2e5226032d74329d761113f098dda5e227abe0a0cbc592415fbcd9500f5af6",
+        "excerpt": "sha256:956fcbce8adab3c5f75ab09ca29e35e7af68817945fd2664cbf8bf9cec1c317d",
+        "metadata.fetch.body": "sha256:be78bb18ca00f555edbcb7eb6ac25812d47d8bd9f070d75632bbb681f2204608",
+        "metadata.fetch.content_type": "sha256:f480c6e33c122f28b3a7562b6e14da9e66e5ef984d4b2617701f290f0110b78e",
+        "metadata.fetch.url": "sha256:86a5cd1a5d008577cfe77287a2ab2563f4668a52d26badc6eec1ae569d618504",
+        "title": "sha256:e5216f5e49c4c3faf71041fddb2742423c08c2b22f26541e9f6a78ba25f83699"
+      },
+      "findings": [],
+      "identity_digests": {
+        "evidence_id": "sha256:51af5ea5c51c19880cb0732f8c13a60d08e53f5fd5d904cbf46e55e3075370c8",
+        "provider_event_id": "sha256:e2955e6d79842aeae530cdeec4b0b071d5ef87e6878c24190928f70fda4e7e2f",
+        "provider_resource_id": "sha256:2cd3761cf825740535aab28d165ca7889108f6dcb4d1773fba9667c8526e50fa",
+        "source_ref.kind": "sha256:64ac8e615520cd1ae43ab0d47cfc9e750a82d13f9c47d468dab7cd8c982b7859",
+        "source_ref.ref": "sha256:553c1dbed56886781712488604ae0b4beacca9e4dbc5860fddb0e7d61948b165",
+        "source_ref.source_id": "sha256:6660644afa34410075be814f24b637b3f3fa20c769e4ba7ec322d67eb1ca621a",
+        "source_ref.url": "sha256:86a5cd1a5d008577cfe77287a2ab2563f4668a52d26badc6eec1ae569d618504",
+        "timestamp": "sha256:70bf0dd95171a05ee8094228f8539c7419a867abef56c5b3ef7c1fb1974e1b43"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "shape-bounded-document-fetch-002",
+      "repeat_digests": [
+        "sha256:eed957200e191d33c498b5af9dff1b322c002c4bf2149a6ed2a1927fc9be3ac5",
+        "sha256:eed957200e191d33c498b5af9dff1b322c002c4bf2149a6ed2a1927fc9be3ac5",
+        "sha256:eed957200e191d33c498b5af9dff1b322c002c4bf2149a6ed2a1927fc9be3ac5",
+        "sha256:eed957200e191d33c498b5af9dff1b322c002c4bf2149a6ed2a1927fc9be3ac5",
+        "sha256:eed957200e191d33c498b5af9dff1b322c002c4bf2149a6ed2a1927fc9be3ac5"
+      ],
+      "source_shape": "bounded_document_fetch",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.7632000051671639,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:19ff220ea6f1cd1dd97cdc2b911a7e1b784e562a77a5bc9c66b5364aa6e36892",
+        "excerpt": "sha256:5e2bea5be3ef2bb7e0724503e6c0d1cbca64fe959762327b4146b5bb2938136f",
+        "metadata.envelope.candidate_hints[0].body": "sha256:d3f96648c51ecb7a9f93ababdd694d6c1bc4333928fe81cf5414d068fcc3a15d",
+        "metadata.envelope.content": "sha256:273ebc6f0e1fec228075f504c3d4bee829177f10890fa69cb611e53fdf1df421",
+        "title": "sha256:b84f4f19ed85250d9390be06b34627ccc97ef424e9aa95da9833abeee2682738"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 38,
+          "field_path": "metadata.envelope.candidate_hints[0].body",
+          "start": 16,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:1dbe910c0cec241488c2e8672329e3ad3591607df6afde68acd7ab833335f5b8",
+        "provider_event_id": "sha256:f4963a4c185c6bab784aa45d524dfc497b9062a125398c7b830da118b84da25d",
+        "provider_resource_id": "sha256:e9893b081b6c4fff192053dd439170f13754d725f3cff2328a63f9c1a84f8c6b",
+        "source_ref.kind": "sha256:9e1134c2228d7de3567b20ed9a6723da124e767a12d276c17598e383e2e47c8e",
+        "source_ref.ref": "sha256:61057fe32e8defa4408cd82b0b5579e7b12cd19c16401e4b71e2bdeb44cff405",
+        "source_ref.source_id": "sha256:2304363952f7ff17802bb6dcfeac05b7b81e98eb5fdd22103050e6cbaac385ed",
+        "timestamp": "sha256:1dc71a4e82be9c965778921af249dd8c5726d0891d983f8da043fa9e3f1d5ced"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-external-ingest-envelope-001",
+      "repeat_digests": [
+        "sha256:96697669859993f278d0027d77e645fed5ef33a9ee6b1a168c31ca755d1be73a",
+        "sha256:96697669859993f278d0027d77e645fed5ef33a9ee6b1a168c31ca755d1be73a",
+        "sha256:96697669859993f278d0027d77e645fed5ef33a9ee6b1a168c31ca755d1be73a",
+        "sha256:96697669859993f278d0027d77e645fed5ef33a9ee6b1a168c31ca755d1be73a",
+        "sha256:96697669859993f278d0027d77e645fed5ef33a9ee6b1a168c31ca755d1be73a"
+      ],
+      "source_shape": "external_ingest_envelope",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.7256999961100519,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:19ff220ea6f1cd1dd97cdc2b911a7e1b784e562a77a5bc9c66b5364aa6e36892",
+        "excerpt": "sha256:536bf2d362adf8aaa71fd842afef54699277623737cfa916b20375385d08fa6a",
+        "metadata.envelope.candidate_hints[0].body": "sha256:3433105a601b7c50091fff054b07905db96a4f82d0cf74cb5d1d0a56b4144fa7",
+        "metadata.envelope.content": "sha256:c60898c1e9c2b80344d773ccaa6c637f427086f933733a85bed7ff57d72ca0f7",
+        "title": "sha256:51da69bbb11c34f46f3d470c5520700c9322575c28fcce0d1d28136770ffc7db"
+      },
+      "findings": [],
+      "identity_digests": {
+        "evidence_id": "sha256:eefe39878cf87a1d047d889df44cdaa240d7057c8d212a7c0288c6e5717cdeda",
+        "provider_event_id": "sha256:408438c5b6d0ad0aa3454e542449781d2954dad1bb39a267d6191f469641579c",
+        "provider_resource_id": "sha256:861fa887ba5b937ea3de2d3023d74ca8670ca54efcfaf9000d0e79510864b263",
+        "source_ref.kind": "sha256:9e1134c2228d7de3567b20ed9a6723da124e767a12d276c17598e383e2e47c8e",
+        "source_ref.ref": "sha256:d404d52971c45be74ee7338d725cc4095c570dee7fa994c9f44a1b8d436e45e0",
+        "source_ref.source_id": "sha256:2304363952f7ff17802bb6dcfeac05b7b81e98eb5fdd22103050e6cbaac385ed",
+        "timestamp": "sha256:50c9ccdd9c4a3743266b5a868982b0ed1763f4abad83c5bffba147d9c8350d14"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "shape-external-ingest-envelope-002",
+      "repeat_digests": [
+        "sha256:ce9ce968133725831913c03b08169c0698e697eb4369d140d6d8c96afeb010c8",
+        "sha256:ce9ce968133725831913c03b08169c0698e697eb4369d140d6d8c96afeb010c8",
+        "sha256:ce9ce968133725831913c03b08169c0698e697eb4369d140d6d8c96afeb010c8",
+        "sha256:ce9ce968133725831913c03b08169c0698e697eb4369d140d6d8c96afeb010c8",
+        "sha256:ce9ce968133725831913c03b08169c0698e697eb4369d140d6d8c96afeb010c8"
+      ],
+      "source_shape": "external_ingest_envelope",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.7826999935787171,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:91f57ee9c5dbd4ec443110ccabe5b74c9ba1b1101a940b2bb3f9ed5f380f8d7c",
+        "excerpt": "sha256:1ae78107ad072b08eb1203e7a49f85e7676f494af210c6e484bd7b096c60ce8d",
+        "metadata.poll.etag": "sha256:66a3818ffbfdcdc95fca863b79bcf96a26d96547ff669ccbdb0980ca530e0cc9",
+        "metadata.poll.items[0].body": "sha256:a653c60be779409f080b3ade65bfb7628152fe7b4c6e6ec5ee9593e6e4df568b",
+        "metadata.poll.items[0].title": "sha256:5d932f6889487e31d3844b2708810458730a0dca1c63ac6efbaa32dd92f305c8",
+        "title": "sha256:e8a66ce61143fcd9c49bad2ae7a747f1a71f66d911a4f0ca0869eaa753c8aaf4"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 62,
+          "field_path": "metadata.poll.items[0].body",
+          "start": 31,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:ee714ef01ca5407d102dd1c7918d7a6e08e7c1364a444fa8e4c8fee032f148f8",
+        "provider_event_id": "sha256:47b5d3291d3503ad1966f832d4199d329a83d7280b6ecf08532863e28b5088d5",
+        "provider_resource_id": "sha256:7193caa20fc21dfd19d44195e5343ccabab5467b0d0b01959c8262030961aca0",
+        "source_ref.kind": "sha256:c7e7e38468ebffd63cc6420d28d57b8b4055551ac176d4caef5c15aba2fe2e66",
+        "source_ref.ref": "sha256:0f03d96d94bfc3e6a6b367059b4fe356cb27aab69c0252f9638e6b4a7b5ebe5c",
+        "source_ref.source_id": "sha256:aea85016c1ec0c25487f5fc1a3aad9e545bf2bda98f28a375945114a9920f5fb",
+        "source_ref.url": "sha256:76252fb1f0e3d21da36be8cadb92f1581c476d552e991e49206ff102d7df2264",
+        "timestamp": "sha256:6713ec01dcbf88c4825099970b6038902af4e6ffa3207b04df998edeee966a57"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-github-poll-001",
+      "repeat_digests": [
+        "sha256:b88c0f8af35a627701f804680f6cff8e138969f43d43e0f5250d22bac8f18c17",
+        "sha256:b88c0f8af35a627701f804680f6cff8e138969f43d43e0f5250d22bac8f18c17",
+        "sha256:b88c0f8af35a627701f804680f6cff8e138969f43d43e0f5250d22bac8f18c17",
+        "sha256:b88c0f8af35a627701f804680f6cff8e138969f43d43e0f5250d22bac8f18c17",
+        "sha256:b88c0f8af35a627701f804680f6cff8e138969f43d43e0f5250d22bac8f18c17"
+      ],
+      "source_shape": "github_poll",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.8277000015368685,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:91f57ee9c5dbd4ec443110ccabe5b74c9ba1b1101a940b2bb3f9ed5f380f8d7c",
+        "excerpt": "sha256:4281896574562efa550d5a1336fd47e8b2ae059912cdfb389ee0f318b820f34f",
+        "metadata.poll.etag": "sha256:b5904f48a0b0ba8c297d0c50bfb51efbc4a70a7f6f8208e464085566d1a8f5b5",
+        "metadata.poll.items[0].body": "sha256:116c56d35ee6de4af618c09e9c141d09c6bca824054f7b2f93e9712b5f367864",
+        "metadata.poll.items[0].title": "sha256:6a807619657df3b877663d8ee7a772cb6702f8f8aef9f64ad8507236df04af1b",
+        "title": "sha256:94d252aaf39de3fbad28aa922a8c6b2559642e42c196707e0cc9397dab75b0f6"
+      },
+      "findings": [
+        {
+          "backend_label": "CREDIT_CARD",
+          "category": "credential",
+          "confidence": 1.0,
+          "end": 41,
+          "field_path": "metadata.poll.items[0].body",
+          "start": 25,
+          "subtype": "pan"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:27321006a44d18c276b45508450901dc1f7df12dd78bfdcb1053ae26403efc4b",
+        "provider_event_id": "sha256:11388936caa9532069c473d0c8fd7d8c87f78b37eafe84f9c2f3d639e502136b",
+        "provider_resource_id": "sha256:82e645a2e1dde2e63efd85727d2cfea498492520a117b647abfb55426835f60e",
+        "source_ref.kind": "sha256:c7e7e38468ebffd63cc6420d28d57b8b4055551ac176d4caef5c15aba2fe2e66",
+        "source_ref.ref": "sha256:0f03d96d94bfc3e6a6b367059b4fe356cb27aab69c0252f9638e6b4a7b5ebe5c",
+        "source_ref.source_id": "sha256:aea85016c1ec0c25487f5fc1a3aad9e545bf2bda98f28a375945114a9920f5fb",
+        "source_ref.url": "sha256:76252fb1f0e3d21da36be8cadb92f1581c476d552e991e49206ff102d7df2264",
+        "timestamp": "sha256:0911723957bd60235844c33163d07dafad38afaf4494e3339fbd5b202024793d"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-github-poll-002",
+      "repeat_digests": [
+        "sha256:449c923498e335ba04b2800e52560b60edb0975538227171b00fe22a24f07656",
+        "sha256:449c923498e335ba04b2800e52560b60edb0975538227171b00fe22a24f07656",
+        "sha256:449c923498e335ba04b2800e52560b60edb0975538227171b00fe22a24f07656",
+        "sha256:449c923498e335ba04b2800e52560b60edb0975538227171b00fe22a24f07656",
+        "sha256:449c923498e335ba04b2800e52560b60edb0975538227171b00fe22a24f07656"
+      ],
+      "source_shape": "github_poll",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.86600000213366,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:f64d80e8ae3bccc705747bcd9302894bb7c122a46d43b8fc61b0be40d572d164",
+        "excerpt": "sha256:aed3cd553cf66543ae5e0f2d81d3a2036eb5ef37443dd9961f0fbe4cf2681a87",
+        "metadata.webhook.action": "sha256:63956066cf53c1d2fae2c8352108bf18eebcde5444aad34a5b850c7206a9ed9d",
+        "metadata.webhook.comment.body": "sha256:c15b137e053276835556f4c9d570a58300eb9a187f0549ed7526f93aa162ceed",
+        "metadata.webhook.comment.user.login": "sha256:f64d80e8ae3bccc705747bcd9302894bb7c122a46d43b8fc61b0be40d572d164",
+        "metadata.webhook.issue.title": "sha256:541cfe46ed95722478e2097292253a940dcbd0cf2707aefe7868acd71f91cf28",
+        "title": "sha256:541cfe46ed95722478e2097292253a940dcbd0cf2707aefe7868acd71f91cf28"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 45,
+          "field_path": "metadata.webhook.comment.body",
+          "start": 23,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:b60397f70ccc607feccd9789206c496d1588c4b1c8a73c36443f89fef47fed2a",
+        "provider_event_id": "sha256:08b7797f38d18cf65783fd647183bf8b09b3cd3af606973c0fa1a9a1389cb956",
+        "provider_resource_id": "sha256:4b069553ea370e984abeb7f5b26ba28a2681ff69d3d2ce4f416992a5f9883615",
+        "source_ref.kind": "sha256:881de796f9741be1cc4fdd7ad7eb8f1aacd1e77f52a0780083631b03814b22c4",
+        "source_ref.ref": "sha256:b9bb3839834c8cc8143f19b749e90e81c6eccc3d409e35b5f363c5da167ae2af",
+        "source_ref.source_id": "sha256:aea85016c1ec0c25487f5fc1a3aad9e545bf2bda98f28a375945114a9920f5fb",
+        "source_ref.url": "sha256:c6838708b8a81511ccfe95e0fa9f82aa023ff07412009458dbbf2d02a4df9c22",
+        "timestamp": "sha256:5b54b3dd76afc83c02d8775e94ed9702e8fadfba61a17a5bbea6ca260ef4dda8"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-github-webhook-comment-001",
+      "repeat_digests": [
+        "sha256:4ef12a8a7b33ad7a1711e4f7642f91e16fceb162348330f9fbbf92fbc55e2e76",
+        "sha256:4ef12a8a7b33ad7a1711e4f7642f91e16fceb162348330f9fbbf92fbc55e2e76",
+        "sha256:4ef12a8a7b33ad7a1711e4f7642f91e16fceb162348330f9fbbf92fbc55e2e76",
+        "sha256:4ef12a8a7b33ad7a1711e4f7642f91e16fceb162348330f9fbbf92fbc55e2e76",
+        "sha256:4ef12a8a7b33ad7a1711e4f7642f91e16fceb162348330f9fbbf92fbc55e2e76"
+      ],
+      "source_shape": "github_webhook",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.861099993926473,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:b5a43a936380f39c91dd71c4d35ce97001b034801d8544118fde4c73c3c5a2fb",
+        "excerpt": "sha256:48d9df6711a9ab2118f9c5debbcd5c72fccf9582540e8ad69eb81652099b10ff",
+        "metadata.webhook.action": "sha256:63956066cf53c1d2fae2c8352108bf18eebcde5444aad34a5b850c7206a9ed9d",
+        "metadata.webhook.comment.body": "sha256:be918293a225a4316dacf20d88941c5192ef000b975b49d1119aec1a827d86f4",
+        "metadata.webhook.comment.user.login": "sha256:b5a43a936380f39c91dd71c4d35ce97001b034801d8544118fde4c73c3c5a2fb",
+        "metadata.webhook.issue.title": "sha256:41fab67ba0c20f1a1a6a15b54c9af1d54ecff15e3866b52471e12fad514563e6",
+        "title": "sha256:41fab67ba0c20f1a1a6a15b54c9af1d54ecff15e3866b52471e12fad514563e6"
+      },
+      "findings": [
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 26,
+          "field_path": "metadata.webhook.comment.body",
+          "start": 11,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:7ef71d7c5d716c6885ae2517cb1e3cac28bb1a9a8a4748d15cf0951693b238b1",
+        "provider_event_id": "sha256:088c5222704f9238681d14f2a89995ed819816162d1a5770ef0ca8b344e7e442",
+        "provider_resource_id": "sha256:0e09e359c51465558fb70579fedd60597bfbb5550536cc8e925086d2fb8d0211",
+        "source_ref.kind": "sha256:881de796f9741be1cc4fdd7ad7eb8f1aacd1e77f52a0780083631b03814b22c4",
+        "source_ref.ref": "sha256:f2ec52631553000dccd93e5025d91fb51e609926b48765ee568357baacde2f30",
+        "source_ref.source_id": "sha256:aea85016c1ec0c25487f5fc1a3aad9e545bf2bda98f28a375945114a9920f5fb",
+        "source_ref.url": "sha256:d663551c1b111045064dd83180f06c830e75b503a5e7b8eef310dea5e5ebdd33",
+        "timestamp": "sha256:3f755c3f2ef662a6cad69fa1d0e9561299071c5fa0982134adbda305a4d7d4d1"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-github-webhook-comment-002",
+      "repeat_digests": [
+        "sha256:224bab45eca60a0512a75be005ff834e1910783587160aeaea04bb3d79756fae",
+        "sha256:224bab45eca60a0512a75be005ff834e1910783587160aeaea04bb3d79756fae",
+        "sha256:224bab45eca60a0512a75be005ff834e1910783587160aeaea04bb3d79756fae",
+        "sha256:224bab45eca60a0512a75be005ff834e1910783587160aeaea04bb3d79756fae",
+        "sha256:224bab45eca60a0512a75be005ff834e1910783587160aeaea04bb3d79756fae"
+      ],
+      "source_shape": "github_webhook",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 1.1070999898947775,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:bc151da6a3655f20b43253f8dbbe1d93c8cbb754e770e990bfeae7c2d3aefe67",
+        "excerpt": "sha256:777de62de668dcb75def66ed27cbb2d7588172fd9d188a60fb51ec8436accd0f",
+        "metadata.webhook.action": "sha256:c7f013e0beed1c8a1c10e083d7d1ef5504f10ab7861573b7e28b0d83e981d256",
+        "metadata.webhook.issue.body": "sha256:907ce2f500d3d8e10efd32529c41a05764afe3bed6418dd8ad249a8ac6a2abc4",
+        "metadata.webhook.issue.created_at": "sha256:2ed87dee870c5d1abd4d20c384e95b2c89e4e029c0f77c6ec386bbb7d8ae51bb",
+        "metadata.webhook.issue.html_url": "sha256:e2c8ace67790182324509ece14017c21aca164922a023b56bb10b05d82fc9cd1",
+        "metadata.webhook.issue.title": "sha256:4d7f1b1f20b5cf21aef31690d55ee9cf59e7737baf3da3808ca45af1f46601f1",
+        "metadata.webhook.issue.user.login": "sha256:bc151da6a3655f20b43253f8dbbe1d93c8cbb754e770e990bfeae7c2d3aefe67",
+        "metadata.webhook.repository.full_name": "sha256:9d6edbe028f07015115362c679418dfda26c9977bd61abc3526a27420c6cdc28",
+        "metadata.webhook.sender.login": "sha256:bc151da6a3655f20b43253f8dbbe1d93c8cbb754e770e990bfeae7c2d3aefe67",
+        "title": "sha256:fdad7cf3d834d5333eeff48b0f7cad67d9f88c0302e3e6870c43ed575d175f8a"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 49,
+          "field_path": "metadata.webhook.issue.body",
+          "start": 24,
+          "subtype": "email"
+        },
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 74,
+          "field_path": "metadata.webhook.issue.body",
+          "start": 59,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:b89e789777cf3832f31c6e56f748af07c8392201ebfbc87b9bbb38153387514f",
+        "provider_event_id": "sha256:cf5b316deeba77dc034033756ecae4934e707c1de0da0112cbbaf0742a4bddea",
+        "provider_resource_id": "sha256:22d6ceb0f0c08357b3989f85066419669dfc1ed3bd6eaaf62b5cac37716ad0a7",
+        "source_ref.kind": "sha256:f80768a970467c673a886f7ac8b8f76daebf2b800c8083d65699e9eccf45751c",
+        "source_ref.ref": "sha256:64cfca3ff1a7d9de074b5bc498b49aee92d68cc9a59d71363c73b4de4c7113bb",
+        "source_ref.source_id": "sha256:aea85016c1ec0c25487f5fc1a3aad9e545bf2bda98f28a375945114a9920f5fb",
+        "source_ref.url": "sha256:e2c8ace67790182324509ece14017c21aca164922a023b56bb10b05d82fc9cd1",
+        "timestamp": "sha256:08456d2a366f4a13a5b1a3a7e994ec7a6e71eb661d69df57392347c68e2b55b7"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-github-webhook-issue-001",
+      "repeat_digests": [
+        "sha256:e7e08f71cc9385e92d8682f7adb24c27f13f140cf8bc449b3c3616b9dd1d9940",
+        "sha256:e7e08f71cc9385e92d8682f7adb24c27f13f140cf8bc449b3c3616b9dd1d9940",
+        "sha256:e7e08f71cc9385e92d8682f7adb24c27f13f140cf8bc449b3c3616b9dd1d9940",
+        "sha256:e7e08f71cc9385e92d8682f7adb24c27f13f140cf8bc449b3c3616b9dd1d9940",
+        "sha256:e7e08f71cc9385e92d8682f7adb24c27f13f140cf8bc449b3c3616b9dd1d9940"
+      ],
+      "source_shape": "github_webhook",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.9102000040002167,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "evidence_id": "sha256:a3d4a11743ce0a24cd495d7ce5a2a49c9513a6517825b04aaa751a29a80e7cca",
+        "provider_event_id": "sha256:7dddc612d420a98ed0219eaf986d1fb19037f5d7980d02a8338c4ffa8e1aa4bf",
+        "provider_resource_id": "sha256:4383a286d6dc9d1933db4d5dc6d1bbcdb4b9320c4f3b5fb2cbe573a2049f169c",
+        "source_ref.kind": "sha256:f80768a970467c673a886f7ac8b8f76daebf2b800c8083d65699e9eccf45751c",
+        "source_ref.ref": "sha256:bf1da4def385adc8102afbea7364a395bc03973596644315c1dbfe7367ceb0d2",
+        "source_ref.source_id": "sha256:aea85016c1ec0c25487f5fc1a3aad9e545bf2bda98f28a375945114a9920f5fb",
+        "source_ref.url": "sha256:974d5ab456d7f264dc5faf3215c41b3d88d2a6ea46ec2be2c0a6ceed959a5a9f",
+        "timestamp": "sha256:40a960ecc32fba04b7ce3b8e155c93d6019ddc72524b5b6bdd0b73c24cfe723e"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "shape-github-webhook-issue-002",
+      "repeat_digests": [],
+      "source_shape": "github_webhook"
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.8240000024670735,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:d5af5f76a2b43c18c24f7c3dc435a33cc4b3d8d57b43cf8b04c3d5ed7e753268",
+        "excerpt": "sha256:1e41b90dd3a482e224439defe69b2ceced5e3f5adca90e2c2a0fc29379f88dae",
+        "metadata.graphql.data.issue.description": "sha256:30f7af5b7a56ee42bd5c2c2b56be963b3d36e8d1bc55aff5dc3a7eacb455d8ae",
+        "metadata.graphql.data.issue.id": "sha256:9ab13b24a3ffdadcff998021fc259c53d598284617f40671f8e9f0419c0679ce",
+        "metadata.graphql.data.issue.identifier": "sha256:edc51ded6f9dd18658cfb89aab3787e444b8501e5cbff546b241b90cda9536a0",
+        "metadata.graphql.data.issue.title": "sha256:b95b9def48d5d737d1d107d4d124ad137af173015a4f8c9e71b68c427351b6ff",
+        "title": "sha256:b95b9def48d5d737d1d107d4d124ad137af173015a4f8c9e71b68c427351b6ff"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 69,
+          "field_path": "metadata.graphql.data.issue.description",
+          "start": 46,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:7c44ba020a61519cb1812bc6b62f0567fd5133cfe835b071485a2fb47688b05f",
+        "provider_event_id": "sha256:4fb1869f959c5a0421dd12f146fa84bc35054f53e613398a537000839ead81e2",
+        "provider_resource_id": "sha256:9ab13b24a3ffdadcff998021fc259c53d598284617f40671f8e9f0419c0679ce",
+        "source_ref.kind": "sha256:f80768a970467c673a886f7ac8b8f76daebf2b800c8083d65699e9eccf45751c",
+        "source_ref.ref": "sha256:edc51ded6f9dd18658cfb89aab3787e444b8501e5cbff546b241b90cda9536a0",
+        "source_ref.source_id": "sha256:4dd109ad15a2481c6cd88948a95b3116061fd1b966bef5c92481ec848e167829",
+        "source_ref.url": "sha256:632543a35b31d3ee29fc37cdcf0acfda1f88d2d8fafd048c02e15b047c0c08b7",
+        "timestamp": "sha256:e2761f373f5be7f64d03a02831789a297cb49189395157d1bcbd8d6ac1f1150c"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-linear-graphql-001",
+      "repeat_digests": [
+        "sha256:663836a4d15a0b9fe924e206ffeaf36e288473f0e78e9233038336171cd0184c",
+        "sha256:663836a4d15a0b9fe924e206ffeaf36e288473f0e78e9233038336171cd0184c",
+        "sha256:663836a4d15a0b9fe924e206ffeaf36e288473f0e78e9233038336171cd0184c",
+        "sha256:663836a4d15a0b9fe924e206ffeaf36e288473f0e78e9233038336171cd0184c",
+        "sha256:663836a4d15a0b9fe924e206ffeaf36e288473f0e78e9233038336171cd0184c"
+      ],
+      "source_shape": "linear_graphql",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.7400999893434346,
+      "failure_reason": "post_screen_escape",
+      "identity_digests": {
+        "evidence_id": "sha256:36a9a2628adc14b83df37da033533b2532a84eda1a2bd314d33029e0cbb04dee",
+        "provider_event_id": "sha256:15f58dc0f6941ebb8052a6411400a98638ee2c4362595b3210ad13804506b34b",
+        "provider_resource_id": "sha256:86b5ac477190e03f287f712c18c19d20201e0d032c9d191284e8f19133c718a0",
+        "source_ref.kind": "sha256:f80768a970467c673a886f7ac8b8f76daebf2b800c8083d65699e9eccf45751c",
+        "source_ref.ref": "sha256:e1add305619635c324be14d0db1c1d06011e9bd7b406f831fbefcb59ae1a412a",
+        "source_ref.source_id": "sha256:4dd109ad15a2481c6cd88948a95b3116061fd1b966bef5c92481ec848e167829",
+        "source_ref.url": "sha256:09f40f1b6cb17571dc81c4963c6d51230c5cb68754044d4b70e52229e657f3ca",
+        "timestamp": "sha256:6f9fe6bf7704ce0798eefaa324ffd3287a5090928b074e65d375fae634a0071c"
+      },
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 1,
+      "record_id": "shape-linear-graphql-002",
+      "repeat_digests": [],
+      "source_shape": "linear_graphql"
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 1.0120000079041347,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:2b25630f5e1d434533a8ac21e77563bc2b71a5616c29260aa48dd1d232f90f96",
+        "excerpt": "sha256:3c401eda175f799396faeff3ae87ef5662274678b2c433b6b92287fe62581a07",
+        "metadata.webhook.action": "sha256:5498a731a187f424a5800943afcba027f3a6cd684e38fe6e40c02bee1753152d",
+        "metadata.webhook.data.description": "sha256:077e2273ca4fc8b5ea4feef1545b1caf9aa6980b1096bf4d68165516bf2d8cf2",
+        "metadata.webhook.data.id": "sha256:714da78a859c0aaf016b792aca8690927581637cf54862db8e660ffe93296ee1",
+        "metadata.webhook.data.identifier": "sha256:ffd4eebdee465be411ee28fc753c211640aece994138b260430b4d1753f7db5d",
+        "metadata.webhook.data.title": "sha256:c6e8039a6e1a48d1712586a7629cb6358d67cc6567911c48e7ba78361665e0f5",
+        "metadata.webhook.organizationId": "sha256:7daacc9a489529b0845de872c7d870ae09e220f2e4bf9fec06c376d092183ee8",
+        "metadata.webhook.type": "sha256:6c3a5e63ed9c4b07a96093aafb699ff7dc5cbafa5411e0b756a6418c624f2e8f",
+        "title": "sha256:c6e8039a6e1a48d1712586a7629cb6358d67cc6567911c48e7ba78361665e0f5"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 70,
+          "field_path": "metadata.webhook.data.description",
+          "start": 45,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:2515c5a03e2858932e6936ad08cc0b190619abb5d1be65daa0fdee6cbc361a31",
+        "provider_event_id": "sha256:80b370edf7d4663fabc87b58ed04b6ee638a13dd47cbf47ed4dda4b2b439034c",
+        "provider_resource_id": "sha256:714da78a859c0aaf016b792aca8690927581637cf54862db8e660ffe93296ee1",
+        "source_ref.kind": "sha256:f80768a970467c673a886f7ac8b8f76daebf2b800c8083d65699e9eccf45751c",
+        "source_ref.ref": "sha256:ffd4eebdee465be411ee28fc753c211640aece994138b260430b4d1753f7db5d",
+        "source_ref.source_id": "sha256:4dd109ad15a2481c6cd88948a95b3116061fd1b966bef5c92481ec848e167829",
+        "source_ref.url": "sha256:2fbc4fb13b5803b36b32311461004e242bdcc7e8487268aee0f25f8216468d2a",
+        "timestamp": "sha256:cbf8d9775c8736af3e5b73a97625253fc1a7a5de035fa4ad2d80fb82a2af31a0"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-linear-webhook-001",
+      "repeat_digests": [
+        "sha256:973ee1c5063748a92ed99a2c8c4b084508287b4da9d7984e36087d735f5c1ba4",
+        "sha256:973ee1c5063748a92ed99a2c8c4b084508287b4da9d7984e36087d735f5c1ba4",
+        "sha256:973ee1c5063748a92ed99a2c8c4b084508287b4da9d7984e36087d735f5c1ba4",
+        "sha256:973ee1c5063748a92ed99a2c8c4b084508287b4da9d7984e36087d735f5c1ba4",
+        "sha256:973ee1c5063748a92ed99a2c8c4b084508287b4da9d7984e36087d735f5c1ba4"
+      ],
+      "source_shape": "linear_webhook",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.9853000083239749,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:2b25630f5e1d434533a8ac21e77563bc2b71a5616c29260aa48dd1d232f90f96",
+        "excerpt": "sha256:f29098483522293dc873fa6b8285bf1a7202039286320ae1d860fbd88aa42040",
+        "metadata.webhook.action": "sha256:d9aa61a454de0ad5f90b86c9e4243dbb014bf3831c87cf1fa24fb24b6b5987bb",
+        "metadata.webhook.data.description": "sha256:786c3396a9e3c4c37aa6d387bbc4acd9435de168f8d570d782cd0d4fc78fccd3",
+        "metadata.webhook.data.id": "sha256:9a008474c6e45e3e2b5de511d9d30c26f544259ee44de4635b0071798bdfaecc",
+        "metadata.webhook.data.identifier": "sha256:814ed2641b0a140df6a3dbf07eba8fe80eb63291cc21194d0871320c0cfc7251",
+        "metadata.webhook.data.title": "sha256:bf8ee866f2167accda494dfe8b68fde3cd97eeafb31b12ca0d162311cd7378b9",
+        "metadata.webhook.organizationId": "sha256:7daacc9a489529b0845de872c7d870ae09e220f2e4bf9fec06c376d092183ee8",
+        "metadata.webhook.type": "sha256:6c3a5e63ed9c4b07a96093aafb699ff7dc5cbafa5411e0b756a6418c624f2e8f",
+        "title": "sha256:ed2cc8d74f606273fb340040e8501407855bd978cf406cac4e4951d259b21625"
+      },
+      "findings": [
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 45,
+          "field_path": "metadata.webhook.data.description",
+          "start": 30,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:5269b60c1a61ec2581741169ec5e083a0c1801106ecc60d8659eb716edf81dfc",
+        "provider_event_id": "sha256:d49deb8de39bff64813564c88fb8e56945eaa2d0cd3d4d3e6726dc09bba6b7e1",
+        "provider_resource_id": "sha256:9a008474c6e45e3e2b5de511d9d30c26f544259ee44de4635b0071798bdfaecc",
+        "source_ref.kind": "sha256:f80768a970467c673a886f7ac8b8f76daebf2b800c8083d65699e9eccf45751c",
+        "source_ref.ref": "sha256:814ed2641b0a140df6a3dbf07eba8fe80eb63291cc21194d0871320c0cfc7251",
+        "source_ref.source_id": "sha256:4dd109ad15a2481c6cd88948a95b3116061fd1b966bef5c92481ec848e167829",
+        "source_ref.url": "sha256:b6ab6e02b5f1f517d92ef8387b6b20bca87ec45ff4b86d8f3ea844179bc1817d",
+        "timestamp": "sha256:fb51a63c1cfd1a26b0f7f894091ba14a3a282d4f9fa7cb2ebf060c99c78b1bdc"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-linear-webhook-002",
+      "repeat_digests": [
+        "sha256:05b9a7d34de39df188be0754c4b330de5cb54559a3cd4a62532a0326798f6754",
+        "sha256:05b9a7d34de39df188be0754c4b330de5cb54559a3cd4a62532a0326798f6754",
+        "sha256:05b9a7d34de39df188be0754c4b330de5cb54559a3cd4a62532a0326798f6754",
+        "sha256:05b9a7d34de39df188be0754c4b330de5cb54559a3cd4a62532a0326798f6754",
+        "sha256:05b9a7d34de39df188be0754c4b330de5cb54559a3cd4a62532a0326798f6754"
+      ],
+      "source_shape": "linear_webhook",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.7286000036401674,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:bf54c9e2a961a0d6339e1e106a08b04c8ac4bc057213f21bd10aa33da2ef7406",
+        "excerpt": "sha256:9f17d478e5413e599aca8503ac864d8a3b450684c7379de419357a582780fc18",
+        "metadata.file.content": "sha256:152a8826ca685743fcb93225c1c6442430c650946938fe6b9764a64cd89e6943",
+        "metadata.file.path": "sha256:0a71bcc2ffc5d74ebb72698835eef3b0ce69a0f3d2d16d72ad6f2d2384f07eba",
+        "title": "sha256:a6254adf10a9d9b77c78f2d1194b96d680e09eeab865d01fa8b3d28fad5dfdcf"
+      },
+      "findings": [
+        {
+          "backend_label": "DOB",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 18,
+          "field_path": "title",
+          "start": 8,
+          "subtype": "dob"
+        },
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 72,
+          "field_path": "metadata.file.content",
+          "start": 57,
+          "subtype": "phone"
+        },
+        {
+          "backend_label": "DOB",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 24,
+          "field_path": "metadata.file.path",
+          "start": 14,
+          "subtype": "dob"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:fb24adfac0efda3771a31639614e614f922b2ec2d1e431b46cd257438cab0e5e",
+        "provider_resource_id": "sha256:387119b55bf7536b159fb90e73bf78e98e55bd0adb68e482ef890d3cb1f45fb7",
+        "source_ref.kind": "sha256:bfdde6f5651ac5e4e6711f3c2836d5f8c5c4b381a50eb87c51d990b7eb36501b",
+        "source_ref.ref": "sha256:387119b55bf7536b159fb90e73bf78e98e55bd0adb68e482ef890d3cb1f45fb7",
+        "source_ref.source_id": "sha256:aebbae0a4fb05b842a883d0899ee5928a611f2310087d00c60d8b64a31518e00",
+        "timestamp": "sha256:1f0125188a9ffc67c3b7ffb42f95dc7daa04e4cccd8ac542863b01b20c1082d8"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-local-directory-001",
+      "repeat_digests": [
+        "sha256:c39f6661c48c41db85c55a19aee1d34fa26b5f472415dbc9389df6bc5dbbb43a",
+        "sha256:c39f6661c48c41db85c55a19aee1d34fa26b5f472415dbc9389df6bc5dbbb43a",
+        "sha256:c39f6661c48c41db85c55a19aee1d34fa26b5f472415dbc9389df6bc5dbbb43a",
+        "sha256:c39f6661c48c41db85c55a19aee1d34fa26b5f472415dbc9389df6bc5dbbb43a",
+        "sha256:c39f6661c48c41db85c55a19aee1d34fa26b5f472415dbc9389df6bc5dbbb43a"
+      ],
+      "source_shape": "local_directory",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "nested_metadata",
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.7639999967068434,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:bf54c9e2a961a0d6339e1e106a08b04c8ac4bc057213f21bd10aa33da2ef7406",
+        "evidence_metadata.note": "sha256:f68cf3ee6a66bc35e0429c07ecec71905a2de81507bb371a9ac29d0bbdcbfd47",
+        "excerpt": "sha256:a970c9242c97eb00c33b323aea1a8013a6cee966c65c59ff3cbb7ddf2fa523bb",
+        "metadata.file.content": "sha256:1ae78655245e517ba60754919db1b520f8313cf74b1cb91b03928e344fb78b7c",
+        "metadata.file.path": "sha256:fa25c6f12cfa2c61c6ee68722ccf25a7947d598064a220f85dfc526eedd202e1",
+        "title": "sha256:5de72c8868be2fe67384d8b83609513fd2f1107c23e5281ee28a6ef5ff50287a"
+      },
+      "findings": [
+        {
+          "backend_label": "DOB",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 16,
+          "field_path": "title",
+          "start": 6,
+          "subtype": "dob"
+        },
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 56,
+          "field_path": "metadata.file.content",
+          "start": 34,
+          "subtype": "email"
+        },
+        {
+          "backend_label": "DOB",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 22,
+          "field_path": "metadata.file.path",
+          "start": 12,
+          "subtype": "dob"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:f30f403caadb9e345b6727d5481c5f6f09cd4c596d77672fffa1b008d571fac5",
+        "provider_resource_id": "sha256:53e40e85ffac4a37b231e33b12cabce6d0ebcaf713b50a430c38a168dfbbfbca",
+        "source_ref.kind": "sha256:bfdde6f5651ac5e4e6711f3c2836d5f8c5c4b381a50eb87c51d990b7eb36501b",
+        "source_ref.ref": "sha256:53e40e85ffac4a37b231e33b12cabce6d0ebcaf713b50a430c38a168dfbbfbca",
+        "source_ref.source_id": "sha256:aebbae0a4fb05b842a883d0899ee5928a611f2310087d00c60d8b64a31518e00",
+        "timestamp": "sha256:b79b23ce0bb1c08799c683d035bc23f626ce04508af92ddec31ac58db59dcc52"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-local-directory-002",
+      "repeat_digests": [
+        "sha256:5afd5e7506154a08e370fe16d332bda062535d648aa972971323ed0c423b87b0",
+        "sha256:5afd5e7506154a08e370fe16d332bda062535d648aa972971323ed0c423b87b0",
+        "sha256:5afd5e7506154a08e370fe16d332bda062535d648aa972971323ed0c423b87b0",
+        "sha256:5afd5e7506154a08e370fe16d332bda062535d648aa972971323ed0c423b87b0",
+        "sha256:5afd5e7506154a08e370fe16d332bda062535d648aa972971323ed0c423b87b0"
+      ],
+      "source_shape": "local_directory",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.5305999948177487,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:8909a52b2ebfff034c9aed9a40c51bb2b78a4a8af252b7f8052d91edeea4936d",
+        "excerpt": "sha256:9d72f1df51a1c98b2467c920e2bef799e13f7fe655357e3a0b8f7e6062e7ce88",
+        "title": "sha256:91b1ea47f5045aa6004d2b279ee9e29094f6698b7f1a9177de15e731ba6a6e20"
+      },
+      "findings": [
+        {
+          "backend_label": "EMAIL",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 102,
+          "field_path": "excerpt",
+          "start": 77,
+          "subtype": "email"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:26f5afbf48e7adc4c2e164cfc12ecb275d991814af204c6449eff530326ecf29",
+        "provider_event_id": "sha256:a4c58ce1b7b216548d07ebf2316aa7744d93e28cbb0ec803200bbdb0c6fa93a7",
+        "provider_resource_id": "sha256:5f9098b899e5227a91d0eaf3fcdd4a9496d6f9dd701bbbc81b6aafe9007848b8",
+        "source_ref.kind": "sha256:7541331c34a749fec33bf7be507055fc008fb2bb22ac837ca6501250796323fa",
+        "source_ref.ref": "sha256:0fdc8cac0d499b0b1705c5269d65b9f29607a676d01e2ef9355aae952b2e9afd",
+        "source_ref.source_id": "sha256:22e0ad56e0bdab022db28fd1dd8d8d5dbbaeaf3a52899434022e05a7ad88671b",
+        "timestamp": "sha256:249f075a3c1e2e0fe5b702ac50a161fb3dea43adc16643cda173682c9e394438"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-observation-001",
+      "repeat_digests": [
+        "sha256:c648285fc786cf9cd5a89fb4adf7db96412e4ac705d22892ffc58384a54c3f80",
+        "sha256:c648285fc786cf9cd5a89fb4adf7db96412e4ac705d22892ffc58384a54c3f80",
+        "sha256:c648285fc786cf9cd5a89fb4adf7db96412e4ac705d22892ffc58384a54c3f80",
+        "sha256:c648285fc786cf9cd5a89fb4adf7db96412e4ac705d22892ffc58384a54c3f80",
+        "sha256:c648285fc786cf9cd5a89fb4adf7db96412e4ac705d22892ffc58384a54c3f80"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.5390000005718321,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:72a057dad9657eafc09f2a6f95f3f1c45178a4a502662a192e5113daae0377a2",
+        "excerpt": "sha256:430efa1d58471f5f4d50547250741cad5a20664cc27e66dbe1acb26b5f1b0488",
+        "title": "sha256:d7b9a31c210214a09f5ad14386b4fb01e61f79c3e951e3ee210c65133a995d39"
+      },
+      "findings": [
+        {
+          "backend_label": "IP_ADDRESS",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 37,
+          "field_path": "excerpt",
+          "start": 26,
+          "subtype": "ip"
+        },
+        {
+          "backend_label": "PHONE",
+          "category": "pii",
+          "confidence": 1.0,
+          "end": 75,
+          "field_path": "excerpt",
+          "start": 60,
+          "subtype": "phone"
+        }
+      ],
+      "identity_digests": {
+        "evidence_id": "sha256:41986b9d0d2223059348bd674687c3701d40237351bbfa59ba4cb723d4974a41",
+        "provider_event_id": "sha256:d01c63bcebc7d5abba6750a9c8a7eab07cda1f2108829f5176a8d560ba0d8a4f",
+        "provider_resource_id": "sha256:d205ccd2cf941c52610e257b6a507d2e9dfb95c442e91860d44eb906e6eb30b8",
+        "source_ref.kind": "sha256:7541331c34a749fec33bf7be507055fc008fb2bb22ac837ca6501250796323fa",
+        "source_ref.ref": "sha256:7fc4396e9a6448b2e8164145929c17961a439f11754e541e6a9c2199845d6eb1",
+        "source_ref.source_id": "sha256:22e0ad56e0bdab022db28fd1dd8d8d5dbbaeaf3a52899434022e05a7ad88671b",
+        "timestamp": "sha256:d824391653012f6b273cf13bf29ed6c5240f4f4dccb2a2c6348c3c69eb4b0566"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "sanitized",
+      "post_screen_hits": 0,
+      "record_id": "shape-observation-002",
+      "repeat_digests": [
+        "sha256:e4a370fab6a112f8b0549b63454f12d070c7443dd166fce527ffb0333f53689c",
+        "sha256:e4a370fab6a112f8b0549b63454f12d070c7443dd166fce527ffb0333f53689c",
+        "sha256:e4a370fab6a112f8b0549b63454f12d070c7443dd166fce527ffb0333f53689c",
+        "sha256:e4a370fab6a112f8b0549b63454f12d070c7443dd166fce527ffb0333f53689c",
+        "sha256:e4a370fab6a112f8b0549b63454f12d070c7443dd166fce527ffb0333f53689c"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "positive_detection",
+        "structural_identity"
+      ],
+      "duration_ms": 0.49669999862089753,
+      "failure_reason": null,
+      "field_digests": {
+        "author": "sha256:adaf81f1c4e0764c7890bf4b0fe11a27a1ba1233070bf0ab5473d3be857c2bc6",
+        "excerpt": "sha256:57bbd31acab77709a53e1dc03cf5ac3ac63171370b296dad4a975838b95f2270",
+        "title": "sha256:e47a155db800672dc68a752d9f1415dde835b6f63dc367145eabb443abbe686d"
+      },
+      "findings": [],
+      "identity_digests": {
+        "evidence_id": "sha256:2ea50c112f6c684888c62202003a9ad8572db4bcac61f5d5944c5ef8717ea461",
+        "provider_event_id": "sha256:bb4de5eb4ae88c7ba6805c8a39b5bf5ebaa768d527ecbca07b46a11c60887283",
+        "provider_resource_id": "sha256:4924bebc65d29ef586a3d23ff08fd6ab788c910e61f30db03e4a860de8d72ea5",
+        "source_ref.kind": "sha256:7541331c34a749fec33bf7be507055fc008fb2bb22ac837ca6501250796323fa",
+        "source_ref.ref": "sha256:b21bd4c35fd71faf0f28902d3b735acf679b3a2ca08cdef1170d385806a24048",
+        "source_ref.source_id": "sha256:22e0ad56e0bdab022db28fd1dd8d8d5dbbaeaf3a52899434022e05a7ad88671b",
+        "timestamp": "sha256:c0cbd5a47ce03f0954e59793a58a5c956a076b656e287e2b7ece62e8defed094"
+      },
+      "observed_cursor_advances": 1,
+      "observed_sink_calls": 1,
+      "outcome": "unchanged",
+      "post_screen_hits": 0,
+      "record_id": "shape-observation-003",
+      "repeat_digests": [
+        "sha256:bc22b77d3673ef1b91ecc337b877521f6c3ccdcaa8e9aeaa1d9ec507dee1e51b",
+        "sha256:bc22b77d3673ef1b91ecc337b877521f6c3ccdcaa8e9aeaa1d9ec507dee1e51b",
+        "sha256:bc22b77d3673ef1b91ecc337b877521f6c3ccdcaa8e9aeaa1d9ec507dee1e51b",
+        "sha256:bc22b77d3673ef1b91ecc337b877521f6c3ccdcaa8e9aeaa1d9ec507dee1e51b",
+        "sha256:bc22b77d3673ef1b91ecc337b877521f6c3ccdcaa8e9aeaa1d9ec507dee1e51b"
+      ],
+      "source_shape": "observation",
+      "structural_mirror_ok": true,
+      "worker_pid": 75848
+    },
+    {
+      "classes": [
+        "unsupported_binary"
+      ],
+      "duration_ms": 0.21980000019539148,
+      "failure_reason": "unsupported_binary",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "unsupported-binary-value",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    },
+    {
+      "classes": [
+        "backend_crash"
+      ],
+      "cleanup": {
+        "candidate_id": "datafog-regex-v1",
+        "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+        "duration_ms": 2.982200006954372,
+        "outcome": "terminated",
+        "pid": 75848
+      },
+      "duration_ms": 6.373600001097657,
+      "failure_reason": "backend_crash",
+      "fault": "worker_crash",
+      "no_cursor_advance": true,
+      "no_envelope": true,
+      "observed_cursor_advances": 0,
+      "observed_sink_calls": 0,
+      "outcome": "failed_closed",
+      "post_screen_hits": 0,
+      "record_id": "worker-crash",
+      "repeat_digests": [],
+      "source_shape": "failure_fixture"
+    }
+  ],
+  "schema_version": 1,
+  "unmapped_labels": {}
+}

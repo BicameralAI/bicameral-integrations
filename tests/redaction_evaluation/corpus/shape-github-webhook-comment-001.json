@@ -1,0 +1,37 @@
+{
+  "observation": {
+    "author": "dana-frost-dev",
+    "evidence_id": "ev-gh-comment-9001",
+    "evidence_metadata": {},
+    "excerpt": "New comment on the retry queue issue.",
+    "metadata": {
+      "webhook": {
+        "action": "created",
+        "comment": {
+          "body": "Loop in Dana Frost via dana.frost@example.org.",
+          "id": 9001,
+          "user": {
+            "login": "dana-frost-dev"
+          }
+        },
+        "issue": {
+          "number": 501,
+          "title": "Retry queue drains slowly"
+        }
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "2b3c4d5e-6f70-4a1b-8c9d-0e1f2a3b4c5d",
+    "provider_resource_id": "IC_kwDOExample9001",
+    "source_ref": {
+      "kind": "issue_comment",
+      "ref": "issues/501",
+      "source_id": "github",
+      "url": "https://github.com/example-org/sample-service/issues/501"
+    },
+    "timestamp": "2026-06-19T08:30:00Z",
+    "title": "Retry queue drains slowly"
+  },
+  "record_id": "shape-github-webhook-comment-001",
+  "source_shape": "github_webhook"
+}

@@ -1,0 +1,31 @@
+{
+  "observation": {
+    "author": "ingest",
+    "evidence_id": "ev-env-8402",
+    "evidence_metadata": {},
+    "excerpt": "Envelope staged with a courier callback hint.",
+    "metadata": {
+      "envelope": {
+        "candidate_hints": [
+          {
+            "body": "Callback owner is Marlowe Quist."
+          }
+        ],
+        "content": "Courier window confirmed for 82 Quill Hollow Road, Ashvale, VT 05901 on Tuesday."
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "d6e7f8a9-b0c1-4dc4-9536-d4e5f6071829",
+    "provider_resource_id": "env-8402",
+    "source_ref": {
+      "kind": "envelope",
+      "ref": "envelopes/env-8402",
+      "source_id": "external-ingest",
+      "url": ""
+    },
+    "timestamp": "2026-06-25T13:30:00Z",
+    "title": "Courier callback envelope"
+  },
+  "record_id": "shape-external-ingest-envelope-002",
+  "source_shape": "external_ingest_envelope"
+}

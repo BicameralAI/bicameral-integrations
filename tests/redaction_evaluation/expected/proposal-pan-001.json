@@ -1,0 +1,26 @@
+{
+  "expected_entities": [
+    {
+      "category": "credential",
+      "end": 110,
+      "entity_id": "e001",
+      "field_path": "excerpt",
+      "mandatory": true,
+      "replacement": "[redacted:pan]",
+      "start": 94,
+      "subtype": "pan"
+    }
+  ],
+  "expected_failure_reason": null,
+  "expected_outcome": "sanitized",
+  "preservation_assertions": [
+    {
+      "assertion_id": "preserve-001",
+      "field_path": "excerpt",
+      "required_substring": "migrate billing exports to the ledger service next sprint"
+    }
+  ],
+  "protected_fields": [],
+  "record_id": "proposal-pan-001",
+  "schema_version": 1
+}

@@ -1,0 +1,27 @@
+{
+  "observation": {
+    "author": "",
+    "evidence_id": "",
+    "evidence_metadata": {},
+    "excerpt": "The sync completed without retries.",
+    "metadata": {
+      "contact": {
+        "channel": "ops",
+        "note": "Escalate to Avery Winslow at avery.winslow@example.com."
+      }
+    },
+    "mode": "active",
+    "provider_event_id": "",
+    "provider_resource_id": "",
+    "source_ref": {
+      "kind": "note",
+      "ref": "",
+      "source_id": "synthetic-notes",
+      "url": ""
+    },
+    "timestamp": "2026-07-01T12:00:00Z",
+    "title": ""
+  },
+  "record_id": "nested-meta-001",
+  "source_shape": "observation"
+}
