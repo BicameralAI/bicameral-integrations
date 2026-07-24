@@ -15,6 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          # Full history: the information-cycle bundle's provenance checks
+          # verify reviewed_commit ancestry and blobs via git.
+          fetch-depth: 0
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
@@ -52,7 +56,44 @@ jobs:
         run: python scripts/validate_mod_config.py
       - name: Ingest schema pin + conformance gate
         run: python scripts/validate_ingest_schema_pin.py
+      - name: Alpha ingest manifest (closed schema + honesty semantics)
+        run: python scripts/validate_alpha_ingest_manifest.py
+      - name: Information-cycle evidence bundle (record chain + lineage + provenance)
+        # Runs on the synthetic merge ref for integration compatibility; the
+        # exact-head receipt is deliberately NOT emitted here (see the
+        # dedicated exact-head-receipt job, which checks out the real head).
+        run: python scripts/validate_information_cycle_bundle.py ingest/evidence/local_directory-passive_import/bundle.json
       - name: Redaction evaluation corpus and annotation gate
         run: python scripts/validate_redaction_evaluation_contract.py
       - name: Redaction evaluation review and decision gate
         run: python scripts/validate_redaction_evaluation_governance.py
+
+  exact-head-receipt:
+    name: information-cycle exact-head receipt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          # Explicit EXACT-head checkout: the real PR head for pull requests,
+          # the pushed commit otherwise — never GitHub's synthetic
+          # refs/pull/<n>/merge commit.
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Emit exact-head validation receipt (fail-closed head assertion)
+        run: |
+          set -euo pipefail
+          EXPECTED="${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}"
+          # Regression guard: a synthetic merge commit can never masquerade as
+          # exact-head evidence.
+          test "$(git rev-parse HEAD)" = "${EXPECTED}"
+          python scripts/validate_information_cycle_bundle.py             ingest/evidence/local_directory-passive_import/bundle.json             --emit-head-receipt /tmp/exact-head-validation-receipt.json             --expected-head "${EXPECTED}"
+      - name: Upload exact-head validation receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: information-cycle-exact-head-receipt
+          path: /tmp/exact-head-validation-receipt.json
+          if-no-files-found: error
+
