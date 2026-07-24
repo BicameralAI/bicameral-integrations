@@ -1,0 +1,34 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "bicameral-stdlib-v1",
+      "iterations": 30,
+      "measurement_basis": "child-process peak_wset after initialize + warm medium loop, one candidate per process",
+      "peak_bytes": 34852864,
+      "status": "ok"
+    },
+    {
+      "candidate_id": "presidio-spacy-lg-v1",
+      "iterations": 30,
+      "measurement_basis": "child-process peak_wset after initialize + warm medium loop, one candidate per process",
+      "peak_bytes": 1106681856,
+      "status": "ok"
+    },
+    {
+      "candidate_id": "presidio-gliner-pii-v1",
+      "iterations": 30,
+      "measurement_basis": "child-process peak_wset after initialize + warm medium loop, one candidate per process",
+      "peak_bytes": 3029782528,
+      "status": "ok"
+    },
+    {
+      "candidate_id": "datafog-regex-v1",
+      "iterations": 30,
+      "measurement_basis": "child-process peak_wset after initialize + warm medium loop, one candidate per process",
+      "peak_bytes": 42487808,
+      "status": "ok"
+    }
+  ],
+  "generated_by": "scripts/measure_redaction_memory.py",
+  "schema_version": 1
+}

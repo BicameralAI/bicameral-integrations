@@ -1,0 +1,1762 @@
+{
+  "candidates": {
+    "bicameral-stdlib-v1": {
+      "closure_packages": [],
+      "compatible_with_distribution": true,
+      "incompatible_packages": [],
+      "licenses": [],
+      "unknown_license_packages": []
+    },
+    "datafog-regex-v1": {
+      "closure_packages": [
+        "annotated-types",
+        "datafog",
+        "pydantic",
+        "pydantic-core",
+        "pydantic-settings",
+        "python-dotenv",
+        "typing-extensions",
+        "typing-inspection"
+      ],
+      "compatible_with_distribution": true,
+      "incompatible_packages": [],
+      "licenses": [
+        "Apache Software License",
+        "BSD-3-Clause",
+        "MIT",
+        "MIT License",
+        "PSF-2.0"
+      ],
+      "unknown_license_packages": []
+    },
+    "presidio-gliner-pii-v1": {
+      "closure_packages": [
+        "annotated-doc",
+        "annotated-types",
+        "anyio",
+        "blis",
+        "catalogue",
+        "certifi",
+        "charset-normalizer",
+        "click",
+        "cloudpathlib",
+        "colorama",
+        "confection",
+        "cymem",
+        "en-core-web-sm",
+        "filelock",
+        "flatbuffers",
+        "fsspec",
+        "gliner",
+        "h11",
+        "hf-xet",
+        "httpcore",
+        "httpx",
+        "huggingface-hub",
+        "idna",
+        "jinja2",
+        "markdown-it-py",
+        "markupsafe",
+        "mdurl",
+        "mpmath",
+        "murmurhash",
+        "networkx",
+        "numpy",
+        "onnxruntime",
+        "packaging",
+        "phonenumbers",
+        "preshed",
+        "presidio-analyzer",
+        "protobuf",
+        "pydantic",
+        "pydantic-core",
+        "pygments",
+        "pyyaml",
+        "regex",
+        "requests",
+        "requests-file",
+        "rich",
+        "safetensors",
+        "sentencepiece",
+        "setuptools",
+        "shellingham",
+        "smart-open",
+        "spacy",
+        "spacy-legacy",
+        "spacy-loggers",
+        "srsly",
+        "sympy",
+        "thinc",
+        "tldextract",
+        "tokenizers",
+        "torch",
+        "tqdm",
+        "transformers",
+        "typer",
+        "typing-extensions",
+        "typing-inspection",
+        "urllib3",
+        "wasabi",
+        "weasel",
+        "wrapt"
+      ],
+      "compatible_with_distribution": "review_required",
+      "incompatible_packages": [],
+      "licenses": [
+        "3-Clause BSD License",
+        "Apache 2.0 License",
+        "Apache Software License",
+        "Apache-2.0",
+        "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT",
+        "Apache-2.0 AND CNRI-Python",
+        "Apache-2.0 OR BSD-2-Clause",
+        "BSD License",
+        "BSD-2-Clause",
+        "BSD-3-Clause",
+        "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+        "ISC License (ISCL)",
+        "MIT",
+        "MIT License",
+        "MPL-2.0 AND MIT",
+        "Mozilla Public License 2.0 (MPL 2.0)",
+        "PSF-2.0"
+      ],
+      "unknown_license_packages": [
+        "certifi"
+      ]
+    },
+    "presidio-spacy-lg-v1": {
+      "closure_packages": [
+        "annotated-doc",
+        "annotated-types",
+        "anyio",
+        "blis",
+        "catalogue",
+        "certifi",
+        "cffi",
+        "charset-normalizer",
+        "click",
+        "cloudpathlib",
+        "colorama",
+        "confection",
+        "cryptography",
+        "cymem",
+        "en-core-web-lg",
+        "en-core-web-sm",
+        "filelock",
+        "h11",
+        "httpcore",
+        "httpx",
+        "idna",
+        "jinja2",
+        "markdown-it-py",
+        "markupsafe",
+        "mdurl",
+        "murmurhash",
+        "numpy",
+        "packaging",
+        "phonenumbers",
+        "preshed",
+        "presidio-analyzer",
+        "presidio-anonymizer",
+        "pycparser",
+        "pydantic",
+        "pydantic-core",
+        "pygments",
+        "pyyaml",
+        "regex",
+        "requests",
+        "requests-file",
+        "rich",
+        "setuptools",
+        "shellingham",
+        "smart-open",
+        "spacy",
+        "spacy-legacy",
+        "spacy-loggers",
+        "srsly",
+        "thinc",
+        "tldextract",
+        "tqdm",
+        "typer",
+        "typing-extensions",
+        "typing-inspection",
+        "urllib3",
+        "wasabi",
+        "weasel",
+        "wrapt"
+      ],
+      "compatible_with_distribution": "review_required",
+      "incompatible_packages": [],
+      "licenses": [
+        "Apache Software License",
+        "Apache-2.0",
+        "Apache-2.0 AND CNRI-Python",
+        "Apache-2.0 OR BSD-2-Clause",
+        "Apache-2.0 OR BSD-3-Clause",
+        "BSD License",
+        "BSD-2-Clause",
+        "BSD-3-Clause",
+        "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+        "ISC License (ISCL)",
+        "MIT",
+        "MIT License",
+        "MIT-0",
+        "MPL-2.0 AND MIT",
+        "Mozilla Public License 2.0 (MPL 2.0)",
+        "PSF-2.0"
+      ],
+      "unknown_license_packages": [
+        "certifi"
+      ]
+    }
+  },
+  "generated_by": "runtime/redaction_evaluation/inventory.py",
+  "packages": [
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "annotated-doc",
+      "normalized_name": "annotated-doc",
+      "url": "https://github.com/fastapi/annotated-doc",
+      "version": "0.0.4"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "annotated-types",
+      "normalized_name": "annotated-types",
+      "url": "https://github.com/annotated-types/annotated-types",
+      "version": "0.8.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "anyio",
+      "normalized_name": "anyio",
+      "url": "https://anyio.readthedocs.io/en/stable/versionhistory.html",
+      "version": "4.14.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "ast_serialize",
+      "normalized_name": "ast-serialize",
+      "url": "https://github.com/mypyc/ast_serialize",
+      "version": "0.6.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "attrs",
+      "normalized_name": "attrs",
+      "url": "https://www.attrs.org/en/stable/changelog.html",
+      "version": "26.1.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "license_metadata": "BSD",
+      "license_pip_licenses": "BSD License",
+      "name": "blis",
+      "normalized_name": "blis",
+      "url": "https://github.com/explosion/cython-blis",
+      "version": "1.3.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-2-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-2-Clause",
+      "license_pip_licenses": "BSD-2-Clause",
+      "name": "boolean.py",
+      "normalized_name": "boolean-py",
+      "url": "https://github.com/bastikr/boolean.py",
+      "version": "5.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache-2.0",
+      "name": "CacheControl",
+      "normalized_name": "cachecontrol",
+      "url": "https://pypi.org/project/CacheControl/",
+      "version": "0.14.4"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "catalogue",
+      "normalized_name": "catalogue",
+      "url": "https://github.com/explosion/catalogue",
+      "version": "2.0.10"
+    },
+    {
+      "classification": "unknown",
+      "effective_license": "Mozilla Public License 2.0 (MPL 2.0)",
+      "license_classifiers": [
+        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)"
+      ],
+      "license_metadata": "MPL-2.0",
+      "license_pip_licenses": "Mozilla Public License 2.0 (MPL 2.0)",
+      "name": "certifi",
+      "normalized_name": "certifi",
+      "url": "https://github.com/certifi/python-certifi",
+      "version": "2026.7.22"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT-0",
+      "license_classifiers": [],
+      "license_metadata": "MIT-0",
+      "license_pip_licenses": "MIT-0",
+      "name": "cffi",
+      "normalized_name": "cffi",
+      "url": "https://cffi.readthedocs.io/en/latest/whatsnew.html",
+      "version": "2.1.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "charset-normalizer",
+      "normalized_name": "charset-normalizer",
+      "url": "https://github.com/jawah/charset_normalizer/blob/master/CHANGELOG.md",
+      "version": "3.4.9"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "click",
+      "normalized_name": "click",
+      "url": "https://github.com/pallets/click/",
+      "version": "8.4.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "MIT License",
+      "name": "cloudpathlib",
+      "normalized_name": "cloudpathlib",
+      "url": "https://github.com/drivendataorg/cloudpathlib",
+      "version": "0.24.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "BSD License",
+      "name": "colorama",
+      "normalized_name": "colorama",
+      "url": "https://github.com/tartley/colorama",
+      "version": "0.4.6"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "confection",
+      "normalized_name": "confection",
+      "url": "https://github.com/explosion/confection",
+      "version": "1.3.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0 OR BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0 OR BSD-3-Clause",
+      "license_pip_licenses": "Apache-2.0 OR BSD-3-Clause",
+      "name": "cryptography",
+      "normalized_name": "cryptography",
+      "url": "https://github.com/pyca/cryptography",
+      "version": "48.0.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache Software License",
+      "name": "cyclonedx-python-lib",
+      "normalized_name": "cyclonedx-python-lib",
+      "url": "https://github.com/CycloneDX/cyclonedx-python-lib/#readme",
+      "version": "11.11.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "cymem",
+      "normalized_name": "cymem",
+      "url": "https://github.com/explosion/cymem",
+      "version": "2.0.13"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "Apache Software License",
+      "name": "datafog",
+      "normalized_name": "datafog",
+      "url": "https://datafog.ai",
+      "version": "4.8.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "dateparser",
+      "normalized_name": "dateparser",
+      "url": "https://github.com/scrapinghub/dateparser",
+      "version": "1.4.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Python Software Foundation License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Python Software Foundation License"
+      ],
+      "license_metadata": "PSFL",
+      "license_pip_licenses": "Python Software Foundation License",
+      "name": "defusedxml",
+      "normalized_name": "defusedxml",
+      "url": "https://github.com/tiran/defusedxml",
+      "version": "0.7.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "UNKNOWN",
+      "license_pip_licenses": "Apache Software License",
+      "name": "detect-secrets",
+      "normalized_name": "detect-secrets",
+      "url": "https://github.com/Yelp/detect-secrets",
+      "version": "1.5.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "en_core_web_lg",
+      "normalized_name": "en-core-web-lg",
+      "url": "https://explosion.ai",
+      "version": "3.8.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "en_core_web_sm",
+      "normalized_name": "en-core-web-sm",
+      "url": "https://explosion.ai",
+      "version": "3.8.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT License",
+      "license_pip_licenses": "MIT License",
+      "name": "Faker",
+      "normalized_name": "faker",
+      "url": "https://github.com/joke2k/faker",
+      "version": "40.35.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "filelock",
+      "normalized_name": "filelock",
+      "url": "https://github.com/tox-dev/py-filelock",
+      "version": "3.29.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Apache 2.0",
+      "license_pip_licenses": "Apache Software License",
+      "name": "flatbuffers",
+      "normalized_name": "flatbuffers",
+      "url": "https://google.github.io/flatbuffers/",
+      "version": "25.12.19"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "fsspec",
+      "normalized_name": "fsspec",
+      "url": "https://github.com/fsspec/filesystem_spec",
+      "version": "2026.4.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache-2.0",
+      "name": "gliner",
+      "normalized_name": "gliner",
+      "url": "https://github.com/urchade/GLiNER",
+      "version": "0.2.27"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "h11",
+      "normalized_name": "h11",
+      "url": "https://github.com/python-hyper/h11",
+      "version": "0.16.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache-2.0",
+      "name": "hf-xet",
+      "normalized_name": "hf-xet",
+      "url": "https://github.com/huggingface/xet-core",
+      "version": "1.5.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "httpcore",
+      "normalized_name": "httpcore",
+      "url": "https://www.encode.io/httpcore/",
+      "version": "1.0.9"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD License",
+      "name": "httpx",
+      "normalized_name": "httpx",
+      "url": "https://github.com/encode/httpx",
+      "version": "0.28.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache Software License",
+      "name": "huggingface_hub",
+      "normalized_name": "huggingface-hub",
+      "url": "https://github.com/huggingface/huggingface_hub",
+      "version": "1.24.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "idna",
+      "normalized_name": "idna",
+      "url": "https://github.com/kjd/idna",
+      "version": "3.18"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "iniconfig",
+      "normalized_name": "iniconfig",
+      "url": "https://github.com/pytest-dev/iniconfig",
+      "version": "2.3.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "BSD License",
+      "name": "Jinja2",
+      "normalized_name": "jinja2",
+      "url": "https://github.com/pallets/jinja/",
+      "version": "3.1.6"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "joblib",
+      "normalized_name": "joblib",
+      "url": "https://joblib.readthedocs.io",
+      "version": "1.5.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "jsonschema",
+      "normalized_name": "jsonschema",
+      "url": "https://github.com/python-jsonschema/jsonschema",
+      "version": "4.26.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "jsonschema-specifications",
+      "normalized_name": "jsonschema-specifications",
+      "url": "https://github.com/python-jsonschema/jsonschema-specifications",
+      "version": "2025.9.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "librt",
+      "normalized_name": "librt",
+      "url": "https://github.com/mypyc/librt",
+      "version": "0.13.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache-2.0",
+      "name": "license-expression",
+      "normalized_name": "license-expression",
+      "url": "https://github.com/aboutcode-org/license-expression",
+      "version": "30.4.4"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "MIT License",
+      "name": "markdown-it-py",
+      "normalized_name": "markdown-it-py",
+      "url": "https://github.com/executablebooks/markdown-it-py",
+      "version": "4.2.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "MarkupSafe",
+      "normalized_name": "markupsafe",
+      "url": "https://github.com/pallets/markupsafe/",
+      "version": "3.0.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "MIT License",
+      "name": "mdurl",
+      "normalized_name": "mdurl",
+      "url": "https://github.com/executablebooks/mdurl",
+      "version": "0.1.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "license_metadata": "BSD",
+      "license_pip_licenses": "BSD License",
+      "name": "mpmath",
+      "normalized_name": "mpmath",
+      "url": "http://mpmath.org/",
+      "version": "1.3.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache-2.0",
+      "name": "msgpack",
+      "normalized_name": "msgpack",
+      "url": "https://msgpack.org/",
+      "version": "1.2.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "murmurhash",
+      "normalized_name": "murmurhash",
+      "url": "https://github.com/explosion/murmurhash",
+      "version": "1.0.15"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "mypy",
+      "normalized_name": "mypy",
+      "url": "https://www.mypy-lang.org/",
+      "version": "2.3.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "mypy_extensions",
+      "normalized_name": "mypy-extensions",
+      "url": "https://github.com/python/mypy_extensions",
+      "version": "1.1.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "narwhals",
+      "normalized_name": "narwhals",
+      "url": "https://github.com/narwhals-dev/narwhals",
+      "version": "2.24.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "networkx",
+      "normalized_name": "networkx",
+      "url": "https://networkx.org/",
+      "version": "3.6.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Apache License, Version 2.0",
+      "license_pip_licenses": "Apache Software License",
+      "name": "nltk",
+      "normalized_name": "nltk",
+      "url": "https://www.nltk.org/",
+      "version": "3.10.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+      "license_pip_licenses": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+      "name": "numpy",
+      "normalized_name": "numpy",
+      "url": "https://numpy.org",
+      "version": "2.4.6"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT License",
+      "license_pip_licenses": "MIT License",
+      "name": "onnxruntime",
+      "normalized_name": "onnxruntime",
+      "url": "https://onnxruntime.ai",
+      "version": "1.27.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "packageurl-python",
+      "normalized_name": "packageurl-python",
+      "url": "https://github.com/package-url/packageurl-python",
+      "version": "0.17.6"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0 OR BSD-2-Clause",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0 OR BSD-2-Clause",
+      "license_pip_licenses": "Apache-2.0 OR BSD-2-Clause",
+      "name": "packaging",
+      "normalized_name": "packaging",
+      "url": "https://github.com/pypa/packaging",
+      "version": "26.2"
+    },
+    {
+      "classification": "unknown",
+      "effective_license": "Mozilla Public License 2.0 (MPL 2.0)",
+      "license_classifiers": [
+        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "Mozilla Public License 2.0 (MPL 2.0)",
+      "name": "pathspec",
+      "normalized_name": "pathspec",
+      "url": "https://python-path-specification.readthedocs.io/en/latest/index.html",
+      "version": "1.1.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache-2.0",
+      "name": "phonenumbers",
+      "normalized_name": "phonenumbers",
+      "url": "https://github.com/daviddrysdale/python-phonenumbers",
+      "version": "9.0.34"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": null,
+      "name": "pip",
+      "normalized_name": "pip",
+      "url": null,
+      "version": "26.1.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "Apache Software License",
+      "name": "pip-api",
+      "normalized_name": "pip-api",
+      "url": "http://github.com/di/pip-api",
+      "version": "0.0.34"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "Apache Software License",
+      "name": "pip_audit",
+      "normalized_name": "pip-audit",
+      "url": "https://pypi.org/project/pip-audit/",
+      "version": "2.10.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": null,
+      "name": "pip-licenses",
+      "normalized_name": "pip-licenses",
+      "url": null,
+      "version": "5.5.5"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "pip-requirements-parser",
+      "normalized_name": "pip-requirements-parser",
+      "url": "https://github.com/nexB/pip-requirements-parser",
+      "version": "32.0.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "platformdirs",
+      "normalized_name": "platformdirs",
+      "url": "https://github.com/tox-dev/platformdirs",
+      "version": "4.11.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "pluggy",
+      "normalized_name": "pluggy",
+      "url": "UNKNOWN",
+      "version": "1.6.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "preshed",
+      "normalized_name": "preshed",
+      "url": "https://github.com/explosion/preshed",
+      "version": "3.0.13"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "presidio_analyzer",
+      "normalized_name": "presidio-analyzer",
+      "url": "https://github.com/data-privacy-stack/presidio",
+      "version": "2.2.364"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "presidio_anonymizer",
+      "normalized_name": "presidio-anonymizer",
+      "url": "https://github.com/data-privacy-stack/presidio",
+      "version": "2.2.364"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": null,
+      "name": "prettytable",
+      "normalized_name": "prettytable",
+      "url": null,
+      "version": "3.18.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "3-Clause BSD License",
+      "license_classifiers": [],
+      "license_metadata": "3-Clause BSD License",
+      "license_pip_licenses": "3-Clause BSD License",
+      "name": "protobuf",
+      "normalized_name": "protobuf",
+      "url": "https://developers.google.com/protocol-buffers/",
+      "version": "7.35.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "psutil",
+      "normalized_name": "psutil",
+      "url": "https://github.com/giampaolo/psutil",
+      "version": "7.2.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache Software License",
+      "name": "py-serializable",
+      "normalized_name": "py-serializable",
+      "url": "https://github.com/madpah/serializable#readme",
+      "version": "2.1.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "pycparser",
+      "normalized_name": "pycparser",
+      "url": "https://github.com/eliben/pycparser",
+      "version": "3.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "pydantic",
+      "normalized_name": "pydantic",
+      "url": "https://github.com/pydantic/pydantic",
+      "version": "2.13.4"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "pydantic_core",
+      "normalized_name": "pydantic-core",
+      "url": "https://github.com/pydantic",
+      "version": "2.46.4"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "pydantic-settings",
+      "normalized_name": "pydantic-settings",
+      "url": "https://github.com/pydantic/pydantic-settings",
+      "version": "2.14.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-2-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-2-Clause",
+      "license_pip_licenses": "BSD-2-Clause",
+      "name": "Pygments",
+      "normalized_name": "pygments",
+      "url": "https://pygments.org",
+      "version": "2.20.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "pyparsing",
+      "normalized_name": "pyparsing",
+      "url": "https://github.com/pyparsing/pyparsing/",
+      "version": "3.3.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "pytest",
+      "normalized_name": "pytest",
+      "url": "https://docs.pytest.org/en/latest/",
+      "version": "9.1.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License; Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License",
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Dual License",
+      "license_pip_licenses": "Apache Software License; BSD License",
+      "name": "python-dateutil",
+      "normalized_name": "python-dateutil",
+      "url": "https://github.com/dateutil/dateutil",
+      "version": "2.9.0.post0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "python-dotenv",
+      "normalized_name": "python-dotenv",
+      "url": "https://github.com/theskumar/python-dotenv",
+      "version": "1.2.2"
+    },
+    {
+      "classification": "unknown",
+      "effective_license": "GNU Lesser General Public License v2 or later (LGPLv2+)",
+      "license_classifiers": [
+        "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)"
+      ],
+      "license_metadata": "LGPL",
+      "license_pip_licenses": "GNU Lesser General Public License v2 or later (LGPLv2+)",
+      "name": "python-stdnum",
+      "normalized_name": "python-stdnum",
+      "url": "https://arthurdejong.org/python-stdnum/",
+      "version": "2.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "pytz",
+      "normalized_name": "pytz",
+      "url": "http://pythonhosted.org/pytz",
+      "version": "2026.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "PyYAML",
+      "normalized_name": "pyyaml",
+      "url": "https://pyyaml.org/",
+      "version": "6.0.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "referencing",
+      "normalized_name": "referencing",
+      "url": "https://github.com/python-jsonschema/referencing",
+      "version": "0.37.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0 AND CNRI-Python",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0 AND CNRI-Python",
+      "license_pip_licenses": "Apache-2.0 AND CNRI-Python",
+      "name": "regex",
+      "normalized_name": "regex",
+      "url": "https://github.com/mrabarnett/mrab-regex",
+      "version": "2026.7.19"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache Software License",
+      "name": "requests",
+      "normalized_name": "requests",
+      "url": "https://github.com/psf/requests",
+      "version": "2.34.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Apache 2.0",
+      "license_pip_licenses": "Apache Software License",
+      "name": "requests-file",
+      "normalized_name": "requests-file",
+      "url": "https://codeberg.org/dashea/requests-file",
+      "version": "3.0.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "rich",
+      "normalized_name": "rich",
+      "url": "https://github.com/Textualize/rich",
+      "version": "15.0.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "rpds-py",
+      "normalized_name": "rpds-py",
+      "url": "https://github.com/crate-py/rpds",
+      "version": "2026.6.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "MIT License",
+      "name": "ruff",
+      "normalized_name": "ruff",
+      "url": "https://docs.astral.sh/ruff",
+      "version": "0.15.5"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "Apache Software License",
+      "name": "safetensors",
+      "normalized_name": "safetensors",
+      "url": "https://github.com/huggingface/safetensors",
+      "version": "0.8.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "scikit-learn",
+      "normalized_name": "scikit-learn",
+      "url": "https://scikit-learn.org",
+      "version": "1.9.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "license_metadata": "Copyright (c) 2001-2002 Enthought, Inc. 2003, SciPy Developers.\n All rights reserved.\n\n Redistribution and use in source and binary forms, with or without\n modification, are permitted provided that th",
+      "license_pip_licenses": "BSD License",
+      "name": "scipy",
+      "normalized_name": "scipy",
+      "url": "https://scipy.org/",
+      "version": "1.18.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache-2.0",
+      "name": "sentencepiece",
+      "normalized_name": "sentencepiece",
+      "url": "https://github.com/google/sentencepiece",
+      "version": "0.2.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": null,
+      "name": "setuptools",
+      "normalized_name": "setuptools",
+      "url": null,
+      "version": "83.0.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "ISC License (ISCL)",
+      "license_classifiers": [
+        "License :: OSI Approved :: ISC License (ISCL)"
+      ],
+      "license_metadata": "ISC License",
+      "license_pip_licenses": "ISC License (ISCL)",
+      "name": "shellingham",
+      "normalized_name": "shellingham",
+      "url": "https://github.com/sarugaku/shellingham",
+      "version": "1.5.4"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "six",
+      "normalized_name": "six",
+      "url": "https://github.com/benjaminp/six",
+      "version": "1.17.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "MIT License",
+      "name": "smart_open",
+      "normalized_name": "smart-open",
+      "url": "https://github.com/piskvorky/smart_open",
+      "version": "8.0.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": "Apache 2.0",
+      "license_pip_licenses": "Apache Software License",
+      "name": "sortedcontainers",
+      "normalized_name": "sortedcontainers",
+      "url": "http://www.grantjenks.com/docs/sortedcontainers/",
+      "version": "2.4.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "spacy",
+      "normalized_name": "spacy",
+      "url": "https://spacy.io",
+      "version": "3.8.14"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "spacy-legacy",
+      "normalized_name": "spacy-legacy",
+      "url": "https://spacy.io",
+      "version": "3.0.12"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "spacy-loggers",
+      "normalized_name": "spacy-loggers",
+      "url": "https://github.com/explosion/spacy-loggers",
+      "version": "1.0.5"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "srsly",
+      "normalized_name": "srsly",
+      "url": "https://github.com/explosion/srsly",
+      "version": "2.5.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "license_metadata": "BSD",
+      "license_pip_licenses": "BSD License",
+      "name": "sympy",
+      "normalized_name": "sympy",
+      "url": "https://sympy.org",
+      "version": "1.14.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "textblob",
+      "normalized_name": "textblob",
+      "url": "https://github.com/sloria/TextBlob",
+      "version": "0.15.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "thinc",
+      "normalized_name": "thinc",
+      "url": "https://github.com/explosion/thinc",
+      "version": "8.3.13"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD License",
+      "license_classifiers": [
+        "License :: OSI Approved :: BSD License"
+      ],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD License",
+      "name": "threadpoolctl",
+      "normalized_name": "threadpoolctl",
+      "url": "https://github.com/joblib/threadpoolctl",
+      "version": "3.6.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-3-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-3-Clause",
+      "license_pip_licenses": "BSD-3-Clause",
+      "name": "tldextract",
+      "normalized_name": "tldextract",
+      "url": "https://github.com/john-kurkowski/tldextract",
+      "version": "5.3.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache Software License",
+      "license_classifiers": [
+        "License :: OSI Approved :: Apache Software License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "Apache Software License",
+      "name": "tokenizers",
+      "normalized_name": "tokenizers",
+      "url": "https://github.com/huggingface/tokenizers",
+      "version": "0.22.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "tomli",
+      "normalized_name": "tomli",
+      "url": "https://github.com/hukkin/tomli",
+      "version": "2.4.1"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": null,
+      "license_pip_licenses": "MIT License",
+      "name": "tomli_w",
+      "normalized_name": "tomli-w",
+      "url": "https://github.com/hukkin/tomli-w",
+      "version": "1.2.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT",
+      "license_pip_licenses": "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT",
+      "name": "torch",
+      "normalized_name": "torch",
+      "url": "https://pytorch.org",
+      "version": "2.13.0+cpu"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MPL-2.0 AND MIT",
+      "license_classifiers": [],
+      "license_metadata": "MPL-2.0 AND MIT",
+      "license_pip_licenses": "MPL-2.0 AND MIT",
+      "name": "tqdm",
+      "normalized_name": "tqdm",
+      "url": "https://tqdm.github.io",
+      "version": "4.69.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache 2.0 License",
+      "license_classifiers": [],
+      "license_metadata": "Apache 2.0 License",
+      "license_pip_licenses": "Apache 2.0 License",
+      "name": "transformers",
+      "normalized_name": "transformers",
+      "url": "https://github.com/huggingface/transformers",
+      "version": "5.6.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "typer",
+      "normalized_name": "typer",
+      "url": "https://github.com/fastapi/typer",
+      "version": "0.27.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "PSF-2.0",
+      "license_classifiers": [],
+      "license_metadata": "PSF-2.0",
+      "license_pip_licenses": "PSF-2.0",
+      "name": "typing_extensions",
+      "normalized_name": "typing-extensions",
+      "url": "https://github.com/python/typing_extensions",
+      "version": "4.15.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "typing-inspection",
+      "normalized_name": "typing-inspection",
+      "url": "https://github.com/pydantic/typing-inspection",
+      "version": "0.4.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "Apache-2.0",
+      "license_classifiers": [],
+      "license_metadata": "Apache-2.0",
+      "license_pip_licenses": "Apache-2.0",
+      "name": "tzdata",
+      "normalized_name": "tzdata",
+      "url": "https://github.com/python/tzdata",
+      "version": "2026.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "tzlocal",
+      "normalized_name": "tzlocal",
+      "url": "https://github.com/regebro/tzlocal/blob/master/CHANGES.txt",
+      "version": "5.4.4"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "urllib3",
+      "normalized_name": "urllib3",
+      "url": "https://github.com/urllib3/urllib3/blob/main/CHANGES.rst",
+      "version": "2.7.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT",
+      "name": "wasabi",
+      "normalized_name": "wasabi",
+      "url": "https://github.com/explosion/wasabi",
+      "version": "1.1.3"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT",
+      "license_classifiers": [],
+      "license_metadata": "MIT",
+      "license_pip_licenses": null,
+      "name": "wcwidth",
+      "normalized_name": "wcwidth",
+      "url": null,
+      "version": "0.8.2"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "MIT License",
+      "license_classifiers": [
+        "License :: OSI Approved :: MIT License"
+      ],
+      "license_metadata": "MIT",
+      "license_pip_licenses": "MIT License",
+      "name": "weasel",
+      "normalized_name": "weasel",
+      "url": "https://github.com/explosion/weasel/",
+      "version": "1.0.0"
+    },
+    {
+      "classification": "compatible",
+      "effective_license": "BSD-2-Clause",
+      "license_classifiers": [],
+      "license_metadata": "BSD-2-Clause",
+      "license_pip_licenses": "BSD-2-Clause",
+      "name": "wrapt",
+      "normalized_name": "wrapt",
+      "url": "https://github.com/GrahamDumpleton/wrapt",
+      "version": "2.2.2"
+    }
+  ],
+  "policy": {
+    "compatible_markers": [
+      "mit",
+      "bsd",
+      "apache",
+      "isc",
+      "psf",
+      "python software foundation"
+    ],
+    "incompatible_markers": [
+      "agpl",
+      "sspl",
+      "cc-by-nc",
+      "gpl"
+    ],
+    "unknown": "review_required"
+  },
+  "schema_version": 1,
+  "tool": {
+    "error": null,
+    "name": "pip-licenses",
+    "status": "ok"
+  }
+}

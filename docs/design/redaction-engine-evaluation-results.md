@@ -100,12 +100,14 @@ Per-category, per-subtype, per-source-shape, and per-class breakdowns are in
 
 ### Mandatory secret and credential protection
 
-Zero post-screen escapes for every candidate. For the two Presidio
-configurations this is achieved by detection (the Bicameral catalog
-recognizers run inside the candidate); for datafog it is achieved by
-rejection (the wrapper refused 19 mandatory entities' records). The
-protection property held universally; the difference is whether the record
-survives sanitization.
+No mandatory secret or credential reached emitted output for any candidate.
+The baseline and both Presidio configurations protected every mandatory
+entity by detection (zero post-screen hits: the Bicameral catalog
+recognizers run inside those candidates). Datafog missed all 19 mandatory
+catalog entities, and the wrapper's hard-screen postcondition caught every
+one and rejected those records fail-closed (19 post-screen hits, zero
+emissions). The protection property held universally; the difference is
+whether the record survives sanitization or is lost.
 
 ## Information preservation
 
@@ -118,18 +120,45 @@ survives sanitization.
 
 ## Performance and operational benchmarks
 
-Benchmark environment, cold/warm separation, payload classes, memory, CPU,
-concurrency, timeout recovery, and package/model sizes are recorded in
-`artifacts/redaction-evaluation/benchmark-results.json` and
-`environment.json`. See the summary table in
-`artifacts/redaction-evaluation/recommendation.md`.
+One pinned Windows host (Python 3.13.7, CPU only; full environment in
+`artifacts/redaction-evaluation/environment.json`). Cold initialization was
+measured only in fresh spawned interpreters and never blended into warm
+numbers. Peak memory below is the isolated per-candidate measurement
+(`memory-isolated.json`, one candidate per fresh process);
+`benchmark-results.json` additionally records the process-lifetime peak with
+its measurement basis stated.
+
+| | baseline | presidio-spacy | presidio-gliner | datafog |
+|---|---:|---:|---:|---:|
+| Cold start, median of 3 | 0.34 s | 15.6 s | 33.4 s | 0.73 s |
+| Warm p50 / p95, small (200 B) | 0.1 / 0.2 ms | 7.6 / 11.4 ms | 266 / 380 ms | 0.1 / 0.2 ms |
+| Warm p50 / p95, medium (2 KB) | 0.8 / 1.5 ms | 54 / 95 ms | 1.68 / 1.95 s | 0.8 / 1.3 ms |
+| Warm p50, large (20 KB) | 10 ms | 514 ms | 17.2 s | 7 ms |
+| Per call, max admitted (~1 MiB) | 0.80 s | 36.5 s | 767 s | 0.69 s |
+| Throughput, medium (records/s) | 1018 | 16.4 | 0.6 | 1233 |
+| Peak memory, isolated | 35 MB | 1.11 GB | 3.03 GB | 42 MB |
+| Installed package + model bytes | ~0 | 536 MB | 1.87 GB | 0.7 MB |
+| Worker startup (spawn + import) | 0.41 s | 0.44 s | 0.47 s | 0.43 s |
+| Timeout recovery (hang to kill) | 3.5 ms | 3.2 ms | 4.4 ms | 4.2 ms |
+| Orphan processes after storm | 0 | 0 | 0 | 0 |
+
+Read against the production wrapper's 5-second deadline: the baseline and
+datafog clear every payload class; presidio-spacy clears small through large
+and would time out only near the 1 MiB admission ceiling; presidio-gliner
+would time out on large (20 KB) fields, turning them into fail-closed record
+loss under the current budget. Slow-class percentiles rest on smaller sample
+counts (recorded per class in the artifact) because the warm loops are
+time-budgeted; the measured iteration count is stored alongside every
+percentile.
 
 ## Offline execution proof
 
 Each candidate was initialized and exercised in a fresh process with
 socket-level network denial (connect, connect_ex, create_connection,
-getaddrinfo all patched to record and refuse). Results in
-`artifacts/redaction-evaluation/offline-proof.json`.
+getaddrinfo all patched to record and refuse). Result: zero attempted
+connections for all four candidates, not even loopback; initialization and
+analysis succeeded offline. The `no-undeclared-network` hard gate is passed
+for every candidate. Evidence: `artifacts/redaction-evaluation/offline-proof.json`.
 
 ## Dependency, license, and vulnerability posture
 

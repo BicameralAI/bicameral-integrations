@@ -48,8 +48,10 @@ _OFFLINE_ENV = {
     "HF_HUB_DISABLE_TELEMETRY": "1",
 }
 _WARMUP_CALLS = 20
-_MIN_WARM_SAMPLES = 10
+_WARMUP_BUDGET_SECONDS = 10.0
+_MIN_WARM_SAMPLES = 3
 _WARM_CLASS_BUDGET_SECONDS = 60.0
+_WARM_CLASS_CEILING_SECONDS = 240.0
 _SAMPLE_INTERVAL_SECONDS = 0.05
 _HANG_BUDGET_SECONDS = 1.0
 _PAYLOAD_CLASS_ORDER = ("small", "medium", "large", "max_admitted")
@@ -582,8 +584,14 @@ def run_benchmarks(
         try:
             for class_name in _PAYLOAD_CLASS_ORDER:
                 text = payloads[class_name]
+                warmup_started = time.perf_counter()
                 for _ in range(_WARMUP_CALLS):
                     backend.analyze(text, field_path="excerpt", policy=active_policy)
+                    if (
+                        time.perf_counter() - warmup_started
+                        >= _WARMUP_BUDGET_SECONDS
+                    ):
+                        break
                 if class_name == "medium":
                     process.cpu_percent(None)
                 durations: list[float] = []
@@ -597,11 +605,16 @@ def run_benchmarks(
                     call_started = time.perf_counter()
                     backend.analyze(text, field_path="excerpt", policy=active_policy)
                     durations.append(time.perf_counter() - call_started)
+                    elapsed = time.perf_counter() - loop_started
                     if (
                         len(durations) >= _MIN_WARM_SAMPLES
-                        and time.perf_counter() - loop_started
-                        >= _WARM_CLASS_BUDGET_SECONDS
+                        and elapsed >= _WARM_CLASS_BUDGET_SECONDS
                     ):
+                        break
+                    if elapsed >= _WARM_CLASS_CEILING_SECONDS:
+                        # Hard ceiling: one very slow class (a heavy model on
+                        # the maximum-admitted payload) must not stall the
+                        # whole benchmark; whatever samples exist are honest.
                         break
                 loop_seconds = time.perf_counter() - loop_started
                 measured = len(durations)

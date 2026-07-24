@@ -418,6 +418,14 @@ def _merge_external_gate_verdicts(out_dir: Path) -> None:
             if isinstance(entry.get(key), bool):
                 verdict: bool = entry[key]
                 return verdict
+        distribution = entry.get("compatible_with_distribution")
+        if isinstance(distribution, bool):
+            return distribution
+        if distribution == "review_required":
+            # Honest non-verdict: the closure contains a license the pinned
+            # policy will not auto-classify; the gate stays pending for the
+            # owner rather than passing silently.
+            return None
         attempts = entry.get("undeclared_attempts")
         if isinstance(attempts, int):
             return attempts == 0
