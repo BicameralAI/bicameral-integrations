@@ -2,7 +2,7 @@
   "$comment": "Vendored bot schema pin metadata. Records the upstream source, commit, and content hash of the vendored external_ingest_request_v2.schema.json. NOT canonical over bot - the bot schema is the source of truth. Integrations fails first on drift.",
   "upstream_repo": "BicameralAI/bicameral-bot",
   "upstream_path": "protocol/schemas/v2/external-ingest-request.schema.json",
-  "upstream_commit": "516959237cab136a242e5e3aa1fec904a201cba6",
+  "upstream_commit": "8764ac310c31978345c249508bfe126cf1749dfa",
   "pinned_date": "2026-07-24",
   "local_path": "runtime/schemas/external_ingest_request_v2.schema.json",
   "schema_title": "ExternalIngestEnvelope",
