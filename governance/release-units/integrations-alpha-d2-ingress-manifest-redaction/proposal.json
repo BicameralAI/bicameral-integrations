@@ -9,7 +9,7 @@
   "topology": {
     "required": false
   },
-  "proposed_by": "Knapp-Kevin (collaborator lane; agent-authored proposal, operator review pending)",
+  "proposed_by": "Knapp-Kevin",
   "proposed_at": "2026-07-22T19:35:00Z",
-  "proposal_digest": "sha256:ee23320b7b5dc6e5628b5fc1dea55dda3d0e61dd7a3a483c7371b3bc2cfa9e02"
+  "proposal_digest": "sha256:f91f540b775f1211ee491e5cf456082ea65b2cc54367ad2584197537d26979d5"
 }
