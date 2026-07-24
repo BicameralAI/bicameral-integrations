@@ -2,7 +2,7 @@
   "advisory": true,
   "candidates": [
     {
-      "aggregate_state": "pending",
+      "aggregate_state": "passed",
       "candidate_id": "bicameral-stdlib-v1",
       "maintainability_reason": "zero deps, in-repo; every new entity class is hand-written regex work",
       "packaging_deductions": [],
@@ -10,15 +10,15 @@
         "detection": 17.0732,
         "maintainability_seam": 7.0,
         "packaging_operational": 10.0,
-        "performance_resource": 9.7222,
+        "performance_resource": 9.2373,
         "precision_preservation": 20.0,
         "security_failure": 20.0
       },
-      "selection_eligible": false,
-      "total": 83.7954
+      "selection_eligible": true,
+      "total": 83.3105
     },
     {
-      "aggregate_state": "pending",
+      "aggregate_state": "passed",
       "candidate_id": "datafog-regex-v1",
       "maintainability_reason": "single-vendor small project; allowlist-only extension surface",
       "packaging_deductions": [
@@ -35,12 +35,12 @@
         "detection": 13.0165,
         "maintainability_seam": 5.0,
         "packaging_operational": 6.0,
-        "performance_resource": 8.2136,
+        "performance_resource": 8.1986,
         "precision_preservation": 15.5,
         "security_failure": 0.0
       },
-      "selection_eligible": false,
-      "total": 47.7301
+      "selection_eligible": true,
+      "total": 47.7151
     },
     {
       "aggregate_state": "pending",
@@ -68,12 +68,12 @@
         "detection": 27.5956,
         "maintainability_seam": 6.0,
         "packaging_operational": 5.0,
-        "performance_resource": 0.0567,
+        "performance_resource": 0.0616,
         "precision_preservation": 17.3131,
         "security_failure": 20.0
       },
       "selection_eligible": false,
-      "total": 75.9654
+      "total": 75.9703
     },
     {
       "aggregate_state": "pending",
@@ -93,15 +93,15 @@
         "detection": 26.951,
         "maintainability_seam": 8.0,
         "packaging_operational": 8.0,
-        "performance_resource": 0.1715,
+        "performance_resource": 0.1744,
         "precision_preservation": 18.6087,
         "security_failure": 20.0
       },
       "selection_eligible": false,
-      "total": 81.7312
+      "total": 81.7341
     }
   ],
-  "evaluation_input_sha256": "sha256:c628c6328b156fca6a96373a2f7713b4af717510f6cd50a14287542a7e2bc940",
+  "evaluation_input_sha256": "sha256:b00e02728e6e6ed24e582ce0f6cbf181e5298f2af58b5b4a1c65b5e4cd5a6229",
   "schema_version": 1,
   "score_basis": {
     "formulas": {

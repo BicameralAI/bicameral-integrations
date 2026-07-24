@@ -1,61 +1,45 @@
-# Redaction backend recommendation (ADR-0020 evaluation evidence)
+# Redaction backend decision validation (ADR-0020 evaluation evidence)
 
 **Owner:** Kevin Knapp
-**Date:** 2026-07-23
-**Corpus digest:** `sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c`
-**Status:** advisory evidence for the #280 owner decision. Nothing here selects a backend.
+**Evidence dates:** corpus run 2026-07-23, governed-boundary revalidation 2026-07-24
+**Status:** decision-validation evidence. The alpha architecture decision is recorded by the owner: retain the current Bicameral engine for alpha, with `presidio-spacy-lg-v1` qualified as the governed replacement candidate. Generalized contextual PII detection is outside the universal alpha requirement. This document validates those decision assumptions against measured evidence and records the replacement qualification. It does not reopen selection; reopening would require measured evidence that directly falsifies an assumption below, and none does.
 
-## Hard-gate outcome
+## Decision assumptions validated
 
-All four implemented candidates passed every executed hard gate: no raw
-leakage, mandatory secret/credential protection, identity preservation,
-fail-closed behavior on all 15 failure fixtures, deterministic output across
-5 repeats, bounded cleanup with zero orphans, offline execution with zero
-socket attempts, pinned provenance, and receipt-contract compatibility.
-One gate is pending rather than passed for the two Presidio lanes:
-`license-compatible` carries a `review_required` flag because MPL-2.0
-(`certifi`) sits in their dependency closure and the pinned license policy
-refuses to auto-classify it. MPL-2.0 is file-level copyleft and is
-conventionally compatible with distribution, but the call is deliberately
-left to the owner rather than passed silently.
+1. **The current engine protects every mandatory secret and credential at the alpha boundary.** Confirmed: zero post-screen escapes, zero mandatory values in any emitted output, precision 1.000 with zero false positives across all negative controls, 8/8 decision preservation, deterministic across repeated runs, and every fail-closed fixture behaves with the expected typed reason through the governed worker boundary.
+2. **The current engine meets the production 5-second deadline on every admitted payload class.** Confirmed by enforced-termination probes through the candidate worker: small through maximum-admitted all complete inside budget (max ~0.8 s), including the cold-worker probe with initialization inside the budget.
+3. **Generalized contextual PII (person names, addresses, bare IPs, account handles) is not a universal alpha requirement.** This is an owner scope decision, not a measured property. The measured consequence of retention is quantified honestly: the baseline's recall on the synthetic corpus is 0.514 (F2 0.569), with all misses in contextual classes (30 person names, 7 addresses, 7 IPs, 4 account ids, 2 DOB, 2 government ids, 1 IBAN). Nothing in the evidence contradicts scoping these classes out of the universal alpha boundary; the classes and counts are recorded so the scope decision stays reviewable.
+4. **A governed replacement exists if contextual coverage becomes a requirement.** Confirmed: `presidio-spacy-lg-v1` qualification below.
+
+## Replacement qualification: presidio-spacy-lg-v1
+
+Qualified as the governed replacement candidate on this evidence:
+
+- passes every executed hard gate through the same governed worker boundary (fail-closed hang/crash/storm probes terminated its actual worker; zero orphans, candidate-bound cleanup evidence; complete production receipts validated against the external-ingest schema and the literal runtime sink gate);
+- detection: F2 0.898, recall 0.908 vs baseline 0.514 (person names 27/30, all addresses, all IPs, all emails/phones), zero destructive false positives, 8/8 decision preservation, zero clean negative controls modified;
+- mandatory secret protection preserved by construction (the Bicameral catalog runs inside the candidate configuration);
+- offline: zero socket attempts under network denial; reproducibly pinned (spaCy model wheel by URL+version, all package pins in the configuration digest);
+- measured costs, to be priced into any activation: 1.11 GB resident memory, worker prewarm ~13 s in the spawned-worker path (12.6 s direct cold init), ~44 ms p95 per medium field, and two enforced-termination findings from the production-deadline probes: the maximum-admitted (~1 MiB) payload exceeds the 5-second budget, and a cold (unprewarmed) worker cannot initialize inside the budget. Activation therefore requires a prewarmed-worker deployment posture and either a payload-class budget carve-out or acceptance of fail-closed loss at the admission ceiling.
+
+Qualification is complete on the evidence side. One owner item gates activation, not qualification: the `license-compatible` hard gate is honestly `pending` on the MPL-2.0 (`certifi`) `review_required` flag, so `selection_eligible` remains false for both Presidio lanes until the owner records the license call. Under the tri-state eligibility rule (pending is never passed), this is the single item between the qualified replacement and formal eligibility.
+
+## Non-qualified candidates
+
+- `presidio-gliner-pii-v1`: not qualified as the replacement. Its detection edge over presidio-spacy is small (F2 0.920 vs 0.898) against 3.03 GB memory, 33 s cold start, enforced-termination failures on large (20 KB) fields at the production budget, 2 destructive false positives, 7/8 decision preservation, an unpinnable backbone-tokenizer revision, and a pre-1.0 engine.
+- `datafog-regex-v1`: eliminated. Detects less than the baseline (F2 0.434), modified 2 clean records, and every catalog-secret record survived only by last-resort hard-screen rejection (fail-closed record loss).
 
 ## Weighted comparative score (advisory)
 
-Sub-scores are computed from the artifacts in this directory with the
-formulas below; anyone can reproduce the arithmetic from `metrics.json`,
-`hard-gates.json`, `benchmark-results.json`, and `memory-isolated.json`.
-
-- D1 detection (30): `30 x F2`
-- D2 precision and preservation (20): `10 x precision + 10 x mean(decision-pass ratio, 1 - min(1,(destructive FP + clean-modified)/10))`
-- D3 security and failure behavior (20): `20 x failure-expectation match ratio`, zeroed when any post-screen escape, determinism mismatch, or protected-field mutation occurred
-- D4 performance and resource (10): mean of best-candidate/candidate ratios over warm p95 medium latency, isolated peak memory, installed package+model bytes, cold-start median (relative-to-best normalization: heavy engines score near zero by construction)
-- D5 packaging and operational fitness (10): 10 minus itemized deductions listed below
-- D6 maintainability and replacement seam (10): judged, reasons stated
+Reproduced mechanically by `weighted-scores.json` from `metrics.json`, `hard-gates.json`, `benchmark-results.json`, and `memory-isolated.json`; formulas and itemized deductions live in the scoring module and the artifact.
 
 | Candidate | D1 | D2 | D3 | D4 | D5 | D6 | Total |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| `bicameral-stdlib-v1` | 17.07 | 20.00 | 20.00 | 9.72 | 10.00 | 7.00 | **83.80** |
+| `bicameral-stdlib-v1` | 17.07 | 20.00 | 20.00 | 9.24 | 10.00 | 7.00 | **83.31** |
 | `presidio-spacy-lg-v1` | 26.95 | 18.61 | 20.00 | 0.17 | 8.00 | 8.00 | **81.73** |
 | `presidio-gliner-pii-v1` | 27.60 | 17.31 | 20.00 | 0.06 | 5.00 | 6.00 | **75.97** |
-| `datafog-regex-v1` | 13.02 | 15.50 | 0.00 | 8.21 | 6.00 | 5.00 | **47.73** |
+| `datafog-regex-v1` | 13.02 | 15.50 | 0.00 | 8.20 | 6.00 | 5.00 | **47.72** |
 
-D5 deductions. presidio-spacy: 382 MB model provisioning via pinned wheel URL
-(1), MPL-2.0 review flag (1). presidio-gliner: 1.16 GB unsigned `.bin`
-checkpoint with an unpinnable backbone-tokenizer revision (2), HF cache and
-offline-env requirements (1), MPL-2.0 review flag (1), torch>=2.6 CVE floor
-to enforce (1). datafog: license metadata inconsistency (1), measured
-fail-closed record loss on every catalog-secret record (3).
-
-D6 reasons. baseline 7: zero dependencies but every new entity class is
-hand-written regex work. presidio-spacy 8: active community project with a
-first-class recognizer API behind the seam; governance moved from Microsoft
-to the Data Privacy Stack org in 2026-06. presidio-gliner 6: gliner is
-pre-1.0 with no semver promise and zero-shot labels are wording-sensitive.
-datafog 5: single-vendor project, allowlist-only extension surface.
-
-datafog's D3 zero reflects that 19 mandatory entities reached the last-resort
-hard screen (which caught all of them); a detector that leans on the backstop
-for every secret has no defense in depth of its own.
+The score is advisory. The baseline-first ordering reflects the resource dimension's relative-to-best normalization; it does not contradict the replacement qualification, which is a coverage-capability judgment the owner has scoped.
 
 ## Key measured facts
 
@@ -65,117 +49,60 @@ for every secret has no defense in depth of its own.
 | Recall | 0.514 | 0.908 | 0.927 | 0.385 |
 | Precision | 1.000 | 0.861 | 0.894 | 0.875 |
 | Decision preservation | 8/8 | 8/8 | 7/8 | 6/8 |
-| Cold start (median) | 0.34 s | 15.6 s | 33.4 s | 0.73 s |
-| Warm p95, medium field (2 KB) | 1.5 ms | 95 ms | 1.95 s | 1.3 ms |
-| Warm p50, large field (20 KB) | 10 ms | 514 ms | 17.2 s | 7 ms |
-| Max-admitted payload (~1 MiB), per call | 0.80 s | 36.5 s | 767 s | 0.69 s |
+| Cold start (direct, median) | 0.24 s | 12.6 s | 20.0 s | 0.53 s |
+| Worker prewarm (spawned path) | 0.4 s | 13.4 s | 20.3 s | 0.6 s |
+| Warm p95, medium field (2 KB) | 1.1 ms | 44 ms | 1.19 s | 0.8 ms |
 | Peak memory (isolated) | 35 MB | 1.11 GB | 3.03 GB | 42 MB |
-| Installed package+model bytes | ~0 | 536 MB | 1.87 GB | 0.7 MB |
-
-The production wrapper enforces a 5-second deadline per record. Against that
-budget: the baseline and datafog clear every payload class; presidio-spacy
-clears small through large and would time out only near the 1 MiB admission
-ceiling; presidio-gliner would time out on large (20 KB) fields and is more
-than two orders of magnitude outside budget at the ceiling. A timeout is
-fail-closed record loss, so under the current budget GLiNER trades leakage
-risk for availability loss on any non-trivial field.
-
-## Recommendation
-
-**Retain `bicameral-stdlib-v1` for the alpha ingress boundary (owner-decision
-option 4: retention because no challenger earned replacement yet), and record
-`presidio-spacy-lg-v1` as the qualified replacement candidate.**
-
-Reasoning:
-
-1. `datafog-regex-v1` is eliminated by evidence: it detects less than the
-   baseline (F2 0.434 vs 0.569), modified 2 clean records, and every
-   catalog-secret record survived only by last-resort rejection.
-2. `presidio-gliner-pii-v1` does not justify replacement: its detection edge
-   over presidio-spacy is small (F2 0.920 vs 0.898) while it costs 3 GB
-   resident memory, a 33-second cold start, seconds per medium field,
-   deadline-breaking latency on large fields, weaker information
-   preservation (2 destructive false positives, 7/8 decision preservation,
-   worst IP recall of the model lanes), an unpinnable tokenizer revision,
-   and a pre-1.0 engine.
-3. `presidio-spacy-lg-v1` is a genuine qualified challenger: it passes every
-   hard gate, cuts the miss rate from 48.6% to 9.2% (person names 0/30 to
-   27/30), preserves all decisions and all secrets, runs offline, and pins
-   reproducibly. Its costs are real but bounded: 1.1 GB memory, 15.6 s cold
-   start (which also prices each worker recycle after a timeout), ~95 ms
-   p95 per medium field, one license review item, and a fresh
-   community-governance transition upstream.
-4. What the evidence cannot decide is whether contextual PII coverage is a
-   REQUIREMENT for alpha. The baseline never leaks a mandatory secret (the
-   hard screen guarantees that for every candidate), but it will pass person
-   names, physical addresses, bare IPs, and account handles into Bot-bound
-   evidence. If that class of data must be redacted at the alpha boundary,
-   the baseline cannot deliver it and `presidio-spacy-lg-v1` is the
-   evidence-backed selection (owner-decision option 2) despite the advisory
-   score placing it 2.1 points behind the baseline; the gap is entirely the
-   resource dimension's relative-to-best normalization, not a safety or
-   quality deficit.
+| Production 5 s budget: classes failing by enforced termination | none | max-admitted; cold worker | large; max-admitted; cold worker | none killed; medium through max fail closed at the hard screen (missed catalog secrets) |
 
 ## Uncertainty
 
-- The corpus is synthetic; absolute recall/precision will differ on real
-  provider traffic. The comparative ordering is the reliable product.
-- All numbers come from one pinned Windows host; model-lane determinism
-  across platforms is explicitly not claimed (verified per environment).
-- GLiNER was measured at one threshold (0.45) and one pinned label set; a
-  tuned configuration could shift its precision/recall balance, not its
-  resource profile.
-- The MPL-2.0 (`certifi`) review flag and the datafog license metadata
-  inconsistency are unresolved legal items, deliberately not auto-passed.
-- spaCy NER on adversarially formatted text (markdown-heavy issue bodies)
-  may under-detect relative to this corpus; the three missed person names
-  in this run were all inside nested provider metadata.
+- The corpus is synthetic; absolute recall/precision will differ on real provider traffic. The comparative ordering is the reliable product.
+- All numbers come from one pinned Windows host; model-lane determinism across platforms is explicitly not claimed (verified per environment).
+- GLiNER was measured at one threshold and label set.
+- The MPL-2.0 (`certifi`) review flag and the datafog license metadata inconsistency are unresolved owner items, deliberately not auto-passed.
+- spaCy NER on adversarially formatted text may under-detect relative to this corpus; the three missed person names were all inside nested provider metadata.
 
-## Required owner decisions (issue #280)
+## Remaining owner items
 
-1. Choose an option: retain (1/4), select presidio-spacy (2), select another
-   candidate (3), or require one bounded follow-up experiment (5).
-2. State whether contextual PII (person names, addresses, IPs, account
-   handles) must be redacted at the alpha ingress boundary; this single
-   requirement decides between retention and the presidio-spacy path.
-3. Resolve the MPL-2.0 `certifi` license review flag if a Presidio lane is
-   ever selected.
-4. If replacement is chosen: a separate governed implementation issue and PR
-   (per ADR-0020), including budget tuning for the 1 MiB payload class and
-   worker-recycle cost, regenerated tests/receipts/evidence, and a rollback
-   pin.
+1. Record the ADR-0020 owner decision packet (retain baseline; presidio-spacy qualified replacement; contextual PII outside the universal alpha requirement) once the exact-head adversarial review verdict permits.
+2. Resolve the MPL-2.0 `certifi` review flag to make the qualified replacement formally selection-eligible.
+3. If the replacement is ever activated: a separate governed implementation issue and PR with prewarmed-worker deployment posture, budget treatment for the maximum-admitted payload class, regenerated tests/receipts/evidence, and a rollback pin.
 
 ## Machine bindings
 
-Mechanically written by `python scripts/evaluate_redaction_backends.py bind-recommendation` and verified by the `verify` step; the values below must equal the regenerated evidence.
+The fenced block below is written mechanically by
+`python scripts/evaluate_redaction_backends.py bind-recommendation` and
+verified byte-for-byte by `verify`; it binds this document to the exact
+artifact digests it describes.
 
 ```json redaction-recommendation-bindings
 {
   "artifact_sha256": {
-    "hard-gates.json": "sha256:74bd70b844f5de44ecbe4701812b93b25f15e22d53565283f51a30f9794cdab6",
-    "metrics.json": "sha256:dbe1caa0b379dc005fc3b9ee6a4099d936d692551aa0b7f9b4a9e4ad768c17c4",
-    "weighted-scores.json": "sha256:6a9ff8c60678a70307d01d0bdc980f3c51d9217033e60064070f4aa94de1fd0a"
+    "hard-gates.json": "sha256:73d2aebf65187f6bd6a73321e59e3388d0ae6398f1e229910d5832f8d295a553",
+    "metrics.json": "sha256:7f33b435c0dd8c825df65d9cb7788a4f0a06a03d0c032f0f9e21878cf1a054df",
+    "weighted-scores.json": "sha256:ce49875a1703efe50b5747d46b5fa4694ae41f2a6e9d940463142d136ac10cc2"
   },
   "candidates": [
     {
-      "aggregate_state": "pending",
+      "aggregate_state": "passed",
       "candidate_id": "bicameral-stdlib-v1",
       "configuration_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
       "f2": 0.5691056910569106,
       "precision": 1.0,
       "recall": 0.5137614678899083,
-      "selection_eligible": false,
-      "weighted_total": 83.7954
+      "selection_eligible": true,
+      "weighted_total": 83.3105
     },
     {
-      "aggregate_state": "pending",
+      "aggregate_state": "passed",
       "candidate_id": "datafog-regex-v1",
       "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
       "f2": 0.4338842975206612,
       "precision": 0.875,
       "recall": 0.3853211009174312,
-      "selection_eligible": false,
-      "weighted_total": 47.7301
+      "selection_eligible": true,
+      "weighted_total": 47.7151
     },
     {
       "aggregate_state": "pending",
@@ -185,7 +112,7 @@ Mechanically written by `python scripts/evaluate_redaction_backends.py bind-reco
       "precision": 0.8938053097345132,
       "recall": 0.926605504587156,
       "selection_eligible": false,
-      "weighted_total": 75.9654
+      "weighted_total": 75.9703
     },
     {
       "aggregate_state": "pending",
@@ -195,10 +122,10 @@ Mechanically written by `python scripts/evaluate_redaction_backends.py bind-reco
       "precision": 0.8608695652173913,
       "recall": 0.908256880733945,
       "selection_eligible": false,
-      "weighted_total": 81.7312
+      "weighted_total": 81.7341
     }
   ],
   "corpus_sha256": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
-  "evaluation_input_sha256": "sha256:c628c6328b156fca6a96373a2f7713b4af717510f6cd50a14287542a7e2bc940"
+  "evaluation_input_sha256": "sha256:b00e02728e6e6ed24e582ce0f6cbf181e5298f2af58b5b4a1c65b5e4cd5a6229"
 }
 ```

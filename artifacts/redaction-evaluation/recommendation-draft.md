@@ -7,10 +7,10 @@ release, or deployment authority.
 
 | candidate | gate state | pending gates | eligible |
 |---|---|---|---|
-| bicameral-stdlib-v1 | pending | license-compatible, no-undeclared-network | no |
-| datafog-regex-v1 | pending | license-compatible, no-undeclared-network | no |
-| presidio-gliner-pii-v1 | pending | license-compatible, no-undeclared-network | no |
-| presidio-spacy-lg-v1 | pending | license-compatible, no-undeclared-network | no |
+| bicameral-stdlib-v1 | passed | - | yes |
+| datafog-regex-v1 | passed | - | yes |
+| presidio-gliner-pii-v1 | pending | license-compatible | no |
+| presidio-spacy-lg-v1 | pending | license-compatible | no |
 
 Quality, preservation, and security metrics: see `metrics.json` and
 `entity-results.csv`. Weighted advisory scores: `weighted-scores.json`.

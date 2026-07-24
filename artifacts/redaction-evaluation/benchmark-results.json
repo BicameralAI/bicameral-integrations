@@ -4,24 +4,24 @@
       "candidate_id": "bicameral-stdlib-v1",
       "cold_initialization": {
         "measurement_basis": "wall time inside a fresh spawned interpreter (cwd=repo root, HF offline env) covering backend import + create_backend + initialize + one small-payload analyze under the default policy; interpreter startup itself is reported separately as worker_startup_seconds",
-        "median_seconds": 0.33786,
+        "median_seconds": 0.24067579999973532,
         "runs": 3,
         "runs_seconds": [
-          0.33786,
-          0.305597,
-          0.387253
+          0.22995300000184216,
+          0.24391150000155903,
+          0.24067579999973532
         ]
       },
       "concurrency": {
         "calls_per_thread": 25,
         "payload_class": "medium",
-        "serial_expectation_seconds": 0.098215,
-        "speedup_factor": 0.875411,
+        "serial_expectation_seconds": 0.08064609999564709,
+        "speedup_factor": 1.0296434183434025,
         "thread_safe": true,
         "threads": 4,
-        "wall_seconds": 0.112193
+        "wall_seconds": 0.07832430000416934
       },
-      "cpu_percent_avg": 95.4,
+      "cpu_percent_avg": 96.9,
       "cpu_percent_measurement_basis": "psutil Process.cpu_percent delta spanning the medium-class warm loop; can exceed 100 on multi-core hosts",
       "environment": {
         "cpu_count": 8,
@@ -67,19 +67,19 @@
           "serialized_observation_bytes": 560
         }
       },
-      "peak_rss_bytes": 3673817088,
+      "peak_rss_bytes": 47042560,
       "peak_rss_measurement_basis": "psutil memory_info().peak_wset (Windows peak working set over the process lifetime)",
       "schema_version": 1,
-      "throughput_rps": 1018.170785,
+      "throughput_rps": 1239.985566634934,
       "timeout_recovery": {
         "errors": [],
         "measurement_basis": "time from simulated budget expiry to confirmed termination (terminate -> join -> kill -> join) of a spawn-context worker running the hang fault; orphans = worker or descendant pids still alive afterwards per psutil",
-        "median_seconds": 0.003504,
+        "median_seconds": 0.0033915999956661835,
         "orphan_count": 0,
         "runs_seconds": [
-          0.003504,
-          0.003368,
-          0.004381
+          0.005653899992466904,
+          0.003257200005464256,
+          0.0033915999956661835
         ],
         "simulated_budget_seconds": 1.0
       },
@@ -87,43 +87,43 @@
         "large": {
           "iteration_cap": 200,
           "iterations": 200,
-          "p50": 9.964,
-          "p95": 14.4589,
-          "p99": 18.816,
+          "p50": 7.858700002543628,
+          "p95": 12.797000003047287,
+          "p99": 17.916700002388097,
           "time_budget_seconds": 60.0
         },
         "max_admitted": {
           "iteration_cap": 200,
-          "iterations": 74,
-          "p50": 797.7695,
-          "p95": 953.3164,
-          "p99": 1080.8445,
+          "iterations": 95,
+          "p50": 629.7894999879645,
+          "p95": 679.2361999978311,
+          "p99": 762.6075000007404,
           "time_budget_seconds": 60.0
         },
         "medium": {
           "iteration_cap": 200,
           "iterations": 200,
-          "p50": 0.8161,
-          "p95": 1.5099,
-          "p99": 2.6972,
+          "p50": 0.74230000609532,
+          "p95": 1.1312000133330002,
+          "p99": 1.5245999966282398,
           "time_budget_seconds": 60.0
         },
         "small": {
           "iteration_cap": 200,
           "iterations": 200,
-          "p50": 0.079,
-          "p95": 0.1881,
-          "p99": 0.3029,
+          "p50": 0.07389999518636614,
+          "p95": 0.08430000161752105,
+          "p99": 0.13479999324772507,
           "time_budget_seconds": 60.0
         }
       },
       "worker_startup_seconds": {
         "measurement_basis": "spawn-context interpreter start + backend module import + backend construction until a ready message arrives on a pipe",
-        "median_seconds": 0.405173,
+        "median_seconds": 0.3377631999901496,
         "runs_seconds": [
-          0.405137,
-          0.405173,
-          0.556809
+          0.337846599999466,
+          0.33340360000147484,
+          0.3377631999901496
         ]
       }
     },
@@ -131,29 +131,29 @@
       "candidate_id": "datafog-regex-v1",
       "cold_initialization": {
         "measurement_basis": "wall time inside a fresh spawned interpreter (cwd=repo root, HF offline env) covering backend import + create_backend + initialize + one small-payload analyze under the default policy; interpreter startup itself is reported separately as worker_startup_seconds",
-        "median_seconds": 0.726373,
+        "median_seconds": 0.5296302999922773,
         "runs": 3,
         "runs_seconds": [
-          0.738894,
-          0.726373,
-          0.698597
+          0.5401703000097768,
+          0.5279515000001993,
+          0.5296302999922773
         ]
       },
       "concurrency": {
         "calls_per_thread": 25,
         "payload_class": "medium",
-        "serial_expectation_seconds": 0.081085,
-        "speedup_factor": 1.121456,
+        "serial_expectation_seconds": 0.053313600001274615,
+        "speedup_factor": 0.9499573252920641,
         "thread_safe": true,
         "threads": 4,
-        "wall_seconds": 0.072303
+        "wall_seconds": 0.05612209999526385
       },
-      "cpu_percent_avg": 96.3,
+      "cpu_percent_avg": 102.5,
       "cpu_percent_measurement_basis": "psutil Process.cpu_percent delta spanning the medium-class warm loop; can exceed 100 on multi-core hosts",
       "environment": {
         "cpu_count": 8,
         "cpu_freq": {
-          "current_mhz": 4201.0,
+          "current_mhz": 1600.0,
           "max_mhz": 4201.0
         },
         "machine": "AMD64",
@@ -195,19 +195,19 @@
           "serialized_observation_bytes": 560
         }
       },
-      "peak_rss_bytes": 3736547328,
+      "peak_rss_bytes": 3675979776,
       "peak_rss_measurement_basis": "psutil memory_info().peak_wset (Windows peak working set over the process lifetime)",
       "schema_version": 1,
-      "throughput_rps": 1233.277528,
+      "throughput_rps": 1875.6940067376659,
       "timeout_recovery": {
         "errors": [],
         "measurement_basis": "time from simulated budget expiry to confirmed termination (terminate -> join -> kill -> join) of a spawn-context worker running the hang fault; orphans = worker or descendant pids still alive afterwards per psutil",
-        "median_seconds": 0.004159,
+        "median_seconds": 0.006899200001498684,
         "orphan_count": 0,
         "runs_seconds": [
-          0.004145,
-          0.004159,
-          0.005145
+          0.0058397999964654446,
+          0.008925000001909211,
+          0.006899200001498684
         ],
         "simulated_budget_seconds": 1.0
       },
@@ -215,43 +215,43 @@
         "large": {
           "iteration_cap": 200,
           "iterations": 200,
-          "p50": 7.1007,
-          "p95": 10.7199,
-          "p99": 12.796,
+          "p50": 5.0402000051690266,
+          "p95": 7.898299998487346,
+          "p99": 11.017500000889413,
           "time_budget_seconds": 60.0
         },
         "max_admitted": {
           "iteration_cap": 200,
-          "iterations": 85,
-          "p50": 694.246,
-          "p95": 890.0239,
-          "p99": 993.5225,
+          "iterations": 117,
+          "p50": 509.7827999998117,
+          "p95": 593.6973999923794,
+          "p99": 630.9139999939362,
           "time_budget_seconds": 60.0
         },
         "medium": {
           "iteration_cap": 200,
           "iterations": 200,
-          "p50": 0.8049,
-          "p95": 1.3421,
-          "p99": 1.5531,
+          "p50": 0.5039999959990382,
+          "p95": 0.7861000049160793,
+          "p99": 0.9197000035783276,
           "time_budget_seconds": 60.0
         },
         "small": {
           "iteration_cap": 200,
           "iterations": 200,
-          "p50": 0.0967,
-          "p95": 0.1597,
-          "p99": 0.2637,
+          "p50": 0.05360000068321824,
+          "p95": 0.05560000136028975,
+          "p99": 0.05739998596254736,
           "time_budget_seconds": 60.0
         }
       },
       "worker_startup_seconds": {
         "measurement_basis": "spawn-context interpreter start + backend module import + backend construction until a ready message arrives on a pipe",
-        "median_seconds": 0.432467,
+        "median_seconds": 0.34899690000747796,
         "runs_seconds": [
-          0.444446,
-          0.432467,
-          0.430552
+          0.34899690000747796,
+          0.349106199995731,
+          0.3474945000052685
         ]
       }
     },
@@ -259,29 +259,29 @@
       "candidate_id": "presidio-gliner-pii-v1",
       "cold_initialization": {
         "measurement_basis": "wall time inside a fresh spawned interpreter (cwd=repo root, HF offline env) covering backend import + create_backend + initialize + one small-payload analyze under the default policy; interpreter startup itself is reported separately as worker_startup_seconds",
-        "median_seconds": 33.400494,
+        "median_seconds": 19.971099599992158,
         "runs": 3,
         "runs_seconds": [
-          35.174364,
-          27.680449,
-          33.400494
+          20.074908499998855,
+          19.793340399992303,
+          19.971099599992158
         ]
       },
       "concurrency": {
         "calls_per_thread": 25,
         "payload_class": "medium",
-        "serial_expectation_seconds": 169.798086,
-        "speedup_factor": 1.362988,
+        "serial_expectation_seconds": 114.71762264151243,
+        "speedup_factor": 1.3729413988895318,
         "thread_safe": true,
         "threads": 4,
-        "wall_seconds": 124.577821
+        "wall_seconds": 83.55609549999645
       },
-      "cpu_percent_avg": 322.5,
+      "cpu_percent_avg": 398.7,
       "cpu_percent_measurement_basis": "psutil Process.cpu_percent delta spanning the medium-class warm loop; can exceed 100 on multi-core hosts",
       "environment": {
         "cpu_count": 8,
         "cpu_freq": {
-          "current_mhz": 4201.0,
+          "current_mhz": 2000.0,
           "max_mhz": 4201.0
         },
         "machine": "AMD64",
@@ -364,63 +364,63 @@
           "serialized_observation_bytes": 560
         }
       },
-      "peak_rss_bytes": 3736547328,
+      "peak_rss_bytes": 3675979776,
       "peak_rss_measurement_basis": "psutil memory_info().peak_wset (Windows peak working set over the process lifetime)",
       "schema_version": 1,
-      "throughput_rps": 0.588935,
+      "throughput_rps": 0.8717056516460041,
       "timeout_recovery": {
         "errors": [],
         "measurement_basis": "time from simulated budget expiry to confirmed termination (terminate -> join -> kill -> join) of a spawn-context worker running the hang fault; orphans = worker or descendant pids still alive afterwards per psutil",
-        "median_seconds": 0.004388,
+        "median_seconds": 0.00810000000637956,
         "orphan_count": 0,
         "runs_seconds": [
-          0.003714,
-          0.004388,
-          0.0044
+          0.00810000000637956,
+          0.00868070000433363,
+          0.005726000003051013
         ],
         "simulated_budget_seconds": 1.0
       },
       "warm_latency_ms": {
         "large": {
           "iteration_cap": 200,
-          "iterations": 4,
-          "p50": 17174.2291,
-          "p95": 20601.5332,
-          "p99": 20601.5332,
+          "iterations": 6,
+          "p50": 10807.100099991658,
+          "p95": 11008.445400002529,
+          "p99": 11008.445400002529,
           "time_budget_seconds": 60.0
         },
         "max_admitted": {
           "iteration_cap": 200,
           "iterations": 1,
-          "p50": 767396.977,
-          "p95": 767396.977,
-          "p99": 767396.977,
+          "p50": 572615.1666000078,
+          "p95": 572615.1666000078,
+          "p99": 572615.1666000078,
           "time_budget_seconds": 60.0
         },
         "medium": {
           "iteration_cap": 200,
-          "iterations": 36,
-          "p50": 1676.9009,
-          "p95": 1945.2389,
-          "p99": 2254.4806,
+          "iterations": 53,
+          "p50": 1146.1478999990504,
+          "p95": 1186.011800004053,
+          "p99": 1392.4893000075826,
           "time_budget_seconds": 60.0
         },
         "small": {
           "iteration_cap": 200,
           "iterations": 200,
-          "p50": 265.648,
-          "p95": 380.134,
-          "p99": 482.8586,
+          "p50": 191.89729999925476,
+          "p95": 215.56529999361373,
+          "p99": 248.6195000092266,
           "time_budget_seconds": 60.0
         }
       },
       "worker_startup_seconds": {
         "measurement_basis": "spawn-context interpreter start + backend module import + backend construction until a ready message arrives on a pipe",
-        "median_seconds": 0.469255,
+        "median_seconds": 0.35489940000115894,
         "runs_seconds": [
-          0.719209,
-          0.469255,
-          0.460019
+          0.3873351000074763,
+          0.35489940000115894,
+          0.35090009999112226
         ]
       }
     },
@@ -428,29 +428,29 @@
       "candidate_id": "presidio-spacy-lg-v1",
       "cold_initialization": {
         "measurement_basis": "wall time inside a fresh spawned interpreter (cwd=repo root, HF offline env) covering backend import + create_backend + initialize + one small-payload analyze under the default policy; interpreter startup itself is reported separately as worker_startup_seconds",
-        "median_seconds": 15.584732,
+        "median_seconds": 12.57862319999549,
         "runs": 3,
         "runs_seconds": [
-          15.584732,
-          15.684317,
-          15.339478
+          12.580083000008017,
+          12.410061799993855,
+          12.57862319999549
         ]
       },
       "concurrency": {
         "calls_per_thread": 25,
         "payload_class": "medium",
-        "serial_expectation_seconds": 6.108227,
-        "speedup_factor": 1.347747,
+        "serial_expectation_seconds": 3.968390150002961,
+        "speedup_factor": 1.3865717612965347,
         "thread_safe": true,
         "threads": 4,
-        "wall_seconds": 4.532175
+        "wall_seconds": 2.862015699996846
       },
-      "cpu_percent_avg": 89.8,
+      "cpu_percent_avg": 99.8,
       "cpu_percent_measurement_basis": "psutil Process.cpu_percent delta spanning the medium-class warm loop; can exceed 100 on multi-core hosts",
       "environment": {
         "cpu_count": 8,
         "cpu_freq": {
-          "current_mhz": 4201.0,
+          "current_mhz": 2800.0,
           "max_mhz": 4201.0
         },
         "machine": "AMD64",
@@ -505,63 +505,63 @@
           "serialized_observation_bytes": 560
         }
       },
-      "peak_rss_bytes": 3673817088,
+      "peak_rss_bytes": 1398292480,
       "peak_rss_measurement_basis": "psutil memory_info().peak_wset (Windows peak working set over the process lifetime)",
       "schema_version": 1,
-      "throughput_rps": 16.371364,
+      "throughput_rps": 25.19913522109851,
       "timeout_recovery": {
         "errors": [],
         "measurement_basis": "time from simulated budget expiry to confirmed termination (terminate -> join -> kill -> join) of a spawn-context worker running the hang fault; orphans = worker or descendant pids still alive afterwards per psutil",
-        "median_seconds": 0.003215,
+        "median_seconds": 0.008476100003463216,
         "orphan_count": 0,
         "runs_seconds": [
-          0.006439,
-          0.003215,
-          0.003197
+          0.005631100008031353,
+          0.011120700000901707,
+          0.008476100003463216
         ],
         "simulated_budget_seconds": 1.0
       },
       "warm_latency_ms": {
         "large": {
           "iteration_cap": 200,
-          "iterations": 113,
-          "p50": 514.1,
-          "p95": 672.1092,
-          "p99": 785.9005,
+          "iterations": 150,
+          "p50": 397.9797999927541,
+          "p95": 437.6373999984935,
+          "p99": 475.25089999544434,
           "time_budget_seconds": 60.0
         },
         "max_admitted": {
           "iteration_cap": 200,
           "iterations": 3,
-          "p50": 36482.5205,
-          "p95": 37322.9082,
-          "p99": 37322.9082,
+          "p50": 25667.356999998447,
+          "p95": 25679.52829999558,
+          "p99": 25679.52829999558,
           "time_budget_seconds": 60.0
         },
         "medium": {
           "iteration_cap": 200,
           "iterations": 200,
-          "p50": 54.3597,
-          "p95": 95.4091,
-          "p99": 147.7503,
+          "p50": 38.37599999678787,
+          "p95": 44.43219999666326,
+          "p99": 63.77809999685269,
           "time_budget_seconds": 60.0
         },
         "small": {
           "iteration_cap": 200,
           "iterations": 200,
-          "p50": 7.6479,
-          "p95": 11.359,
-          "p99": 14.5415,
+          "p50": 6.117500000982545,
+          "p95": 6.756100003258325,
+          "p99": 8.087599999271333,
           "time_budget_seconds": 60.0
         }
       },
       "worker_startup_seconds": {
         "measurement_basis": "spawn-context interpreter start + backend module import + backend construction until a ready message arrives on a pipe",
-        "median_seconds": 0.436067,
+        "median_seconds": 0.34863639999821316,
         "runs_seconds": [
-          0.793747,
-          0.436067,
-          0.428657
+          0.3540971000038553,
+          0.34863639999821316,
+          0.3471602000063285
         ]
       }
     }

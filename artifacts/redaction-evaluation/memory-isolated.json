@@ -4,28 +4,28 @@
       "candidate_id": "bicameral-stdlib-v1",
       "iterations": 30,
       "measurement_basis": "child-process peak_wset after initialize + warm medium loop, one candidate per process",
-      "peak_bytes": 34852864,
+      "peak_bytes": 34959360,
       "status": "ok"
     },
     {
       "candidate_id": "presidio-spacy-lg-v1",
       "iterations": 30,
       "measurement_basis": "child-process peak_wset after initialize + warm medium loop, one candidate per process",
-      "peak_bytes": 1106681856,
+      "peak_bytes": 1106321408,
       "status": "ok"
     },
     {
       "candidate_id": "presidio-gliner-pii-v1",
       "iterations": 30,
       "measurement_basis": "child-process peak_wset after initialize + warm medium loop, one candidate per process",
-      "peak_bytes": 3029782528,
+      "peak_bytes": 3030503424,
       "status": "ok"
     },
     {
       "candidate_id": "datafog-regex-v1",
       "iterations": 30,
       "measurement_basis": "child-process peak_wset after initialize + warm medium loop, one candidate per process",
-      "peak_bytes": 42487808,
+      "peak_bytes": 42373120,
       "status": "ok"
     }
   ],
