@@ -884,7 +884,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-adapter-emission-001.json",
-      "expected_sha256": "sha256:cf717bb6e8917ee50ca3315a8ce39481c1176691d4d11c97add0c879bbc96410",
+      "expected_sha256": "sha256:c5c14d329997fc5bddb09645504feb145772398402540f4d387e7f9b48bc65ad",
       "input_path": "tests/redaction_evaluation/corpus/shape-adapter-emission-001.json",
       "input_sha256": "sha256:71f2bdf77ae3fbabcebe054afe357b7df85f20d2fcd41ad45aa2a843b7fbc206",
       "record_id": "shape-adapter-emission-001",
@@ -897,7 +897,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-adapter-emission-002.json",
-      "expected_sha256": "sha256:545769cf54635aa0dc260fb332b17e335cb2a02259c339215d6803b78893bb39",
+      "expected_sha256": "sha256:ed1f106b13b6e97d6d986e0f5d8627e64cb6ff174681ee778bf1b23a27237b2e",
       "input_path": "tests/redaction_evaluation/corpus/shape-adapter-emission-002.json",
       "input_sha256": "sha256:d0710dab8c8221844cf7b552c9c14014693a4bc742c709cdce838deaa68c8c24",
       "record_id": "shape-adapter-emission-002",
@@ -910,7 +910,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-bounded-document-fetch-001.json",
-      "expected_sha256": "sha256:923037906b02472e168efd7f3725d848f77eb2f61ee9170ae57a74f9bf5478b7",
+      "expected_sha256": "sha256:c4d14494aba9242cdbb38a9d4dffa0b03bdbacec43d09036f8c32fbfe317f928",
       "input_path": "tests/redaction_evaluation/corpus/shape-bounded-document-fetch-001.json",
       "input_sha256": "sha256:8017254c3750d4479777d92b67ea6d6f76dc5c557470cfbba89bcc8c26d43878",
       "record_id": "shape-bounded-document-fetch-001",
@@ -923,7 +923,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-bounded-document-fetch-002.json",
-      "expected_sha256": "sha256:fdb5cc3eb3836952db1e426900946613b557c8a567c6db5f13617593287f0403",
+      "expected_sha256": "sha256:fcf6d233e54f5d67d9caa3a262984a91cf8d3b79a3d910f66c6fc7b9b3c054df",
       "input_path": "tests/redaction_evaluation/corpus/shape-bounded-document-fetch-002.json",
       "input_sha256": "sha256:72b03600652bf154b5451f6f762a3e099b3730cbda647a9748a0e01339990edb",
       "record_id": "shape-bounded-document-fetch-002",
@@ -936,7 +936,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-external-ingest-envelope-001.json",
-      "expected_sha256": "sha256:405ac64e283ca3798fd02bbff40b8d5b0f8eb646fee157c8db46ac1931fa3a19",
+      "expected_sha256": "sha256:7c077846a4a91c94fea09f53a48a5de18105a34ab932a12efdb17515bd2271d1",
       "input_path": "tests/redaction_evaluation/corpus/shape-external-ingest-envelope-001.json",
       "input_sha256": "sha256:694d2473362400c1b6a9916cc436f2341c3a197ca6be5065491b6c680fd074a9",
       "record_id": "shape-external-ingest-envelope-001",
@@ -949,7 +949,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-external-ingest-envelope-002.json",
-      "expected_sha256": "sha256:aea0a84a3a1a47520694073c6bccbc410185141501a1d30bf2d24d34587de579",
+      "expected_sha256": "sha256:1beca317050d44c38b2df8b9a7776705c998e6d4acc509461eaeee01097843ae",
       "input_path": "tests/redaction_evaluation/corpus/shape-external-ingest-envelope-002.json",
       "input_sha256": "sha256:491c72e7ab9dcd4b824bd16f8e651f900d75c2370ebe6199ab826c1c52bfe639",
       "record_id": "shape-external-ingest-envelope-002",
@@ -962,7 +962,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-github-poll-001.json",
-      "expected_sha256": "sha256:2f1f5e55b9c0259330fb528d73b3c20dbf03d585f2fae0f64793d1e902a25279",
+      "expected_sha256": "sha256:b49f24f037428f6e0befc76ae934326b413b3369ec5abc17ca1549a3eb4af129",
       "input_path": "tests/redaction_evaluation/corpus/shape-github-poll-001.json",
       "input_sha256": "sha256:87bfdfa13a7083b07c7a2c58f226ed7ea578a1ef3a2cfa4ffffb6d8a7a40a5e4",
       "record_id": "shape-github-poll-001",
@@ -975,7 +975,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-github-poll-002.json",
-      "expected_sha256": "sha256:c96f6ad8e6675a8c4a6e507efec2b9fab2c7e350d4e533b0c34d90041f91c0c8",
+      "expected_sha256": "sha256:b8dd0137933f6d3323aa58ac2d75fae42a3ff793396d748e5052fdf7f45ed06a",
       "input_path": "tests/redaction_evaluation/corpus/shape-github-poll-002.json",
       "input_sha256": "sha256:100cf1050690d4210f3058e0c2d0c0a6347c876bc4183f61c8db35fe478c10d4",
       "record_id": "shape-github-poll-002",
@@ -988,7 +988,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-github-webhook-comment-001.json",
-      "expected_sha256": "sha256:96ef66c67827222c961160117da5f6324728eac9c3fcec30c08bcfbca727a439",
+      "expected_sha256": "sha256:10c5bae003cf18eb573f831aa3f3bfb5de48ab62bd6eb6c091dd21afac7a49a9",
       "input_path": "tests/redaction_evaluation/corpus/shape-github-webhook-comment-001.json",
       "input_sha256": "sha256:e83b97214a7c0e608206c6a5db25fdbe980ea8e471f9ac55e9fc312cd8f949f0",
       "record_id": "shape-github-webhook-comment-001",
@@ -1001,7 +1001,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-github-webhook-comment-002.json",
-      "expected_sha256": "sha256:ddcb429c9e441369f5753f30deafc272b7235af0f18d675b38c5701e06c82e45",
+      "expected_sha256": "sha256:6c9bb3b084c6dda71637080157948c2462e66fc8515f7ee79727b2ca988ea12d",
       "input_path": "tests/redaction_evaluation/corpus/shape-github-webhook-comment-002.json",
       "input_sha256": "sha256:2695ff0026078f91477173e948bb9f2201c371cf44fc918df72751503a91195b",
       "record_id": "shape-github-webhook-comment-002",
@@ -1014,7 +1014,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-github-webhook-issue-001.json",
-      "expected_sha256": "sha256:c1b3dc4544c660e8c6a48b2b4635e723731cd460420f7e1518b8855d9808183f",
+      "expected_sha256": "sha256:b5400bb8dc3d1c96b1780e745081211fc37a4036ee2e7a94e4d8c65792af626f",
       "input_path": "tests/redaction_evaluation/corpus/shape-github-webhook-issue-001.json",
       "input_sha256": "sha256:89f6c2a94c0bb131a23d0f66d78feddec775c17a0f4a6089dc2bc2dad50fbff5",
       "record_id": "shape-github-webhook-issue-001",
@@ -1027,7 +1027,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-github-webhook-issue-002.json",
-      "expected_sha256": "sha256:e2a8149d4e7a045af2684015619034e2318245754f5ead139aedd860efbf1145",
+      "expected_sha256": "sha256:7f07ab51117f94a93152bb8c5de80f2feddbcd486327cd2451517e584743ce82",
       "input_path": "tests/redaction_evaluation/corpus/shape-github-webhook-issue-002.json",
       "input_sha256": "sha256:4b1c65a9c49d90f38abd9c2bf4ebf6d2a00d2d196f033f4f14b6590bb245d4bd",
       "record_id": "shape-github-webhook-issue-002",
@@ -1040,7 +1040,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-linear-graphql-001.json",
-      "expected_sha256": "sha256:0a317c8916d20b79d261b44aa0c1e062b3d56e103c2a2b9555506b9e13567a4b",
+      "expected_sha256": "sha256:11523d4f92e05183b8293030b9078c55a3afae8fc0068d4886872b3bfd57d762",
       "input_path": "tests/redaction_evaluation/corpus/shape-linear-graphql-001.json",
       "input_sha256": "sha256:a90b80da589c1920e5995256be9e7a786aaea2a1aa9bebe9f46c326eca2b2438",
       "record_id": "shape-linear-graphql-001",
@@ -1053,7 +1053,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-linear-graphql-002.json",
-      "expected_sha256": "sha256:248f8e66f8d310b867c72c151b0a72a308a7344042c2c61c9eca3e0655970293",
+      "expected_sha256": "sha256:0728197082ba7cf2c1577eb300bf61a80b7aac614961ad40865ef780a013174f",
       "input_path": "tests/redaction_evaluation/corpus/shape-linear-graphql-002.json",
       "input_sha256": "sha256:f9d1335d5c28d13723985c531d78a12957ff714936c2ce295d1a48f7a2a13a18",
       "record_id": "shape-linear-graphql-002",
@@ -1066,7 +1066,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-linear-webhook-001.json",
-      "expected_sha256": "sha256:6f9fef0c16f04810b11a795b5dafc97c5ea1715d1cc437e4c36d5e2dd19b7a01",
+      "expected_sha256": "sha256:94a40ec7f7fcf68cb1548266dfd1bb6d2200cadbc9ac36cb35918412979dc9ab",
       "input_path": "tests/redaction_evaluation/corpus/shape-linear-webhook-001.json",
       "input_sha256": "sha256:94d2e3e3114f0b2502202073863d9bbe049bac4f494eb799afe10a2c40c51ad0",
       "record_id": "shape-linear-webhook-001",
@@ -1079,7 +1079,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-linear-webhook-002.json",
-      "expected_sha256": "sha256:e147d1104387aa786c8bbc5de3428d72b70aedde38f63dcd1b1f9aee61af7dab",
+      "expected_sha256": "sha256:0f07f603997310c6a728981dd3d4a2bbb8666dd4eb3a1ce3b05a2b2d3ec507ae",
       "input_path": "tests/redaction_evaluation/corpus/shape-linear-webhook-002.json",
       "input_sha256": "sha256:914cc1982ec31c14a5135828cb560afa8f2f1f9a73e0a2d4b8040a3413bc94a3",
       "record_id": "shape-linear-webhook-002",
@@ -1092,7 +1092,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-local-directory-001.json",
-      "expected_sha256": "sha256:31983796dd117f54728e2039c7689978d3a04942ab871e67286ca1536fcb5aa2",
+      "expected_sha256": "sha256:46f03fb77f7c552cb1f21e3699e416706f60bf0890a05fe8543a16b78880aedd",
       "input_path": "tests/redaction_evaluation/corpus/shape-local-directory-001.json",
       "input_sha256": "sha256:6585a4a2bb5efaf3e7f11a69d2591d2141a07b72f5aab0487daa65926c69143e",
       "record_id": "shape-local-directory-001",
@@ -1105,7 +1105,7 @@
         "nested_metadata"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-local-directory-002.json",
-      "expected_sha256": "sha256:eb6e2cd01353d232075e7bb63b01a1641b854b6d2fdb620ce814cb947e61bf00",
+      "expected_sha256": "sha256:a0bebb2184201fdc14eb835704740d6218b8a765707afb2981dff4071d3fbd1f",
       "input_path": "tests/redaction_evaluation/corpus/shape-local-directory-002.json",
       "input_sha256": "sha256:de9173d61d4c1893724a5388d34f9f52d70fa2859c66855e9c03a7d678fd1d62",
       "record_id": "shape-local-directory-002",
@@ -1117,7 +1117,7 @@
         "structural_identity"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-observation-001.json",
-      "expected_sha256": "sha256:22ef66686fbcf1d6621509ded1249f6c9e8dae65e7265de30c2e92c61b34f58d",
+      "expected_sha256": "sha256:8a544fe0b49c406a8d3d1ba3aa2fe4062b89a4965b20e8fb8dacccff61afcd8c",
       "input_path": "tests/redaction_evaluation/corpus/shape-observation-001.json",
       "input_sha256": "sha256:77ed3b87bdda10783fc35f60850c6f297f112d5ed4047b6436125d4069cedd99",
       "record_id": "shape-observation-001",
@@ -1129,7 +1129,7 @@
         "structural_identity"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-observation-002.json",
-      "expected_sha256": "sha256:0de65a9c98270ce6dcea83e7b97b9d35b5c2bab5da49a1e970bfb63dbdb79e13",
+      "expected_sha256": "sha256:fde2c569449a2f72f1a37705e08831ecde9794eb4df794a28c98ad73c05dcacb",
       "input_path": "tests/redaction_evaluation/corpus/shape-observation-002.json",
       "input_sha256": "sha256:87da6d5027456d5fbd61279bfdc401e865b73545b2338454a6fdd63ef7d3154a",
       "record_id": "shape-observation-002",
@@ -1141,7 +1141,7 @@
         "structural_identity"
       ],
       "expected_path": "tests/redaction_evaluation/expected/shape-observation-003.json",
-      "expected_sha256": "sha256:facfd4a9849ffc736c96daeb4be213c2e012f4f9a321f6a54a46c115385e6fd4",
+      "expected_sha256": "sha256:e1a4bbb6d199d944a625b87e509fd0d1f35eed706467238fcc0e218a71ec546f",
       "input_path": "tests/redaction_evaluation/corpus/shape-observation-003.json",
       "input_sha256": "sha256:b0d28f7768d43563a878d88410ce1267c440c0715e77b76944e1a9296a194369",
       "record_id": "shape-observation-003",

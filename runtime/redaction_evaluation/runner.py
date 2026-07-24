@@ -207,7 +207,14 @@ def _serialization_guard(observation: dict[str, Any], policy: RedactionPolicy) -
 
 
 def _sha256_text(value: str) -> str:
-    return "sha256:" + hashlib.sha256(value.encode("utf-8")).hexdigest()
+    """JSON-canonical value digest, matching the merged evaluation contract
+    validator (`scripts/validate_redaction_evaluation_contract.py`)."""
+
+    encoded = json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
 
 def _identity_screen(

@@ -1854,7 +1854,15 @@ def _build_expected(
         protected.append(
             {
                 "field_path": path,
-                "expected_value_sha256": _sha256_label(value.encode("utf-8")),
+                "expected_value_sha256": _sha256_label(
+                    json.dumps(
+                        value,
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                        allow_nan=False,
+                    ).encode("utf-8")
+                ),
             }
         )
     preservation = [

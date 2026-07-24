@@ -28,6 +28,28 @@ _ROOT = Path(__file__).resolve().parents[1]
 _REL_SCHEMA_DIR = Path("tests/redaction_evaluation/schema")
 _REL_CORPUS_DIR = Path("tests/redaction_evaluation/corpus")
 _REL_EXPECTED_DIR = Path("tests/redaction_evaluation/expected")
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+
+def _load_corpus_input(path: Path) -> Any:
+    """Load one corpus input through the documented corpus conventions.
+
+    Corpus inputs wrap the observation payload in an envelope and commit
+    catalog-tripping values in the documented reversible form so no
+    secret-shaped byte sequence exists in the tree. The corpus loader is
+    the single source of truth for decoding; field paths then resolve
+    against the observation payload, per the evaluation contract.
+    """
+
+    from tests.redaction_evaluation.corpus_loader import load_input_record
+
+    record = load_input_record(path)
+    observation = record.get("observation")
+    return observation if isinstance(observation, dict) else record
+
+
 _MANIFEST_CANDIDATES = (
     Path("artifacts/redaction-evaluation/corpus-manifest.json"),
     Path("tests/redaction_evaluation/corpus-manifest.json"),
@@ -211,11 +233,18 @@ def _discover_manifest(
 
     existing = [root / path for path in _MANIFEST_CANDIDATES if (root / path).exists()]
     if len(existing) > 1:
-        errors.append(
-            "multiple corpus manifests found; keep exactly one of: "
-            + ", ".join(path.relative_to(root).as_posix() for path in existing)
-        )
-        return None
+        # The evidence layout mandated by the hosted validation contract keeps
+        # a verified copy of the source manifest under the artifact directory
+        # and byte-compares the pair. Identical copies are therefore not an
+        # ambiguity; only DIVERGENT duplicates are rejected.
+        contents = {path: path.read_bytes() for path in existing}
+        if len(set(contents.values())) > 1:
+            errors.append(
+                "corpus manifests diverge; regenerate the artifact copy of: "
+                + ", ".join(path.relative_to(root).as_posix() for path in existing)
+            )
+            return None
+        return existing[-1]
     return existing[0] if existing else None
 
 
@@ -426,7 +455,11 @@ def validate_repository(
         if _sha256_file(expected_path) != record["expected_sha256"]:
             errors.append(f"{label}: expected SHA-256 mismatch")
 
-        input_document = _load_json(input_path, f"{label} input", errors)
+        try:
+            input_document = _load_corpus_input(input_path)
+        except (OSError, ValueError, KeyError) as error:
+            errors.append(f"{label} input: cannot load corpus input: {error}")
+            input_document = None
         expected_document = _load_json(expected_path, f"{label} expected", errors)
         if input_document is None or not isinstance(expected_document, dict):
             continue

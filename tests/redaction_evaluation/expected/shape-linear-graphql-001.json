@@ -26,27 +26,27 @@
   "preservation_assertions": [],
   "protected_fields": [
     {
-      "expected_value_sha256": "sha256:7f2fe580edb35154041fa3d4b41dd6d3adaef0c85d2ff6309f1d4b520eeecda3",
+      "expected_value_sha256": "sha256:4dd109ad15a2481c6cd88948a95b3116061fd1b966bef5c92481ec848e167829",
       "field_path": "source_ref.source_id"
     },
     {
-      "expected_value_sha256": "sha256:074f1f0bcf3deab73da092acfaaeb33614aaf7a44de79f5be63ebf90546594d7",
+      "expected_value_sha256": "sha256:edc51ded6f9dd18658cfb89aab3787e444b8501e5cbff546b241b90cda9536a0",
       "field_path": "source_ref.ref"
     },
     {
-      "expected_value_sha256": "sha256:90cb5fe937eea47a5516b3498aef46690dc351c38f51492921c5c808341c86c8",
+      "expected_value_sha256": "sha256:4fb1869f959c5a0421dd12f146fa84bc35054f53e613398a537000839ead81e2",
       "field_path": "provider_event_id"
     },
     {
-      "expected_value_sha256": "sha256:a6bd1bfb58c03d34304df19c30b118112bdf9e0dbd8ada7acc43bdf94b7e06e5",
+      "expected_value_sha256": "sha256:9ab13b24a3ffdadcff998021fc259c53d598284617f40671f8e9f0419c0679ce",
       "field_path": "provider_resource_id"
     },
     {
-      "expected_value_sha256": "sha256:be9da0787c879ba0a057ff01d298747d5280f25ecd24ba6e777aa4f0d05ec516",
+      "expected_value_sha256": "sha256:7c44ba020a61519cb1812bc6b62f0567fd5133cfe835b071485a2fb47688b05f",
       "field_path": "evidence_id"
     },
     {
-      "expected_value_sha256": "sha256:6a1174530bcdbf2eacc64cd8547118715276db6d80a8d72a5779a9b6ab9448ef",
+      "expected_value_sha256": "sha256:e2761f373f5be7f64d03a02831789a297cb49189395157d1bcbd8d6ac1f1150c",
       "field_path": "timestamp"
     }
   ],

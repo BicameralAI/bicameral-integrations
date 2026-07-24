@@ -286,7 +286,16 @@ def test_protected_fields_pin_input_values(entries: list[dict[str, Any]]) -> Non
             value = _LOADER.resolve_field_path(observation, path)
             assert isinstance(value, str), f"{rid}: protected {path} is not a string"
             assert (
-                _sha256_label(value.encode("utf-8")) == protected["expected_value_sha256"]
+                _sha256_label(
+                json.dumps(
+                    value,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                ).encode("utf-8")
+            )
+            == protected["expected_value_sha256"]
             ), f"{rid}: protected-field digest mismatch at {path}"
 
 

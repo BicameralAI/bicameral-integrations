@@ -3,7 +3,7 @@
 **Status:** Evaluation evidence for ADR-0020 (issues #278, #279)
 **Owner:** Kevin Knapp
 **Evaluation date:** 2026-07-23
-**Corpus:** `bicameral-redaction-evaluation-v1`, 101 records, digest `sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c`
+**Corpus:** `bicameral-redaction-evaluation-v1`, 101 records, digest `sha256:95d50db3f0bf365e917b5b662983ad39cd631f1e25dff1c797e8ca91a9a8a940` (protected-field hashes JSON-canonical per the merged contract validator)
 **Baseline branch point:** PR #269 exact head `fd69ff2742363b5d619bc073b8e8490c0f50733d`
 **Machine-readable artifacts:** `artifacts/redaction-evaluation/`
 **Regeneration:** `python scripts/evaluate_redaction_backends.py all` (fails non-zero on digest drift, malformed annotations, missing outputs, or unreproducible aggregates)
@@ -26,9 +26,24 @@ no-envelope/no-cursor failure semantics. Candidates supplied detection only.
 Full pinned configurations, label maps, and configuration digests are recorded
 per candidate in `artifacts/redaction-evaluation/candidate-results/`.
 
+## Status under the owner decision
+
+The owner decision frames this evidence: the current Bicameral engine is
+retained for alpha, `presidio-spacy-lg-v1` is the qualified governed
+replacement, and generalized contextual PII is outside the universal alpha
+requirement. This document records the measured comparison that validates
+those assumptions; `artifacts/redaction-evaluation/recommendation.md` holds
+the decision-validation narrative and machine bindings.
+
 ## Hard gates
 
-All four candidates passed every computable hard gate in the corpus run:
+Gate aggregation is tri-state (`passed` / `pending` / `failed`) and
+`selection_eligible` requires every gate `passed`. Final states: the
+baseline and datafog aggregate `passed`; both Presidio lanes aggregate
+`pending` solely on the MPL-2.0 (`certifi`) license review flag, which is
+an owner item, so they are not selection-eligible until that call is
+recorded. No candidate has any failed gate. Every candidate was exercised
+through its own governed worker boundary:
 
 - no raw sensitive value in any result artifact (verified by scanning every
   serialized result document against the raw expected span values);
@@ -40,6 +55,25 @@ All four candidates passed every computable hard gate in the corpus run:
   hang, worker death, malformed spans, oversized payload, binary content,
   malformed Unicode, and sensitive metadata keys, each with the typed reason
   the corpus expected (15/15 failure fixtures agree for every candidate);
+  hang, crash, and storm probes terminate the actual candidate's worker
+  (real enforced kills of loaded spaCy and GLiNER workers, cleanup evidence
+  bound to candidate identity and configuration digest);
+- one monotonic per-record deadline through a candidate-specific recyclable
+  worker (lock wait, lazy spawn with initialization, transfer, analysis,
+  response, bounded terminate/kill cleanup), mirroring the production
+  wrapper;
+- production-deadline probes at the real 5-second budget per payload class,
+  including a cold-worker probe: the baseline passes every class; datafog is
+  never killed but loses medium-and-larger probe payloads fail-closed at the
+  hard screen (missed catalog secrets); presidio-spacy is killed on the
+  maximum-admitted payload and on the cold-worker probe; presidio-gliner is
+  killed on large, maximum-admitted, and cold-worker probes;
+- complete production receipts built and validated against the
+  external-ingest schema plus the literal runtime sink gate, with a negative
+  test proving incomplete receipts are rejected;
+- sink and cursor behavior observed through instrumented boundaries: every
+  failed-closed record shows zero sink invocations and zero cursor
+  advances; every success exactly one of each;
 - no envelope emission and no cursor advance on any failure;
 - deterministic output across 5 repeated warm executions per record, zero
   mismatches for all candidates (and the nondeterminism probe was correctly
@@ -53,7 +87,10 @@ All four candidates passed every computable hard gate in the corpus run:
 - production receipt shape reproducible and value-free for every candidate.
 
 `artifacts/redaction-evaluation/hard-gates.json` holds the per-gate,
-per-candidate evidence.
+per-candidate evidence; `evaluation-input.json` binds every corpus byte,
+annotation, schema, configuration, policy, and evaluator-code digest into
+one evaluation-input digest, and `artifact-manifest.json` pins every
+derived artifact so `verify` fails on any hand edit.
 
 ## Detection quality (corpus totals)
 
