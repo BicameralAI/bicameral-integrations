@@ -11,8 +11,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
-from jsonschema.exceptions import SchemaError, ValidationError
+from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
+from jsonschema.exceptions import SchemaError, ValidationError  # type: ignore[import-untyped]
 
 _ROOT = Path(__file__).resolve().parents[1]
 _SCHEMA_DIR = Path("tests/redaction_evaluation/schema")
