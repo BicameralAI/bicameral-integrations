@@ -32,10 +32,10 @@
         },
         {
           "affected_record_ids": [],
-          "evidence": "artifact:offline-proof.json",
+          "evidence": "artifact:offline-proof",
           "gate_id": "no-undeclared-network",
           "raw_values_included": false,
-          "status": "passed"
+          "status": "pending"
         },
         {
           "affected_record_ids": [],
@@ -130,10 +130,10 @@
         },
         {
           "affected_record_ids": [],
-          "evidence": "artifact:license-report.json",
+          "evidence": "artifact:license-report",
           "gate_id": "license-compatible",
           "raw_values_included": false,
-          "status": "passed"
+          "status": "pending"
         },
         {
           "affected_record_ids": [],
@@ -150,7 +150,10 @@
         }
       ],
       "passed": true,
-      "pending_gate_ids": []
+      "pending_gate_ids": [
+        "no-undeclared-network",
+        "license-compatible"
+      ]
     },
     {
       "candidate_id": "datafog-regex-v1",
@@ -184,10 +187,10 @@
         },
         {
           "affected_record_ids": [],
-          "evidence": "artifact:offline-proof.json",
+          "evidence": "artifact:offline-proof",
           "gate_id": "no-undeclared-network",
           "raw_values_included": false,
-          "status": "passed"
+          "status": "pending"
         },
         {
           "affected_record_ids": [],
@@ -282,10 +285,10 @@
         },
         {
           "affected_record_ids": [],
-          "evidence": "artifact:license-report.json",
+          "evidence": "artifact:license-report",
           "gate_id": "license-compatible",
           "raw_values_included": false,
-          "status": "passed"
+          "status": "pending"
         },
         {
           "affected_record_ids": [],
@@ -302,7 +305,10 @@
         }
       ],
       "passed": true,
-      "pending_gate_ids": []
+      "pending_gate_ids": [
+        "no-undeclared-network",
+        "license-compatible"
+      ]
     },
     {
       "candidate_id": "presidio-gliner-pii-v1",
@@ -336,10 +342,10 @@
         },
         {
           "affected_record_ids": [],
-          "evidence": "artifact:offline-proof.json",
+          "evidence": "artifact:offline-proof",
           "gate_id": "no-undeclared-network",
           "raw_values_included": false,
-          "status": "passed"
+          "status": "pending"
         },
         {
           "affected_record_ids": [],
@@ -463,6 +469,7 @@
       ],
       "passed": true,
       "pending_gate_ids": [
+        "no-undeclared-network",
         "license-compatible"
       ]
     },
@@ -498,10 +505,10 @@
         },
         {
           "affected_record_ids": [],
-          "evidence": "artifact:offline-proof.json",
+          "evidence": "artifact:offline-proof",
           "gate_id": "no-undeclared-network",
           "raw_values_included": false,
-          "status": "passed"
+          "status": "pending"
         },
         {
           "affected_record_ids": [],
@@ -620,9 +627,11 @@
       ],
       "passed": true,
       "pending_gate_ids": [
+        "no-undeclared-network",
         "license-compatible"
       ]
     }
   ],
+  "evaluation_input_sha256": "sha256:c628c6328b156fca6a96373a2f7713b4af717510f6cd50a14287542a7e2bc940",
   "schema_version": 1
 }

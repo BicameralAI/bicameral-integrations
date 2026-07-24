@@ -12,18 +12,25 @@ and emits one JSON-serializable candidate result document containing
 per-record outcomes, determinism evidence, and the hard-gate results defined
 by the evaluation contract (``_review-scratch/adr0020/design-corpus.md``).
 
-Fail-closed modeling
---------------------
+Fail-closed enforcement and observation (issue #290)
+----------------------------------------------------
 Production semantics on any redaction failure are: no envelope is emitted, no
 sink is called, and the ingestion cursor does not advance. That contract is
 codified in ``runtime/cursor_policy.py`` ("Sensitive-data rejection is never
 silently advanced"; schema/gate failure -> quarantine, not advance) and in
 ``adapter.core.redaction_receipt.guarded_sanitize_observation`` ("no envelope,
 no sink call, no cursor advancement may follow" a typed
-:class:`RedactionFailure`). The harness MODELS the same invariant
-structurally: every ``failed_closed`` record result carries
-``"no_envelope": true`` and ``"no_cursor_advance": true`` and contains no
-sanitized content whatsoever (value-free failure).
+:class:`RedactionFailure`). The harness PROVES the same invariant by
+observation, not modeling: every record outcome is routed through an
+instrumented sink + cursor (``boundary.route_outcome``) and the gates check
+the OBSERVED call counts (0/0 on failure, exactly 1/1 on success).
+
+Candidate execution itself runs inside a per-candidate worker process
+(``worker.CandidateWorkerManager``) that mirrors the production
+``_WorkerManager`` deadline semantics, so ``per_record_budget_seconds`` is an
+ENFORCED wall-clock deadline with hard termination — not an honor-system
+number — and hang/crash/storm fault probes terminate the ACTUAL candidate's
+worker, never a baseline stand-in.
 
 Raw corpus values live only in memory while hard gates are computed; the
 returned document carries digests, offsets, and counts only.
@@ -36,8 +43,6 @@ import copy
 import hashlib
 import importlib
 import json
-import multiprocessing
-import os
 import re
 import threading
 import time
@@ -46,13 +51,21 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 from adapter.core.redaction import redact_with_findings
-from adapter.core.redaction_receipt import _digest as receipt_digest_of
+from adapter.core.redaction_receipt import _GATE_BUDGET_SECONDS
 from adapter.core.sensitive import detect_sensitive
 
 from .backends import create_backend
 from .backends.faults import FaultInjectedBackend
+from .boundary import RecordingCursor, RecordingSink, route_outcome
 from .policy import LabelMap, RedactionPolicy, canonical_digest, configuration_digest
 from .seam import BackendError, BackendFinding, BackendIdentity, RedactionBackend
+from .worker import (
+    CandidateWorkerManager,
+    WorkerFailure,
+    orphan_pids,
+    psutil_available,
+    python_child_pids,
+)
 
 SCHEMA_VERSION = 1
 
@@ -61,10 +74,15 @@ _SUBPROCESS_FAULTS = ("hang", "worker_crash")
 _STORM_FAULT = "timeout_storm"
 _INIT_FAULTS = ("invalid_configuration", "missing_model", "init_failure")
 _STORM_CONCURRENCY = 8
-_STORM_JOIN_TOLERANCE_SECONDS = 6.0
+_STORM_JOIN_TOLERANCE_SECONDS = 10.0
 _ORPHAN_SETTLE_SECONDS = 3.0
-_JOIN_GRACE_SECONDS = 2.0
-_SPAWN_TOLERANCE_SECONDS = 5.0
+#: Generous ceiling for out-of-deadline worker initialization (heavy models).
+_PREWARM_TIMEOUT_SECONDS = 600.0
+#: Deterministic timestamp for evaluation receipts (reproducible evidence).
+_RECEIPT_COMPLETED_AT = "2026-01-01T00:00:00Z"
+_PROBE_PAYLOAD_CLASSES = ("small", "medium", "large", "max_admitted")
+#: Reasons that imply the manager hard-terminated (recycled) the worker.
+_WORKER_KILL_REASONS = ("backend_timeout", "backend_crash")
 
 _PATH_TOKEN_RE = re.compile(r"([^.\[\]]+)|\[(\d+)\]")
 
@@ -416,126 +434,117 @@ def _build_sanitized_observation(
 
 
 # ---------------------------------------------------------------------------
-# Fault probes: real subprocess termination proof
+# Worker-side pure pipeline entry (executed INSIDE the candidate worker)
 # ---------------------------------------------------------------------------
 
 
-def _fault_probe(fault: str, text: str, budget: float, conn: Any) -> None:
-    """Spawned-child probe body (module-level for the ``spawn`` context).
-
-    Builds a :class:`FaultInjectedBackend` around the baseline identity and
-    calls ``analyze``; ``worker_crash`` exits abruptly via ``os._exit(3)`` so
-    the parent observes a real EOF, never a typed reply.
-    """
-
-    from .backends.baseline import BicameralStdlibBackend
-
-    base = BicameralStdlibBackend()
-    probe = FaultInjectedBackend(base.identity, fault)
-    policy = RedactionPolicy(per_record_budget_seconds=budget)
-    if fault == "worker_crash":
-        os._exit(3)
-    try:
-        findings = probe.analyze(text, field_path="excerpt", policy=policy)
-    except BackendError as err:
-        conn.send(("err", err.reason))
-        return
-    conn.send(("ok", len(findings)))
-
-
-def _terminate(process: Any) -> bool:
-    """Bounded hard termination; True when the child is verifiably dead."""
-
-    if not process.is_alive():
-        return True
-    process.terminate()
-    process.join(_JOIN_GRACE_SECONDS)
-    if process.is_alive():
-        kill = getattr(process, "kill", None)
-        if callable(kill):
-            kill()
-        process.join(_JOIN_GRACE_SECONDS)
-    return not process.is_alive()
-
-
-def run_subprocess_fault(
-    fault: str, text: str, budget: float
-) -> tuple[str, bool, int | None]:
-    """Run one fault probe in a spawned child.
-
-    Returns ``(failure_reason, cleanup_ok, child_pid)``. ``hang`` must yield
-    ``backend_timeout`` with the child hard-terminated; ``worker_crash`` must
-    yield ``backend_crash`` via parent-side EOF.
-    """
-
-    ctx = multiprocessing.get_context("spawn")
-    parent, child = ctx.Pipe()
-    process = ctx.Process(
-        target=_fault_probe, args=(fault, text, budget, child), daemon=True
-    )
-    process.start()
-    child.close()
-    wait = budget if fault == "hang" else budget + _SPAWN_TOLERANCE_SECONDS
-    reason = "backend_timeout"
-    try:
-        if parent.poll(wait):
-            try:
-                kind, payload = parent.recv()
-            except (EOFError, OSError):
-                reason = "backend_crash"
-            else:
-                reason = str(payload) if kind == "err" else "backend_no_failure"
-        else:
-            reason = "backend_timeout"
-    finally:
-        try:
-            parent.close()
-        except OSError:
-            pass
-        cleanup_ok = _terminate(process)
-    return reason, cleanup_ok, process.pid
-
-
-def _python_children() -> set[int]:
-    try:
-        psutil = importlib.import_module("psutil")
-    except ImportError:
-        return set()
-    pids: set[int] = set()
-    for child in psutil.Process().children(recursive=True):
-        try:
-            if "python" in child.name().lower():
-                pids.add(child.pid)
-        except psutil.Error:
-            continue
-    return pids
-
-
-def run_timeout_storm(
-    text: str,
-    budget: float,
+def execute_record_in_worker(
     backend: RedactionBackend,
+    observation: dict[str, Any],
     policy: RedactionPolicy,
+    directives: dict[str, Any],
+) -> dict[str, Any]:
+    """Run the ENTIRE per-record pipeline once; return a picklable result doc.
+
+    Pure function used as the child-process pipeline body by
+    ``worker._candidate_worker_loop`` (no corpus-loader dependency). Semantics
+    are exactly the historical in-process pipeline: serialization guard,
+    oversized/binary rejection, identity screen, metadata-key screen, analyze,
+    finding validation, deterministic overlap resolution, right-to-left
+    replacement, hard-screen postcondition. The returned document carries the
+    value-bearing sanitized field map and sanitized observation; the PARENT
+    strips sanitized text before persisting, keeping digests only.
+    Fault directives (hang/worker_crash) are applied by the worker loop before
+    this function runs.
+    """
+
+    del directives
+    execution = execute_once(observation, backend, policy)
+    doc: dict[str, Any] = {
+        "outcome": execution.outcome,
+        "failure_reason": execution.failure_reason,
+        "findings": execution.findings,
+        "sanitized_fields": dict(execution.sanitized_fields),
+        "identity_digests": dict(execution.identity_digests),
+        "post_screen_hits": execution.post_screen_hits,
+        "structural_mirror_ok": execution.structural_mirror_ok,
+        "execution_digest": execution.digest(),
+    }
+    if execution.outcome in ("sanitized", "unchanged"):
+        try:
+            doc["sanitized_observation"] = _build_sanitized_observation(
+                observation, execution.sanitized_fields
+            )
+        except KeyError:
+            doc["structural_mirror_ok"] = False
+            doc["sanitized_observation"] = None
+    return doc
+
+
+def _healthy_probe_observation(record_id: str, excerpt: str) -> dict[str, Any]:
+    """Synthetic, sensitive-free observation for recovery/deadline probes."""
+
+    return {
+        "source_ref": {
+            "source_id": f"{record_id}-source",
+            "ref": f"{record_id}-ref",
+            "url": "",
+            "kind": "synthetic",
+        },
+        "excerpt": excerpt,
+        "title": record_id,
+        "author": "harness",
+        "mode": "batch",
+        "timestamp": "2026-01-01T00:00:00Z",
+        "provider_event_id": f"{record_id}-event",
+        "provider_resource_id": f"{record_id}-resource",
+        "evidence_id": f"{record_id}-evidence",
+        "evidence_metadata": {},
+        "metadata": {},
+    }
+
+
+# ---------------------------------------------------------------------------
+# Fault probes against the ACTUAL candidate's worker (issue #290 defect 2)
+# ---------------------------------------------------------------------------
+
+
+def run_worker_timeout_storm(
+    observation: dict[str, Any],
+    policy: RedactionPolicy,
+    budget: float,
+    manager: CandidateWorkerManager,
     *,
     concurrency: int = _STORM_CONCURRENCY,
+    prewarm_timeout_seconds: float = _PREWARM_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
-    """Concurrent hang probes: all must time out, leave no orphan, and the
-    pipeline must recover immediately afterwards."""
+    """Concurrent hang calls against the ONE candidate worker manager.
 
-    try:
-        importlib.import_module("psutil")
-        psutil_available = True
-    except ImportError:
-        psutil_available = False
-    before = _python_children()
+    Every caller uses its OWN per-caller deadline (lock wait included), so all
+    must fail ``backend_timeout``; afterwards the orphan check runs for this
+    candidate, then one healthy record through the SAME manager proves
+    recovery. Prewarm times spent restoring the worker are recorded honestly
+    and never blended into any caller's budget.
+    """
+
+    psutil_ok = psutil_available()
+    before = python_child_pids()
+    pids_before = set(manager.pids_seen())
+    prewarm_before_seconds = manager.prewarm(prewarm_timeout_seconds)
+    storm_pids: set[int] = set()
+    pid_at_start = manager.worker_pid()
+    if pid_at_start is not None:
+        storm_pids.add(pid_at_start)
 
     reasons: list[str | None] = [None] * concurrency
-    cleanups: list[bool] = [False] * concurrency
 
     def _one(slot: int) -> None:
-        reason, cleanup_ok, _pid = run_subprocess_fault("hang", text, budget)
-        reasons[slot] = reason
-        cleanups[slot] = cleanup_ok
+        try:
+            manager.call(observation, policy, {"fault": "hang"}, budget)
+        except WorkerFailure as failure:
+            reasons[slot] = failure.reason
+        else:
+            reasons[slot] = "no_failure"
 
     threads = [
         threading.Thread(target=_one, args=(slot,), daemon=True)
@@ -553,40 +562,113 @@ def run_timeout_storm(
     )
 
     orphans: int | None = None
-    if psutil_available:
+    if psutil_ok:
         settle_deadline = time.monotonic() + _ORPHAN_SETTLE_SECONDS
-        leftover = _python_children() - before
+        leftover = orphan_pids(before)
         while leftover and time.monotonic() < settle_deadline:
             time.sleep(0.1)
-            leftover = _python_children() - before
+            leftover = orphan_pids(before)
         orphans = len(leftover)
 
-    healthy = {
-        "source_ref": {
-            "source_id": "storm-recovery",
-            "ref": "storm-recovery-ref",
-            "url": "",
-            "kind": "synthetic",
-        },
-        "excerpt": "storm recovery probe with no sensitive content",
-        "title": "recovery",
-        "author": "harness",
-        "mode": "batch",
-        "timestamp": "2026-01-01T00:00:00Z",
-        "provider_event_id": "storm-recovery-event",
-        "provider_resource_id": "storm-recovery-resource",
-        "evidence_id": "storm-recovery-evidence",
-        "evidence_metadata": {},
-        "metadata": {},
-    }
-    recovery = execute_once(healthy, backend, policy)
+    recovery_prewarm_seconds = manager.prewarm(prewarm_timeout_seconds)
+    healthy = _healthy_probe_observation(
+        "storm-recovery", "storm recovery probe with no sensitive content"
+    )
+    try:
+        recovery_doc = manager.call(
+            healthy, policy, {}, policy.per_record_budget_seconds
+        )
+    except WorkerFailure:
+        recovered = False
+    else:
+        recovered = recovery_doc.get("outcome") in ("sanitized", "unchanged")
     return {
         "storm_concurrency": concurrency,
         "all_timed_out": all_timed_out,
-        "cleanup_ok": all(cleanups),
+        # Bounded cleanup is observable as every caller returning inside the
+        # bounded join window (deadline + documented cleanup tolerance).
+        "cleanup_ok": finished,
         "orphans": orphans if orphans is not None else -1,
-        "recovered": recovery.outcome in ("sanitized", "unchanged"),
+        "recovered": recovered,
+        "candidate_id": manager.candidate_id,
+        "configuration_digest": manager.configuration_digest,
+        "worker_pids": sorted(
+            storm_pids | (set(manager.pids_seen()) - pids_before)
+        ),
+        "prewarm_before_seconds": prewarm_before_seconds,
+        "recovery_prewarm_seconds": recovery_prewarm_seconds,
     }
+
+
+def run_production_deadline_probes(
+    manager: CandidateWorkerManager,
+    policy: RedactionPolicy,
+    *,
+    prewarm_timeout_seconds: float = _PREWARM_TIMEOUT_SECONDS,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Hard per-candidate evidence against the PRODUCTION gate budget.
+
+    Runs the benchmark payload classes (small/medium/large/max_admitted) as
+    synthetic observations through the candidate worker with
+    ``budget_seconds=_GATE_BUDGET_SECONDS`` (imported from
+    ``adapter.core.redaction_receipt`` — the production 5.0 s gate budget).
+    Between warm probes the worker is re-prewarmed (recorded) if a previous
+    probe killed it. One explicit ``cold_worker`` probe shuts the worker down
+    first so initialization falls INSIDE the production budget, matching
+    production lazy-spawn semantics. Enforced terminations are recorded per
+    probe; these measurements are hard evidence, never benchmark reuse.
+
+    Returns ``(probes, prewarm_events)``.
+    """
+
+    from .bench import _observation_document, build_payloads
+
+    payloads = build_payloads(policy)
+    probes: list[dict[str, Any]] = []
+    prewarm_events: list[dict[str, Any]] = []
+
+    def _probe(payload_class: str, text: str, probe_kind: str) -> dict[str, Any]:
+        observation = _observation_document(text)
+        started = time.perf_counter()
+        enforced = False
+        cleanup: dict[str, Any] | None = None
+        try:
+            doc = manager.call(observation, policy, {}, _GATE_BUDGET_SECONDS)
+        except WorkerFailure as failure:
+            outcome = failure.reason
+            enforced = failure.reason in _WORKER_KILL_REASONS
+            cleanup = dict(manager.last_cleanup)
+        else:
+            if doc.get("outcome") == "failed_closed":
+                outcome = f"failed_closed:{doc.get('failure_reason')}"
+            else:
+                outcome = str(doc.get("outcome"))
+        return {
+            "payload_class": payload_class,
+            "probe": probe_kind,
+            "budget_seconds": _GATE_BUDGET_SECONDS,
+            "outcome": outcome,
+            "duration_ms": (time.perf_counter() - started) * 1000.0,
+            "enforced_termination": enforced,
+            "cleanup": cleanup,
+        }
+
+    for payload_class in _PROBE_PAYLOAD_CLASSES:
+        if not manager.worker_alive():
+            seconds = manager.prewarm(prewarm_timeout_seconds)
+            prewarm_events.append(
+                {
+                    "phase": f"deadline-probe:{payload_class}",
+                    "seconds": seconds,
+                    "worker_pid": manager.worker_pid(),
+                }
+            )
+        probes.append(_probe(payload_class, payloads[payload_class], "warm"))
+
+    # Cold-worker probe: initialization INSIDE the production budget.
+    manager.shutdown()
+    probes.append(_probe("small", payloads["small"], "cold_worker"))
+    return probes, prewarm_events
 
 
 # ---------------------------------------------------------------------------
@@ -601,6 +683,8 @@ class ProcessOutcome:
     result: dict[str, Any]
     sanitized_fields: dict[str, str] = field(default_factory=dict)
     sanitized_observation: dict[str, Any] | None = None
+    #: Latest cumulative unmapped-label snapshot: {"worker_pid", "labels"}.
+    unmapped_snapshot: dict[str, Any] | None = None
 
 
 def _failure_result(
@@ -618,10 +702,6 @@ def _failure_result(
             "failure_reason": reason,
             "post_screen_hits": post_screen_hits,
             "repeat_digests": [],
-            # Structural fail-closed assertions; see module docstring and
-            # runtime/cursor_policy.py.
-            "no_envelope": True,
-            "no_cursor_advance": True,
         }
     )
     if identity_digests:
@@ -639,8 +719,17 @@ def process_record(
     classes: Sequence[str] = (),
     determinism_repeats: int = 1,
     fault_budget_seconds: float = 2.0,
+    manager: CandidateWorkerManager | None = None,
 ) -> ProcessOutcome:
-    """Execute one corpus input record end-to-end (all fault classes included)."""
+    """Execute one corpus input record end-to-end (all fault classes included).
+
+    With a ``manager``, normal candidate execution (and every determinism
+    repeat) runs inside the candidate worker under the ENFORCED
+    ``policy.per_record_budget_seconds`` deadline; hang/worker_crash/storm
+    faults terminate the actual candidate's worker. Without a manager (unit
+    tests with composed fake backends) execution stays in-process and no
+    subprocess fault probes are available.
+    """
 
     record_id = str(input_record.get("record_id", ""))
     source_shape = str(input_record.get("source_shape", ""))
@@ -661,11 +750,21 @@ def process_record(
 
     if fault:
         result = _run_fault_record(
-            fault, base, observation, backend, policy, fault_budget_seconds
+            fault, base, observation, backend, policy, fault_budget_seconds, manager
         )
         result["duration_ms"] = (time.perf_counter() - started) * 1000.0
         result["fault"] = fault
         return ProcessOutcome(result=result)
+
+    if manager is not None:
+        return _process_record_via_worker(
+            base,
+            observation,
+            policy,
+            manager,
+            determinism_repeats=determinism_repeats,
+            started=started,
+        )
 
     execution = execute_once(observation, backend, policy)
     duration_ms = (time.perf_counter() - started) * 1000.0
@@ -712,6 +811,97 @@ def process_record(
     )
 
 
+def _process_record_via_worker(
+    base: dict[str, Any],
+    observation: dict[str, Any],
+    policy: RedactionPolicy,
+    manager: CandidateWorkerManager,
+    *,
+    determinism_repeats: int,
+    started: float,
+) -> ProcessOutcome:
+    """Normal-record path through the candidate worker (enforced deadline)."""
+
+    budget = policy.per_record_budget_seconds
+    try:
+        doc = manager.call(observation, policy, {}, budget)
+    except WorkerFailure as failure:
+        duration_ms = (time.perf_counter() - started) * 1000.0
+        extra: dict[str, Any] = {}
+        if failure.reason in _WORKER_KILL_REASONS:
+            extra["cleanup"] = dict(manager.last_cleanup)
+        result = _failure_result(base, failure.reason, extra=extra or None)
+        result["duration_ms"] = duration_ms
+        return ProcessOutcome(result=result)
+    duration_ms = (time.perf_counter() - started) * 1000.0
+    snapshot = _unmapped_snapshot(doc)
+
+    if doc.get("outcome") == "failed_closed":
+        result = _failure_result(
+            base,
+            str(doc.get("failure_reason") or "unknown_failure"),
+            identity_digests=dict(doc.get("identity_digests") or {}),
+            post_screen_hits=int(doc.get("post_screen_hits") or 0),
+        )
+        result["duration_ms"] = duration_ms
+        return ProcessOutcome(result=result, unmapped_snapshot=snapshot)
+
+    digests = [str(doc.get("execution_digest"))]
+    for _ in range(max(0, determinism_repeats - 1)):
+        try:
+            repeat_doc = manager.call(observation, policy, {}, budget)
+        except WorkerFailure as failure:
+            digests.append(f"repeat_failed:{failure.reason}")
+            continue
+        if repeat_doc.get("outcome") == "failed_closed":
+            digests.append(f"repeat_failed:{repeat_doc.get('failure_reason')}")
+        else:
+            digests.append(str(repeat_doc.get("execution_digest")))
+            snapshot = _unmapped_snapshot(repeat_doc) or snapshot
+
+    sanitized_fields = {
+        str(path): str(text)
+        for path, text in (doc.get("sanitized_fields") or {}).items()
+    }
+    result = dict(base)
+    result.update(
+        {
+            "outcome": str(doc.get("outcome")),
+            "failure_reason": None,
+            "findings": list(doc.get("findings") or []),
+            "field_digests": {
+                path: _sha256_text(text)
+                for path, text in sorted(sanitized_fields.items())
+            },
+            "identity_digests": dict(doc.get("identity_digests") or {}),
+            "post_screen_hits": 0,
+            "duration_ms": duration_ms,
+            "repeat_digests": digests,
+            "structural_mirror_ok": bool(doc.get("structural_mirror_ok")),
+            "worker_pid": doc.get("worker_pid"),
+        }
+    )
+    sanitized_observation = doc.get("sanitized_observation")
+    return ProcessOutcome(
+        result=result,
+        sanitized_fields=sanitized_fields,
+        sanitized_observation=(
+            sanitized_observation
+            if isinstance(sanitized_observation, dict)
+            else None
+        ),
+        unmapped_snapshot=snapshot,
+    )
+
+
+def _unmapped_snapshot(doc: dict[str, Any]) -> dict[str, Any] | None:
+    labels = doc.get("unmapped_labels")
+    pid = doc.get("worker_pid")
+    if not isinstance(labels, dict) or not isinstance(pid, int):
+        return None
+    return {"worker_pid": pid, "labels": dict(labels)}
+
+
 def _run_fault_record(
     fault: str,
     base: dict[str, Any],
@@ -719,23 +909,45 @@ def _run_fault_record(
     backend: RedactionBackend,
     policy: RedactionPolicy,
     fault_budget_seconds: float,
+    manager: CandidateWorkerManager | None,
 ) -> dict[str, Any]:
     probe_text = str(observation.get("excerpt", ""))
 
     if fault in _SUBPROCESS_FAULTS:
-        reason, cleanup_ok, _pid = run_subprocess_fault(
-            fault, probe_text, fault_budget_seconds
+        # Hang/crash probes terminate the ACTUAL candidate's worker: the
+        # directive travels to the candidate worker, which sleeps past the
+        # deadline (hang) or dies abruptly (worker_crash). Never a baseline
+        # stand-in (issue #290 defect 2).
+        if manager is None:
+            raise ValueError(
+                "subprocess fault records require a CandidateWorkerManager"
+            )
+        try:
+            manager.call(observation, policy, {"fault": fault}, fault_budget_seconds)
+        except WorkerFailure as failure:
+            reason = failure.reason
+        else:
+            reason = "fault_did_not_fire"
+        return _failure_result(
+            base, reason, extra={"cleanup": dict(manager.last_cleanup)}
         )
-        return _failure_result(base, reason, extra={"cleanup_ok": cleanup_ok})
 
     if fault == _STORM_FAULT:
-        storm = run_timeout_storm(probe_text, fault_budget_seconds, backend, policy)
+        if manager is None:
+            raise ValueError(
+                "timeout-storm records require a CandidateWorkerManager"
+            )
+        storm = run_worker_timeout_storm(
+            observation, policy, fault_budget_seconds, manager
+        )
         reason = "backend_timeout" if storm["all_timed_out"] else "storm_incomplete"
         return _failure_result(base, reason, extra={"storm": storm})
 
     fault_backend = FaultInjectedBackend(backend.identity, fault)
 
     if fault in _INIT_FAULTS:
+        # Init-class faults stay parent-side by design: they prove typed
+        # initialization failure handling and never reach a worker.
         try:
             fault_backend.initialize()
         except BackendError as err:
@@ -744,16 +956,21 @@ def _run_fault_record(
             return _failure_result(base, "backend_crash")
         return _failure_result(base, "fault_did_not_fire")
 
+    scope = {"probe_scope": "finding_validation"}
+
     if fault == "nondeterministic":
         first = fault_backend.analyze(probe_text, field_path="excerpt", policy=policy)
         second = fault_backend.analyze(probe_text, field_path="excerpt", policy=policy)
         if first != second:
-            return _failure_result(base, "nondeterministic_backend_output")
-        return _failure_result(base, "fault_did_not_fire")
+            return _failure_result(
+                base, "nondeterministic_backend_output", extra=scope
+            )
+        return _failure_result(base, "fault_did_not_fire", extra=scope)
 
-    # In-process faults: exception, malformed spans; run the normal pipeline
-    # with the fault backend so validation/typing behaves exactly as it would
-    # for a real misbehaving candidate.
+    # In-process validation faults (exception, malformed spans): they test the
+    # harness's finding-validation path, not process isolation, so they run
+    # the normal pipeline with the fault backend in-process; the recorded
+    # probe_scope makes that scope explicit.
     execution = execute_once(observation, fault_backend, policy)
     if execution.outcome == "failed_closed":
         return _failure_result(
@@ -761,8 +978,9 @@ def _run_fault_record(
             execution.failure_reason or "unknown_failure",
             identity_digests=execution.identity_digests,
             post_screen_hits=execution.post_screen_hits,
+            extra=scope,
         )
-    return _failure_result(base, "fault_did_not_fire")
+    return _failure_result(base, "fault_did_not_fire", extra=scope)
 
 
 # ---------------------------------------------------------------------------
@@ -820,6 +1038,8 @@ def _fail_closed_gate(
     records: list[dict[str, Any]],
     faults: tuple[str, ...],
     expected_reasons: dict[str, str],
+    *,
+    extra_evidence: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     relevant = [r for r in records if _fault_of(r) in faults]
     if not relevant:
@@ -830,12 +1050,35 @@ def _fail_closed_gate(
         if r.get("outcome") != "failed_closed"
         or r.get("failure_reason") != expected_reasons[_fault_of(r) or ""]
     ]
+    evidence: dict[str, Any] = {"records_checked": len(relevant)}
+    if extra_evidence:
+        evidence.update(extra_evidence)
     return _gate(
         gate_id,
         "failed" if affected else "passed",
         affected=affected,
-        evidence={"records_checked": len(relevant)},
+        evidence=evidence,
     )
+
+
+def _fault_worker_pids(
+    records: list[dict[str, Any]], faults: tuple[str, ...]
+) -> list[int]:
+    """Worker pids recorded by this candidate's own fault probes."""
+
+    pids: set[int] = set()
+    for record in records:
+        if _fault_of(record) not in faults:
+            continue
+        cleanup = record.get("cleanup") or {}
+        pid = cleanup.get("pid")
+        if isinstance(pid, int):
+            pids.add(pid)
+        storm = record.get("storm") or {}
+        for storm_pid in storm.get("worker_pids", []):
+            if isinstance(storm_pid, int):
+                pids.add(storm_pid)
+    return sorted(pids)
 
 
 @dataclass
@@ -851,6 +1094,8 @@ class _GateContext:
     identity: BackendIdentity
     config_digest: str
     policy: RedactionPolicy
+    #: Value-free execution evidence (prewarms, worker pids, deadline probes).
+    execution_doc: dict[str, Any] = field(default_factory=dict)
 
 
 def _raw_expected_values(context: _GateContext) -> dict[str, list[str]]:
@@ -982,25 +1227,43 @@ def _gate_identity_preservation(context: _GateContext) -> dict[str, Any]:
 
 
 def _gate_no_envelope_on_failure(context: _GateContext) -> dict[str, Any]:
-    affected = [
-        r["record_id"]
-        for r in context.record_results
-        if r.get("outcome") == "failed_closed"
-        and (
-            r.get("no_envelope") is not True
-            or r.get("no_cursor_advance") is not True
-            or "field_digests" in r
-            or "findings" in r
-        )
-    ]
-    failed_count = sum(
-        1 for r in context.record_results if r.get("outcome") == "failed_closed"
-    )
+    """OBSERVED boundary calls: 0/0 on failure, exactly 1/1 on success.
+
+    ``observed_sink_calls``/``observed_cursor_advances`` come from routing
+    every record result through the instrumented sink + cursor
+    (``boundary.route_outcome``), so this gate reflects real calls, not
+    modeled booleans (issue #290 defect 4).
+    """
+
+    affected: list[str] = []
+    failed_count = 0
+    success_count = 0
+    for record in context.record_results:
+        outcome = record.get("outcome")
+        sink_calls = record.get("observed_sink_calls")
+        advances = record.get("observed_cursor_advances")
+        if outcome == "failed_closed":
+            failed_count += 1
+            if (
+                sink_calls != 0
+                or advances != 0
+                or "field_digests" in record
+                or "findings" in record
+            ):
+                affected.append(record["record_id"])
+        elif outcome in ("sanitized", "unchanged"):
+            success_count += 1
+            if sink_calls != 1 or advances != 1:
+                affected.append(record["record_id"])
     return _gate(
         "no-envelope-no-cursor-on-failure",
         "failed" if affected else "passed",
         affected=affected,
-        evidence={"failed_closed_records": failed_count},
+        evidence={
+            "failed_closed_records": failed_count,
+            "success_records_checked": success_count,
+            "basis": "observed sink/cursor boundary calls per record",
+        },
     )
 
 
@@ -1026,10 +1289,10 @@ def _gate_bounded_cleanup(context: _GateContext) -> dict[str, Any]:
             "bounded-cleanup-no-orphans", "pending", evidence="no_records_in_corpus"
         )
     affected = []
-    evidence = []
+    storm_docs = []
     for result in storms:
         storm = result.get("storm", {})
-        evidence.append(storm)
+        storm_docs.append(storm)
         if (
             storm.get("orphans") != 0
             or not storm.get("all_timed_out")
@@ -1041,7 +1304,14 @@ def _gate_bounded_cleanup(context: _GateContext) -> dict[str, Any]:
         "bounded-cleanup-no-orphans",
         "failed" if affected else "passed",
         affected=affected,
-        evidence=evidence,
+        evidence={
+            "candidate_id": context.identity.candidate_id,
+            "configuration_digest": context.config_digest,
+            "worker_pids": _fault_worker_pids(
+                context.record_results, (_STORM_FAULT,)
+            ),
+            "storms": storm_docs,
+        },
     )
 
 
@@ -1064,68 +1334,123 @@ def _gate_provenance(context: _GateContext) -> dict[str, Any]:
     )
 
 
-def _gate_receipt_compatibility(context: _GateContext) -> dict[str, Any]:
-    """Build production-shaped receipts for sample sanitized records.
+_RECEIPT_SAMPLE_COUNT = 3
 
-    Mirrors the receipt contract of ``adapter.core.redaction_receipt``:
-    schema_version / engine / engine_version / ruleset digest / input+output
-    digests / value-free category-count findings.
+
+def _gate_receipt_compatibility(context: _GateContext) -> dict[str, Any]:
+    """Build COMPLETE production receipts and validate them for real.
+
+    For three representative sanitized records the gate builds the full
+    production receipt shape (``receipt_contract.build_production_receipt``,
+    mirroring ``adapter.core.redaction_receipt.sanitize_observation``) and
+    validates it against BOTH the external ingest JSON schema definition and
+    the literal runtime emission gate
+    (``runtime.sinks._require_redaction_receipt``). All three must validate
+    with zero errors; the value-free receipts (digests + counts only) become
+    the gate evidence (issue #290 defect 3).
     """
+
+    from . import receipt_contract
 
     samples = [
         r
         for r in context.record_results
-        if r.get("outcome") == "sanitized" and r["record_id"] in
-        context.sanitized_observations
-    ][:3]
-    if not samples:
+        if r.get("outcome") == "sanitized"
+        and r["record_id"] in context.sanitized_observations
+    ][:_RECEIPT_SAMPLE_COUNT]
+    if len(samples) < _RECEIPT_SAMPLE_COUNT:
         return _gate(
-            "receipt-contract-compatible", "pending", evidence="no_sanitized_records"
+            "receipt-contract-compatible",
+            "pending",
+            evidence={
+                "sanitized_records_available": len(samples),
+                "required": _RECEIPT_SAMPLE_COUNT,
+            },
         )
     affected: list[str] = []
+    receipts_evidence: list[dict[str, Any]] = []
     for result in samples:
         record_id = result["record_id"]
         counts: dict[str, int] = {}
         for finding in result.get("findings", []):
             counts[finding["category"]] = counts.get(finding["category"], 0) + 1
-        findings_entries = [
-            {"category": category, "action": "tokenized", "count": count}
-            for category, count in sorted(counts.items())
-        ]
-        receipt: dict[str, Any] = {
-            "schema_version": 1,
-            "engine": context.identity.candidate_id,
-            "engine_version": context.identity.engine_version,
-            "ruleset_digest": context.config_digest,
-            "input_digest": receipt_digest_of(
-                context.input_observations[record_id]
-            ),
-            "output_digest": receipt_digest_of(
-                context.sanitized_observations[record_id]
-            ),
-            "findings": findings_entries,
-        }
-        try:
-            json.dumps(receipt, sort_keys=True, separators=(",", ":"))
-        except (TypeError, ValueError):
+        receipt = receipt_contract.build_production_receipt(
+            context.identity,
+            context.config_digest,
+            context.input_observations[record_id],
+            context.sanitized_observations[record_id],
+            counts,
+            _RECEIPT_COMPLETED_AT,
+        )
+        errors = receipt_contract.validate_production_receipt(receipt)
+        receipts_evidence.append(
+            {"record_id": record_id, "receipt": receipt, "errors": errors}
+        )
+        if errors:
             affected.append(record_id)
-            continue
-        for entry in findings_entries:
-            if set(entry) != {"category", "action", "count"}:
-                affected.append(record_id)
-                break
     return _gate(
         "receipt-contract-compatible",
         "failed" if affected else "passed",
         affected=affected,
-        evidence={"sample_records": [r["record_id"] for r in samples]},
+        evidence={
+            "sample_records": [r["record_id"] for r in samples],
+            "validation": (
+                "jsonschema definitions.ExternalRedactionReceipt AND "
+                "runtime.sinks._require_redaction_receipt"
+            ),
+            "receipts": receipts_evidence,
+        },
     )
+
+
+def aggregate_gates(gates: list[dict[str, Any]]) -> dict[str, Any]:
+    """Deterministic aggregate over gate statuses.
+
+    Any ``failed`` -> ``failed``; else any ``pending`` -> ``pending``; else
+    ``passed``. ``passed`` is True ONLY when every gate actually passed — a
+    pending gate is never counted as a pass.
+    """
+
+    failed_ids = sorted(g["gate_id"] for g in gates if g["status"] == "failed")
+    pending_ids = sorted(g["gate_id"] for g in gates if g["status"] == "pending")
+    if failed_ids:
+        state = "failed"
+    elif pending_ids:
+        state = "pending"
+    else:
+        state = "passed"
+    return {
+        "aggregate_state": state,
+        "passed": state == "passed",
+        "pending_gate_ids": pending_ids,
+        "failed_gate_ids": failed_ids,
+    }
 
 
 def compute_hard_gates(context: _GateContext, document: dict[str, Any]) -> dict[str, Any]:
     """The full contract gate list, computed value-free from one run."""
 
     records = context.record_results
+    attribution = {
+        "candidate_id": context.identity.candidate_id,
+        "configuration_digest": context.config_digest,
+    }
+    timeout_faults = ("hang", _STORM_FAULT)
+    crash_faults = ("exception", "worker_crash")
+    probe_summaries = [
+        {
+            key: probe.get(key)
+            for key in (
+                "payload_class",
+                "probe",
+                "budget_seconds",
+                "outcome",
+                "duration_ms",
+                "enforced_termination",
+            )
+        }
+        for probe in context.execution_doc.get("production_deadline_probes", [])
+    ]
     gates = [
         _gate_no_raw_leakage(context, document),
         _gate_mandatory_protection(context),
@@ -1149,14 +1474,23 @@ def compute_hard_gates(context: _GateContext, document: dict[str, Any]) -> dict[
         _fail_closed_gate(
             "fail-closed-crash",
             records,
-            ("exception", "worker_crash"),
+            crash_faults,
             {"exception": "backend_crash", "worker_crash": "backend_crash"},
+            extra_evidence={
+                **attribution,
+                "worker_pids": _fault_worker_pids(records, ("worker_crash",)),
+            },
         ),
         _fail_closed_gate(
             "fail-closed-timeout",
             records,
-            ("hang", _STORM_FAULT),
+            timeout_faults,
             {"hang": "backend_timeout", _STORM_FAULT: "backend_timeout"},
+            extra_evidence={
+                **attribution,
+                "worker_pids": _fault_worker_pids(records, timeout_faults),
+                "production_deadline_probes": probe_summaries,
+            },
         ),
         _gate_unsupported_content(context),
         _gate_no_envelope_on_failure(context),
@@ -1168,8 +1502,7 @@ def compute_hard_gates(context: _GateContext, document: dict[str, Any]) -> dict[
     ]
     return {
         "candidate_id": context.identity.candidate_id,
-        "passed": not any(gate["status"] == "failed" for gate in gates),
-        "pending_gate_ids": [g["gate_id"] for g in gates if g["status"] == "pending"],
+        **aggregate_gates(gates),
         "gates": gates,
     }
 
@@ -1227,6 +1560,30 @@ def _preservation_block(
 # ---------------------------------------------------------------------------
 
 
+def _identity_from_worker(
+    worker_identity: dict[str, Any] | None, fallback: BackendIdentity
+) -> BackendIdentity:
+    """Prefer the worker's POST-initialize identity over the parent's.
+
+    Heavy backends enrich their identity during ``initialize`` (observed
+    package versions, model weight digests); initialization now happens inside
+    the worker, so the ready handshake carries the authoritative identity.
+    """
+
+    if not worker_identity:
+        return fallback
+    return BackendIdentity(
+        candidate_id=str(worker_identity.get("candidate_id", fallback.candidate_id)),
+        family=str(worker_identity.get("family", fallback.family)),
+        engine_version=str(
+            worker_identity.get("engine_version", fallback.engine_version)
+        ),
+        packages=dict(worker_identity.get("packages") or {}),
+        models=dict(worker_identity.get("models") or {}),
+        configuration=dict(worker_identity.get("configuration") or {}),
+    )
+
+
 def run_candidate(
     candidate_id: str,
     *,
@@ -1234,12 +1591,22 @@ def run_candidate(
     policy: RedactionPolicy | None = None,
     determinism_repeats: int = 5,
     fault_budget_seconds: float = 2.0,
+    prewarm_timeout_seconds: float = _PREWARM_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
     """Run one candidate over the whole corpus; return the result document.
 
     The document is JSON-serializable and value-free: digests, offsets, and
     counts only. Raw corpus values are used in memory to compute the leakage
     and mandatory-protection gates, then discarded.
+
+    Every record (and every determinism repeat) executes inside the
+    candidate's worker process under the enforced
+    ``policy.per_record_budget_seconds`` deadline. The worker is prewarmed
+    once before the record loop (and re-prewarmed after any fault probe that
+    killed it); each prewarm is recorded honestly in
+    ``execution.prewarm_events``. After the record loop the production
+    deadline probes run (``execution.production_deadline_probes``), then all
+    hard gates are computed from observed evidence.
     """
 
     repo_root = Path(repo_root)
@@ -1248,64 +1615,139 @@ def run_candidate(
     manifest_path = repo_root / "tests" / "redaction_evaluation" / "corpus-manifest.json"
     manifest_records = list(loader.iter_manifest(manifest_path))
 
+    # Parent-side backend: identity/label-map access only; initialization —
+    # and every analyze call — happens inside the candidate worker.
     backend = create_backend(candidate_id)
-    backend.initialize()
     label_map = getattr(
         backend, "label_map", LabelMap(map_id=f"{candidate_id}-labels-unversioned")
     )
-    config_digest = configuration_digest(
-        dict(backend.identity.configuration), label_map, active_policy
-    )
 
-    record_results: list[dict[str, Any]] = []
-    sanitized_by_record: dict[str, dict[str, str]] = {}
-    sanitized_observations: dict[str, dict[str, Any]] = {}
-    input_observations: dict[str, dict[str, Any]] = {}
-    expected_by_record: dict[str, dict[str, Any]] = {}
-    mismatched: list[str] = []
+    manager = CandidateWorkerManager(candidate_id)
+    prewarm_events: list[dict[str, Any]] = []
+    try:
+        initial_prewarm_seconds = manager.prewarm(prewarm_timeout_seconds)
+        prewarm_events.append(
+            {
+                "phase": "initial",
+                "seconds": initial_prewarm_seconds,
+                "worker_pid": manager.worker_pid(),
+            }
+        )
+        identity = _identity_from_worker(manager.worker_identity, backend.identity)
+        config_digest = configuration_digest(
+            dict(identity.configuration), label_map, active_policy
+        )
+        # From here on every cleanup record is attributable to this exact
+        # candidate configuration.
+        manager.configuration_digest = config_digest
 
-    for manifest_record in manifest_records:
-        record_id = str(manifest_record["record_id"])
-        input_record = loader.load_input_record(
-            repo_root / str(manifest_record["input_path"])
-        )
-        expected_by_record[record_id] = _load_expected(
-            repo_root, str(manifest_record["expected_path"])
-        )
-        input_observations[record_id] = copy.deepcopy(
-            input_record.get("observation") or {}
-        )
-        outcome = process_record(
-            input_record,
-            backend=backend,
-            policy=active_policy,
-            classes=manifest_record.get("classes", ()),
-            determinism_repeats=determinism_repeats,
-            fault_budget_seconds=fault_budget_seconds,
-        )
-        result = outcome.result
-        result.setdefault("record_id", record_id)
-        preservation = _preservation_block(
-            expected_by_record[record_id], outcome.sanitized_fields
-        )
-        if preservation is not None and result.get("outcome") in (
-            "sanitized",
-            "unchanged",
-        ):
-            result["preservation"] = preservation
-        digests = result.get("repeat_digests") or []
-        if len(digests) > 1 and any(d != digests[0] for d in digests[1:]):
-            mismatched.append(record_id)
-        record_results.append(result)
-        if outcome.sanitized_fields:
-            sanitized_by_record[record_id] = outcome.sanitized_fields
-        if outcome.sanitized_observation is not None:
-            sanitized_observations[record_id] = outcome.sanitized_observation
+        sink = RecordingSink()
+        cursor = RecordingCursor()
+        record_results: list[dict[str, Any]] = []
+        sanitized_by_record: dict[str, dict[str, str]] = {}
+        sanitized_observations: dict[str, dict[str, Any]] = {}
+        input_observations: dict[str, dict[str, Any]] = {}
+        expected_by_record: dict[str, dict[str, Any]] = {}
+        mismatched: list[str] = []
+        unmapped_by_pid: dict[int, dict[str, int]] = {}
 
-    unmapped_raw = getattr(backend, "unmapped_labels", None)
-    unmapped_labels = dict(unmapped_raw) if isinstance(unmapped_raw, dict) else {}
+        for manifest_record in manifest_records:
+            record_id = str(manifest_record["record_id"])
+            input_record = loader.load_input_record(
+                repo_root / str(manifest_record["input_path"])
+            )
+            expected_by_record[record_id] = _load_expected(
+                repo_root, str(manifest_record["expected_path"])
+            )
+            input_observations[record_id] = copy.deepcopy(
+                input_record.get("observation") or {}
+            )
+            outcome = process_record(
+                input_record,
+                backend=backend,
+                policy=active_policy,
+                classes=manifest_record.get("classes", ()),
+                determinism_repeats=determinism_repeats,
+                fault_budget_seconds=fault_budget_seconds,
+                manager=manager,
+            )
+            result = outcome.result
+            result.setdefault("record_id", record_id)
 
-    identity = backend.identity
+            # Observed boundary routing: the single production-mirroring
+            # decision point; the gate later checks these counts.
+            sink_calls_before = sink.call_count
+            advances_before = cursor.advance_count
+            route_outcome(result, sink, cursor)
+            result["observed_sink_calls"] = sink.call_count - sink_calls_before
+            result["observed_cursor_advances"] = (
+                cursor.advance_count - advances_before
+            )
+            if result.get("outcome") == "failed_closed":
+                result["no_envelope"] = result["observed_sink_calls"] == 0
+                result["no_cursor_advance"] = (
+                    result["observed_cursor_advances"] == 0
+                )
+
+            preservation = _preservation_block(
+                expected_by_record[record_id], outcome.sanitized_fields
+            )
+            if preservation is not None and result.get("outcome") in (
+                "sanitized",
+                "unchanged",
+            ):
+                result["preservation"] = preservation
+            digests = result.get("repeat_digests") or []
+            if len(digests) > 1 and any(d != digests[0] for d in digests[1:]):
+                mismatched.append(record_id)
+            record_results.append(result)
+            if outcome.sanitized_fields:
+                sanitized_by_record[record_id] = outcome.sanitized_fields
+            if outcome.sanitized_observation is not None:
+                sanitized_observations[record_id] = outcome.sanitized_observation
+            if outcome.unmapped_snapshot is not None:
+                unmapped_by_pid[outcome.unmapped_snapshot["worker_pid"]] = dict(
+                    outcome.unmapped_snapshot["labels"]
+                )
+
+            # A fault probe may have killed the worker; restore it OUTSIDE
+            # the next record's deadline and record the cost honestly.
+            if not manager.worker_alive():
+                seconds = manager.prewarm(prewarm_timeout_seconds)
+                prewarm_events.append(
+                    {
+                        "phase": f"after-record:{record_id}",
+                        "seconds": seconds,
+                        "worker_pid": manager.worker_pid(),
+                    }
+                )
+
+        probes, probe_prewarms = run_production_deadline_probes(
+            manager, active_policy, prewarm_timeout_seconds=prewarm_timeout_seconds
+        )
+        prewarm_events.extend(probe_prewarms)
+    finally:
+        manager.shutdown()
+
+    # Unmapped labels accumulate per worker generation (a recycled worker
+    # restarts its counters); sum the last snapshot of each generation.
+    unmapped_labels: dict[str, int] = {}
+    for snapshot in unmapped_by_pid.values():
+        for label, count in snapshot.items():
+            unmapped_labels[label] = unmapped_labels.get(label, 0) + int(count)
+
+    execution_doc: dict[str, Any] = {
+        "mode": "candidate-worker-subprocess",
+        "candidate_id": candidate_id,
+        "configuration_digest": config_digest,
+        "worker_prewarm_seconds": initial_prewarm_seconds,
+        "worker_pid": prewarm_events[0]["worker_pid"],
+        "worker_pids": manager.pids_seen(),
+        "per_record_budget_seconds": active_policy.per_record_budget_seconds,
+        "prewarm_events": prewarm_events,
+        "production_deadline_probes": probes,
+    }
+
     document: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "candidate_id": candidate_id,
@@ -1320,6 +1762,7 @@ def run_candidate(
         "configuration_digest": config_digest,
         "corpus_digest": corpus_digest_from_manifest(manifest_records),
         "policy": active_policy.manifest(),
+        "execution": execution_doc,
         "records": record_results,
         "unmapped_labels": unmapped_labels,
         "determinism": {
@@ -1338,6 +1781,7 @@ def run_candidate(
         identity=identity,
         config_digest=config_digest,
         policy=active_policy,
+        execution_doc=execution_doc,
     )
     document["hard_gates"] = compute_hard_gates(context, document)
     return document

@@ -5,15 +5,17 @@ the final decision must explain why the measured benefit does or
 does not justify migration. This draft grants no selection,
 release, or deployment authority.
 
-| candidate | hard gates | pending gates | eligible |
+| candidate | gate state | pending gates | eligible |
 |---|---|---|---|
-| bicameral-stdlib-v1 | passed | no-undeclared-network, license-compatible | yes |
-| datafog-regex-v1 | passed | no-undeclared-network, license-compatible | yes |
-| presidio-gliner-pii-v1 | passed | no-undeclared-network, license-compatible | yes |
-| presidio-spacy-lg-v1 | passed | no-undeclared-network, license-compatible | yes |
+| bicameral-stdlib-v1 | pending | license-compatible, no-undeclared-network | no |
+| datafog-regex-v1 | pending | license-compatible, no-undeclared-network | no |
+| presidio-gliner-pii-v1 | pending | license-compatible, no-undeclared-network | no |
+| presidio-spacy-lg-v1 | pending | license-compatible, no-undeclared-network | no |
 
 Quality, preservation, and security metrics: see `metrics.json` and
-`entity-results.csv`. Performance: `benchmark-results.json`.
+`entity-results.csv`. Weighted advisory scores: `weighted-scores.json`.
+Performance: `benchmark-results.json`, `memory-isolated.json`.
 Offline proof: `offline-proof.json`. Licensing/dependencies:
 `license-report.json`, `dependency-report.json`,
-`vulnerability-report.json`.
+`vulnerability-report.json`. Input binding: `evaluation-input.json`;
+artifact binding: `artifact-manifest.json`.

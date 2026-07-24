@@ -144,3 +144,61 @@ Reasoning:
    (per ADR-0020), including budget tuning for the 1 MiB payload class and
    worker-recycle cost, regenerated tests/receipts/evidence, and a rollback
    pin.
+
+## Machine bindings
+
+Mechanically written by `python scripts/evaluate_redaction_backends.py bind-recommendation` and verified by the `verify` step; the values below must equal the regenerated evidence.
+
+```json redaction-recommendation-bindings
+{
+  "artifact_sha256": {
+    "hard-gates.json": "sha256:74bd70b844f5de44ecbe4701812b93b25f15e22d53565283f51a30f9794cdab6",
+    "metrics.json": "sha256:dbe1caa0b379dc005fc3b9ee6a4099d936d692551aa0b7f9b4a9e4ad768c17c4",
+    "weighted-scores.json": "sha256:6a9ff8c60678a70307d01d0bdc980f3c51d9217033e60064070f4aa94de1fd0a"
+  },
+  "candidates": [
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "bicameral-stdlib-v1",
+      "configuration_digest": "sha256:9b2e1d77b4f5995237a983c23e6df711d03ba8184b531b6fcb4645f8fc91faaf",
+      "f2": 0.5691056910569106,
+      "precision": 1.0,
+      "recall": 0.5137614678899083,
+      "selection_eligible": false,
+      "weighted_total": 83.7954
+    },
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "datafog-regex-v1",
+      "configuration_digest": "sha256:571273ec8a5384b0d26c44e25389c7191bf2a03fe1aafac87e234a50cce70941",
+      "f2": 0.4338842975206612,
+      "precision": 0.875,
+      "recall": 0.3853211009174312,
+      "selection_eligible": false,
+      "weighted_total": 47.7301
+    },
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "presidio-gliner-pii-v1",
+      "configuration_digest": "sha256:e422a21203a54fd8a2747668fd5d95ca8db56f457838941df327112b830a264d",
+      "f2": 0.9198542805100183,
+      "precision": 0.8938053097345132,
+      "recall": 0.926605504587156,
+      "selection_eligible": false,
+      "weighted_total": 75.9654
+    },
+    {
+      "aggregate_state": "pending",
+      "candidate_id": "presidio-spacy-lg-v1",
+      "configuration_digest": "sha256:5d43bf7c0de4b7ff083947dde3bbb12910635075a802ed02886d515e3cc8afb0",
+      "f2": 0.898366606170599,
+      "precision": 0.8608695652173913,
+      "recall": 0.908256880733945,
+      "selection_eligible": false,
+      "weighted_total": 81.7312
+    }
+  ],
+  "corpus_sha256": "sha256:121b8cf9c1b641cd9d26870e93012b92075cb4f2c63bb8097f3cc81ed309b47c",
+  "evaluation_input_sha256": "sha256:c628c6328b156fca6a96373a2f7713b4af717510f6cd50a14287542a7e2bc940"
+}
+```

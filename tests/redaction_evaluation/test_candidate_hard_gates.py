@@ -24,6 +24,11 @@ if str(REPO_ROOT) not in sys.path:
 from runtime.redaction_evaluation.backends.baseline import (  # noqa: E402
     BicameralStdlibBackend,
 )
+from runtime.redaction_evaluation.boundary import (  # noqa: E402
+    RecordingCursor,
+    RecordingSink,
+    route_outcome,
+)
 from runtime.redaction_evaluation.metrics import (  # noqa: E402
     f_beta,
     finalize_bucket,
@@ -32,22 +37,37 @@ from runtime.redaction_evaluation.metrics import (  # noqa: E402
 )
 from runtime.redaction_evaluation.policy import RedactionPolicy  # noqa: E402
 from runtime.redaction_evaluation.runner import (  # noqa: E402
+    aggregate_gates,
     apply_replacements,
     process_record,
     resolve_overlaps,
-    run_subprocess_fault,
-    run_timeout_storm,
+    run_worker_timeout_storm,
 )
 from runtime.redaction_evaluation.seam import (  # noqa: E402
     BackendFinding,
     BackendHealth,
     BackendIdentity,
 )
+from runtime.redaction_evaluation.worker import (  # noqa: E402
+    CandidateWorkerManager,
+    WorkerFailure,
+)
 
 POLICY = RedactionPolicy()
 
 # Composed at runtime; never a committed secret-shaped literal.
 FAKE_AWS_KEY = "AKIA" + "EXAMPLE000000001"
+
+STDLIB_ID = "bicameral-stdlib-v1"
+TEST_CONFIG_DIGEST = "sha256:" + "0" * 64  # attribution placeholder for tests
+
+
+@pytest.fixture(scope="module")
+def stdlib_manager():
+    manager = CandidateWorkerManager(STDLIB_ID, configuration_digest=TEST_CONFIG_DIGEST)
+    manager.prewarm(60.0)
+    yield manager
+    manager.shutdown()
 
 
 class NoopBackend:
@@ -130,6 +150,22 @@ def run(record: dict[str, Any], backend: Any = None, policy: RedactionPolicy = P
     )
 
 
+def run_with_manager(
+    record: dict[str, Any],
+    manager: CandidateWorkerManager,
+    policy: RedactionPolicy = POLICY,
+):
+    return process_record(
+        record,
+        backend=BicameralStdlibBackend(),
+        policy=policy,
+        classes=("positive_detection",),
+        determinism_repeats=2,
+        fault_budget_seconds=0.5,
+        manager=manager,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Fault reasons map to expected typed failures
 # ---------------------------------------------------------------------------
@@ -150,39 +186,169 @@ def test_in_process_fault_reasons(fault: str, reason: str) -> None:
     outcome = run(make_record(eval_directives={"fault": fault}))
     assert outcome.result["outcome"] == "failed_closed"
     assert outcome.result["failure_reason"] == reason
-    assert outcome.result["no_envelope"] is True
-    assert outcome.result["no_cursor_advance"] is True
+    # Fail-closed results are value-free: no sanitized content or findings.
     assert "field_digests" not in outcome.result
     assert "findings" not in outcome.result
+
+
+def test_validation_faults_record_their_scope() -> None:
+    outcome = run(make_record(eval_directives={"fault": "exception"}))
+    assert outcome.result["probe_scope"] == "finding_validation"
 
 
 def test_nondeterministic_probe_detected() -> None:
     outcome = run(make_record(eval_directives={"fault": "nondeterministic"}))
     assert outcome.result["outcome"] == "failed_closed"
     assert outcome.result["failure_reason"] == "nondeterministic_backend_output"
+    assert outcome.result["probe_scope"] == "finding_validation"
 
 
-def test_hang_fault_times_out_in_subprocess() -> None:
-    reason, cleanup_ok, _pid = run_subprocess_fault("hang", "some text", 0.5)
-    assert reason == "backend_timeout"
-    assert cleanup_ok is True
+# ---------------------------------------------------------------------------
+# Candidate worker execution (issue #290): enforced deadlines, real kills
+# ---------------------------------------------------------------------------
 
 
-def test_worker_crash_fault_reports_backend_crash() -> None:
-    reason, cleanup_ok, _pid = run_subprocess_fault("worker_crash", "some text", 0.5)
-    assert reason == "backend_crash"
-    assert cleanup_ok is True
+def test_worker_execution_matches_in_process(stdlib_manager) -> None:
+    stdlib_manager.prewarm(60.0)
+    record = make_record(
+        metadata={"webhook": {"issue": {"body": "reach me at a@example.com"}}}
+    )
+    via_worker = run_with_manager(record, stdlib_manager)
+    in_process = run(record)
+    for key in ("outcome", "findings", "field_digests", "identity_digests"):
+        assert via_worker.result[key] == in_process.result[key]
+    assert via_worker.result["repeat_digests"] == in_process.result["repeat_digests"]
+    assert isinstance(via_worker.result["worker_pid"], int)
 
 
-def test_timeout_storm_bounded_cleanup_and_recovery() -> None:
+def test_hang_directive_enforces_termination_with_evidence(stdlib_manager) -> None:
+    stdlib_manager.prewarm(60.0)
+    pid_before = stdlib_manager.worker_pid()
+    outcome = run_with_manager(
+        make_record(eval_directives={"fault": "hang"}), stdlib_manager
+    )
+    result = outcome.result
+    assert result["outcome"] == "failed_closed"
+    assert result["failure_reason"] == "backend_timeout"
+    cleanup = result["cleanup"]
+    assert cleanup["candidate_id"] == STDLIB_ID
+    assert cleanup["configuration_digest"] == TEST_CONFIG_DIGEST
+    assert cleanup["outcome"] in ("terminated", "killed")
+    assert cleanup["pid"] == pid_before
+    # The hung worker is verifiably gone, not abandoned.
+    assert stdlib_manager.worker_alive() is False
+
+
+def test_worker_crash_directive_reports_backend_crash(stdlib_manager) -> None:
+    stdlib_manager.prewarm(60.0)
+    outcome = run_with_manager(
+        make_record(eval_directives={"fault": "worker_crash"}), stdlib_manager
+    )
+    result = outcome.result
+    assert result["outcome"] == "failed_closed"
+    assert result["failure_reason"] == "backend_crash"
+    assert result["cleanup"]["candidate_id"] == STDLIB_ID
+
+
+def test_worker_timeout_storm_bounded_cleanup_and_recovery(stdlib_manager) -> None:
     pytest.importorskip("psutil")
-    storm = run_timeout_storm(
-        "storm text", 0.5, BicameralStdlibBackend(), POLICY, concurrency=3
+    observation = make_record()["observation"]
+    storm = run_worker_timeout_storm(
+        observation, POLICY, 0.5, stdlib_manager, concurrency=3
     )
     assert storm["all_timed_out"] is True
     assert storm["orphans"] == 0
     assert storm["cleanup_ok"] is True
     assert storm["recovered"] is True
+    assert storm["candidate_id"] == STDLIB_ID
+    assert storm["worker_pids"]
+
+
+def test_cold_worker_completes_inside_production_budget(stdlib_manager) -> None:
+    # Production lazy-spawn semantics: initialization inside the 5 s budget.
+    stdlib_manager.shutdown()
+    doc = stdlib_manager.call(make_record()["observation"], POLICY, {}, 5.0)
+    assert doc["outcome"] in ("sanitized", "unchanged")
+
+
+def test_manager_call_raises_typed_worker_failure(stdlib_manager) -> None:
+    stdlib_manager.prewarm(60.0)
+    with pytest.raises(WorkerFailure) as excinfo:
+        stdlib_manager.call(
+            make_record()["observation"], POLICY, {"fault": "hang"}, 0.3
+        )
+    assert excinfo.value.reason == "backend_timeout"
+
+
+def test_typed_failure_keeps_worker_alive(stdlib_manager) -> None:
+    stdlib_manager.prewarm(60.0)
+    record = make_record(metadata={"contact@example.com": "value"})
+    outcome = run_with_manager(record, stdlib_manager)
+    assert outcome.result["failure_reason"] == "sensitive_metadata_key"
+    # A typed in-child rejection is not a crash: no recycle needed.
+    assert stdlib_manager.worker_alive() is True
+
+
+# ---------------------------------------------------------------------------
+# Observed sink/cursor boundary (issue #290): calls, not modeled booleans
+# ---------------------------------------------------------------------------
+
+
+def test_failed_record_routes_nothing() -> None:
+    sink = RecordingSink()
+    cursor = RecordingCursor()
+    route_outcome(
+        {"record_id": "unit-fail", "outcome": "failed_closed"}, sink, cursor
+    )
+    assert sink.call_count == 0
+    assert cursor.advance_count == 0
+
+
+def test_sanitized_record_routes_exactly_once_and_value_free() -> None:
+    sink = RecordingSink()
+    cursor = RecordingCursor()
+    route_outcome({"record_id": "unit-ok", "outcome": "sanitized"}, sink, cursor)
+    assert sink.call_count == 1
+    assert sink.emission_counts == [1]
+    assert sink.routed_record_ids == ["unit-ok"]
+    assert cursor.advance_count == 1
+    assert cursor.advanced_record_ids == ["unit-ok"]
+
+
+# ---------------------------------------------------------------------------
+# Aggregate gate state: pending is never a pass
+# ---------------------------------------------------------------------------
+
+
+def test_pending_gate_yields_pending_not_passed() -> None:
+    gates = [
+        {"gate_id": "a", "status": "passed"},
+        {"gate_id": "b", "status": "pending"},
+    ]
+    aggregate = aggregate_gates(gates)
+    assert aggregate["aggregate_state"] == "pending"
+    assert aggregate["passed"] is False
+    assert aggregate["pending_gate_ids"] == ["b"]
+    assert aggregate["failed_gate_ids"] == []
+
+
+def test_failed_gate_dominates_aggregate() -> None:
+    gates = [
+        {"gate_id": "a", "status": "pending"},
+        {"gate_id": "b", "status": "failed"},
+        {"gate_id": "c", "status": "passed"},
+    ]
+    aggregate = aggregate_gates(gates)
+    assert aggregate["aggregate_state"] == "failed"
+    assert aggregate["passed"] is False
+    assert aggregate["failed_gate_ids"] == ["b"]
+
+
+def test_all_passed_aggregate() -> None:
+    gates = [{"gate_id": "a", "status": "passed"}]
+    aggregate = aggregate_gates(gates)
+    assert aggregate["aggregate_state"] == "passed"
+    assert aggregate["passed"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -240,11 +406,15 @@ def test_post_screen_escape_recorded_cleanly() -> None:
     assert outcome.result["outcome"] == "failed_closed"
     assert outcome.result["failure_reason"] == "post_screen_escape"
     assert outcome.result["post_screen_hits"] >= 1
-    assert outcome.result["no_envelope"] is True
-    assert outcome.result["no_cursor_advance"] is True
-    # Fail-closed is value-free: no sanitized content anywhere.
+    # Fail-closed is value-free: no sanitized content anywhere. The
+    # no-envelope/no-cursor invariant is OBSERVED via the boundary doubles.
     assert "field_digests" not in outcome.result
     assert FAKE_AWS_KEY not in str(outcome.result)
+    sink = RecordingSink()
+    cursor = RecordingCursor()
+    route_outcome(outcome.result, sink, cursor)
+    assert sink.call_count == 0
+    assert cursor.advance_count == 0
 
 
 def test_identity_screen_failure() -> None:
