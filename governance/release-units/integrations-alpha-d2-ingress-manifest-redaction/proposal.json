@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "release_unit_id": "integrations-alpha-d2-ingress-manifest-redaction",
+  "label": "Alpha D2 ingress: manifest + conformance harness + guarded redaction boundary (integrations #258/#260)",
+  "repository": "BicameralAI/bicameral-integrations",
+  "scope_ref": "https://github.com/BicameralAI/bicameral-integrations/pull/269",
+  "release_unit_type": "integrations_library_change",
+  "target_version": "0.1.0",
+  "topology": {
+    "required": false
+  },
+  "proposed_by": "Knapp-Kevin",
+  "proposed_at": "2026-07-22T19:35:00Z",
+  "proposal_digest": "sha256:f91f540b775f1211ee491e5cf456082ea65b2cc54367ad2584197537d26979d5"
+}

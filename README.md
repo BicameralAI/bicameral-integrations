@@ -24,7 +24,7 @@
 
 | | |
 |---|---|
-| **Maturity** | Beta — 26 connectors harness-proven end-to-end, **all 26 flip-ready** (config descriptor + adversarially hardened, ready for an operator to flip Live), and **13 EM-safe advisory mods** are built; a PII redaction-and-pass model lets PII-dense free-text be emitted safely; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/external-ingest`) and operator-actionable |
+| **Maturity** | Beta — 26 connectors harness-proven end-to-end, **all 26 flip-ready** (config descriptor + adversarially hardened, ready for an operator to flip Live) Flip-ready is a Beta-ladder state, not Live and not customer value: every connector still requires an operator-run receiver or poller (this repo is a library, not a hosted server), operator credentials, and a wired GatewaySink. Per-route evidence lives in `ingest/alpha-ingest-manifest.json`, which distinguishes implementation, real capture, component proof, real gateway proof, terminal Bot proof, and human acceptance — none of which collapse into the connector count., and **13 EM-safe advisory mods** are built; a PII redaction-and-pass model lets PII-dense free-text be emitted safely; the Live gateway-emission seam is implemented (`GatewaySink` → `POST /api/v1/external-ingest`) and operator-actionable |
 | **Footprint** | Zero third-party **runtime** dependencies (Python stdlib only) |
 | **Safety model** | Read-only evidence adapters ([ADR-0008](docs/adr/0008-integrations-are-evidence-adapters-not-state-authorities.md)); fail-closed webhook signature verification; a producer-side secret/PII hard-screen on every emission |
 | **Assurance** | Hash-chained governance ledger + machine-verified CI gate; SHA-pinned Actions; CodeQL, Bandit, OpenSSF Scorecard, SBOM |

@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BicameralAI/bicameral-integrations/tests/redaction_evaluation/schema/adversarial-review.schema.json",
+  "title": "Bicameral redaction evaluation adversarial review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "review_id",
+    "reviewed_pr",
+    "parent_baseline",
+    "corpus_sha256",
+    "artifact_bundle_sha256",
+    "candidate_ids",
+    "verdict",
+    "checks",
+    "unresolved_discrepancies",
+    "evidence_refs",
+    "raw_values_included",
+    "reviewed_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "review_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "reviewed_pr": {
+      "$ref": "#/$defs/reviewedPr"
+    },
+    "parent_baseline": {
+      "$ref": "#/$defs/parentBaseline"
+    },
+    "corpus_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "artifact_bundle_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "candidate_ids": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/stableId"
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "not_reviewable",
+        "reviewable",
+        "owner_decision_ready"
+      ]
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/check"
+      }
+    },
+    "unresolved_discrepancies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/discrepancy"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/evidenceRef"
+      }
+    },
+    "raw_values_included": {
+      "const": false
+    },
+    "reviewed_at": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "owner_decision_ready"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "unresolved_discrepancies": {
+            "not": {
+              "contains": {
+                "properties": {
+                  "severity": {
+                    "const": "blocker"
+                  }
+                },
+                "required": [
+                  "severity"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "stableId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "evidenceRef": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "reviewedPr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "number",
+        "head_sha",
+        "base_ref"
+      ],
+      "properties": {
+        "repository": {
+          "const": "BicameralAI/bicameral-integrations"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "head_sha": {
+          "$ref": "#/$defs/gitSha"
+        },
+        "base_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      }
+    },
+    "parentBaseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pr_number",
+        "head_sha"
+      ],
+      "properties": {
+        "pr_number": {
+          "const": 269
+        },
+        "head_sha": {
+          "const": "fd69ff2742363b5d619bc073b8e8490c0f50733d"
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_id",
+        "status",
+        "evidence_refs",
+        "affected_candidate_ids",
+        "affected_record_ids",
+        "raw_values_included"
+      ],
+      "properties": {
+        "check_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "failed",
+            "not_applicable"
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/evidenceRef"
+          }
+        },
+        "affected_candidate_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "affected_record_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "raw_values_included": {
+          "const": false
+        }
+      }
+    },
+    "discrepancy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "discrepancy_id",
+        "severity",
+        "summary",
+        "evidence_refs",
+        "candidate_ids",
+        "record_ids",
+        "implementation_required",
+        "owner_decision_required"
+      ],
+      "properties": {
+        "discrepancy_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "blocker",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/evidenceRef"
+          }
+        },
+        "candidate_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "record_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "implementation_required": {
+          "type": "boolean"
+        },
+        "owner_decision_required": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

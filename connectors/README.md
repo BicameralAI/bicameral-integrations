@@ -30,13 +30,13 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [github](github/) | **Beta** | active, webhook | `parse_pull_request` | ✓ (HMAC, `sha256=`) |
 | [fathom](fathom/) | **Beta** | passive, webhook | `parse_meeting` | ✓ (Svix) |
 | [linear](linear/) | **Beta** | webhook, active | `parse_event` | ✓ (HMAC + 60s replay) |
-| [granola](granola/) | **Beta** | passive | `parse_transcript` | — (poll; **live-poll client built**) |
+| [granola](granola/) | **Beta** | passive | `parse_transcript` | — (poll; **reference poll client in the library; live HTTP boundary operator-run**) |
 | [local_directory](local_directory/) | **Beta** | passive | `parse_file` | — |
 | [google_drive](google_drive/) | **Beta** | active | `parse_document` | — |
 | [sarif](sarif/) | **Beta** | passive | `parse_sarif` / `parse_result` | — |
 | [slack](slack/) | **Beta** | webhook | `parse_message` | ✓ (v0 + 5m replay) |
 | [notion](notion/) | **Beta** | active, webhook | `parse_page` | ✓ (HMAC, `sha256=`) |
-| [mcp_registry](mcp_registry/) | **Beta** | active | `parse_server` | — (poll; **live-poll client built** — public no-auth `GET /v0/servers`, cursor-paginated) |
+| [mcp_registry](mcp_registry/) | **Beta** | active | `parse_server` | — (poll; **reference poll client in the library; live HTTP boundary operator-run** — public no-auth `GET /v0/servers`, cursor-paginated) |
 | [continue_dev](continue_dev/) | **Beta** | passive | `parse_event` | — |
 | [aider](aider/) | **Beta** | passive | `parse_commit` | — |
 | [claude_code](claude_code/) | **Beta** | passive | `parse_session_line` | n/a (local file) |
@@ -47,12 +47,12 @@ dedup) is wired; "—" = parse-only or live verification deferred.
 | [zendesk](zendesk/) | **Beta** | webhook, active | `parse_ticket` | ✓ (Base64 HMAC) |
 | [gitlab](gitlab/) | **Beta** | webhook, active | `parse_merge_request` / `parse_issue` | ✓ (shared token) |
 | [confluence](confluence/) | **Beta** | active, passive | `parse_content` | — |
-| [copilot](copilot/) | **Beta** | active | `parse_metrics_day` | — (poll; **live-poll client built**; aggregate/PII-free) |
-| [cursor](cursor/) | **Beta** | active | `parse_usage_day` | — (poll; **live-poll client built** (Basic+POST); PII dropped) |
-| [devin](devin/) | **Beta** | active | `parse_session` | — (poll; **live-poll client built** (1st page); body redacted) |
-| [servicenow](servicenow/) | **Beta** | active | `parse_incident` | — (poll; **live-poll client built** (Basic+offset); redact-and-pass) |
-| [openai_admin](openai_admin/) | **Beta** | active | `parse_audit_log` | — (poll; **live-poll client built**; actor dropped) |
-| [anthropic_admin](anthropic_admin/) | **Beta** | active | `parse_usage` | — (poll; **live-poll client built** — `runtime/poll_client.py`, recorded-fixture-proven; aggregate/PII-free) |
+| [copilot](copilot/) | **Beta** | active | `parse_metrics_day` | — (poll; **reference poll client in the library; live HTTP boundary operator-run**; aggregate/PII-free) |
+| [cursor](cursor/) | **Beta** | active | `parse_usage_day` | — (poll; **reference poll client in the library; live HTTP boundary operator-run** (Basic+POST); PII dropped) |
+| [devin](devin/) | **Beta** | active | `parse_session` | — (poll; **reference poll client in the library; live HTTP boundary operator-run** (1st page); body redacted) |
+| [servicenow](servicenow/) | **Beta** | active | `parse_incident` | — (poll; **reference poll client in the library; live HTTP boundary operator-run** (Basic+offset); redact-and-pass) |
+| [openai_admin](openai_admin/) | **Beta** | active | `parse_audit_log` | — (poll; **reference poll client in the library; live HTTP boundary operator-run**; actor dropped) |
+| [anthropic_admin](anthropic_admin/) | **Beta** | active | `parse_usage` | — (poll; **reference poll client in the library; live HTTP boundary operator-run** — `runtime/poll_client.py`, recorded-fixture-proven; aggregate/PII-free) |
 
 Candidate selection and trust tiers are tracked in the
 [Integration Candidate Catalog](../docs/INTEGRATION_CANDIDATE_CATALOG.md) and the

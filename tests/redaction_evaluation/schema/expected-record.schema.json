@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BicameralAI/bicameral-integrations/tests/redaction_evaluation/schema/expected-record.schema.json",
+  "title": "Bicameral redaction evaluation expected record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "expected_entities",
+    "protected_fields",
+    "preservation_assertions",
+    "expected_outcome",
+    "expected_failure_reason"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "expected_entities": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entity"
+      }
+    },
+    "protected_fields": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/protectedField"
+      }
+    },
+    "preservation_assertions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/preservationAssertion"
+      }
+    },
+    "expected_outcome": {
+      "type": "string",
+      "enum": [
+        "sanitized",
+        "unchanged",
+        "failed_closed"
+      ]
+    },
+    "expected_failure_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[a-z0-9][a-z0-9._:-]*$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "expected_outcome": {
+            "const": "failed_closed"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "expected_failure_reason"
+        ],
+        "properties": {
+          "expected_failure_reason": {
+            "type": "string"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "expected_failure_reason": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "fieldPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9_.$\\[\\]-]+$"
+    },
+    "entity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entity_id",
+        "category",
+        "subtype",
+        "field_path",
+        "start",
+        "end",
+        "replacement",
+        "mandatory"
+      ],
+      "properties": {
+        "entity_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "secret",
+            "credential",
+            "pii",
+            "phi",
+            "prohibited_content"
+          ]
+        },
+        "subtype": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 96,
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "field_path": {
+          "$ref": "#/$defs/fieldPath"
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "replacement": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^\\[redacted:[a-z0-9._-]+\\]$"
+        },
+        "mandatory": {
+          "type": "boolean"
+        }
+      }
+    },
+    "protectedField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field_path",
+        "expected_value_sha256"
+      ],
+      "properties": {
+        "field_path": {
+          "$ref": "#/$defs/fieldPath"
+        },
+        "expected_value_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "preservationAssertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assertion_id",
+        "field_path",
+        "required_substring"
+      ],
+      "properties": {
+        "assertion_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "field_path": {
+          "$ref": "#/$defs/fieldPath"
+        },
+        "required_substring": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      }
+    }
+  }
+}
