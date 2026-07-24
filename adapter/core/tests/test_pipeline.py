@@ -96,6 +96,7 @@ def test_normalize_preserves_excerpt_and_version():
     assert len(out) == 1
     assert out[0].evidence[0].excerpt == "we will use postgres"
     assert out[0].adapter_version == "a/1.2.3"
+    assert out[0].metadata["redaction_receipt"]["structural_fields_preserved"] is True
 
 
 def test_normalize_maps_source_id_from_ref():
@@ -127,12 +128,17 @@ def test_validate_error_does_not_leak_raw_secret():
     assert _GH_TOKEN not in str(exc.value)
 
 
-def test_normalize_rejects_secret_bearing_observation():
-    # The screen must fire through the full normalize() seam, not only direct validation.
+def test_normalize_sanitizes_secret_bearing_observation_and_emits_receipt():
     obs = Observation(source_ref=_ref(), excerpt=f"token {_GH_TOKEN}")
-    with pytest.raises(EmissionContractError) as exc:
-        normalize([obs], adapter_version="github/0.1.0")
-    assert str(exc.value).startswith("sensitive_data:")
+    out = normalize([obs], adapter_version="github/0.1.0")
+    emission = out[0]
+    assert _GH_TOKEN not in emission.body
+    assert emission.body == "token [redacted:secret]"
+    receipt = emission.metadata["redaction_receipt"]
+    assert receipt["findings"] == [
+        {"category": "secret", "action": "tokenized", "count": 1}
+    ]
+    assert _GH_TOKEN not in str(receipt)
 
 
 _GHP = "ghp_0123456789abcdefghijklmnopqrstuvwxyz"  # fake github-PAT shape
@@ -226,14 +232,15 @@ class _Stringy:
         return f"leaked {_AKIA}"
 
 
-def test_normalize_preserves_metadata():
-    # FX-ADP-001: Observation.metadata survives normalize into emission.metadata,
-    # nested-intact, as a DEFENSIVE COPY (not the same object).
+def test_normalize_preserves_metadata_and_adds_receipt():
+    # FX-ADP-001: provider metadata survives as a defensive copy; the universal
+    # boundary adds only its reserved value-free redaction receipt.
     md = {"severity": "HIGH", "packages": "requests", "nested": {"k": "v"}}
     obs = Observation(source_ref=_ref(), excerpt="vuln summary", metadata=md)
     out = normalize([obs], adapter_version="osv/0.1.0")
-    assert out[0].metadata == md
-    assert out[0].metadata is not md  # defensive copy
+    assert {key: value for key, value in out[0].metadata.items() if key != "redaction_receipt"} == md
+    assert out[0].metadata is not md
+    assert out[0].metadata["redaction_receipt"]["schema_version"] == 1
 
 
 def test_clean_metadata_passes_unchanged():

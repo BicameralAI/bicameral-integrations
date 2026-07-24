@@ -1,0 +1,60 @@
+name: External-Ingest Contract Release
+
+on:
+  repository_dispatch:
+    types: [external_ingest_contract_released]
+  workflow_dispatch:
+    inputs:
+      bot_sha:
+        description: "Released bicameral-bot commit"
+        required: true
+      contract_sha256:
+        description: "Bot contract manifest fingerprint"
+        required: true
+      request_schema_sha256:
+        description: "Bot request schema fingerprint"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate-pin:
+    name: validate-released-contract-pin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out integrations
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Validate released Bot contract against producer pin
+        env:
+          BOT_SHA: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.bot_sha || inputs.bot_sha }}
+          CONTRACT_SHA256: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.contract_sha256 || inputs.contract_sha256 }}
+          REQUEST_SCHEMA_SHA256: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.request_schema_sha256 || inputs.request_schema_sha256 }}
+        run: |
+          set -euo pipefail
+          [[ "${BOT_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "${CONTRACT_SHA256}" =~ ^[0-9a-f]{64}$ ]]
+          [[ "${REQUEST_SCHEMA_SHA256}" =~ ^[0-9a-f]{64}$ ]]
+
+          pinned_bot_sha="$(jq -r .upstream_commit runtime/schemas/ingest_schema_pin.json)"
+          pinned_contract="$(jq -r .contract_fingerprint runtime/schemas/ingest_schema_pin.json)"
+          pinned_schema="$(jq -r .content_sha256 runtime/schemas/ingest_schema_pin.json)"
+
+          test "${pinned_bot_sha}" = "${BOT_SHA}" || {
+            echo "::error::Integrations is pinned to Bot ${pinned_bot_sha}, released contract is ${BOT_SHA}. Open a contract sync PR."
+            exit 1
+          }
+          test "${pinned_contract}" = "${CONTRACT_SHA256}"
+          test "${pinned_schema}" = "${REQUEST_SCHEMA_SHA256}"
+
+          curl -fsSL \
+            "https://raw.githubusercontent.com/BicameralAI/bicameral-bot/${BOT_SHA}/protocol/external-ingest/contract.json" \
+            -o /tmp/external-ingest-contract.json
+          curl -fsSL \
+            "https://raw.githubusercontent.com/BicameralAI/bicameral-bot/${BOT_SHA}/protocol/schemas/v2/external-ingest-request.schema.json" \
+            -o /tmp/external-ingest-request.schema.json
+
+          test "$(sha256sum /tmp/external-ingest-contract.json | awk '{print $1}')" = "${CONTRACT_SHA256}"
+          test "$(sha256sum /tmp/external-ingest-request.schema.json | awk '{print $1}')" = "${REQUEST_SCHEMA_SHA256}"
+          python scripts/validate_ingest_schema_pin.py

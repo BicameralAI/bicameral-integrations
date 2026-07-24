@@ -39,7 +39,7 @@ from connectors.slack.connector import SlackConnector
 from connectors.zendesk.connector import ZendeskConnector
 from adapter.core.emissions import SourceRef
 from adapter.core.observations import Observation
-from adapter.core.pipeline import EmissionContractError, normalize
+from adapter.core.pipeline import normalize
 from runtime import (
     CollectingSink,
     GatewayEmissionGated,
@@ -122,22 +122,53 @@ def test_full_path_signed_webhook_to_configured_gateway_sink():
     captured: dict = {}
 
     class _R:
-        status = 201
+        def __init__(self, status: int, body: bytes = b"") -> None:
+            self.status = status
+            self._body = body
+
+        def read(self):
+            return self._body
 
     class _Ctx:
+        def __init__(self, status: int = 201, body: bytes = b"") -> None:
+            self._status = status
+            self._body = body
+
         def __enter__(self):
-            return _R()
+            return _R(self._status, self._body)
 
         def __exit__(self, *_a):
             return False
 
     def _opener(request, timeout=None):
+        if request.get_method() == "GET":
+            from runtime.ingest_protocol import (
+                EXTERNAL_INGEST_CONTRACT_FINGERPRINT,
+                EXTERNAL_INGEST_CONTRACT_ID,
+                EXTERNAL_INGEST_REQUEST_SCHEMA_SHA256,
+            )
+
+            report = {
+                "contract_id": EXTERNAL_INGEST_CONTRACT_ID,
+                "protocol_version": 2,
+                "minimum_supported_protocol_version": 2,
+                "supported_protocol_versions": [2],
+                "delivery_endpoint": "/api/v2/external-ingest",
+                "request_schema_sha256": EXTERNAL_INGEST_REQUEST_SCHEMA_SHA256,
+                "contract_fingerprint": EXTERNAL_INGEST_CONTRACT_FINGERPRINT,
+                "redaction_receipt_required": True,
+            }
+            return _Ctx(200, json.dumps(report).encode("utf-8"))
         captured["body"] = json.loads(request.data.decode("utf-8"))
         return _Ctx()
 
     conn, body, sig = _signed_sentry()
-    sink = GatewaySink(endpoint="https://gw.example/api/v1/external-ingest", opener=_opener)
-    n = deliver_webhook(conn, headers={"Sentry-Hook-Signature": sig}, body=body, sink=sink)
+    sink = GatewaySink(
+        endpoint="https://gw.example/api/v2/external-ingest", opener=_opener
+    )
+    n = deliver_webhook(
+        conn, headers={"Sentry-Hook-Signature": sig}, body=body, sink=sink
+    )
     assert n == 1
     assert captured["body"]["source_system"] == "sentry"
     assert captured["body"]["content"] and captured["body"]["source_uri"]
@@ -550,17 +581,19 @@ def test_deliver_poll_devin_beta():
 
 
 def test_deliver_poll_servicenow_beta():
-    # End-to-end redact-and-pass: a secret in the description would be REJECTED raw,
-    # but the connector redacts it so the emission passes the FX-SEC-001 hard screen.
+    # Required pre-Bot redaction preserves the incident while removing quoted secrets.
     record = _fixture_payload("servicenow", "incident.json")
     raw = Observation(
         source_ref=SourceRef(source_id="servicenow", ref="x"),
         excerpt=record["description"],
     )
-    with pytest.raises(
-        EmissionContractError
-    ):  # companion non-vacuity: raw really trips FX-SEC-001
-        normalize([raw], adapter_version="runtime/0.1.0")
+    sanitized = normalize([raw], adapter_version="runtime/0.1.0")[0]
+    assert "AKIAIOSFODNN7EXAMPLE" not in sanitized.body
+    assert "[redacted:secret]" in sanitized.body
+    assert sanitized.metadata["redaction_receipt"]["findings"] == [
+        {"category": "pii", "action": "tokenized", "count": 1},
+        {"category": "secret", "action": "tokenized", "count": 1},
+    ]
     sink = _poll_one(
         ServiceNowConnector(), "servicenow", "incident.json", "servicenow", 1
     )

@@ -121,8 +121,26 @@ _SCHEMA_DRIFT_REASONS = frozenset(
         "schema_invalid",
         "schema_drift",
         "envelope_malformed",
+        "protocol_mismatch",
     }
 )
+
+# The GatewaySink collapses every Bot HTTP rejection body to this fixed,
+# value-free reason so a token-echoing gateway response can never leak through
+# the failure channel. The specific cause is deliberately not carried, so an
+# opaque rejection MUST be classified fail-closed by its status alone rather
+# than treated as a benign terminal 4xx that advances the cursor.
+_OPAQUE_GATEWAY_REASON = "gateway_rejected"
+
+
+def _is_opaque_gateway_reason(reason: str) -> bool:
+    """True when the reason carries no discriminating cause.
+
+    Covers both the empty reason and the GatewaySink's fixed token-safe
+    ``gateway_rejected`` sentinel.
+    """
+    reason_lower = reason.lower()
+    return reason_lower == "" or reason_lower == _OPAQUE_GATEWAY_REASON
 
 
 def _is_sensitive_rejection(status: int, reason: str) -> bool:
@@ -130,9 +148,11 @@ def _is_sensitive_rejection(status: int, reason: str) -> bool:
     reason_lower = reason.lower()
     if any(r in reason_lower for r in _SENSITIVE_REASONS):
         return True
-    # A 422 with no specific reason defaults to sensitive rejection
-    # (the gateway's primary use of 422 is FX-SEC-001 enforcement).
-    if status in _SENSITIVE_REJECTION_STATUSES and not reason_lower:
+    # A 422 with no discriminating reason — including the GatewaySink's opaque
+    # token-safe reason — defaults to sensitive rejection: the gateway's
+    # primary use of 422 is FX-SEC-001 enforcement, so the cursor must never
+    # advance past a possible sensitive veto.
+    if status in _SENSITIVE_REJECTION_STATUSES and _is_opaque_gateway_reason(reason):
         return True
     return False
 
@@ -140,7 +160,16 @@ def _is_sensitive_rejection(status: int, reason: str) -> bool:
 def _is_schema_drift(status: int, reason: str) -> bool:
     """True if the failure indicates a schema/envelope conformance issue."""
     reason_lower = reason.lower()
-    return any(r in reason_lower for r in _SCHEMA_DRIFT_REASONS)
+    if any(r in reason_lower for r in _SCHEMA_DRIFT_REASONS):
+        return True
+    # Capability negotiation exact-matches the contract before any POST, so a
+    # Bot 400 after that handshake can only mean the producer's envelope
+    # mapping went stale between negotiation and delivery. The opaque token-safe
+    # reason carries no discriminator, so fail closed to a schema-drift
+    # quarantine (fix-forward) rather than advancing the cursor.
+    if status == 400 and _is_opaque_gateway_reason(reason):
+        return True
+    return False
 
 
 def _is_retryable_status(status: int) -> bool:

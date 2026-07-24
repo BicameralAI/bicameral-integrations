@@ -1,0 +1,18 @@
+{
+  "authority_repository": "BicameralAI/bicameral-bot",
+  "capabilities_endpoint": "/api/external-ingest/capabilities",
+  "compatibility_policy": "exact_match_fail_closed",
+  "contract_id": "external-ingest.delivery.v2",
+  "delivery_endpoint": "/api/v2/external-ingest",
+  "legacy_migration_endpoint": "/api/v1/external-ingest",
+  "minimum_supported_protocol_version": 2,
+  "protocol_version": 2,
+  "redaction_receipt_required": true,
+  "request_schema": {
+    "path": "protocol/schemas/v2/external-ingest-request.schema.json",
+    "sha256": "59819fc34f0ec7a54225cb488c9d12794655bd49f9521ae48118f1b965154746"
+  },
+  "supported_protocol_versions": [
+    2
+  ]
+}

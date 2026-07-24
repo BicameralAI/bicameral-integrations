@@ -5,6 +5,67 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## Unreleased
 
+### Added
+
+- Round-4 evidence and runtime integrity: the redaction timeout is now ONE
+  end-to-end monotonic deadline (lock wait included; bounded terminate->kill
+  cleanup with a documented tolerance; concurrent-caller tests); the evidence
+  bundle binds implementation provenance to an ancestor reviewed commit with
+  per-component blob digests plus a CI-emitted exact-head validation receipt;
+  stage-record chaining (tamper-evident for unproven/failed stages) is
+  separated from transformation-output lineage (output-less stages can never
+  be cited as emitting digests); a stage-scoped raw-sample allowlist replaces
+  the false "no PII anywhere" claim (the approved repo-owned raw value appears
+  only at raw_acquisition, by digest); unproven stages hold evidence_class
+  none and declare required_evidence_class, and the bundle class derives only
+  from evidence actually held.
+
+- Information-cycle evidence bundle: a closed, versioned 20-stage ledger
+  (`ingest/_schema/information-cycle-evidence-bundle.schema.json`) with
+  cryptographic stage-to-stage digest links, per-stage transformation
+  mapping/redaction ledgers, authority boundaries, and honest `unproven`
+  downstream records (gateway negotiation awaits PR #262; Bot acceptance,
+  durable evidence, lifecycle, recall, and agent exposure belong to Bot,
+  Factory, and host surfaces; credentialed runs deferred). Generator uses
+  production code paths only; validator is CI-wired with negative coverage
+  for reordering, broken links, tampered digests, fabricated unproven
+  outputs, and evidence-class escalation.
+- Redaction timeout is now backed by a terminable, recyclable worker
+  process: a stuck sanitizer is hard-killed and replaced, repeated timeouts
+  cannot starve later healthy requests, and no raw value crosses the worker
+  boundary in failure output (isolation test suite included). The previous
+  thread-pool timeout could abandon workers and is removed.
+
+- Alpha ingest manifest (`ingest/alpha-ingest-manifest.json`) with a closed
+  fail-closed schema and CI validator: six connector/mode routes (GitHub
+  webhook + honestly-missing active poll, Linear webhook + GraphQL poll,
+  local_directory passive import, google_drive bounded document fetch) with a
+  multi-axis conformance state that can never collapse into one `verified`
+  boolean or overstate evidence (#258).
+- One reusable 12-checkpoint real-data conformance harness
+  (`runtime/ingest_conformance_harness.py`) consuming manifest entries;
+  goldens regenerate through the same construction path. First recorded REAL
+  capture: local_directory passive import of this repo's own
+  CODE_OF_CONDUCT.md through the genuine operator-run file-read boundary, with
+  sanitization ledger and structural-preservation proof (#258, #260).
+- Capture sanitization tooling (`scripts/capture_sanitize.py`), operator-run
+  real GatewaySink delivery receipts (`scripts/real_gateway_delivery.py`,
+  201-only success, binds both commits + digests), and Linear GraphQL
+  live-wire verification (`scripts/linear_live_wire.py`) — gateway and
+  live-wire states stay `unproven`/UNVERIFIED until real runs exist.
+- Guarded redaction boundary entry
+  (`redaction_receipt.guarded_sanitize_observation`) completing the GH #260
+  typed-failure envelope (engine_unavailable, invalid_ruleset,
+  oversized_payload, timeout, receipt_generation_failure) plus
+  `receipt_digest` with an explicit completed_at-excluded digest domain.
+
+### Changed
+
+- Documentation truthfulness: connector-table "live-poll client built"
+  rephrased to "reference poll client in the library; live HTTP boundary
+  operator-run"; README now states flip-ready is a Beta-ladder state, not
+  Live and not customer value, and points at the per-route evidence manifest.
+
 ### Security
 
 - **Granola** connector PII correction (L2): the verbatim transcript + title are now

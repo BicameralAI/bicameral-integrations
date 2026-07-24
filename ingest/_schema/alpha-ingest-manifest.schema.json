@@ -1,0 +1,118 @@
+{
+  "$comment": "Closed schema for the July-29 alpha ingest manifest (GH #258). Validated by scripts/validate_alpha_ingest_manifest.py with the repo's fail-closed stdlib checker: unknown fields and unknown state values fail. Conformance state is deliberately multi-axis; it must never collapse into one verified boolean.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "manifest_id", "scope_note", "entries"],
+  "properties": {
+    "schema_version": { "type": "integer", "enum": [1] },
+    "manifest_id": { "type": "string" },
+    "scope_note": { "type": "string" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "connector_id",
+          "mode",
+          "provider_schema_version",
+          "connector_version",
+          "owner",
+          "acquisition_boundary",
+          "authentication_method",
+          "capture_command",
+          "required_credential_class",
+          "real_capture",
+          "expected",
+          "conformance_state"
+        ],
+        "properties": {
+          "connector_id": {
+            "type": "string",
+            "enum": ["github", "linear", "local_directory", "google_drive"]
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["webhook", "active_poll", "graphql_poll", "passive_import", "document_fetch"]
+          },
+          "provider_schema_version": { "type": "string" },
+          "connector_version": { "type": "string" },
+          "owner": { "type": "string" },
+          "acquisition_boundary": { "type": "string" },
+          "authentication_method": { "type": "string" },
+          "capture_command": { "type": "string" },
+          "required_credential_class": { "type": "string" },
+          "notes": { "type": "string" },
+          "real_capture": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "captured_at",
+              "source_version",
+              "sanitized_digest",
+              "sanitization_ledger",
+              "source_license_or_retention_note"
+            ],
+            "properties": {
+              "path": { "type": "string" },
+              "captured_at": { "type": "string" },
+              "source_version": { "type": "string" },
+              "sanitized_digest": { "type": "string" },
+              "sanitization_ledger": { "type": "string" },
+              "source_license_or_retention_note": { "type": "string" }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "provider_verification",
+              "parsed_facts",
+              "redaction_receipt",
+              "observation",
+              "integration_advisories",
+              "universal_advisories",
+              "adapter_emission",
+              "external_ingest_envelope",
+              "delivery_or_cursor_receipt",
+              "gateway_receipt"
+            ],
+            "properties": {
+              "provider_verification": { "type": "string" },
+              "parsed_facts": { "type": "string" },
+              "redaction_receipt": { "type": "string" },
+              "observation": { "type": "string" },
+              "integration_advisories": { "type": "string" },
+              "universal_advisories": { "type": "string" },
+              "adapter_emission": { "type": "string" },
+              "external_ingest_envelope": { "type": "string" },
+              "delivery_or_cursor_receipt": { "type": "string" },
+              "gateway_receipt": { "type": "string" }
+            }
+          },
+          "conformance_state": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "implementation",
+              "real_capture",
+              "component",
+              "gateway",
+              "terminal_bot",
+              "human_acceptance"
+            ],
+            "properties": {
+              "implementation": { "type": "string", "enum": ["implemented", "missing"] },
+              "real_capture": { "type": "string", "enum": ["missing", "recorded"] },
+              "component": { "type": "string", "enum": ["unproven", "proven"] },
+              "gateway": { "type": "string", "enum": ["unproven", "proven"] },
+              "terminal_bot": { "type": "string", "enum": ["unproven", "proven"] },
+              "human_acceptance": { "type": "string", "enum": ["pending", "accepted", "rejected"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

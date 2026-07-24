@@ -1,0 +1,139 @@
+name: Redaction evaluation stacked validation
+
+on:
+  pull_request:
+    branches:
+      - feat/alpha-ingest-real-data-redaction
+    paths:
+      - "artifacts/redaction-evaluation/**"
+      - "docs/design/redaction-*.md"
+      - "runtime/redaction_evaluation/**"
+      - "scripts/evaluate_redaction_backends.py"
+      - "scripts/measure_redaction_memory.py"
+      - "scripts/validate_redaction_evaluation_*.py"
+      - "tests/redaction_evaluation/**"
+      - ".github/workflows/redaction-evaluation-stacked.yml"
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Repository branch, tag, or full commit SHA to validate
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: redaction-evaluation-${{ github.event.pull_request.number || inputs.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: exact-head evidence validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out requested exact head
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || inputs.ref }}
+          fetch-depth: 0
+
+      - name: Resolve and assert exact head
+        id: exact_head
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          if [[ ! "$actual" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Invalid checkout head: $actual" >&2
+            exit 1
+          fi
+          if [[ "$EVENT_NAME" == "pull_request" && "$actual" != "$PR_HEAD_SHA" ]]; then
+            echo "Expected PR head $PR_HEAD_SHA, checked out $actual" >&2
+            exit 1
+          fi
+          echo "sha=$actual" >> "$GITHUB_OUTPUT"
+          echo "Validated checkout head: $actual"
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+
+      - name: Install pinned validation tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ruff==0.15.5 mypy pytest jsonschema==4.25.1
+
+      - name: Require governed validation surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            scripts/validate_redaction_evaluation_contract.py
+            scripts/validate_redaction_evaluation_governance.py
+            scripts/validate_redaction_evaluation_hosted.py
+            tests/redaction_evaluation/test_evaluation_contract.py
+            tests/redaction_evaluation/test_candidate_hard_gates.py
+            tests/redaction_evaluation/test_validate_contract.py
+            tests/redaction_evaluation/test_validate_governance.py
+            tests/redaction_evaluation/test_validate_hosted.py
+          )
+          for path in "${required[@]}"; do
+            test -f "$path" || { echo "Missing required validation surface: $path" >&2; exit 1; }
+          done
+
+      - name: Ruff
+        run: |
+          ruff check \
+            runtime/redaction_evaluation \
+            scripts/evaluate_redaction_backends.py \
+            scripts/measure_redaction_memory.py \
+            scripts/validate_redaction_evaluation_contract.py \
+            scripts/validate_redaction_evaluation_governance.py \
+            scripts/validate_redaction_evaluation_hosted.py \
+            tests/redaction_evaluation
+
+      - name: Mypy
+        run: |
+          mypy --show-error-codes \
+            runtime/redaction_evaluation \
+            scripts/evaluate_redaction_backends.py \
+            scripts/measure_redaction_memory.py \
+            scripts/validate_redaction_evaluation_contract.py \
+            scripts/validate_redaction_evaluation_governance.py \
+            scripts/validate_redaction_evaluation_hosted.py
+
+      - name: Evaluation contract and governance tests
+        run: |
+          pytest -q \
+            tests/redaction_evaluation/test_evaluation_contract.py \
+            tests/redaction_evaluation/test_candidate_hard_gates.py \
+            tests/redaction_evaluation/test_validate_contract.py \
+            tests/redaction_evaluation/test_validate_governance.py \
+            tests/redaction_evaluation/test_validate_hosted.py
+
+      - name: Validate corpus and annotations
+        run: python scripts/validate_redaction_evaluation_contract.py
+
+      - name: Validate adversarial review and owner-decision governance
+        run: python scripts/validate_redaction_evaluation_governance.py
+
+      - name: Validate committed evidence consistency
+        run: |
+          python scripts/validate_redaction_evaluation_hosted.py \
+            --expected-head "${{ steps.exact_head.outputs.sha }}" \
+            --receipt artifacts/redaction-evaluation/hosted-validation-receipt.json
+
+      - name: Upload exact-head validation receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: redaction-evaluation-exact-head-${{ steps.exact_head.outputs.sha }}
+          path: artifacts/redaction-evaluation/hosted-validation-receipt.json
+          if-no-files-found: ignore
+          retention-days: 14
