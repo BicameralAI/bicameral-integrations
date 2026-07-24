@@ -1,0 +1,438 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BicameralAI/bicameral-integrations/tests/redaction_evaluation/schema/owner-decision-packet.schema.json",
+  "title": "Bicameral redaction backend owner decision packet",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "decision_owner",
+    "status",
+    "outcome",
+    "selected_candidate_id",
+    "evidence_bindings",
+    "eligible_candidates",
+    "ineligible_candidates",
+    "measured_summary",
+    "owner_judgment",
+    "rationale",
+    "unresolved_uncertainty",
+    "migration_disposition",
+    "migration_issue",
+    "rollback_requirements",
+    "architecture_update_required",
+    "production_evidence_rebind_required",
+    "release_authority_granted",
+    "decided_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "decision_id": {
+      "$ref": "#/$defs/stableId"
+    },
+    "decision_owner": {
+      "const": "Kevin Knapp"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "accepted"
+      ]
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "retain_baseline",
+        "select_candidate",
+        "bounded_follow_up_required"
+      ]
+    },
+    "selected_candidate_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "evidence_bindings": {
+      "$ref": "#/$defs/evidenceBindings"
+    },
+    "eligible_candidates": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/stableId"
+      }
+    },
+    "ineligible_candidates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ineligibleCandidate"
+      }
+    },
+    "measured_summary": {
+      "$ref": "#/$defs/measuredSummary"
+    },
+    "owner_judgment": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 8000
+    },
+    "unresolved_uncertainty": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "migration_disposition": {
+      "type": "string",
+      "enum": [
+        "no_change",
+        "implementation_issue_required",
+        "bounded_follow_up_required"
+      ]
+    },
+    "migration_issue": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "rollback_requirements": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "architecture_update_required": {
+      "type": "boolean"
+    },
+    "production_evidence_rebind_required": {
+      "type": "boolean"
+    },
+    "release_authority_granted": {
+      "const": false
+    },
+    "decided_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "select_candidate"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "selected_candidate_id": {
+            "type": "string"
+          },
+          "migration_disposition": {
+            "const": "implementation_issue_required"
+          },
+          "production_evidence_rebind_required": {
+            "const": true
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "selected_candidate_id": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "retain_baseline"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "migration_disposition": {
+            "const": "no_change"
+          },
+          "migration_issue": {
+            "type": "null"
+          },
+          "production_evidence_rebind_required": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "bounded_follow_up_required"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "migration_disposition": {
+            "const": "bounded_follow_up_required"
+          },
+          "production_evidence_rebind_required": {
+            "const": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "accepted"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "decided_at": {
+            "type": "string"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "decided_at": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "stableId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "evidenceBindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evaluation_repository",
+        "evaluation_pr_number",
+        "evaluation_head_sha",
+        "parent_pr_269_head_sha",
+        "corpus_sha256",
+        "candidate_matrix_sha256",
+        "hard_gates_sha256",
+        "metrics_sha256",
+        "benchmarks_sha256",
+        "dependency_report_sha256",
+        "license_report_sha256",
+        "vulnerability_report_sha256",
+        "adversarial_review_sha256"
+      ],
+      "properties": {
+        "evaluation_repository": {
+          "const": "BicameralAI/bicameral-integrations"
+        },
+        "evaluation_pr_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "evaluation_head_sha": {
+          "$ref": "#/$defs/gitSha"
+        },
+        "parent_pr_269_head_sha": {
+          "const": "fd69ff2742363b5d619bc073b8e8490c0f50733d"
+        },
+        "corpus_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "candidate_matrix_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "hard_gates_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "metrics_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "benchmarks_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "dependency_report_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "license_report_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "vulnerability_report_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "adversarial_review_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "ineligibleCandidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "failed_gate_ids",
+        "evidence_refs"
+      ],
+      "properties": {
+        "candidate_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "failed_gate_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/stableId"
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        }
+      }
+    },
+    "measuredSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "baseline_candidate_id",
+        "recommended_candidate_id",
+        "recommendation_confidence",
+        "score_summary",
+        "material_tradeoffs"
+      ],
+      "properties": {
+        "baseline_candidate_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "recommended_candidate_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "recommendation_confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "score_summary": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/candidateScore"
+          }
+        },
+        "material_tradeoffs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        }
+      }
+    },
+    "candidateScore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_id",
+        "eligible",
+        "weighted_score"
+      ],
+      "properties": {
+        "candidate_id": {
+          "$ref": "#/$defs/stableId"
+        },
+        "eligible": {
+          "type": "boolean"
+        },
+        "weighted_score": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "eligible": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "weighted_score": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
