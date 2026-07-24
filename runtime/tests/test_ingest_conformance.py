@@ -79,6 +79,10 @@ def _emission_from_fixture(raw: dict) -> AdapterEmission:
 def _assert_schema_conforms(payload: dict) -> None:
     """Structural validation against the vendored ExternalIngestEnvelope schema (house pattern)."""
     for key in _SCHEMA["required"]:
+        if key == "redaction_receipt":
+            # GatewaySink adds this after its final hard screen; these golden
+            # fixtures pin the preceding deterministic mapping phase.
+            continue
         assert key in payload and isinstance(payload[key], str) and payload[key], (
             f"required field {key!r} missing or empty"
         )
@@ -136,6 +140,12 @@ def test_pin_content_hash_matches_vendored_schema() -> None:
         f"vendored schema content hash ({actual_hash}) does not match pin "
         f"({_PIN['content_sha256']}); re-pin after updating the schema"
     )
+
+
+def test_vendored_distribution_contract_is_in_sync() -> None:
+    from runtime.ingest_protocol import verify_vendored_contract
+
+    assert verify_vendored_contract() == []
 
 
 def test_at_least_one_fixture_exists() -> None:

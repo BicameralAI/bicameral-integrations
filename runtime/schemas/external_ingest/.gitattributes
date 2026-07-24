@@ -1,0 +1,2 @@
+# Digest-pinned vendored contract bytes must be identical on every platform.
+* -text
