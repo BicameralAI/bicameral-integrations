@@ -20,6 +20,11 @@ witnesses only; they do not create Product state or deployment authority.
 
 - [ ] Validate a real provider capture through redaction, capability negotiation,
   v2 delivery, Bot acceptance, and cursor persistence using exact commits.
+- [ ] Show the information-cycle bundle's ``unproven_downstream`` stages
+  (durable evidence persistence, candidate/Decision lifecycle, recall or
+  RecallPacket production, and authentic agent-session exposure) either proven
+  through the exact bound execution session or explicitly declared out of this
+  release's authority. A component-evidence bundle does not close them.
 - [ ] Deploy the compatible Bot contract before switching Integrations.
 - [ ] Validate old Integrations → new Bot and new Integrations → old Bot behavior;
   no automatic downgrade is allowed.

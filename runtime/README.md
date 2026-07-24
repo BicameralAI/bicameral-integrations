@@ -12,7 +12,7 @@ live HTTP listener. This layer is the seam an operator wires their host into.
 | `EmissionSink` (Protocol) | `emit(emissions)` — where normalized `AdapterEmission`s go. |
 | `CollectingSink` | Reference sink: accumulates into `.emissions` (tests + Beta). |
 | `GatewaySink` | **Live emission** — maps each emission to the v2 `ExternalIngestEnvelope`, checks Bot's `/api/external-ingest/capabilities` against the vendored version/schema/fingerprint, then POSTs to `/api/v2/external-ingest`. Default-safe, exact-match fail-closed, receipt-required, and token-safe. |
-| `emission_to_external_envelope` | Map an `AdapterEmission` → the pinned v2 `ExternalIngestEnvelope` dict (vendored schema in `runtime/schemas/`, bot schema commit `5c24c60f`). |
+| `emission_to_external_envelope` | Map an `AdapterEmission` → the pinned v2 `ExternalIngestEnvelope` dict (vendored schema in `runtime/schemas/`, bot schema commit pinned in `runtime/schemas/ingest_schema_pin.json`). |
 | `SecretResolver` (Protocol) | `resolve(connector_id) -> str` — operator supplies the real keyring-backed one. |
 | `MappingSecretResolver` | Reference resolver over an injected mapping (`""` for unknown ids). |
 | `deliver_webhook(connector, *, headers, body, sink, …)` | Verify + normalize a webhook delivery, emit, return the emission count (0 on reject/dedup). |

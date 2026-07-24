@@ -2,9 +2,9 @@
 """Tests for the Live emission seam: AdapterEmission -> v2 ExternalIngestEnvelope + GatewaySink (#226).
 
 The vendored schema ``runtime/schemas/external_ingest_request_v2.schema.json`` is a byte-exact copy
-of ``bicameral-bot:protocol/schemas/v2/external-ingest-request.schema.json`` pinned at schema commit
-``5c24c60fcba8ed9d04ab5dd6fd0977dcddd9bd57`` (bot HEAD ``22806ac21125b497370786f2ad400b8ba44365cf``;
-pin metadata in ``runtime/schemas/ingest_schema_pin.json``). The forbidden-authority list mirrors
+of ``bicameral-bot:protocol/schemas/v2/external-ingest-request.schema.json`` pinned at the bot
+commit recorded in ``runtime/schemas/ingest_schema_pin.json`` (the authoritative pin; the
+``validate_ingest_schema_pin`` gate recomputes both digests from bytes). The forbidden-authority list mirrors
 ``bicameral-bot:crates/bicameral-gateway/src/routes.rs:500-521`` (18 names; 403 at the top level).
 The #196 provenance + #198 field-classification disciplines are carried into the v2 envelope as
 ``candidate_hints[].labels`` and re-asserted here in full.
