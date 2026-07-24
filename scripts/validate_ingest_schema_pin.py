@@ -27,6 +27,10 @@ from pathlib import Path
 _ROOT = Path(__file__).resolve().parents[1]
 _SCHEMA_PATH = _ROOT / "runtime" / "schemas" / "external_ingest_request_v2.schema.json"
 _PIN_PATH = _ROOT / "runtime" / "schemas" / "ingest_schema_pin.json"
+_CONTRACT_PATH = _ROOT / "runtime" / "schemas" / "external_ingest" / "contract.json"
+_CONTRACT_FINGERPRINT_PATH = (
+    _ROOT / "runtime" / "schemas" / "external_ingest" / "contract.sha256"
+)
 _FIXTURES_DIR = _ROOT / "runtime" / "tests" / "fixtures" / "ingest_conformance"
 
 _REQUIRED_PIN_KEYS = (
@@ -35,6 +39,11 @@ _REQUIRED_PIN_KEYS = (
     "upstream_path",
     "local_path",
     "content_sha256",
+    "contract_id",
+    "contract_local_path",
+    "contract_fingerprint",
+    "delivery_endpoint",
+    "capabilities_endpoint",
 )
 
 
@@ -67,16 +76,44 @@ def _check_content_hash(pin: dict) -> list[str]:
     return []
 
 
+def _check_contract_pin(pin: dict) -> list[str]:
+    errors: list[str] = []
+    if not _CONTRACT_PATH.exists() or not _CONTRACT_FINGERPRINT_PATH.exists():
+        return ["vendored external-ingest contract or fingerprint is missing"]
+    contract_bytes = _CONTRACT_PATH.read_bytes()
+    contract = json.loads(contract_bytes)
+    fingerprint = hashlib.sha256(contract_bytes).hexdigest()
+    recorded = _CONTRACT_FINGERPRINT_PATH.read_text().strip().split()[0]
+    if recorded != fingerprint or pin.get("contract_fingerprint") != fingerprint:
+        errors.append("contract fingerprint differs across manifest, pin, and sha256 file")
+    if contract.get("request_schema", {}).get("sha256") != pin.get("content_sha256"):
+        errors.append("contract request schema digest differs from schema pin")
+    for pin_key, contract_key in (
+        ("contract_id", "contract_id"),
+        ("protocol_version", "protocol_version"),
+        ("delivery_endpoint", "delivery_endpoint"),
+        ("capabilities_endpoint", "capabilities_endpoint"),
+    ):
+        if pin.get(pin_key) != contract.get(contract_key):
+            errors.append(f"pin {pin_key} differs from vendored contract")
+    return errors
+
+
 def _check_schema_structure(schema: dict) -> list[str]:
     errors: list[str] = []
     required = schema.get("required", [])
-    for field in ("content", "source_system", "source_uri"):
+    for field in ("content", "source_system", "source_uri", "redaction_receipt"):
         if field not in required:
             errors.append(f"schema missing required field: {field!r}")
     defs = schema.get("definitions", {})
     for name in ("ExternalEvidenceItem", "ExternalCandidateHint"):
         if name not in defs:
             errors.append(f"schema missing definition: {name}")
+    receipt = schema.get("properties", {}).get("redaction_receipt", {})
+    if receipt.get("additionalProperties") is not False:
+        errors.append("redaction receipt must reject unknown fields")
+    if receipt.get("properties", {}).get("structural_fields_preserved", {}).get("const") is not True:
+        errors.append("redaction receipt must require structural_fields_preserved=true")
     return errors
 
 
@@ -97,6 +134,10 @@ def _check_fixture_conformance(schema: dict) -> list[str]:
         fixture = json.loads(path.read_text(encoding="utf-8"))
         expected = fixture.get("expected_envelope", {})
         for key in required_keys:
+            if key == "redaction_receipt":
+                # Golden mapping fixtures stop before GatewaySink's final hard
+                # screen issues the mandatory wire receipt.
+                continue
             val = expected.get(key)
             if not isinstance(val, str) or not val:
                 errors.append(
@@ -123,6 +164,7 @@ def main() -> int:
 
     # Content hash
     all_errors.extend(_check_content_hash(pin))
+    all_errors.extend(_check_contract_pin(pin))
 
     # Schema structure
     if not _SCHEMA_PATH.exists():

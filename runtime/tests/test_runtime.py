@@ -122,22 +122,49 @@ def test_full_path_signed_webhook_to_configured_gateway_sink():
     captured: dict = {}
 
     class _R:
-        status = 201
+        def __init__(self, status: int, body: bytes = b"") -> None:
+            self.status = status
+            self._body = body
+
+        def read(self):
+            return self._body
 
     class _Ctx:
+        def __init__(self, status: int = 201, body: bytes = b"") -> None:
+            self._status = status
+            self._body = body
+
         def __enter__(self):
-            return _R()
+            return _R(self._status, self._body)
 
         def __exit__(self, *_a):
             return False
 
     def _opener(request, timeout=None):
+        if request.get_method() == "GET":
+            from runtime.ingest_protocol import (
+                EXTERNAL_INGEST_CONTRACT_FINGERPRINT,
+                EXTERNAL_INGEST_CONTRACT_ID,
+                EXTERNAL_INGEST_REQUEST_SCHEMA_SHA256,
+            )
+
+            report = {
+                "contract_id": EXTERNAL_INGEST_CONTRACT_ID,
+                "protocol_version": 2,
+                "minimum_supported_protocol_version": 2,
+                "supported_protocol_versions": [2],
+                "delivery_endpoint": "/api/v2/external-ingest",
+                "request_schema_sha256": EXTERNAL_INGEST_REQUEST_SCHEMA_SHA256,
+                "contract_fingerprint": EXTERNAL_INGEST_CONTRACT_FINGERPRINT,
+                "redaction_receipt_required": True,
+            }
+            return _Ctx(200, json.dumps(report).encode("utf-8"))
         captured["body"] = json.loads(request.data.decode("utf-8"))
         return _Ctx()
 
     conn, body, sig = _signed_sentry()
     sink = GatewaySink(
-        endpoint="https://gw.example/api/v1/external-ingest", opener=_opener
+        endpoint="https://gw.example/api/v2/external-ingest", opener=_opener
     )
     n = deliver_webhook(
         conn, headers={"Sentry-Hook-Signature": sig}, body=body, sink=sink

@@ -1,0 +1,40 @@
+{
+  "mappings": [
+    {
+      "operation": "copy",
+      "source_path": "observation.source_ref",
+      "target_path": "emission.evidence[0].source_ref"
+    },
+    {
+      "operation": "copy",
+      "source_path": "observation.excerpt",
+      "target_path": "emission.body"
+    },
+    {
+      "operation": "copy",
+      "source_path": "observation.excerpt",
+      "target_path": "emission.evidence[0].excerpt"
+    },
+    {
+      "operation": "copy",
+      "source_path": "observation.title",
+      "target_path": "emission.title"
+    },
+    {
+      "operation": "derive",
+      "source_path": "observation.mode",
+      "target_path": "emission.provenance.delivery_mode"
+    },
+    {
+      "operation": "copy",
+      "source_path": "observation.metadata",
+      "target_path": "emission.metadata"
+    },
+    {
+      "operation": "attach",
+      "source_path": "(redaction receipt)",
+      "target_path": "emission.metadata.redaction_receipt"
+    }
+  ],
+  "note": "descriptive evidence of pipeline._emission_from; not executable authority"
+}

@@ -1,14 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "ExternalIngestEnvelope",
+  "description": "External/source-system evidence submission contract.",
   "type": "object",
   "required": [
     "content",
+    "redaction_receipt",
     "source_system",
     "source_uri"
   ],
   "properties": {
     "candidate_hints": {
+      "description": "Candidate suggestions. Advisory only, never canonical authority.",
       "default": [],
       "type": "array",
       "items": {
@@ -16,15 +19,18 @@
       }
     },
     "content": {
+      "description": "Sanitized captured content snapshot.",
       "type": "string"
     },
     "content_hash": {
+      "description": "Content hash (SHA-256). The daemon verifies if provided and computes if omitted.",
       "type": [
         "string",
         "null"
       ]
     },
     "evidence": {
+      "description": "Evidence excerpts within the sanitized content.",
       "default": [],
       "type": "array",
       "items": {
@@ -32,24 +38,90 @@
       }
     },
     "redaction_receipt": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/ExternalRedactionReceipt"
+      "description": "Value-free proof that required pre-Bot redaction executed.\n\nThe receipt carries digests, ruleset identity, categories, actions, counts, and completion metadata. It must never contain removed values. Malformed receipts fail during typed deserialization before evidence admission.",
+      "type": "object",
+      "required": [
+        "completed_at",
+        "engine",
+        "engine_version",
+        "input_digest",
+        "output_digest",
+        "ruleset_digest",
+        "ruleset_id",
+        "schema_version",
+        "structural_fields_preserved"
+      ],
+      "properties": {
+        "completed_at": {
+          "description": "UTC completion timestamp.",
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
         },
-        {
-          "type": "null"
+        "engine": {
+          "description": "Redaction engine identity.",
+          "type": "string",
+          "minLength": 1
+        },
+        "engine_version": {
+          "description": "Redaction engine version.",
+          "type": "string",
+          "minLength": 1
+        },
+        "findings": {
+          "description": "Value-free categories and actions applied.",
+          "default": [],
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExternalRedactionFinding"
+          }
+        },
+        "input_digest": {
+          "description": "SHA-256 digest of the canonical pre-redaction payload.",
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "output_digest": {
+          "description": "SHA-256 digest of the canonical sanitized payload.",
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "ruleset_digest": {
+          "description": "SHA-256 digest of the canonical ruleset manifest.",
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "ruleset_id": {
+          "description": "Versioned ruleset identifier.",
+          "type": "string",
+          "minLength": 1
+        },
+        "schema_version": {
+          "description": "Receipt schema version. Alpha requires version 1.",
+          "type": "integer",
+          "format": "uint32",
+          "maximum": 1.0,
+          "minimum": 1.0
+        },
+        "structural_fields_preserved": {
+          "description": "Confirms provider/evidence structural identity was preserved.",
+          "type": "boolean",
+          "const": true
         }
-      ]
+      },
+      "additionalProperties": false
     },
     "source_system": {
+      "description": "Source system identifier (for example `jira`, `linear`, `slack`, `github`).",
       "type": "string"
     },
     "source_uri": {
+      "description": "Source URI for provenance.",
       "type": "string"
     }
   },
   "definitions": {
     "ExternalCandidateHint": {
+      "description": "A candidate hint from an external source. Advisory, not authority.",
       "type": "object",
       "required": [
         "body",
@@ -78,6 +150,7 @@
       }
     },
     "ExternalEvidenceItem": {
+      "description": "An evidence excerpt from an external source.",
       "type": "object",
       "required": [
         "excerpt"
@@ -112,6 +185,7 @@
       }
     },
     "ExternalRedactionFinding": {
+      "description": "One value-free redaction finding summary.",
       "type": "object",
       "required": [
         "action",
@@ -120,70 +194,23 @@
       ],
       "properties": {
         "action": {
-          "type": "string"
+          "description": "Bounded action such as `tokenized` or `removed`.",
+          "type": "string",
+          "pattern": "^(removed|tokenized)$"
         },
         "category": {
-          "type": "string"
+          "description": "Bounded category such as `secret`, `credential`, or `pii`.",
+          "type": "string",
+          "pattern": "^(credential|pii|secret)$"
         },
         "count": {
+          "description": "Number of findings in this category.",
           "type": "integer",
           "format": "uint64",
-          "minimum": 0.0
+          "minimum": 1.0
         }
       },
       "additionalProperties": false
-    },
-    "ExternalRedactionReceipt": {
-      "type": "object",
-      "required": [
-        "completed_at",
-        "engine",
-        "engine_version",
-        "input_digest",
-        "output_digest",
-        "ruleset_digest",
-        "ruleset_id",
-        "schema_version",
-        "structural_fields_preserved"
-      ],
-      "properties": {
-        "completed_at": {
-          "type": "string"
-        },
-        "engine": {
-          "type": "string"
-        },
-        "engine_version": {
-          "type": "string"
-        },
-        "findings": {
-          "default": [],
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ExternalRedactionFinding"
-          }
-        },
-        "input_digest": {
-          "type": "string"
-        },
-        "output_digest": {
-          "type": "string"
-        },
-        "ruleset_digest": {
-          "type": "string"
-        },
-        "ruleset_id": {
-          "type": "string"
-        },
-        "schema_version": {
-          "type": "integer",
-          "format": "uint32",
-          "minimum": 0.0
-        },
-        "structural_fields_preserved": {
-          "type": "boolean"
-        }
-      }
     }
   }
 }

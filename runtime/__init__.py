@@ -41,6 +41,7 @@ from .sinks import (
     EmissionSink,
     GatewayEmissionError,
     GatewayEmissionGated,
+    GatewayProtocolMismatch,
     GatewayRedactionGated,
     GatewaySink,
 )
@@ -54,6 +55,7 @@ __all__ = [
     "CollectingSink",
     "GatewaySink",
     "GatewayEmissionGated",
+    "GatewayProtocolMismatch",
     "GatewayRedactionGated",
     "GatewayEmissionError",
     "emission_to_external_envelope",

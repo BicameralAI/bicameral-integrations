@@ -189,6 +189,18 @@ class TestSensitiveRejection:
         )
         assert action.verdict != CursorVerdict.ADVANCE
 
+    def test_422_opaque_gateway_reason_quarantines(self) -> None:
+        """The GatewaySink collapses a Bot 422 veto to the fixed token-safe
+        ``gateway_rejected`` reason. That opaque 422 is the composed real path
+        (GatewaySink -> resolve_cursor_action) and must fail closed to a
+        sensitive-data quarantine, never advance."""
+        action = resolve_cursor_action(
+            error=GatewayEmissionError(422, "gateway_rejected")
+        )
+        assert action.verdict == CursorVerdict.QUARANTINE
+        assert action.quarantine_reason == QuarantineReason.SENSITIVE_DATA_REJECTED
+        assert action.status == 422
+
 
 # ---------------------------------------------------------------------------
 # Schema drift — quarantine (fail contract gate; do NOT advance)
@@ -219,6 +231,26 @@ class TestSchemaDrift:
         """Schema drift must not lose the cursor — fix-forward."""
         action = resolve_cursor_action(status=400, reason="schema_drift")
         assert action.verdict != CursorVerdict.ADVANCE
+
+    def test_400_opaque_gateway_reason_quarantines(self) -> None:
+        """A Bot 400 after the exact-match capability handshake can only be a
+        stale envelope mapping. The GatewaySink's opaque ``gateway_rejected``
+        reason must fail closed to a schema-drift quarantine, never advance."""
+        action = resolve_cursor_action(
+            error=GatewayEmissionError(400, "gateway_rejected")
+        )
+        assert action.verdict == CursorVerdict.QUARANTINE
+        assert action.quarantine_reason == QuarantineReason.SCHEMA_DRIFT
+        assert action.status == 400
+
+    def test_protocol_mismatch_does_not_advance(self) -> None:
+        action = resolve_cursor_action(
+            error=GatewayEmissionError(
+                0, "protocol_mismatch:contract_fingerprint_mismatch"
+            )
+        )
+        assert action.verdict == CursorVerdict.QUARANTINE
+        assert action.quarantine_reason == QuarantineReason.SCHEMA_DRIFT
 
 
 # ---------------------------------------------------------------------------

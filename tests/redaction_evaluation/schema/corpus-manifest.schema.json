@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BicameralAI/bicameral-integrations/tests/redaction_evaluation/schema/corpus-manifest.schema.json",
+  "title": "Bicameral redaction evaluation corpus manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "corpus_id",
+    "description",
+    "records"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "corpus_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "repoRelativeJsonPath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+\\.json$"
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_id",
+        "source_shape",
+        "input_path",
+        "expected_path",
+        "classes",
+        "input_sha256",
+        "expected_sha256"
+      ],
+      "properties": {
+        "record_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "source_shape": {
+          "type": "string",
+          "enum": [
+            "github_webhook",
+            "github_poll",
+            "linear_webhook",
+            "linear_graphql",
+            "local_directory",
+            "bounded_document_fetch",
+            "observation",
+            "adapter_emission",
+            "external_ingest_envelope",
+            "plain_text",
+            "failure_fixture"
+          ]
+        },
+        "input_path": {
+          "$ref": "#/$defs/repoRelativeJsonPath"
+        },
+        "expected_path": {
+          "$ref": "#/$defs/repoRelativeJsonPath"
+        },
+        "classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "positive_detection",
+              "negative_control",
+              "decision_preservation",
+              "structural_identity",
+              "nested_metadata",
+              "mixed_entities",
+              "overlapping_entities",
+              "malformed_input",
+              "oversized_payload",
+              "unsupported_binary",
+              "sensitive_metadata_key",
+              "backend_unavailable",
+              "backend_invalid_configuration",
+              "backend_crash",
+              "backend_timeout",
+              "concurrency_timeout_storm",
+              "malformed_backend_findings",
+              "nondeterminism_probe"
+            ]
+          }
+        },
+        "input_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "expected_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  }
+}

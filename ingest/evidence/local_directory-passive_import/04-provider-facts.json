@@ -1,0 +1,9 @@
+{
+  "extracted_fields": {
+    "content_length": 2544,
+    "modified": "2026-07-22T16:50:42.427500+00:00",
+    "path": "CODE_OF_CONDUCT.md"
+  },
+  "identity_derivation": "sha256(path)[:16] becomes the opaque source ref token",
+  "provider": "local filesystem"
+}

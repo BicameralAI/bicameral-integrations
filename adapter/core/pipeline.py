@@ -19,7 +19,7 @@ from .emissions import (
 from .heuristics import evaluate_fail_open
 from .observations import Observation
 from .redaction import redact
-from .redaction_receipt import sanitize_observation
+from .redaction_receipt import guarded_sanitize_observation
 from .sensitive import detect_sensitive
 
 _DELIVERY_MODE: dict[SourceMode, str] = {
@@ -220,7 +220,7 @@ def normalize(
     """
     emissions: list[AdapterEmission] = []
     for observation in observations:
-        sanitized, receipt = sanitize_observation(observation)
+        sanitized, receipt = guarded_sanitize_observation(observation)
         emission = _emission_from(sanitized, adapter_version)
         emission.metadata["redaction_receipt"] = receipt
         emissions.append(evaluate_fail_open(emission))

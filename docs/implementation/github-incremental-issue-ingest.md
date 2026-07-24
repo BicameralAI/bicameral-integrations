@@ -107,6 +107,7 @@ fetch webhook or polling batch
   -> verify and parse
   -> universal normalize and screen
   -> emit through GatewaySink
+  -> exact-match Bot protocol/schema/fingerprint capability check
   -> require HTTP 201
   -> persist proposed cursor
 ```
@@ -128,6 +129,8 @@ That loss is recorded explicitly in the phase trace. Bot cannot claim to preserv
 - Immutable source versions.
 - Signed-delivery verification for webhooks.
 - Sensitive-data and schema failures quarantine without cursor advancement.
+- Protocol version, schema digest, and contract fingerprint skew quarantine
+  without delivery or cursor advancement.
 - Transport, 429, and 5xx failures retry without cursor advancement.
 - Terminal client outcomes follow typed cursor policy.
 - No Bot lifecycle authority is emitted.
