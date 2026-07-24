@@ -34,7 +34,7 @@ jobs:
           mypy --show-error-codes adapter connectors runtime mods 2>&1 | tee /tmp/mypy.log
       - name: Upload mypy diagnostics
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: mypy-diagnostics
           path: /tmp/mypy.log
@@ -45,7 +45,7 @@ jobs:
           pytest adapter/core/tests connectors runtime mods scripts/tests tests/redteam tests/redaction_evaluation -q 2>&1 | tee /tmp/pytest.log
       - name: Upload pytest diagnostics
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pytest-diagnostics
           path: /tmp/pytest.log
@@ -91,7 +91,7 @@ jobs:
           test "$(git rev-parse HEAD)" = "${EXPECTED}"
           python scripts/validate_information_cycle_bundle.py             ingest/evidence/local_directory-passive_import/bundle.json             --emit-head-receipt /tmp/exact-head-validation-receipt.json             --expected-head "${EXPECTED}"
       - name: Upload exact-head validation receipt
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: information-cycle-exact-head-receipt
           path: /tmp/exact-head-validation-receipt.json
