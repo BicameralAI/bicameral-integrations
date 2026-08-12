@@ -17,6 +17,8 @@ from runtime.poll_client import HttpTransport, UrllibTransport
 from runtime.secrets import SecretResolver
 
 from .contract import (
+    AudioOverviewReceipt,
+    AudioOverviewRequest,
     GoogleDriveSourceRequest,
     NotebookAccessScope,
     NotebookCreateRequest,
@@ -53,18 +55,10 @@ class GeminiNotebookEnterpriseProvider:
     ``PrincipalResolver`` and ``SecretResolver`` are injected operator-boundary
     seams. Principal comparison happens before credential resolution and before
     any provider mutation.
-    """
 
-    capabilities = NotebookProviderCapabilities(
-        provider=_PROVIDER,
-        api_maturity=ProviderApiMaturity.PREVIEW,
-        supported_scope_kinds=frozenset({NotebookScopeKind.USER}),
-        create_notebook=True,
-        get_notebook=True,
-        add_source=True,
-        create_audio_overview=False,
-        notebook_chat=False,
-    )
+    Audio Overview is an explicit deployment capability because the Google API is
+    Preview / Pre-GA and project availability can differ. The default is off.
+    """
 
     def __init__(
         self,
@@ -76,6 +70,7 @@ class GeminiNotebookEnterpriseProvider:
         principal_resolver: PrincipalResolver,
         credential_key: str = _PROVIDER,
         transport: HttpTransport | None = None,
+        audio_overview_enabled: bool = False,
     ) -> None:
         if not _PROJECT_NUMBER_RE.fullmatch(project_number):
             raise ValueError("project_number must contain only decimal digits")
@@ -92,6 +87,20 @@ class GeminiNotebookEnterpriseProvider:
         self._principal_resolver = principal_resolver
         self._credential_key = credential_key
         self._transport = transport or UrllibTransport()
+        self._audio_overview_enabled = audio_overview_enabled
+
+    @property
+    def capabilities(self) -> NotebookProviderCapabilities:
+        return NotebookProviderCapabilities(
+            provider=_PROVIDER,
+            api_maturity=ProviderApiMaturity.PREVIEW,
+            supported_scope_kinds=frozenset({NotebookScopeKind.USER}),
+            create_notebook=True,
+            get_notebook=True,
+            add_source=True,
+            create_audio_overview=self._audio_overview_enabled,
+            notebook_chat=False,
+        )
 
     @property
     def _parent(self) -> str:
@@ -427,4 +436,66 @@ class GeminiNotebookEnterpriseProvider:
             is_shared=None,
             is_shareable=None,
             source_receipts=tuple(receipts),
+        )
+
+    def create_audio_overview(
+        self,
+        notebook_id: str,
+        request: AudioOverviewRequest,
+    ) -> AudioOverviewReceipt:
+        if not self._audio_overview_enabled:
+            raise NotebookProviderError(
+                NotebookFailureClass.UNSUPPORTED_OPERATION,
+                reason="audio_overview_not_enabled",
+            )
+
+        clean_id = self._validate_segment("notebook_id", notebook_id)
+        client_request_id = self._required_text("client_request_id", request.client_request_id)
+        source_ids = tuple(self._validate_segment("source_id", source_id) for source_id in request.source_ids)
+        generation_options: dict[str, Any] = {}
+        if source_ids:
+            generation_options["sourceIds"] = [{"id": source_id} for source_id in source_ids]
+        if request.episode_focus is not None:
+            generation_options["episodeFocus"] = self._required_text(
+                "episode_focus", request.episode_focus
+            )
+        if request.language_code is not None:
+            generation_options["languageCode"] = self._required_text(
+                "language_code", request.language_code
+            )
+
+        effective = self._authorize(request.access_scope)
+        payload = self._request_json(
+            "POST",
+            f"{self._base_url}/notebooks/{clean_id}/audioOverviews",
+            body={"generationOptions": generation_options},
+        )
+        raw_overview = payload.get("audioOverview")
+        if not isinstance(raw_overview, dict):
+            raise NotebookProviderError(
+                NotebookFailureClass.PROVIDER_CONTRACT_CHANGED,
+                reason="audio_overview_response_missing_resource",
+            )
+        audio_id = self._str(raw_overview.get("audioOverviewId"))
+        name = self._str(raw_overview.get("name"))
+        status = self._str(raw_overview.get("status"))
+        if not audio_id or not name or not status:
+            raise NotebookProviderError(
+                NotebookFailureClass.PROVIDER_CONTRACT_CHANGED,
+                reason="audio_overview_response_missing_identity_or_status",
+            )
+
+        return AudioOverviewReceipt(
+            provider=_PROVIDER,
+            provider_api_maturity=ProviderApiMaturity.PREVIEW,
+            client_request_id=client_request_id,
+            status=status,
+            notebook_id=clean_id,
+            audio_overview_id=audio_id,
+            provider_resource_name=name,
+            project_ref=f"projects/{self._project_number}",
+            location=self._location,
+            scope_kind=request.access_scope.kind,
+            effective_principal_ref=effective,
+            source_ids=source_ids,
         )
