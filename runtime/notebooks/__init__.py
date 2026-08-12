@@ -21,12 +21,20 @@ from .contract import (
     WebSourceRequest,
 )
 from .gemini_enterprise import GeminiNotebookEnterpriseProvider
+from .google_identity import (
+    DRIVE_SOURCE_SCOPE,
+    GoogleUserInfoPrincipalResolver,
+    NOTEBOOK_OAUTH_SCOPES,
+)
 
 __all__ = [
     "AudioOverviewReceipt",
     "AudioOverviewRequest",
+    "DRIVE_SOURCE_SCOPE",
     "GeminiNotebookEnterpriseProvider",
     "GoogleDriveSourceRequest",
+    "GoogleUserInfoPrincipalResolver",
+    "NOTEBOOK_OAUTH_SCOPES",
     "NotebookAccessScope",
     "NotebookCreateRequest",
     "NotebookFailureClass",
