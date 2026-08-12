@@ -14,6 +14,7 @@ from runtime.notebooks import (
     NotebookFailureClass,
     NotebookProviderError,
     NotebookScopeKind,
+    NotebookSourceRequest,
     ProviderApiMaturity,
     TextSourceRequest,
     WebSourceRequest,
@@ -253,7 +254,7 @@ def test_add_sources_uses_user_contents_and_receipt_excludes_raw_content() -> No
     )
     provider, _, _ = _provider(transport)
     secret_text = "source body that must not enter the receipt"
-    sources = [
+    sources: list[NotebookSourceRequest] = [
         TextSourceRequest(
             authoritative_ref="decision://123",
             source_name="Decision note",
