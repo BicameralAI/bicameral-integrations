@@ -2,6 +2,8 @@
 """Governed external notebook provider contracts and implementations."""
 
 from .contract import (
+    AudioOverviewReceipt,
+    AudioOverviewRequest,
     GoogleDriveSourceRequest,
     NotebookAccessScope,
     NotebookCreateRequest,
@@ -21,6 +23,8 @@ from .contract import (
 from .gemini_enterprise import GeminiNotebookEnterpriseProvider
 
 __all__ = [
+    "AudioOverviewReceipt",
+    "AudioOverviewRequest",
     "GeminiNotebookEnterpriseProvider",
     "GoogleDriveSourceRequest",
     "NotebookAccessScope",
