@@ -70,6 +70,15 @@ class NotebookCreateRequest:
 
 
 @dataclass(frozen=True)
+class AudioOverviewRequest:
+    client_request_id: str
+    access_scope: NotebookAccessScope
+    source_ids: tuple[str, ...] = ()
+    episode_focus: str | None = None
+    language_code: str | None = None
+
+
+@dataclass(frozen=True)
 class TextSourceRequest:
     authoritative_ref: str
     source_name: str
@@ -121,6 +130,22 @@ class NotebookReceipt:
     is_shared: bool | None
     is_shareable: bool | None
     source_receipts: tuple[NotebookSourceReceipt, ...] = ()
+
+
+@dataclass(frozen=True)
+class AudioOverviewReceipt:
+    provider: str
+    provider_api_maturity: ProviderApiMaturity
+    client_request_id: str
+    status: str
+    notebook_id: str
+    audio_overview_id: str
+    provider_resource_name: str
+    project_ref: str
+    location: str
+    scope_kind: NotebookScopeKind
+    effective_principal_ref: str
+    source_ids: tuple[str, ...]
 
 
 class NotebookProviderError(RuntimeError):
@@ -180,3 +205,9 @@ class NotebookProvider(Protocol):
         access_scope: NotebookAccessScope,
         client_request_id: str,
     ) -> NotebookReceipt: ...
+
+    def create_audio_overview(
+        self,
+        notebook_id: str,
+        request: AudioOverviewRequest,
+    ) -> AudioOverviewReceipt: ...
