@@ -14,7 +14,7 @@ jobs:
     name: integrations-release-descriptor
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Emit and verify descriptor
         run: |
           python scripts/tests/test_emit_release_descriptor.py
