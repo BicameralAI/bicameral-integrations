@@ -2,7 +2,7 @@
 
 Status: Draft
 Owner: BicameralAI
-Last updated: 2026-06-04
+Last updated: 2026-09-24
 
 ## Purpose
 
@@ -96,6 +96,12 @@ Third-party tutorials may be useful during implementation, but they should not b
 | Grafana | https://grafana.com/docs/grafana/latest/developers/http_api/ | https://grafana.com/docs/grafana/latest/alerting/configure-notifications/manage-contact-points/integrations/webhook-notifier/ | https://grafana.com/docs/grafana/latest/developers/http_api/auth/ | https://grafana.com/docs/grafana/latest/whatsnew/ |
 | Prometheus Alertmanager | https://prometheus.io/docs/alerting/latest/alertmanager/ | https://prometheus.io/docs/alerting/latest/configuration/#webhook_config | Not applicable or deployment-specific | https://prometheus.io/docs/introduction/release-cycle/ |
 | Opsgenie | https://docs.opsgenie.com/docs/api-overview | https://docs.opsgenie.com/docs/webhook-integration | https://docs.opsgenie.com/docs/api-key-management | https://docs.opsgenie.com/docs/release-notes |
+
+### Agent Reliability and Execution Assurance
+
+| Integration | API/docs | Webhook/event docs | Auth/docs | Changelog/notes |
+|---|---|---|---|---|
+| Omium | https://docs.omium.ai/intro | Signed outbound events are documented in https://omium.ai/changelog/; obtain the current canonical payload/signature schema before implementation | https://docs.omium.ai/docs/platform/api-keys-billing | https://omium.ai/changelog/; runtime/checkpoint config: https://docs.omium.ai/docs/configuration/omium-toml; hosted deployment posture: https://omium.ai/pricing/ |
 
 ### CRM, Customer Success, and Support
 
