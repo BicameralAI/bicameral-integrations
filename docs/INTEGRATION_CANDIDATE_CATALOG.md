@@ -2,7 +2,7 @@
 
 Status: Draft
 Owner: BicameralAI
-Last updated: 2026-06-04
+Last updated: 2026-09-24
 
 ## 1. Purpose
 
@@ -230,6 +230,7 @@ connector models the correct relationship: ingest evidence *about* MCP, don't tr
 | Database MCP servers | P1 | Database inspection and evidence | Policy audit first | T3/T5 | High data sensitivity. |
 | Browser automation MCP servers | P2 | Web-based workflow evidence/action | Policy audit first | T3/T5 | High risk due to session access and side effects. |
 | IDE coding agents | P2 | Agent intent, changes, and tool use | Observe first | T3/T5 | Adapter should collect run evidence, not grant authority. |
+| Omium | **P1 — Researched** | Agent execution verification, silent-failure evidence, recovery lineage, checkpoint/decisive-step provenance | **Webhook-first read-only evidence ingest**; API only where event evidence is insufficient | T1 | Strong governed-domain adjacency. Public changelog documents HMAC-signed `execution.completed`, `execution.failed`, `recovery.created`, and `recovery.applied` events. Omium remains evidence source, never Bicameral policy/approval/recovery authority. Synthetic/staging Phase 0 only until trace/data, signature-schema, and commercial-evaluation constraints are resolved. See `docs/research-brief-omium-execution-verification-2026-09-24.md` and #308. |
 | OpenAI Admin/Audit API | P1 | Access-governance audit log + API usage by project/user/model | Read-only API | T1 | Immutable `audit_logs`; no prompts/outputs exposed; org-owner admin key. |
 | Anthropic Admin API | P1 | Usage + cost reports; Enterprise compliance activity feed | Read-only API | T1 | Pairs with Claude Code for org-side provenance; admin-role key; Compliance API Enterprise-gated. |
 | Hugging Face Hub | P2 | Model/dataset provenance: license, eval results, card metadata | Read-only API | T1 | Author-supplied card metadata is inconsistently populated. |
