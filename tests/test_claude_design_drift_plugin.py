@@ -83,6 +83,6 @@ def test_design_drift_does_not_launder_unavailable_or_timeout_into_clean():
     assert "analysis timed out" in drift
     assert "invalid_trace" in drift
     assert "analysis failed validation" in drift
-    assert "no actionable difference in analyzed scope" in drift
+    assert "no drift conclusion asserted" in drift
     assert "safe to proceed" not in drift.lower()
     assert "globally aligned" not in drift.lower()
