@@ -83,7 +83,9 @@ def test_design_drift_provider_documentation_contract():
 def test_design_drift_mod_uses_narrow_declared_surface():
     register = (PLUGIN / "hooks" / "register.js").read_text(encoding="utf-8")
     drift = (PLUGIN / "hooks" / "drift.js").read_text(encoding="utf-8")
-    source = register + "\n" + drift
+    integrity = (PLUGIN / "hooks" / "integrity.js").read_text(encoding="utf-8")
+    provider = (PLUGIN / "hooks" / "provider.js").read_text(encoding="utf-8")
+    source = "\n".join((register, drift, integrity, provider))
     compatibility = _json(PLUGIN / "compatibility.json")
 
     required = {
@@ -137,3 +139,22 @@ def test_design_drift_discards_stale_generation_results():
     assert "activeBoundaryKey" in register
     assert "activeBoundaryKey === boundaryKey" in register
     assert "latestBoundary = null" in register
+
+
+def test_design_drift_remediation_frame_is_enforced_in_source():
+    register = (PLUGIN / "hooks" / "register.js").read_text(encoding="utf-8")
+    provider = (PLUGIN / "hooks" / "provider.js").read_text(encoding="utf-8")
+    integrity = (PLUGIN / "hooks" / "integrity.js").read_text(encoding="utf-8")
+
+    assert "planningThreadDisposition" in register
+    assert "subagent_boundary_ignored" in provider
+    assert "agent_id" in provider
+    assert "sessionRoutingHintFromStart" in register
+    assert "session.start.cwd" in provider
+    assert "scheduledKey" in register
+    assert "normalizeBoundedMcpResult" in register
+    assert "managed_preflight_conflict" in integrity
+    assert "candidate_surface_conflict" in integrity
+    assert "MAX_TOTAL_JSON_CHARS" in integrity
+    assert "MANAGED_OUTCOMES" in integrity
+    assert "SEMANTIC_CLASSES" in integrity
