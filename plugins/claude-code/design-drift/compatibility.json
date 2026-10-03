@@ -15,6 +15,7 @@
     "provider_family": "../README.md",
     "category_contract": "../../README.md",
     "repository_index": "../../../docs/INTEGRATION_DOCS_INDEX.md",
+    "response_integrity_design": "../../../docs/design/claude-code-design-drift-response-integrity-spike.md",
     "refresh_cadence": "monthly",
     "source_precedence": "generated-types-then-official-provider-docs",
     "generated_types_path": ".claude-plugin/types/"
@@ -24,6 +25,26 @@
     "server": "bicameral",
     "tool": "bicameral.preflight",
     "owns_server_registration": false
+  },
+  "dependencies": {
+    "product_routing": {
+      "status": "pending-upstream-seam",
+      "issue": "BicameralAI/bicameral-mcp#871",
+      "target_flow": [
+        "bicameral.workspace.resolve",
+        "bicameral.product.select",
+        "bicameral.preflight"
+      ],
+      "cwd_is_identity": false
+    },
+    "live_semantic_provider": {
+      "status": "pending-upstream-capability",
+      "issues": [
+        "BicameralAI/bicameral-bot#958",
+        "BicameralAI/bicameral-bot#1066"
+      ],
+      "plugin_must_not_reimplement": true
+    }
   },
   "events": [
     "session.start",
@@ -57,12 +78,31 @@
     "turn_identity": "turn_id || tool_use_id",
     "transcript_scraping": false
   },
+  "response_integrity": {
+    "parse_all_structured_mcp_content": true,
+    "require_returned_managed_boundary": true,
+    "bind_host_kind": true,
+    "bind_host_session_id": true,
+    "bind_host_turn_id": true,
+    "bind_plan_digest": true,
+    "bind_product_when_known": true,
+    "bind_candidate_set_product": true,
+    "bind_candidate_set_session": true,
+    "bind_candidate_set_plan": true,
+    "bind_candidate_set_spec_digest": true,
+    "reject_unknown_candidate_contract_version": true,
+    "reject_duplicate_candidate_ids": true,
+    "raw_candidate_text_to_command_transcript": false,
+    "raw_spec_text_to_command_transcript": false,
+    "raw_limitation_detail_to_command_transcript": false
+  },
   "migration": {
     "legacy_claude_settings_planning_hook": "remove-when-plugin-active",
     "legacy_claude_settings_session_start_hook": "retain",
     "reason": "Avoid duplicate ExitPlanMode preflight while preserving existing SessionStart activation."
   },
   "validation": {
+    "host_neutral_response_integrity_tests": "implemented",
     "claude_plugin_validate": "pending-terminal-environment",
     "generated_types": "pending-terminal-environment",
     "real_claude_load": "pending-terminal-environment"
