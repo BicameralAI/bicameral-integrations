@@ -10,6 +10,15 @@
     "tested_versions": [],
     "provider_docs_verified": "2026-10-03"
   },
+  "documentation": {
+    "local_references": "references.md",
+    "provider_family": "../README.md",
+    "category_contract": "../../README.md",
+    "repository_index": "../../../docs/INTEGRATION_DOCS_INDEX.md",
+    "refresh_cadence": "monthly",
+    "source_precedence": "generated-types-then-official-provider-docs",
+    "generated_types_path": ".claude-plugin/types/"
+  },
   "transport": {
     "kind": "existing-mcp",
     "server": "bicameral",
@@ -55,6 +64,7 @@
   },
   "validation": {
     "claude_plugin_validate": "pending-terminal-environment",
+    "generated_types": "pending-terminal-environment",
     "real_claude_load": "pending-terminal-environment"
   }
 }
