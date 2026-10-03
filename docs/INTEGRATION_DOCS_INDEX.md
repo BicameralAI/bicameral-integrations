@@ -2,7 +2,7 @@
 
 Status: Draft
 Owner: BicameralAI
-Last updated: 2026-06-04
+Last updated: 2026-10-03
 
 ## Purpose
 
@@ -11,12 +11,14 @@ This document tracks official documentation for integration candidates. The inde
 Preference order for documentation sources:
 
 1. Official provider API docs
-2. Official provider webhook/event docs
-3. Official provider auth/OAuth docs
-4. Official provider SDK docs
+2. Official provider webhook/event/lifecycle docs
+3. Official provider auth/OAuth/security docs
+4. Official provider SDK/runtime API docs and exact-version generated types/schemas
 5. Official provider changelog
 6. OpenAPI specification or public schema
 7. Provider-maintained GitHub repositories
+
+When a provider generates declarations or schemas for the exact installed/runtime version, those exact-version artifacts take precedence over generic prose documentation for compatibility claims.
 
 Third-party tutorials may be useful during implementation, but they should not be treated as canonical documentation.
 
@@ -111,7 +113,7 @@ Third-party tutorials may be useful during implementation, but they should not b
 
 ### MCP and Agent Ecosystem
 
-| Integration | API/docs | Event/docs | Auth/docs | Changelog/notes |
+| Integration | API/docs | Event/docs | Auth/security/docs | Changelog/notes |
 |---|---|---|---|---|
 | Model Context Protocol | https://modelcontextprotocol.io/docs/getting-started/intro | https://modelcontextprotocol.io/specification/ | https://modelcontextprotocol.io/specification/ | https://modelcontextprotocol.io/specification/ |
 | MCP Registry | https://github.com/modelcontextprotocol/registry | Registry metadata and repo updates | GitHub/auth model depending on usage | https://github.com/modelcontextprotocol/registry/releases |
@@ -119,6 +121,14 @@ Third-party tutorials may be useful during implementation, but they should not b
 | Filesystem MCP servers | Validate selected server docs | Local tool-call surface | Local policy model | Requires per-server review |
 | Database MCP servers | Validate selected server docs | Tool-call surface | Database credentials | Requires per-server review |
 | Browser automation MCP servers | Validate selected server docs | Tool-call surface | Browser/session credentials | Requires per-server review |
+
+### Developer Hosts, Plugins, and Agent Runtimes
+
+| Integration | API / SDK / type docs | Event/lifecycle docs | Security/install docs | Changelog/notes |
+|---|---|---|---|---|
+| Claude Code plugins / Mods | https://code.claude.com/docs/en/plugins/mods/api · https://code.claude.com/docs/en/plugins/mods/reference · https://github.com/anthropics/claude-code/blob/main/mods/types/claude-code.d.ts | https://code.claude.com/docs/en/plugins/mods/overview · https://code.claude.com/docs/en/plugins/mods/create · https://code.claude.com/docs/en/hooks | https://code.claude.com/docs/en/plugins/security · https://code.claude.com/docs/en/plugins/install · https://code.claude.com/docs/en/plugins/mods/admin · https://code.claude.com/docs/en/plugins/manifest-reference | https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md; package-specific record: `plugins/claude-code/design-drift/references.md` |
+
+Claude Code note: for Mod compatibility, exact-version declarations generated under `.claude-plugin/types/` for the tested build outrank generic prose documentation when they disagree. The Claude Agent SDK is a separate runtime surface and is not the Design Drift Mod contract.
 
 ### Data and Analytics
 
@@ -138,7 +148,7 @@ Each integration entry should be refreshed at one of the following cadences.
 
 | Risk level | Refresh cadence | Examples |
 |---|---|---|
-| High risk | Monthly | MCP servers, agent tools, CRM/support data, email, browser automation, database connectors |
+| High risk | Monthly | MCP servers, agent tools, developer-host plugin/Mod runtimes, CRM/support data, email, browser automation, database connectors |
 | Medium risk | Quarterly | GitHub, Jira, Linear, Slack, Notion, Microsoft Graph, Google Workspace |
 | Low risk | Semi-annually | SARIF, OSV, file-import formats, stable export schemas |
 
@@ -146,13 +156,15 @@ Each refresh should record:
 
 - Date checked
 - Docs URLs verified
-- API version changed or unchanged
-- Webhook payload changes
-- Auth scope changes
-- Rate limit changes
+- API/runtime version changed or unchanged
+- Webhook/event/lifecycle payload changes
+- Auth/permission/security scope changes
+- SDK/generated type/schema changes
+- Rate limit changes where applicable
+- Installation/update/uninstall behavior changes where applicable
 - Deprecation notices
-- Required adapter changes
+- Required adapter/plugin changes
 
 ## Implementation Note
 
-The docs index should eventually be machine-readable. A future `integration-docs.yml` can mirror this markdown file and support automated link checks, documentation freshness checks, and connector readiness dashboards.
+The docs index should eventually be machine-readable. A future `integration-docs.yml` can mirror this markdown file and support automated link checks, documentation freshness checks, connector/plugin readiness dashboards, and drift checks between declared integration capability surfaces and provider documentation.
