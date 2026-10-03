@@ -23,6 +23,7 @@ def test_design_drift_plugin_package_contract():
         "minimum_version": "2.1.287",
         "tested_versions": [],
         "provider_docs_verified": "2026-10-03",
+        "thread_scope": "main-thread-only",
     }
     assert compatibility["transport"]["kind"] == "existing-mcp"
     assert compatibility["transport"]["server"] == "bicameral"
@@ -39,6 +40,28 @@ def test_design_drift_plugin_package_contract():
         "prompt_rewrite": False,
         "tool_rewrite": False,
         "autonomous_confirmation": False,
+    }
+    assert compatibility["planning_boundary"]["subagent_event_behavior"] == (
+        "ignore-without-state-mutation"
+    )
+    assert compatibility["product_routing"] == {
+        "session_root_hint": "session.start.cwd",
+        "later_cwd_updates": "ignored-for-product-routing",
+        "cwd_is_product_identity": False,
+        "resolver": "pending-bicameral.workspace.resolve-mcp-871",
+        "selection": "existing-bicameral.product.select",
+    }
+    assert compatibility["response_integrity"] == {
+        "max_content_items": 16,
+        "max_total_json_chars": 262144,
+        "max_candidates": 256,
+        "conflicting_managed_preflight": "fail-closed",
+        "conflicting_candidate_surface": "fail-closed",
+        "success_error_mix": "fail-closed",
+        "managed_enum_validation": "closed-current-bot-contract",
+        "digest_format": "sha256-lowercase-64hex",
+        "candidate_identity_format": "uuid",
+        "raw_candidate_spec_limitation_prose_in_command_text": False,
     }
 
 
@@ -74,7 +97,6 @@ def test_design_drift_provider_documentation_contract():
     ):
         assert official_url in references
 
-    # Prevent the common category confusion: Agent SDK is explicitly non-authoritative here.
     assert "Claude Agent SDK" in references
     assert "not a dependency or authority source" in references
     assert ".claude-plugin/types/" in references
