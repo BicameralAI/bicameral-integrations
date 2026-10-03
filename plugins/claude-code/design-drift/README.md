@@ -70,14 +70,15 @@ Automatic results are shown with `$.ui.status`. Contradictions also raise a boun
 Design Drift: analyzing…
 Design Drift: contradiction detected
 Design Drift: proposed differences
-Design Drift: no actionable difference in analyzed scope
+Design Drift: no candidate in analyzed scope
+Design Drift: analysis completed · no drift conclusion asserted
 Design Drift: analysis provider unavailable
 Design Drift: analysis timed out
 Design Drift: analysis failed validation
 Design Drift: Bicameral MCP unavailable
 ```
 
-The wording intentionally never upgrades `no candidate`, timeout, unavailable, or incomplete analysis into global alignment, safety, approval, or permission to proceed.
+The wording intentionally never upgrades an unclassified completed result, `no candidate`, timeout, unavailable, or incomplete analysis into global alignment, safety, approval, or permission to proceed.
 
 `/bicameral-drift` prints the latest bounded result, including outcome, analysis status/classes, exact spec-binding digest when returned by Bicameral, candidate count when present, and explicit limitations. `refresh` reruns the current captured boundary.
 
