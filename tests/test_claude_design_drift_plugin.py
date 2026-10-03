@@ -28,6 +28,10 @@ def test_design_drift_plugin_package_contract():
     assert compatibility["transport"]["server"] == "bicameral"
     assert compatibility["transport"]["tool"] == "bicameral.preflight"
     assert compatibility["transport"]["owns_server_registration"] is False
+    assert compatibility["migration"]["legacy_claude_settings_planning_hook"] == (
+        "remove-when-plugin-active"
+    )
+    assert compatibility["migration"]["legacy_claude_settings_session_start_hook"] == "retain"
 
     assert compatibility["authority"] == {
         "canonical_state_mutation": False,
@@ -70,6 +74,7 @@ def test_design_drift_mod_uses_narrow_declared_surface():
     assert "ExitPlanMode" in drift
     assert "tool_response" in drift
     assert ".plan" in drift
+    assert "tool_use_id" in drift
     assert "transcript" not in drift.lower()
     assert "messages" not in drift.lower()
 
@@ -86,3 +91,11 @@ def test_design_drift_does_not_launder_unavailable_or_timeout_into_clean():
     assert "no drift conclusion asserted" in drift
     assert "safe to proceed" not in drift.lower()
     assert "globally aligned" not in drift.lower()
+
+
+def test_design_drift_discards_stale_generation_results():
+    register = (PLUGIN / "hooks" / "register.js").read_text(encoding="utf-8")
+
+    assert "activeBoundaryKey" in register
+    assert "activeBoundaryKey === boundaryKey" in register
+    assert "latestBoundary = null" in register
