@@ -79,7 +79,8 @@
     "managed_enum_validation": "closed-current-bot-contract",
     "digest_format": "sha256-lowercase-64hex",
     "candidate_identity_format": "uuid-wire-shape",
-    "session_lease_identity_format": "opaque-bounded-string",
+    "candidate_generation_format": "positive-safe-integer",
+    "session_lease_identity_format": "opaque-nonempty-response-envelope-bounded",
     "raw_candidate_spec_limitation_prose_in_command_text": false
   },
   "migration": {
