@@ -11,12 +11,14 @@ import {
 let latestBoundary = null
 let latestResult = null
 let lastBoundaryKey = null
+let activeBoundaryKey = null
 let inFlightKey = null
 
 function resetSessionState() {
   latestBoundary = null
   latestResult = null
   lastBoundaryKey = null
+  activeBoundaryKey = null
   inFlightKey = null
 }
 
@@ -29,22 +31,27 @@ function setResult($, result) {
 }
 
 async function runPreflight($, boundary, boundaryKey) {
-  if (boundaryKey) inFlightKey = boundaryKey
+  if (!boundaryKey || activeBoundaryKey !== boundaryKey) return latestResult
+  inFlightKey = boundaryKey
   setResult($, { state: 'analyzing', boundary })
   try {
     const response = await $.mcp.call(MCP_SERVER, MCP_TOOL, buildPreflightArguments(boundary))
-    setResult($, normalizeMcpResult(response, boundary))
+    if (activeBoundaryKey === boundaryKey) {
+      setResult($, normalizeMcpResult(response, boundary))
+    }
   } catch {
-    setResult($, {
-      state: 'mcp_unavailable',
-      outcome: null,
-      analysisStatus: null,
-      classes: [],
-      limitations: [{ code: 'mcp_call_failed' }],
-      boundary,
-    })
+    if (activeBoundaryKey === boundaryKey) {
+      setResult($, {
+        state: 'mcp_unavailable',
+        outcome: null,
+        analysisStatus: null,
+        classes: [],
+        limitations: [{ code: 'mcp_call_failed' }],
+        boundary,
+      })
+    }
   } finally {
-    if (boundaryKey && inFlightKey === boundaryKey) inFlightKey = null
+    if (inFlightKey === boundaryKey) inFlightKey = null
   }
   return latestResult
 }
@@ -68,6 +75,9 @@ export function register(on) {
     const parsed = await planningBoundaryFromClassicPostToolUse(e)
     if (!parsed.ok) {
       if (e?.tool_name === 'ExitPlanMode' && parsed.reason !== 'not_planning_boundary') {
+        latestBoundary = null
+        lastBoundaryKey = null
+        activeBoundaryKey = null
         setResult($, {
           state: parsed.reason,
           outcome: null,
@@ -81,6 +91,7 @@ export function register(on) {
     }
 
     latestBoundary = parsed.boundary
+    activeBoundaryKey = parsed.key
     if (parsed.key === lastBoundaryKey || parsed.key === inFlightKey) return next(e)
 
     lastBoundaryKey = parsed.key
@@ -95,7 +106,7 @@ export function register(on) {
   on('command.run', { command: 'bicameral-drift' }, async ($, e) => {
     const wantsRefresh = (e.args || '').trim().toLowerCase() === 'refresh'
     if ((wantsRefresh || !latestResult) && latestBoundary) {
-      await runPreflight($, latestBoundary, lastBoundaryKey)
+      await runPreflight($, latestBoundary, activeBoundaryKey)
     }
     return { text: detailText(latestResult) }
   })
