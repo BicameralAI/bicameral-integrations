@@ -60,8 +60,11 @@
     "subagent_event_behavior": "ignore-without-state-mutation"
   },
   "product_routing": {
-    "session_root_hint": "session.start.cwd",
+    "provider_hint": "session.start.cwd",
+    "hint_semantics": "routing-hint-only-not-project-root-or-product-identity",
+    "clear_compact_behavior": "preserve-existing-hint",
     "later_cwd_updates": "ignored-for-product-routing",
+    "claude_project_dir": "provider-stable-root-available-but-not-consumed-v0.1",
     "cwd_is_product_identity": false,
     "resolver": "pending-bicameral.workspace.resolve-mcp-871",
     "selection": "existing-bicameral.product.select"
@@ -75,7 +78,8 @@
     "success_error_mix": "fail-closed",
     "managed_enum_validation": "closed-current-bot-contract",
     "digest_format": "sha256-lowercase-64hex",
-    "candidate_identity_format": "uuid",
+    "candidate_identity_format": "uuid-wire-shape",
+    "session_lease_identity_format": "opaque-bounded-string",
     "raw_candidate_spec_limitation_prose_in_command_text": false
   },
   "migration": {
