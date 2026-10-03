@@ -1,6 +1,6 @@
 # Claude Code Design Drift: Product Routing and Response Integrity Spike
 
-Status: implementation spike for #319  
+Status: remediation checkpoint for #319 after adversarial review  
 Program: #311  
 Client workstream: #313  
 Upstream routing seam: BicameralAI/bicameral-mcp#871  
@@ -8,27 +8,43 @@ Live semantic provider dependency: BicameralAI/bicameral-bot#958 / #1066
 
 ## Purpose
 
-This note freezes the architectural frame for the next bounded Design Drift implementation slice before broader Claude UX, installer composition, or candidate action flows proceed.
+This note freezes the architectural frame for the bounded Design Drift remediation slice before broader Claude UX, installer composition, Product routing, or candidate action flows proceed.
 
-The spike addresses two separate questions:
+The work now separates five identities that must never be collapsed into one another:
 
-1. How does a Claude-hosted client establish the correct Bicameral Product without turning a filesystem path into Product identity?
-2. How does the plugin know that a Managed MCP result and CandidateSet actually belong to the exact Plan it asked Bicameral to analyze?
+1. Claude session identity;
+2. Claude agent/thread identity;
+3. provider workspace routing hints;
+4. canonical Bicameral Product identity; and
+5. exact Managed Planning / CandidateSet response identity.
 
-The answer to both is to reuse Bicameral authority rather than reconstructing it inside the plugin.
+The plugin remains a host adapter. It does not become a Product resolver, semantic drift engine, or authority service.
 
 ## Decision summary
 
-### Product routing
+### Main-thread only in v0.1
 
-Claude Code may provide a host workspace path. That path is a routing hint only.
+Anthropic hook events may include `agent_id` when the event fires inside a subagent. `ManagedPlanningBoundaryV1` currently has no agent-identity dimension.
 
-The intended host-neutral flow is:
+Therefore v0.1 accepts `ExitPlanMode` only from the main Claude session thread. A planning event carrying `agent_id` is ignored and must not clear, replace, or supersede the main-thread Design Drift state.
+
+This is a compatibility boundary, not a claim that subagent planning is unimportant. Supporting subagent planning later requires an explicit upstream identity contract rather than silently folding multiple agents into one host session.
+
+### Stable session routing hint, not mutable cwd
+
+Anthropic documents `cwd` as a common hook field that changes after directory/worktree changes. It is useful as a provider-authored routing hint but is not stable Product identity.
+
+The plugin therefore captures `session.start.cwd` once as the session routing hint. Later `PostToolUse.cwd` values are ignored for Product routing.
+
+That captured path is still only a hint. It is not sent anywhere until the host-neutral MCP resolution seam in #871 exists.
+
+Intended future flow:
 
 ```text
-Claude host lifecycle event
-  provider-authored cwd/workspace hint
+Claude session.start
+  capture provider-authored initial cwd once
         |
+        | routing hint only
         v
 bicameral.workspace.resolve        # proposed MCP seam, MCP #871
         |
@@ -44,9 +60,9 @@ bicameral.product.select(product_id)
 Product-scoped MCP tools
 ```
 
-The plugin must never infer Product identity from:
+Forbidden Product recovery remains:
 
-- cwd by itself;
+- current mutable cwd by itself;
 - folder names;
 - git remotes;
 - CLAUDE.md or transcript content;
@@ -55,13 +71,11 @@ The plugin must never infer Product identity from:
 - first/nearest workspace binding;
 - prior Product state from another process.
 
-This preserves the architecture already used by the managed SessionStart hook: host path is a candidate routing path, while the daemon owns resolution.
-
-### Response integrity
+### Response integrity before semantic interpretation
 
 A successful MCP call is not sufficient evidence that the returned result belongs to the current Plan.
 
-The client therefore binds every rendered result to the exact request identity:
+The client binds every rendered result to the exact request identity and applies a bounded response envelope first:
 
 ```text
 requested Managed Planning boundary
@@ -78,7 +92,18 @@ bicameral.preflight
         |
         +-- additive managed_mcp_candidate_set payload
         v
-client validation
+bounded integrity layer
+  content count / total JSON size bounded
+  duplicate-equivalent payloads tolerated
+  conflicting Managed Preflight payloads rejected
+  conflicting CandidateSet payloads rejected
+  success + error mixtures rejected
+  authoritative enum values validated
+  sha256 digests validated
+  UUID candidate identities validated
+        |
+        v
+exact identity validation
   returned boundary == requested boundary
   CandidateSet Product == returned/requested Product
   CandidateSet host session == requested host session
@@ -91,22 +116,22 @@ client validation
 bounded presentation model
 ```
 
-Any mismatch is an integrity failure, not a drift result.
+Any mismatch is an integrity failure, never a drift result.
 
 ## Provider facts
 
-Anthropic's current Hooks reference documents `cwd` as a common hook input field and states that it follows Claude after worktree/directory changes. This makes it useful as a current host routing hint but unsuitable as a stable identity.
-
-Canonical provider source:
-
-- https://code.claude.com/docs/en/hooks
-
-The Claude Mod uses `classic.PostToolUse`; Anthropic defines `classic.<Event>` as the settings-hook-compatible event bridge, so its payload follows the corresponding hook event schema.
-
-Canonical Mod sources remain cataloged in:
+Canonical provider sources remain cataloged in:
 
 - `plugins/claude-code/README.md`
 - `plugins/claude-code/design-drift/references.md`
+
+Relevant facts for this checkpoint:
+
+- `classic.PostToolUse` is the settings-hook-compatible event bridge used for `ExitPlanMode`;
+- hook events may identify subagent execution with `agent_id`;
+- common hook `cwd` follows Claude after directory/worktree changes;
+- Mods API calls can be intercepted by earlier Mods, so host-local display is advisory and not canonical evidence;
+- command return text becomes Claude-visible conversational context and must remain bounded.
 
 ## Current Bicameral facts
 
@@ -133,45 +158,62 @@ Current `bicameral.preflight` may return:
 1. the ordinary managed preflight response; and
 2. an additive `managed_mcp_candidate_set` / `MCPDisplayContractV1` surface when candidate working state exists.
 
-A client that parses only the first JSON text block is incomplete and can silently discard the review object.
+A client that parses only the first JSON text block is incomplete. A client that accepts two conflicting copies is also incomplete.
 
-## Implemented spike behavior
+## Implemented remediation behavior
 
-`plugins/claude-code/design-drift/hooks/drift.js` now:
+The package now splits responsibilities explicitly:
 
-- parses `structuredContent` plus every JSON text result block;
-- preserves typed MCP errors before attempting semantic interpretation;
-- requires the daemon-returned Managed Planning boundary;
-- compares host kind, host session, host turn, and exact Plan digest against the request;
-- requires a daemon-returned Product id and checks an explicitly requested Product when present;
-- finds the additive CandidateSet surface when present;
-- requires CandidateSet contract version 1;
-- validates CandidateSet id, generation, digest, and lease identity;
-- checks CandidateSet Product, host session, Plan digest, and spec-binding digest;
-- rejects duplicate candidate ids;
-- retains only bounded CandidateSet metadata/counts in the plugin presentation model;
-- maps `product_context_required`, protocol mismatch, unavailable capability, and unavailable MCP to distinct states;
-- does not put raw candidate/spec/limitation prose into `/bicameral-drift` command output.
+- `provider.js` owns Claude-specific main-thread eligibility and session-start routing-hint capture;
+- `drift.js` owns exact Plan hashing and host-neutral semantic/result mapping;
+- `integrity.js` bounds and validates the MCP response before it becomes persistent Mod state or transcript-visible output;
+- `register.js` owns lifecycle wiring, in-flight coalescing, background scheduling, fail-open presentation, and ephemeral state.
+
+The implementation now:
+
+- ignores subagent `ExitPlanMode` events without disturbing main-thread state;
+- captures `session.start.cwd` once and does not use later mutable cwd values for routing;
+- parses structured MCP content plus every JSON text result block;
+- rejects conflicting Managed Preflight payloads;
+- rejects conflicting CandidateSet payloads;
+- rejects responses mixing typed errors with semantic success surfaces;
+- bounds content item count and aggregate structured/text JSON size;
+- validates authoritative Managed Preflight outcome/status/class enums against current Bot contracts;
+- validates exact `sha256:<64 lowercase hex>` digests;
+- validates CandidateSet and candidate UUID identities;
+- caps candidate count before projection;
+- preserves typed MCP errors;
+- compares returned host kind, host session, host turn, and Plan digest against the exact request;
+- checks CandidateSet Product, session, Plan, and spec-binding identity;
+- keeps raw candidate/spec/limitation prose out of transcript-visible command text;
+- coalesces refresh with identical scheduled/in-flight work;
+- contains plugin/UI/scheduling failures so Design Drift cannot interrupt normal Claude execution.
 
 ## Security rationale
 
 ### Do not launder transport success into semantic success
 
-A returned JSON object can still be stale, crossed, malformed, or bound to another Product/session/Plan.
+A returned JSON object can still be stale, crossed, malformed, duplicated, conflicting, oversized, or bound to another Product/session/Plan.
 
-Identity validation occurs before semantic state mapping.
+Transport bounds and contract validation occur before semantic state mapping.
+
+### Do not treat provider strings as harmless merely because they are short
+
+Transcript-visible outcome/status/class values are accepted only from the current closed Bot enums. Digest and UUID fields must match exact formats. Unknown provider/MCP limitation codes are replaced with a bounded local `unrecognized_limitation_code` marker before command rendering.
+
+This does not make the Mod chain trusted. It only prevents arbitrary prose from masquerading as typed Bicameral state.
 
 ### Do not turn command output into a prompt-injection bridge
 
-Claude command return text becomes conversational context. Candidate text, governing-spec prose, provider limitation detail, and source excerpts are therefore treated as untrusted content.
+Claude command return text becomes conversational context. Candidate text, governing-spec prose, provider limitation detail, and source excerpts remain untrusted content.
 
-During this spike, `/bicameral-drift` may show only bounded typed facts such as:
+During this checkpoint, `/bicameral-drift` may show only bounded typed facts such as:
 
-- result state;
-- outcome/status classes;
-- spec-binding digest;
-- CandidateSet id/generation/count;
-- limitation codes.
+- locally selected state text;
+- validated outcome/status classes;
+- validated spec-binding digest;
+- validated CandidateSet id/generation/count;
+- bounded limitation codes.
 
 Human-readable candidate/spec prose requires a separately reviewed human-only pane or another governed context-injection design.
 
@@ -185,7 +227,7 @@ Workspace resolution is routing, not identity creation. CandidateSet state is tr
 
 Until MCP #871 exists, a fresh Claude plugin session may still receive `product_context_required`.
 
-The plugin reports that state honestly. It does not infer or auto-invent Product context.
+The plugin reports that state honestly. It does not infer or auto-invent Product context. The captured session routing hint remains dormant until the accepted MCP tool exists.
 
 ### Live ClaimTrace producer
 
@@ -195,25 +237,37 @@ Therefore normal semantic Design Drift remains activation-blocked on Bot #958 / 
 
 Integrations must not duplicate the semantic provider merely to make the UI look alive.
 
-## Tests required for this spike
+### Mod-chain trust
+
+An earlier Claude Mod can still intercept or alter lifecycle/API traffic. This package is therefore a host-advisory presentation surface, not governance evidence. Stronger trust would require an accepted authenticated/request-bound receipt design or equivalent control outside the Mod chain.
+
+## Required remediation evidence
 
 Host-neutral Node-backed fixtures must prove:
 
+- subagent Plan events are ineligible;
+- stable routing hint comes from session start;
 - exact Plan hashing and tool-use fallback;
 - no transcript recovery when exact Plan bytes are missing;
 - contradiction / timeout / unclassified states remain distinct;
 - multi-content response preserves CandidateSet metadata;
+- conflicting Managed Preflight payloads fail closed;
+- conflicting CandidateSet payloads fail closed;
 - returned Plan digest mismatch fails closed;
 - CandidateSet session mismatch fails closed;
 - duplicate candidate ids fail closed;
 - unsupported CandidateSet contract version fails closed;
+- invalid enum/digest values fail before transcript rendering;
+- response size limits fail closed;
 - `product_context_required` remains typed;
 - untrusted limitation prose does not enter command output;
 - errors never render as aligned/safe/clear.
 
 ## Stop line
 
-After this spike is green, do not immediately implement:
+After this remediation slice is green, pause again for adversarial review.
+
+Do not yet implement:
 
 - MCP #871 consumption;
 - candidate selection/prepare/commit;
@@ -222,6 +276,4 @@ After this spike is green, do not immediately implement:
 - automatic promotion/rejection;
 - semantic provider work inside Integrations.
 
-Perform an adversarial review first.
-
-The next tranche should begin only after that review confirms the Product-routing seam, response-binding model, and host-context security posture are still correct.
+The next tranche begins only if the next adversarial review confirms the main-thread/session-routing model, response envelope, response-binding model, and host-context security posture remain correct.
