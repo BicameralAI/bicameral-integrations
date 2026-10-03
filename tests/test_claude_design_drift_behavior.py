@@ -133,6 +133,7 @@ const managed = {
 const candidateSurface = {
   contract_version: 1,
   daemon_candidate_set: {
+    contract_version: 1,
     candidate_set_id: 'set-1',
     candidate_set_generation: 2,
     candidate_set_digest: 'sha256:set',
@@ -142,6 +143,8 @@ const candidateSurface = {
       host_session_id: 'session-1',
       plan_digest: 'sha256:plan',
       governing_spec_binding_digest: 'sha256:spec',
+      accepted_model_base_position: 42,
+      accepted_model_base_digest: 'sha256:base',
     },
     candidates: [
       { candidate_id: 'cand-1', proposed_decision: 'untrusted prose one' },
@@ -218,6 +221,7 @@ const managed = {
 const surface = (binding, candidates) => ({
   contract_version: 1,
   daemon_candidate_set: {
+    contract_version: 1,
     candidate_set_id: 'set-1',
     candidate_set_generation: 1,
     candidate_set_digest: 'sha256:set',
@@ -237,6 +241,8 @@ const mismatch = drift.normalizeMcpResult(wrap(surface({
   host_session_id: 'other-session',
   plan_digest: 'sha256:plan',
   governing_spec_binding_digest: 'sha256:spec',
+  accepted_model_base_position: 42,
+  accepted_model_base_digest: 'sha256:base',
 }, [{ candidate_id: 'cand-1' }])), boundary);
 if (mismatch.state !== 'candidate_set_invalid') throw new Error(JSON.stringify(mismatch));
 if (mismatch.limitations[0].code !== 'candidate_set_host_session_id_mismatch') throw new Error(JSON.stringify(mismatch));
@@ -246,6 +252,8 @@ const duplicate = drift.normalizeMcpResult(wrap(surface({
   host_session_id: 'session-1',
   plan_digest: 'sha256:plan',
   governing_spec_binding_digest: 'sha256:spec',
+  accepted_model_base_position: 42,
+  accepted_model_base_digest: 'sha256:base',
 }, [{ candidate_id: 'cand-1' }, { candidate_id: 'cand-1' }])), boundary);
 if (duplicate.state !== 'candidate_set_invalid') throw new Error(JSON.stringify(duplicate));
 if (duplicate.limitations[0].code !== 'duplicate_candidate_id') throw new Error(JSON.stringify(duplicate));
