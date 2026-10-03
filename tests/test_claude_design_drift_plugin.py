@@ -45,8 +45,11 @@ def test_design_drift_plugin_package_contract():
         "ignore-without-state-mutation"
     )
     assert compatibility["product_routing"] == {
-        "session_root_hint": "session.start.cwd",
+        "provider_hint": "session.start.cwd",
+        "hint_semantics": "routing-hint-only-not-project-root-or-product-identity",
+        "clear_compact_behavior": "preserve-existing-hint",
         "later_cwd_updates": "ignored-for-product-routing",
+        "claude_project_dir": "provider-stable-root-available-but-not-consumed-v0.1",
         "cwd_is_product_identity": False,
         "resolver": "pending-bicameral.workspace.resolve-mcp-871",
         "selection": "existing-bicameral.product.select",
@@ -60,7 +63,8 @@ def test_design_drift_plugin_package_contract():
         "success_error_mix": "fail-closed",
         "managed_enum_validation": "closed-current-bot-contract",
         "digest_format": "sha256-lowercase-64hex",
-        "candidate_identity_format": "uuid",
+        "candidate_identity_format": "uuid-wire-shape",
+        "session_lease_identity_format": "opaque-bounded-string",
         "raw_candidate_spec_limitation_prose_in_command_text": False,
     }
 
@@ -173,6 +177,8 @@ def test_design_drift_remediation_frame_is_enforced_in_source():
     assert "agent_id" in provider
     assert "sessionRoutingHintFromStart" in register
     assert "session.start.cwd" in provider
+    assert "preserveRoutingHint" in register
+    assert "source === 'clear' || source === 'compact'" in register
     assert "scheduledKey" in register
     assert "normalizeBoundedMcpResult" in register
     assert "managed_preflight_conflict" in integrity
