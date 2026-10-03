@@ -1,0 +1,4 @@
+{
+  "description": "Bicameral Design Drift Claude Code Mod",
+  "modules": ["./register.js"]
+}

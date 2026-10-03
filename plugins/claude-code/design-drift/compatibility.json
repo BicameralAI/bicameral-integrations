@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "plugin": {
+    "id": "bicameral-design-drift",
+    "version": "0.1.0"
+  },
+  "host": {
+    "kind": "claude-code",
+    "minimum_version": "2.1.287",
+    "tested_versions": [],
+    "provider_docs_verified": "2026-10-03"
+  },
+  "transport": {
+    "kind": "existing-mcp",
+    "server": "bicameral",
+    "tool": "bicameral.preflight",
+    "owns_server_registration": false
+  },
+  "events": [
+    "session.start",
+    "classic.PostToolUse",
+    "command.run",
+    "session.end"
+  ],
+  "api_calls": [
+    "command.register",
+    "clock.after",
+    "mcp.call",
+    "ui.status",
+    "ui.toast"
+  ],
+  "authority": {
+    "canonical_state_mutation": false,
+    "tool_approval": false,
+    "prompt_rewrite": false,
+    "tool_rewrite": false,
+    "autonomous_confirmation": false
+  },
+  "network": {
+    "direct_http": false,
+    "arbitrary_destinations": false,
+    "through_connected_mcp_only": true
+  },
+  "planning_boundary": {
+    "classic_event": "PostToolUse",
+    "tool_name": "ExitPlanMode",
+    "exact_plan_field": "tool_response.plan",
+    "transcript_scraping": false
+  },
+  "validation": {
+    "claude_plugin_validate": "pending-terminal-environment",
+    "real_claude_load": "pending-terminal-environment"
+  }
+}
