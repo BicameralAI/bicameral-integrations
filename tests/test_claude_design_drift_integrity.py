@@ -43,7 +43,7 @@ def _run_module(tmp_path: Path, module_name: str, assertions: str) -> None:
     assert result.returncode == 0, result.stderr or result.stdout
 
 
-def test_subagent_plan_is_ineligible_and_session_root_is_captured_once(tmp_path: Path):
+def test_subagent_plan_is_ineligible_and_session_start_cwd_is_only_a_hint(tmp_path: Path):
     _run_module(
         tmp_path,
         "provider",
@@ -177,18 +177,60 @@ if (digestResult.limitations[0].code !== 'managed_plan_digest_invalid') throw ne
     )
 
 
-def test_response_size_and_candidate_count_are_bounded(tmp_path: Path):
+def test_response_size_candidate_count_and_wire_identity_are_bounded_without_overclaiming(tmp_path: Path):
     _run_module(
         tmp_path,
         "integrity",
         r"""
+const digest = (c) => 'sha256:' + c.repeat(64);
 const boundary = {
-  host_kind: 'claude_code', host_session_id: 's', host_turn_id: 't', plan_digest: 'sha256:' + 'a'.repeat(64),
+  host_kind: 'claude_code', host_session_id: 's', host_turn_id: 't', plan_digest: digest('a'),
 };
 const huge = subject.normalizeBoundedMcpResult({ content: [
   { type: 'text', text: 'x'.repeat(262145) },
 ] }, boundary);
 if (huge.state !== 'response_integrity_error') throw new Error(JSON.stringify(huge));
 if (huge.limitations[0].code !== 'mcp_response_too_large') throw new Error(JSON.stringify(huge));
+
+const managed = {
+  outcome: 'binding_validated',
+  boundary: { ...boundary, product_id: 'prod-1' },
+  governing_spec_binding_digest: digest('b'),
+  limitations: [],
+  analysis: { status: 'completed', classes: ['proposed'], limitations: [] },
+};
+const many = Array.from({ length: 257 }, (_, i) => ({
+  candidate_id: `00000000-0000-0000-0000-${String(i + 1).padStart(12, '0')}`,
+}));
+const candidateSurface = {
+  contract_version: 1,
+  daemon_candidate_set: {
+    // Nil/version-0-shaped UUIDs remain valid UUID wire values under the Rust uuid contract.
+    candidate_set_id: '00000000-0000-0000-0000-000000000001',
+    candidate_set_generation: 1,
+    candidate_set_digest: digest('c'),
+    // Session lease is intentionally opaque. Do not impose a protocol shape it does not promise.
+    session_lease_id: 'lease opaque value 1',
+    binding: {
+      product_id: 'prod-1', host_session_id: 's', plan_digest: digest('a'), governing_spec_binding_digest: digest('b'),
+    },
+    candidates: many,
+  },
+};
+const tooMany = subject.normalizeBoundedMcpResult({ content: [
+  { type: 'text', text: JSON.stringify({ managed_preflight: managed }) },
+  { type: 'text', text: JSON.stringify({ managed_mcp_candidate_set: candidateSurface }) },
+] }, boundary);
+if (tooMany.state !== 'candidate_set_invalid') throw new Error(JSON.stringify(tooMany));
+if (tooMany.limitations[0].code !== 'candidate_set_too_large') throw new Error(JSON.stringify(tooMany));
+
+candidateSurface.daemon_candidate_set.candidates = [
+  { candidate_id: '00000000-0000-0000-0000-000000000002' },
+];
+const promisedWireOnly = subject.normalizeBoundedMcpResult({ content: [
+  { type: 'text', text: JSON.stringify({ managed_preflight: managed }) },
+  { type: 'text', text: JSON.stringify({ managed_mcp_candidate_set: candidateSurface }) },
+] }, boundary);
+if (promisedWireOnly.state !== 'proposed') throw new Error(JSON.stringify(promisedWireOnly));
 """,
     )
