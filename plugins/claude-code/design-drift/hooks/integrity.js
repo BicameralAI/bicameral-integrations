@@ -3,9 +3,8 @@ import { extractMcpPayloads, normalizeMcpResult } from './drift.js'
 const MAX_CONTENT_ITEMS = 16
 const MAX_TOTAL_JSON_CHARS = 262_144
 const MAX_CANDIDATES = 256
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const SHA256_RE = /^sha256:[0-9a-f]{64}$/
-const SAFE_TOKEN_RE = /^[A-Za-z0-9._:-]{1,128}$/
 const SAFE_IDENTITY_RE = /^[\x20-\x7e]{1,256}$/
 
 const MANAGED_OUTCOMES = new Set(['binding_validated', 'no_candidate'])
@@ -188,7 +187,7 @@ function validateCandidateSurface(surface) {
   if (!raw || !binding) return 'candidate_set_binding_missing'
   if (!UUID_RE.test(raw.candidate_set_id || '')) return 'candidate_set_id_invalid'
   if (!SHA256_RE.test(raw.candidate_set_digest || '')) return 'candidate_set_digest_invalid'
-  if (!SAFE_TOKEN_RE.test(raw.session_lease_id || '')) return 'candidate_set_session_lease_id_invalid'
+  if (!validIdentityString(raw.session_lease_id)) return 'candidate_set_session_lease_id_invalid'
   if (!validIdentityString(binding.product_id)) return 'candidate_set_product_id_invalid'
   if (!validIdentityString(binding.host_session_id)) return 'candidate_set_host_session_id_invalid'
   if (!SHA256_RE.test(binding.plan_digest || '')) return 'candidate_set_plan_digest_invalid'
