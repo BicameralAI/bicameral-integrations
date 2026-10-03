@@ -184,6 +184,7 @@ function validateCandidateSurface(surface) {
   const raw = objectOrNull(surface.daemon_candidate_set)
   const binding = raw ? objectOrNull(raw.binding) : null
   if (!raw || !binding) return 'candidate_set_binding_missing'
+  if (raw.contract_version !== 1) return 'unsupported_candidate_set_contract_version'
   if (!UUID_RE.test(raw.candidate_set_id || '')) return 'candidate_set_id_invalid'
   if (!Number.isSafeInteger(raw.candidate_set_generation) || raw.candidate_set_generation <= 0) {
     return 'candidate_set_generation_invalid'
@@ -195,6 +196,12 @@ function validateCandidateSurface(surface) {
   if (!SHA256_RE.test(binding.plan_digest || '')) return 'candidate_set_plan_digest_invalid'
   if (!SHA256_RE.test(binding.governing_spec_binding_digest || '')) {
     return 'candidate_set_spec_binding_digest_invalid'
+  }
+  if (!Number.isSafeInteger(binding.accepted_model_base_position) || binding.accepted_model_base_position < 0) {
+    return 'candidate_set_model_base_position_invalid'
+  }
+  if (!SHA256_RE.test(binding.accepted_model_base_digest || '')) {
+    return 'candidate_set_model_base_digest_invalid'
   }
   if (!Array.isArray(raw.candidates)) return 'candidate_set_candidates_invalid'
   if (raw.candidates.length > MAX_CANDIDATES) return 'candidate_set_too_large'
@@ -235,6 +242,21 @@ function sanitizeNormalized(result) {
   }
 }
 
+function attachCandidateBindingWitness(result, surface) {
+  if (!result?.candidateSet || !surface) return result
+  const raw = objectOrNull(surface.daemon_candidate_set)
+  const binding = raw ? objectOrNull(raw.binding) : null
+  if (!binding) return result
+  return {
+    ...result,
+    candidateSet: {
+      ...result.candidateSet,
+      acceptedModelBasePosition: binding.accepted_model_base_position,
+      acceptedModelBaseDigest: binding.accepted_model_base_digest,
+    },
+  }
+}
+
 /**
  * Validate and bound an MCP response before any value becomes persistent Mod
  * state or transcript-visible command text. This is a presentation-integrity
@@ -271,5 +293,6 @@ export function normalizeBoundedMcpResult(mcpResult, boundary) {
     if (candidateFailure) return failureResult('candidate_set_invalid', boundary, candidateFailure)
   }
 
-  return sanitizeNormalized(normalizeMcpResult(mcpResult, boundary))
+  const normalized = sanitizeNormalized(normalizeMcpResult(mcpResult, boundary))
+  return attachCandidateBindingWitness(normalized, candidateSurfaces[0] || null)
 }
