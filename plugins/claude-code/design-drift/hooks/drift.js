@@ -39,7 +39,7 @@ export async function planningBoundaryFromClassicPostToolUse(event) {
   }
 
   const hostSessionId = stringOrNull(e.session_id)
-  const hostTurnId = stringOrNull(e.turn_id)
+  const hostTurnId = stringOrNull(e.turn_id) || stringOrNull(e.tool_use_id)
   if (!hostSessionId || !hostTurnId) {
     return { ok: false, reason: 'missing_boundary_identity' }
   }
