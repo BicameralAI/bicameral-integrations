@@ -45,7 +45,13 @@
     "classic_event": "PostToolUse",
     "tool_name": "ExitPlanMode",
     "exact_plan_field": "tool_response.plan",
+    "turn_identity": "turn_id || tool_use_id",
     "transcript_scraping": false
+  },
+  "migration": {
+    "legacy_claude_settings_planning_hook": "remove-when-plugin-active",
+    "legacy_claude_settings_session_start_hook": "retain",
+    "reason": "Avoid duplicate ExitPlanMode preflight while preserving existing SessionStart activation."
   },
   "validation": {
     "claude_plugin_validate": "pending-terminal-environment",
