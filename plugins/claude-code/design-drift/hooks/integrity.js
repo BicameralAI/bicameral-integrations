@@ -5,7 +5,6 @@ const MAX_TOTAL_JSON_CHARS = 262_144
 const MAX_CANDIDATES = 256
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const SHA256_RE = /^sha256:[0-9a-f]{64}$/
-const SAFE_IDENTITY_RE = /^[\x20-\x7e]{1,256}$/
 
 const MANAGED_OUTCOMES = new Set(['binding_validated', 'no_candidate'])
 const ANALYSIS_STATUSES = new Set([
@@ -150,8 +149,8 @@ function measureRawResult(result) {
   return null
 }
 
-function validIdentityString(value) {
-  return typeof value === 'string' && SAFE_IDENTITY_RE.test(value)
+function nonEmptyContractString(value) {
+  return typeof value === 'string' && value.trim().length > 0
 }
 
 function validateManaged(managed) {
@@ -161,7 +160,7 @@ function validateManaged(managed) {
   if (!boundary) return 'managed_boundary_missing'
   if (boundary.host_kind !== 'claude_code') return 'managed_host_kind_invalid'
   for (const field of ['host_session_id', 'host_turn_id', 'product_id']) {
-    if (!validIdentityString(boundary[field])) return `managed_${field}_invalid`
+    if (!nonEmptyContractString(boundary[field])) return `managed_${field}_invalid`
   }
   if (!SHA256_RE.test(boundary.plan_digest || '')) return 'managed_plan_digest_invalid'
 
@@ -186,10 +185,13 @@ function validateCandidateSurface(surface) {
   const binding = raw ? objectOrNull(raw.binding) : null
   if (!raw || !binding) return 'candidate_set_binding_missing'
   if (!UUID_RE.test(raw.candidate_set_id || '')) return 'candidate_set_id_invalid'
+  if (!Number.isSafeInteger(raw.candidate_set_generation) || raw.candidate_set_generation <= 0) {
+    return 'candidate_set_generation_invalid'
+  }
   if (!SHA256_RE.test(raw.candidate_set_digest || '')) return 'candidate_set_digest_invalid'
-  if (!validIdentityString(raw.session_lease_id)) return 'candidate_set_session_lease_id_invalid'
-  if (!validIdentityString(binding.product_id)) return 'candidate_set_product_id_invalid'
-  if (!validIdentityString(binding.host_session_id)) return 'candidate_set_host_session_id_invalid'
+  if (!nonEmptyContractString(raw.session_lease_id)) return 'candidate_set_session_lease_id_invalid'
+  if (!nonEmptyContractString(binding.product_id)) return 'candidate_set_product_id_invalid'
+  if (!nonEmptyContractString(binding.host_session_id)) return 'candidate_set_host_session_id_invalid'
   if (!SHA256_RE.test(binding.plan_digest || '')) return 'candidate_set_plan_digest_invalid'
   if (!SHA256_RE.test(binding.governing_spec_binding_digest || '')) {
     return 'candidate_set_spec_binding_digest_invalid'
