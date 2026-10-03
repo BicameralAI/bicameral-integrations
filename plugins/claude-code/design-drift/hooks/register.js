@@ -17,14 +17,15 @@ let inFlightKey = null
 let scheduledKey = null
 let sessionRoutingHint = null
 
-function resetSessionState() {
+function resetSessionState({ preserveRoutingHint = false } = {}) {
+  const retainedRoutingHint = preserveRoutingHint ? sessionRoutingHint : null
   latestBoundary = null
   latestResult = null
   lastBoundaryKey = null
   activeBoundaryKey = null
   inFlightKey = null
   scheduledKey = null
-  sessionRoutingHint = null
+  sessionRoutingHint = retainedRoutingHint
 }
 
 function ignorePromiseFailure(value) {
@@ -96,9 +97,16 @@ async function runPreflight($, boundary, boundaryKey) {
 
 export function register(on) {
   on('session.start', async ($, e, next) => {
-    resetSessionState()
-    const routing = sessionRoutingHintFromStart(e)
-    sessionRoutingHint = routing.ok ? routing : null
+    // Claude emits SessionStart again for clear/compact. Those events can carry
+    // a changed cwd, so preserve the original captured routing hint rather than
+    // silently rebinding Product routing to ambient directory state.
+    const source = typeof e?.source === 'string' ? e.source : null
+    const preserveRoutingHint = Boolean(sessionRoutingHint) && (source === 'clear' || source === 'compact')
+    resetSessionState({ preserveRoutingHint })
+    if (!sessionRoutingHint) {
+      const routing = sessionRoutingHintFromStart(e)
+      sessionRoutingHint = routing.ok ? routing : null
+    }
     try {
       await $.command.register({
         name: 'bicameral-drift',
@@ -203,6 +211,7 @@ export function register(on) {
   })
 }
 
-// sessionRoutingHint is intentionally captured but not consumed yet. Product
-// routing remains blocked on the accepted host-neutral MCP seam in #871.
+// sessionRoutingHint is intentionally captured but not consumed yet. It is a
+// fallible provider routing hint, never Product identity. Product routing
+// remains blocked on the accepted host-neutral MCP seam in #871.
 void sessionRoutingHint
