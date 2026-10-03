@@ -2,6 +2,7 @@ export const MCP_SERVER = 'bicameral'
 export const MCP_TOOL = 'bicameral.preflight'
 
 const SHA256_PREFIX = 'sha256:'
+const CANDIDATE_DISPLAY_CONTRACT_VERSION = 1
 
 function objectOrNull(value) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : null
@@ -9,6 +10,10 @@ function objectOrNull(value) {
 
 function stringOrNull(value) {
   return typeof value === 'string' && value.length > 0 ? value : null
+}
+
+function positiveIntegerOrNull(value) {
+  return Number.isInteger(value) && value > 0 ? value : null
 }
 
 function listOfObjects(value) {
@@ -66,34 +71,61 @@ export function buildPreflightArguments(boundary) {
   return { managed_planning: { ...boundary } }
 }
 
-function parseTextContent(result) {
+function parseTextPayloads(result) {
+  const payloads = []
   const content = Array.isArray(result?.content) ? result.content : []
   for (const item of content) {
     if (item?.type !== 'text' || typeof item.text !== 'string') continue
     try {
       const parsed = JSON.parse(item.text)
-      if (objectOrNull(parsed)) return parsed
+      if (objectOrNull(parsed)) payloads.push(parsed)
     } catch {
-      // A non-JSON text block is not a Bicameral structured result. Keep looking.
+      // Non-JSON text is not a structured Bicameral result.
     }
+  }
+  return payloads
+}
+
+export function extractMcpPayloads(result) {
+  const payloads = []
+  const structured = objectOrNull(result?.structuredContent)
+  if (structured) payloads.push(structured)
+  payloads.push(...parseTextPayloads(result))
+  return payloads
+}
+
+function findManagedPreflight(payloads) {
+  for (const payload of payloads) {
+    const root = objectOrNull(payload)
+    if (!root) continue
+    const direct = objectOrNull(root.managed_preflight)
+    if (direct) return { managed: direct, payload: root }
+    const result = objectOrNull(root.result)
+    const nested = result ? objectOrNull(result.managed_preflight) : null
+    if (nested) return { managed: nested, payload: root }
   }
   return null
 }
 
-export function extractMcpPayload(result) {
-  const structured = objectOrNull(result?.structuredContent)
-  if (structured) return structured
-  return parseTextContent(result)
+function findCandidateSurface(payloads) {
+  for (const payload of payloads) {
+    const root = objectOrNull(payload)
+    const surface = root ? objectOrNull(root.managed_mcp_candidate_set) : null
+    if (surface) return surface
+  }
+  return null
 }
 
-function findManagedPreflight(payload) {
-  const root = objectOrNull(payload)
-  if (!root) return null
-  const direct = objectOrNull(root.managed_preflight)
-  if (direct) return direct
-  const result = objectOrNull(root.result)
-  if (!result) return null
-  return objectOrNull(result.managed_preflight)
+function findTypedError(payloads) {
+  for (const payload of payloads) {
+    const root = objectOrNull(payload)
+    if (!root || root.status !== 'error') continue
+    return {
+      code: stringOrNull(root.error_code) || 'mcp_tool_error',
+      message: stringOrNull(root.message),
+    }
+  }
+  return null
 }
 
 function normalizedLimitations(...values) {
@@ -108,46 +140,160 @@ function normalizedLimitations(...values) {
   return out
 }
 
-function candidateCount(managed) {
-  const candidateSet = objectOrNull(managed?.candidate_set)
-  return candidateSet && Array.isArray(candidateSet.candidates) ? candidateSet.candidates.length : null
+function boundaryMismatch(requestedBoundary, returnedBoundary) {
+  const requested = objectOrNull(requestedBoundary)
+  const returned = objectOrNull(returnedBoundary)
+  if (!requested || !returned) return 'managed_boundary_missing'
+
+  for (const field of ['host_kind', 'host_session_id', 'host_turn_id', 'plan_digest']) {
+    if (stringOrNull(requested[field]) !== stringOrNull(returned[field])) {
+      return `managed_boundary_${field}_mismatch`
+    }
+  }
+
+  const returnedProductId = stringOrNull(returned.product_id)
+  if (!returnedProductId) return 'managed_boundary_product_id_missing'
+
+  const requestedProductId = stringOrNull(requested.product_id)
+  if (requestedProductId && requestedProductId !== returnedProductId) {
+    return 'managed_boundary_product_id_mismatch'
+  }
+
+  return null
+}
+
+function candidateSurfaceProjection(surface, requestedBoundary, returnedBoundary, governingSpecBindingDigest) {
+  if (!surface) return { ok: true, candidateSet: null }
+
+  if (surface.contract_version !== CANDIDATE_DISPLAY_CONTRACT_VERSION) {
+    return { ok: false, reason: 'unsupported_candidate_contract_version' }
+  }
+
+  const raw = objectOrNull(surface.daemon_candidate_set)
+  const binding = raw ? objectOrNull(raw.binding) : null
+  if (!raw || !binding) return { ok: false, reason: 'candidate_set_binding_missing' }
+
+  const generation = positiveIntegerOrNull(raw.candidate_set_generation)
+  const candidateSetId = stringOrNull(raw.candidate_set_id)
+  const candidateSetDigest = stringOrNull(raw.candidate_set_digest)
+  const sessionLeaseId = stringOrNull(raw.session_lease_id)
+  if (!generation || !candidateSetId || !candidateSetDigest || !sessionLeaseId) {
+    return { ok: false, reason: 'candidate_set_identity_invalid' }
+  }
+
+  const requested = objectOrNull(requestedBoundary) || {}
+  const returned = objectOrNull(returnedBoundary) || {}
+  const expectedProductId = stringOrNull(requested.product_id) || stringOrNull(returned.product_id)
+  const expectedSessionId = stringOrNull(requested.host_session_id)
+  const expectedPlanDigest = stringOrNull(requested.plan_digest)
+  const expectedSpecDigest = stringOrNull(governingSpecBindingDigest)
+
+  if (!expectedProductId || stringOrNull(binding.product_id) !== expectedProductId) {
+    return { ok: false, reason: 'candidate_set_product_id_mismatch' }
+  }
+  if (!expectedSessionId || stringOrNull(binding.host_session_id) !== expectedSessionId) {
+    return { ok: false, reason: 'candidate_set_host_session_id_mismatch' }
+  }
+  if (!expectedPlanDigest || stringOrNull(binding.plan_digest) !== expectedPlanDigest) {
+    return { ok: false, reason: 'candidate_set_plan_digest_mismatch' }
+  }
+  if (!expectedSpecDigest || stringOrNull(binding.governing_spec_binding_digest) !== expectedSpecDigest) {
+    return { ok: false, reason: 'candidate_set_spec_binding_mismatch' }
+  }
+
+  const candidates = Array.isArray(raw.candidates) ? raw.candidates : null
+  if (!candidates) return { ok: false, reason: 'candidate_set_candidates_invalid' }
+
+  const seen = new Set()
+  for (const candidate of candidates) {
+    const candidateId = stringOrNull(objectOrNull(candidate)?.candidate_id)
+    if (!candidateId) return { ok: false, reason: 'candidate_id_missing' }
+    if (seen.has(candidateId)) return { ok: false, reason: 'duplicate_candidate_id' }
+    seen.add(candidateId)
+  }
+
+  return {
+    ok: true,
+    candidateSet: {
+      contractVersion: surface.contract_version,
+      candidateSetId,
+      generation,
+      candidateSetDigest,
+      sessionLeaseId,
+      productId: expectedProductId,
+      hostSessionId: expectedSessionId,
+      planDigest: expectedPlanDigest,
+      governingSpecBindingDigest: expectedSpecDigest,
+      candidateCount: candidates.length,
+    },
+  }
+}
+
+function mcpErrorState(code) {
+  switch (code) {
+    case 'product_context_required':
+      return 'product_context_required'
+    case 'daemon_protocol_mismatch':
+      return 'protocol_mismatch'
+    case 'daemon_capability_error':
+      return 'capability_unavailable'
+    case 'daemon_unavailable':
+      return 'mcp_unavailable'
+    default:
+      return 'mcp_error'
+  }
+}
+
+function failureResult(state, boundary, code, extra = {}) {
+  return {
+    state,
+    outcome: null,
+    analysisStatus: null,
+    classes: [],
+    limitations: [{ code }],
+    boundary,
+    ...extra,
+  }
 }
 
 export function normalizeMcpResult(mcpResult, boundary) {
-  if (mcpResult?.isError === true) {
-    return {
-      state: 'mcp_error',
-      outcome: null,
-      analysisStatus: null,
-      classes: [],
-      limitations: [{ code: 'mcp_tool_error' }],
-      boundary,
-    }
+  const payloads = extractMcpPayloads(mcpResult)
+  const typedError = findTypedError(payloads)
+  if (mcpResult?.isError === true || typedError) {
+    const code = typedError?.code || 'mcp_tool_error'
+    return failureResult(mcpErrorState(code), boundary, code)
   }
 
-  const payload = extractMcpPayload(mcpResult)
-  if (!payload) {
-    return {
-      state: 'invalid_response',
-      outcome: null,
-      analysisStatus: null,
-      classes: [],
-      limitations: [{ code: 'mcp_result_unparseable' }],
-      boundary,
-    }
+  if (!payloads.length) {
+    return failureResult('invalid_response', boundary, 'mcp_result_unparseable')
   }
 
-  const managed = findManagedPreflight(payload)
-  if (!managed) {
-    return {
-      state: 'managed_preflight_missing',
-      outcome: null,
-      analysisStatus: null,
-      classes: [],
-      limitations: [{ code: 'managed_preflight_missing' }],
-      boundary,
+  const found = findManagedPreflight(payloads)
+  if (!found) {
+    return failureResult('managed_preflight_missing', boundary, 'managed_preflight_missing')
+  }
+
+  const { managed, payload } = found
+  const returnedBoundary = objectOrNull(managed.boundary)
+  const mismatch = boundaryMismatch(boundary, returnedBoundary)
+  if (mismatch) {
+    return failureResult('boundary_mismatch', boundary, mismatch, {
       requestId: stringOrNull(payload.request_id),
-    }
+    })
+  }
+
+  const governingSpecBindingDigest = stringOrNull(managed.governing_spec_binding_digest)
+  const candidateSurface = findCandidateSurface(payloads)
+  const projected = candidateSurfaceProjection(
+    candidateSurface,
+    boundary,
+    returnedBoundary,
+    governingSpecBindingDigest,
+  )
+  if (!projected.ok) {
+    return failureResult('candidate_set_invalid', boundary, projected.reason, {
+      requestId: stringOrNull(payload.request_id),
+    })
   }
 
   const analysis = objectOrNull(managed.analysis) || {}
@@ -175,18 +321,19 @@ export function normalizeMcpResult(mcpResult, boundary) {
     state = 'no_candidate_unanalyzed'
   }
 
+  const candidateCount = projected.candidateSet?.candidateCount ?? null
+
   return {
     state,
     outcome,
     analysisStatus,
     classes,
     limitations,
-    boundary: objectOrNull(managed.boundary) || boundary,
+    boundary: returnedBoundary,
     requestId: stringOrNull(payload.request_id),
-    governingSpecBindingDigest: stringOrNull(managed.governing_spec_binding_digest),
-    governingSpec: objectOrNull(managed.governing_spec),
-    candidateCount: candidateCount(managed),
-    raw: managed,
+    governingSpecBindingDigest,
+    candidateCount,
+    candidateSet: projected.candidateSet,
   }
 }
 
@@ -210,7 +357,7 @@ export function statusText(result) {
     case 'no_candidate_unanalyzed':
       return 'Design Drift: no candidate · analysis incomplete'
     case 'provider_unavailable':
-      return 'Design Drift: analysis provider unavailable'
+      return 'Design Drift: semantic analysis provider unavailable'
     case 'timed_out':
       return 'Design Drift: analysis timed out'
     case 'invalid_trace':
@@ -219,8 +366,18 @@ export function statusText(result) {
       return 'Design Drift: plan boundary missing exact plan bytes'
     case 'missing_boundary_identity':
       return 'Design Drift: plan boundary identity incomplete'
+    case 'product_context_required':
+      return 'Design Drift: Bicameral Product context required'
+    case 'protocol_mismatch':
+      return 'Design Drift: Bicameral protocol mismatch'
+    case 'capability_unavailable':
+      return 'Design Drift: required Bicameral capability unavailable'
     case 'mcp_unavailable':
       return 'Design Drift: Bicameral MCP unavailable'
+    case 'boundary_mismatch':
+      return 'Design Drift: response boundary mismatch'
+    case 'candidate_set_invalid':
+      return 'Design Drift: CandidateSet response failed integrity checks'
     case 'mcp_error':
       return 'Design Drift: Bicameral MCP returned an error'
     case 'managed_preflight_missing':
@@ -246,12 +403,12 @@ export function detailText(result) {
   if (Array.isArray(result.classes) && result.classes.length) lines.push(`Classes: ${result.classes.join(', ')}`)
   if (result.governingSpecBindingDigest) lines.push(`Spec binding: ${result.governingSpecBindingDigest}`)
   if (result.candidateCount != null) lines.push(`Candidates: ${result.candidateCount}`)
+  if (result.candidateSet?.candidateSetId) lines.push(`Candidate set: ${result.candidateSet.candidateSetId}`)
+  if (result.candidateSet?.generation) lines.push(`Candidate generation: ${result.candidateSet.generation}`)
   if (Array.isArray(result.limitations) && result.limitations.length) {
-    lines.push('Limitations:')
+    lines.push('Limitation codes:')
     for (const limitation of result.limitations.slice(0, 8)) {
-      const code = limitation.code || 'limitation'
-      const detail = limitation.detail ? `: ${limitation.detail}` : ''
-      lines.push(`- ${code}${detail}`)
+      lines.push(`- ${limitation.code || 'limitation'}`)
     }
   }
   return lines.join('\n')
