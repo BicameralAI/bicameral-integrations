@@ -76,6 +76,13 @@ Claude Code settings-hook events are exposed to Mods as `classic.<Event>` events
 
 Do not recover missing provider fields by scraping transcripts, prompts, or unrelated session state unless a separate architecture decision explicitly approves that behavior.
 
+Two provider facts are especially important for host identity and routing:
+
+- Anthropic documents `agent_id` only for hook calls running inside a subagent. Until a Bicameral contract includes agent identity, integrations that are declared main-thread-only must ignore subagent lifecycle events without mutating main-thread state.
+- Anthropic documents hook `cwd` as the **current** working directory, including changes caused by `cd` and worktrees. It is therefore a routing hint, not a stable identity. Claude also exposes `${CLAUDE_PROJECT_DIR}` as a stable project-root value, but consuming it through a Mod broadens the declared API surface and must be an explicit design decision rather than an ambient fallback.
+
+A provider path may help Bicameral route a request, but Product identity must still come from the appropriate Bicameral authority. Never treat a Claude path, worktree, git remote, prompt, or transcript as Product identity by itself.
+
 ## Security doctrine
 
 Claude Code Mods run with the user's permissions and are not a Bicameral security boundary. Anthropic documents that Mods may access files, processes, network, secrets, session data, model usage, prompts, and tool approvals when they invoke the corresponding APIs.
