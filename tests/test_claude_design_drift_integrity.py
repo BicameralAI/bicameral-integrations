@@ -113,12 +113,18 @@ const managed = {
 const candidate = (generation) => ({
   contract_version: 1,
   daemon_candidate_set: {
+    contract_version: 1,
     candidate_set_id: '00000000-0000-4000-8000-000000000001',
     candidate_set_generation: generation,
     candidate_set_digest: digest('c'),
     session_lease_id: 'lease-1',
     binding: {
-      product_id: 'prod-1', host_session_id: 's', plan_digest: digest('a'), governing_spec_binding_digest: digest('b'),
+      product_id: 'prod-1',
+      host_session_id: 's',
+      plan_digest: digest('a'),
+      governing_spec_binding_digest: digest('b'),
+      accepted_model_base_position: 7,
+      accepted_model_base_digest: digest('d'),
     },
     candidates: [{ candidate_id: '00000000-0000-4000-8000-000000000002' }],
   },
@@ -131,6 +137,8 @@ const duplicateOkay = subject.normalizeBoundedMcpResult({ content: [
   { type: 'text', text: JSON.stringify({ managed_mcp_candidate_set: same }) },
 ] }, boundary);
 if (duplicateOkay.state !== 'proposed') throw new Error(JSON.stringify(duplicateOkay));
+if (duplicateOkay.candidateSet?.acceptedModelBasePosition !== 7) throw new Error(JSON.stringify(duplicateOkay));
+if (duplicateOkay.candidateSet?.acceptedModelBaseDigest !== digest('d')) throw new Error(JSON.stringify(duplicateOkay));
 
 const conflict = subject.normalizeBoundedMcpResult({ content: [
   { type: 'text', text: JSON.stringify({ managed_preflight: managed }) },
@@ -205,14 +213,18 @@ const many = Array.from({ length: 257 }, (_, i) => ({
 const candidateSurface = {
   contract_version: 1,
   daemon_candidate_set: {
-    // Nil/version-0-shaped UUIDs remain valid UUID wire values under the Rust uuid contract.
+    contract_version: 1,
     candidate_set_id: '00000000-0000-0000-0000-000000000001',
     candidate_set_generation: 1,
     candidate_set_digest: digest('c'),
-    // Session lease is intentionally opaque. Do not impose a protocol shape it does not promise.
     session_lease_id: 'lease opaque value 1',
     binding: {
-      product_id: 'prod-1', host_session_id: 's', plan_digest: digest('a'), governing_spec_binding_digest: digest('b'),
+      product_id: 'prod-1',
+      host_session_id: 's',
+      plan_digest: digest('a'),
+      governing_spec_binding_digest: digest('b'),
+      accepted_model_base_position: 0,
+      accepted_model_base_digest: digest('d'),
     },
     candidates: many,
   },
@@ -232,5 +244,6 @@ const promisedWireOnly = subject.normalizeBoundedMcpResult({ content: [
   { type: 'text', text: JSON.stringify({ managed_mcp_candidate_set: candidateSurface }) },
 ] }, boundary);
 if (promisedWireOnly.state !== 'proposed') throw new Error(JSON.stringify(promisedWireOnly));
+if (promisedWireOnly.candidateSet?.acceptedModelBasePosition !== 0) throw new Error(JSON.stringify(promisedWireOnly));
 """,
     )
