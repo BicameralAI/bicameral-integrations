@@ -8,14 +8,14 @@
     "kind": "claude-code",
     "minimum_version": "2.1.287",
     "tested_versions": [],
-    "provider_docs_verified": "2026-10-03"
+    "provider_docs_verified": "2026-10-03",
+    "thread_scope": "main-thread-only"
   },
   "documentation": {
     "local_references": "references.md",
     "provider_family": "../README.md",
     "category_contract": "../../README.md",
     "repository_index": "../../../docs/INTEGRATION_DOCS_INDEX.md",
-    "response_integrity_design": "../../../docs/design/claude-code-design-drift-response-integrity-spike.md",
     "refresh_cadence": "monthly",
     "source_precedence": "generated-types-then-official-provider-docs",
     "generated_types_path": ".claude-plugin/types/"
@@ -25,26 +25,6 @@
     "server": "bicameral",
     "tool": "bicameral.preflight",
     "owns_server_registration": false
-  },
-  "dependencies": {
-    "product_routing": {
-      "status": "pending-upstream-seam",
-      "issue": "BicameralAI/bicameral-mcp#871",
-      "target_flow": [
-        "bicameral.workspace.resolve",
-        "bicameral.product.select",
-        "bicameral.preflight"
-      ],
-      "cwd_is_identity": false
-    },
-    "live_semantic_provider": {
-      "status": "pending-upstream-capability",
-      "issues": [
-        "BicameralAI/bicameral-bot#958",
-        "BicameralAI/bicameral-bot#1066"
-      ],
-      "plugin_must_not_reimplement": true
-    }
   },
   "events": [
     "session.start",
@@ -76,25 +56,27 @@
     "tool_name": "ExitPlanMode",
     "exact_plan_field": "tool_response.plan",
     "turn_identity": "turn_id || tool_use_id",
-    "transcript_scraping": false
+    "transcript_scraping": false,
+    "subagent_event_behavior": "ignore-without-state-mutation"
+  },
+  "product_routing": {
+    "session_root_hint": "session.start.cwd",
+    "later_cwd_updates": "ignored-for-product-routing",
+    "cwd_is_product_identity": false,
+    "resolver": "pending-bicameral.workspace.resolve-mcp-871",
+    "selection": "existing-bicameral.product.select"
   },
   "response_integrity": {
-    "parse_all_structured_mcp_content": true,
-    "require_returned_managed_boundary": true,
-    "bind_host_kind": true,
-    "bind_host_session_id": true,
-    "bind_host_turn_id": true,
-    "bind_plan_digest": true,
-    "bind_product_when_known": true,
-    "bind_candidate_set_product": true,
-    "bind_candidate_set_session": true,
-    "bind_candidate_set_plan": true,
-    "bind_candidate_set_spec_digest": true,
-    "reject_unknown_candidate_contract_version": true,
-    "reject_duplicate_candidate_ids": true,
-    "raw_candidate_text_to_command_transcript": false,
-    "raw_spec_text_to_command_transcript": false,
-    "raw_limitation_detail_to_command_transcript": false
+    "max_content_items": 16,
+    "max_total_json_chars": 262144,
+    "max_candidates": 256,
+    "conflicting_managed_preflight": "fail-closed",
+    "conflicting_candidate_surface": "fail-closed",
+    "success_error_mix": "fail-closed",
+    "managed_enum_validation": "closed-current-bot-contract",
+    "digest_format": "sha256-lowercase-64hex",
+    "candidate_identity_format": "uuid",
+    "raw_candidate_spec_limitation_prose_in_command_text": false
   },
   "migration": {
     "legacy_claude_settings_planning_hook": "remove-when-plugin-active",
@@ -102,7 +84,6 @@
     "reason": "Avoid duplicate ExitPlanMode preflight while preserving existing SessionStart activation."
   },
   "validation": {
-    "host_neutral_response_integrity_tests": "implemented",
     "claude_plugin_validate": "pending-terminal-environment",
     "generated_types": "pending-terminal-environment",
     "real_claude_load": "pending-terminal-environment"
