@@ -114,6 +114,17 @@ function candidateCount(managed) {
 }
 
 export function normalizeMcpResult(mcpResult, boundary) {
+  if (mcpResult?.isError === true) {
+    return {
+      state: 'mcp_error',
+      outcome: null,
+      analysisStatus: null,
+      classes: [],
+      limitations: [{ code: 'mcp_tool_error' }],
+      boundary,
+    }
+  }
+
   const payload = extractMcpPayload(mcpResult)
   if (!payload) {
     return {
@@ -151,7 +162,7 @@ export function normalizeMcpResult(mcpResult, boundary) {
     if (normalizedClasses.has('contradiction')) state = 'contradiction'
     else if (normalizedClasses.has('proposed')) state = 'proposed'
     else if (outcome === 'no_candidate' || normalizedClasses.has('no_candidate')) state = 'no_candidate'
-    else state = 'no_actionable_difference'
+    else state = 'completed_unclassified'
   } else if (analysisStatus === 'provider_unavailable') {
     state = 'provider_unavailable'
   } else if (analysisStatus === 'timed_out') {
@@ -192,8 +203,8 @@ export function statusText(result) {
         ? 'Design Drift: proposed differences'
         : `Design Drift: ${count} proposed difference${count === 1 ? '' : 's'}`
     }
-    case 'no_actionable_difference':
-      return 'Design Drift: no actionable difference in analyzed scope'
+    case 'completed_unclassified':
+      return 'Design Drift: analysis completed · no drift conclusion asserted'
     case 'no_candidate':
       return 'Design Drift: no candidate in analyzed scope'
     case 'no_candidate_unanalyzed':
@@ -210,6 +221,8 @@ export function statusText(result) {
       return 'Design Drift: plan boundary identity incomplete'
     case 'mcp_unavailable':
       return 'Design Drift: Bicameral MCP unavailable'
+    case 'mcp_error':
+      return 'Design Drift: Bicameral MCP returned an error'
     case 'managed_preflight_missing':
     case 'invalid_response':
       return 'Design Drift: invalid Bicameral response'
