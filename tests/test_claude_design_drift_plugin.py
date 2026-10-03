@@ -64,7 +64,8 @@ def test_design_drift_plugin_package_contract():
         "managed_enum_validation": "closed-current-bot-contract",
         "digest_format": "sha256-lowercase-64hex",
         "candidate_identity_format": "uuid-wire-shape",
-        "session_lease_identity_format": "opaque-bounded-string",
+        "candidate_generation_format": "positive-safe-integer",
+        "session_lease_identity_format": "opaque-nonempty-response-envelope-bounded",
         "raw_candidate_spec_limitation_prose_in_command_text": False,
     }
 
@@ -186,3 +187,4 @@ def test_design_drift_remediation_frame_is_enforced_in_source():
     assert "MAX_TOTAL_JSON_CHARS" in integrity
     assert "MANAGED_OUTCOMES" in integrity
     assert "SEMANTIC_CLASSES" in integrity
+    assert "Number.isSafeInteger" in integrity
