@@ -42,6 +42,44 @@ def test_design_drift_plugin_package_contract():
     }
 
 
+def test_design_drift_provider_documentation_contract():
+    compatibility = _json(PLUGIN / "compatibility.json")
+    documentation = compatibility["documentation"]
+    references_path = PLUGIN / documentation["local_references"]
+    provider_family_path = PLUGIN / documentation["provider_family"]
+    category_contract_path = PLUGIN / documentation["category_contract"]
+    repository_index_path = PLUGIN / documentation["repository_index"]
+
+    assert references_path.is_file()
+    assert provider_family_path.is_file()
+    assert category_contract_path.is_file()
+    assert repository_index_path.is_file()
+    assert documentation["refresh_cadence"] == "monthly"
+    assert documentation["source_precedence"] == "generated-types-then-official-provider-docs"
+    assert documentation["generated_types_path"] == ".claude-plugin/types/"
+
+    references = references_path.read_text(encoding="utf-8")
+    for official_url in (
+        "https://code.claude.com/docs/en/plugins/mods/overview",
+        "https://code.claude.com/docs/en/plugins/mods/create",
+        "https://code.claude.com/docs/en/plugins/mods/reference",
+        "https://code.claude.com/docs/en/plugins/mods/api",
+        "https://code.claude.com/docs/en/hooks",
+        "https://code.claude.com/docs/en/plugins/manifest-reference",
+        "https://code.claude.com/docs/en/plugins/install",
+        "https://code.claude.com/docs/en/plugins/security",
+        "https://code.claude.com/docs/en/plugins/mods/admin",
+        "https://github.com/anthropics/claude-code/blob/main/mods/types/claude-code.d.ts",
+        "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+    ):
+        assert official_url in references
+
+    # Prevent the common category confusion: Agent SDK is explicitly non-authoritative here.
+    assert "Claude Agent SDK" in references
+    assert "not a dependency or authority source" in references
+    assert ".claude-plugin/types/" in references
+
+
 def test_design_drift_mod_uses_narrow_declared_surface():
     register = (PLUGIN / "hooks" / "register.js").read_text(encoding="utf-8")
     drift = (PLUGIN / "hooks" / "drift.js").read_text(encoding="utf-8")
