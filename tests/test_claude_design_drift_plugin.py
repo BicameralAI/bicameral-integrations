@@ -28,6 +28,10 @@ def test_design_drift_plugin_package_contract():
     assert compatibility["transport"]["kind"] == "existing-mcp"
     assert compatibility["transport"]["server"] == "bicameral"
     assert compatibility["transport"]["tool"] == "bicameral.preflight"
+    assert compatibility["transport"]["routing_tools"] == [
+        "bicameral.workspace.resolve",
+        "bicameral.product.select",
+    ]
     assert compatibility["transport"]["owns_server_registration"] is False
     assert compatibility["migration"]["legacy_claude_settings_planning_hook"] == (
         "remove-when-plugin-active"
@@ -51,15 +55,19 @@ def test_design_drift_plugin_package_contract():
         "later_cwd_updates": "ignored-for-product-routing",
         "claude_project_dir": "provider-stable-root-available-but-not-consumed-v0.1",
         "cwd_is_product_identity": False,
-        "resolver": "pending-bicameral.workspace.resolve-mcp-871",
-        "selection": "existing-bicameral.product.select",
+        "resolver": "bicameral.workspace.resolve",
+        "selection": "bicameral.product.select",
+        "composition": "resolve-then-select-same-mcp-process-before-product-scoped-preflight",
     }
     assert compatibility["response_integrity"] == {
         "max_content_items": 16,
         "max_total_json_chars": 262144,
         "max_candidates": 256,
+        "routing_max_content_items": 8,
+        "routing_max_total_json_chars": 32768,
         "conflicting_managed_preflight": "fail-closed",
         "conflicting_candidate_surface": "fail-closed",
+        "conflicting_routing_surface": "fail-closed",
         "success_error_mix": "fail-closed",
         "managed_enum_validation": "closed-current-bot-contract",
         "digest_format": "sha256-lowercase-64hex",
@@ -112,7 +120,13 @@ def test_design_drift_mod_uses_narrow_declared_surface():
     drift = (PLUGIN / "hooks" / "drift.js").read_text(encoding="utf-8")
     integrity = (PLUGIN / "hooks" / "integrity.js").read_text(encoding="utf-8")
     provider = (PLUGIN / "hooks" / "provider.js").read_text(encoding="utf-8")
-    source = "\n".join((register, drift, integrity, provider))
+    routing = (PLUGIN / "hooks" / "routing.js").read_text(encoding="utf-8")
+    routing_presentation = (PLUGIN / "hooks" / "routing-presentation.js").read_text(
+        encoding="utf-8"
+    )
+    source = "\n".join(
+        (register, drift, integrity, provider, routing, routing_presentation)
+    )
     compatibility = _json(PLUGIN / "compatibility.json")
 
     required = {
@@ -172,6 +186,7 @@ def test_design_drift_remediation_frame_is_enforced_in_source():
     register = (PLUGIN / "hooks" / "register.js").read_text(encoding="utf-8")
     provider = (PLUGIN / "hooks" / "provider.js").read_text(encoding="utf-8")
     integrity = (PLUGIN / "hooks" / "integrity.js").read_text(encoding="utf-8")
+    routing = (PLUGIN / "hooks" / "routing.js").read_text(encoding="utf-8")
 
     assert "planningThreadDisposition" in register
     assert "subagent_boundary_ignored" in provider
@@ -181,7 +196,13 @@ def test_design_drift_remediation_frame_is_enforced_in_source():
     assert "preserveRoutingHint" in register
     assert "source === 'clear' || source === 'compact'" in register
     assert "scheduledKey" in register
+    assert "pendingRun" in register
     assert "normalizeBoundedMcpResult" in register
+    assert "establishProductContext" in register
+    assert "delete planningBoundary.product_id" in register
+    assert "bicameral.workspace.resolve" in routing
+    assert "bicameral.product.select" in routing
+    assert "delete cleanBoundary.product_id" in routing
     assert "managed_preflight_conflict" in integrity
     assert "candidate_surface_conflict" in integrity
     assert "MAX_TOTAL_JSON_CHARS" in integrity
