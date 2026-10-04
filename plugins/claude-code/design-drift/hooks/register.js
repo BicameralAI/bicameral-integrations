@@ -8,6 +8,7 @@ import {
 } from './drift.js'
 import { normalizeBoundedMcpResult } from './integrity.js'
 import { planningThreadDisposition, sessionRoutingHintFromStart } from './provider.js'
+import { routingDetailText, routingStatusText } from './routing-presentation.js'
 import { establishProductContext } from './routing.js'
 
 let latestBoundary = null
@@ -53,7 +54,11 @@ function safeToast($, text) {
 
 function setResult($, result) {
   latestResult = result
-  safeStatus($, result?.state === 'runtime_degraded' ? 'Design Drift: plugin runtime degraded' : statusText(result))
+  const text =
+    result?.state === 'runtime_degraded'
+      ? 'Design Drift: plugin runtime degraded'
+      : routingStatusText(result) || statusText(result)
+  safeStatus($, text)
   if (result?.state === 'contradiction') {
     safeToast($, 'Bicameral found a design contradiction. Run /bicameral-drift to review it.')
   }
@@ -227,7 +232,7 @@ export function register(on) {
           ].join('\n'),
         }
       }
-      return { text: detailText(latestResult) }
+      return { text: routingDetailText(latestResult) || detailText(latestResult) }
     } catch {
       runtimeDegraded($, latestBoundary, 'command_render_failed')
       return {
