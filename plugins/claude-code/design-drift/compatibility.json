@@ -24,6 +24,10 @@
     "kind": "existing-mcp",
     "server": "bicameral",
     "tool": "bicameral.preflight",
+    "routing_tools": [
+      "bicameral.workspace.resolve",
+      "bicameral.product.select"
+    ],
     "owns_server_registration": false
   },
   "events": [
@@ -66,15 +70,19 @@
     "later_cwd_updates": "ignored-for-product-routing",
     "claude_project_dir": "provider-stable-root-available-but-not-consumed-v0.1",
     "cwd_is_product_identity": false,
-    "resolver": "pending-bicameral.workspace.resolve-mcp-871",
-    "selection": "existing-bicameral.product.select"
+    "resolver": "bicameral.workspace.resolve",
+    "selection": "bicameral.product.select",
+    "composition": "resolve-then-select-same-mcp-process-before-product-scoped-preflight"
   },
   "response_integrity": {
     "max_content_items": 16,
     "max_total_json_chars": 262144,
     "max_candidates": 256,
+    "routing_max_content_items": 8,
+    "routing_max_total_json_chars": 32768,
     "conflicting_managed_preflight": "fail-closed",
     "conflicting_candidate_surface": "fail-closed",
+    "conflicting_routing_surface": "fail-closed",
     "success_error_mix": "fail-closed",
     "managed_enum_validation": "closed-current-bot-contract",
     "digest_format": "sha256-lowercase-64hex",
