@@ -1,0 +1,6 @@
+{
+  "name": "bicameral-design-drift",
+  "version": "0.1.0",
+  "description": "Shows Bicameral Managed MCP design-plan drift inside Claude Code without moving governance authority into the host.",
+  "author": { "name": "BicameralAI" }
+}

@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "plugin": {
+    "id": "bicameral-design-drift",
+    "version": "0.1.0"
+  },
+  "host": {
+    "kind": "claude-code",
+    "minimum_version": "2.1.287",
+    "tested_versions": [],
+    "provider_docs_verified": "2026-10-03",
+    "thread_scope": "main-thread-only"
+  },
+  "documentation": {
+    "local_references": "references.md",
+    "provider_family": "../README.md",
+    "category_contract": "../../README.md",
+    "repository_index": "../../../docs/INTEGRATION_DOCS_INDEX.md",
+    "refresh_cadence": "monthly",
+    "source_precedence": "generated-types-then-official-provider-docs",
+    "generated_types_path": ".claude-plugin/types/"
+  },
+  "transport": {
+    "kind": "existing-mcp",
+    "server": "bicameral",
+    "tool": "bicameral.preflight",
+    "routing_tools": [
+      "bicameral.workspace.resolve",
+      "bicameral.product.select"
+    ],
+    "owns_server_registration": false
+  },
+  "events": [
+    "session.start",
+    "classic.PostToolUse",
+    "command.run",
+    "session.end"
+  ],
+  "api_calls": [
+    "command.register",
+    "clock.after",
+    "mcp.call",
+    "ui.status",
+    "ui.toast"
+  ],
+  "authority": {
+    "canonical_state_mutation": false,
+    "tool_approval": false,
+    "prompt_rewrite": false,
+    "tool_rewrite": false,
+    "autonomous_confirmation": false
+  },
+  "network": {
+    "direct_http": false,
+    "arbitrary_destinations": false,
+    "through_connected_mcp_only": true
+  },
+  "planning_boundary": {
+    "classic_event": "PostToolUse",
+    "tool_name": "ExitPlanMode",
+    "exact_plan_field": "tool_response.plan",
+    "turn_identity": "turn_id || tool_use_id",
+    "transcript_scraping": false,
+    "subagent_event_behavior": "ignore-without-state-mutation"
+  },
+  "product_routing": {
+    "provider_hint": "session.start.cwd",
+    "hint_semantics": "routing-hint-only-not-project-root-or-product-identity",
+    "clear_compact_behavior": "preserve-existing-hint",
+    "later_cwd_updates": "ignored-for-product-routing",
+    "claude_project_dir": "provider-stable-root-available-but-not-consumed-v0.1",
+    "cwd_is_product_identity": false,
+    "resolver": "bicameral.workspace.resolve",
+    "selection": "bicameral.product.select",
+    "composition": "resolve-then-select-same-mcp-process-before-product-scoped-preflight"
+  },
+  "response_integrity": {
+    "max_content_items": 16,
+    "max_total_json_chars": 262144,
+    "max_candidates": 256,
+    "routing_max_content_items": 8,
+    "routing_max_total_json_chars": 32768,
+    "conflicting_managed_preflight": "fail-closed",
+    "conflicting_candidate_surface": "fail-closed",
+    "conflicting_routing_surface": "fail-closed",
+    "success_error_mix": "fail-closed",
+    "managed_enum_validation": "closed-current-bot-contract",
+    "digest_format": "sha256-lowercase-64hex",
+    "candidate_identity_format": "uuid-wire-shape",
+    "candidate_generation_format": "positive-safe-integer",
+    "session_lease_identity_format": "opaque-nonempty-response-envelope-bounded",
+    "raw_candidate_spec_limitation_prose_in_command_text": false
+  },
+  "migration": {
+    "legacy_claude_settings_planning_hook": "remove-when-plugin-active",
+    "legacy_claude_settings_session_start_hook": "retain",
+    "reason": "Avoid duplicate ExitPlanMode preflight while preserving existing SessionStart activation."
+  },
+  "validation": {
+    "claude_plugin_validate": "pending-terminal-environment",
+    "generated_types": "pending-terminal-environment",
+    "real_claude_load": "pending-terminal-environment"
+  }
+}

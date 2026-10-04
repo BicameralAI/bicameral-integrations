@@ -1,0 +1,252 @@
+import {
+  MCP_SERVER,
+  MCP_TOOL,
+  buildPreflightArguments,
+  detailText,
+  planningBoundaryFromClassicPostToolUse,
+  statusText,
+} from './drift.js'
+import { normalizeBoundedMcpResult } from './integrity.js'
+import { planningThreadDisposition, sessionRoutingHintFromStart } from './provider.js'
+import { routingDetailText, routingStatusText } from './routing-presentation.js'
+import { establishProductContext } from './routing.js'
+
+let latestBoundary = null
+let latestResult = null
+let lastBoundaryKey = null
+let activeBoundaryKey = null
+let inFlightKey = null
+let scheduledKey = null
+let pendingRun = null
+let sessionRoutingHint = null
+
+function resetSessionState({ preserveRoutingHint = false } = {}) {
+  const retainedRoutingHint = preserveRoutingHint ? sessionRoutingHint : null
+  latestBoundary = null
+  latestResult = null
+  lastBoundaryKey = null
+  activeBoundaryKey = null
+  inFlightKey = null
+  scheduledKey = null
+  pendingRun = null
+  sessionRoutingHint = retainedRoutingHint
+}
+
+function ignorePromiseFailure(value) {
+  if (value && typeof value.catch === 'function') value.catch(() => {})
+}
+
+function safeStatus($, text) {
+  try {
+    ignorePromiseFailure($.ui.status(text))
+  } catch {
+    // Presentation failure must never affect Claude execution.
+  }
+}
+
+function safeToast($, text) {
+  try {
+    ignorePromiseFailure($.ui.toast(text))
+  } catch {
+    // Presentation failure must never affect Claude execution.
+  }
+}
+
+function setResult($, result) {
+  latestResult = result
+  const text =
+    result?.state === 'runtime_degraded'
+      ? 'Design Drift: plugin runtime degraded'
+      : routingStatusText(result) || statusText(result)
+  safeStatus($, text)
+  if (result?.state === 'contradiction') {
+    safeToast($, 'Bicameral found a design contradiction. Run /bicameral-drift to review it.')
+  }
+}
+
+function runtimeDegraded($, boundary = null, code = 'plugin_runtime_error') {
+  setResult($, {
+    state: 'runtime_degraded',
+    outcome: null,
+    analysisStatus: null,
+    classes: [],
+    limitations: [{ code }],
+    boundary,
+  })
+}
+
+async function runPreflight($, boundary, boundaryKey) {
+  if (!boundaryKey || activeBoundaryKey !== boundaryKey) return latestResult
+  if (scheduledKey === boundaryKey) return latestResult
+
+  // Product selection is process-local MCP state. Never overlap two different
+  // route -> select -> preflight chains. Coalesce onto the newest active Plan.
+  if (inFlightKey) {
+    if (inFlightKey !== boundaryKey) pendingRun = { boundary, boundaryKey }
+    return latestResult
+  }
+
+  inFlightKey = boundaryKey
+  setResult($, { state: 'analyzing', boundary })
+  try {
+    const routed = await establishProductContext(
+      (tool, args) => $.mcp.call(MCP_SERVER, tool, args),
+      sessionRoutingHint,
+      boundary,
+      () => activeBoundaryKey === boundaryKey,
+    )
+
+    if (routed.superseded || activeBoundaryKey !== boundaryKey) return latestResult
+    if (!routed.ok) {
+      setResult($, routed.result)
+      return latestResult
+    }
+
+    const response = await $.mcp.call(MCP_SERVER, MCP_TOOL, buildPreflightArguments(routed.boundary))
+    if (activeBoundaryKey === boundaryKey) {
+      setResult($, normalizeBoundedMcpResult(response, routed.boundary))
+    }
+  } catch {
+    if (activeBoundaryKey === boundaryKey) {
+      setResult($, {
+        state: 'mcp_unavailable',
+        outcome: null,
+        analysisStatus: null,
+        classes: [],
+        limitations: [{ code: 'mcp_call_failed' }],
+        boundary,
+      })
+    }
+  } finally {
+    if (inFlightKey === boundaryKey) inFlightKey = null
+
+    const pending = pendingRun
+    pendingRun = null
+    if (pending && activeBoundaryKey === pending.boundaryKey && !inFlightKey) {
+      await runPreflight($, pending.boundary, pending.boundaryKey)
+    }
+  }
+  return latestResult
+}
+
+export function register(on) {
+  on('session.start', async ($, e, next) => {
+    // Claude emits SessionStart again for clear/compact. Those events can carry
+    // a changed cwd, so preserve the original captured routing hint rather than
+    // silently rebinding Product routing to ambient directory state.
+    const source = typeof e?.source === 'string' ? e.source : null
+    const preserveRoutingHint = Boolean(sessionRoutingHint) && (source === 'clear' || source === 'compact')
+    resetSessionState({ preserveRoutingHint })
+    if (!sessionRoutingHint) {
+      const routing = sessionRoutingHintFromStart(e)
+      sessionRoutingHint = routing.ok ? routing : null
+    }
+    try {
+      await $.command.register({
+        name: 'bicameral-drift',
+        description: 'Show the latest Bicameral design-plan drift result',
+        argumentHint: '[refresh]',
+      })
+    } catch {
+      // A command-name conflict must not prevent the rest of the Mod from loading.
+    }
+    return next(e)
+  })
+
+  on('classic.PostToolUse', async ($, e, next) => {
+    const thread = planningThreadDisposition(e)
+    if (!thread.eligible) {
+      // In particular, subagent ExitPlanMode must not clear or replace the
+      // main-thread result because v0.1 has no governed agent identity field.
+      return next(e)
+    }
+
+    let parsed
+    try {
+      parsed = await planningBoundaryFromClassicPostToolUse(e)
+    } catch {
+      latestBoundary = null
+      lastBoundaryKey = null
+      activeBoundaryKey = null
+      runtimeDegraded($, null, 'planning_boundary_processing_failed')
+      return next(e)
+    }
+
+    if (!parsed.ok) {
+      latestBoundary = null
+      lastBoundaryKey = null
+      activeBoundaryKey = null
+      setResult($, {
+        state: parsed.reason,
+        outcome: null,
+        analysisStatus: null,
+        classes: [],
+        limitations: [{ code: parsed.reason }],
+        boundary: null,
+      })
+      return next(e)
+    }
+
+    // Product identity never comes from the Claude event. Even if a provider or
+    // another Mod adds a product_id-shaped field, routing must resolve and select
+    // the canonical Product through Bicameral in this MCP process.
+    const planningBoundary = { ...parsed.boundary }
+    delete planningBoundary.product_id
+
+    latestBoundary = planningBoundary
+    activeBoundaryKey = parsed.key
+    if (parsed.key === lastBoundaryKey || parsed.key === inFlightKey || parsed.key === scheduledKey) {
+      return next(e)
+    }
+
+    lastBoundaryKey = parsed.key
+    scheduledKey = parsed.key
+    setResult($, { state: 'analyzing', boundary: planningBoundary })
+    try {
+      const scheduled = $.clock.after(0, async () => {
+        if (scheduledKey === parsed.key) scheduledKey = null
+        await runPreflight($, planningBoundary, parsed.key)
+      })
+      ignorePromiseFailure(scheduled)
+    } catch {
+      if (scheduledKey === parsed.key) scheduledKey = null
+      runtimeDegraded($, planningBoundary, 'background_schedule_failed')
+    }
+    return next(e)
+  })
+
+  on('command.run', { command: 'bicameral-drift' }, async ($, e) => {
+    const wantsRefresh = (e.args || '').trim().toLowerCase() === 'refresh'
+    try {
+      if ((wantsRefresh || !latestResult) && latestBoundary) {
+        if (inFlightKey !== activeBoundaryKey && scheduledKey !== activeBoundaryKey) {
+          await runPreflight($, latestBoundary, activeBoundaryKey)
+        }
+      }
+      if (latestResult?.state === 'runtime_degraded') {
+        return {
+          text: [
+            'Bicameral Design Drift',
+            'Design Drift: plugin runtime degraded',
+            'Advisory only. No drift conclusion is available from this event.',
+          ].join('\n'),
+        }
+      }
+      return { text: routingDetailText(latestResult) || detailText(latestResult) }
+    } catch {
+      runtimeDegraded($, latestBoundary, 'command_render_failed')
+      return {
+        text: [
+          'Bicameral Design Drift',
+          'Design Drift: plugin runtime degraded',
+          'Advisory only. No drift conclusion is available from this event.',
+        ].join('\n'),
+      }
+    }
+  })
+
+  on('session.end', async ($, e, next) => {
+    resetSessionState()
+    return next(e)
+  })
+}
