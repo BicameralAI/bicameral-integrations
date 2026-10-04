@@ -8,6 +8,7 @@ import {
 } from './drift.js'
 import { normalizeBoundedMcpResult } from './integrity.js'
 import { planningThreadDisposition, sessionRoutingHintFromStart } from './provider.js'
+import { establishProductContext } from './routing.js'
 
 let latestBoundary = null
 let latestResult = null
@@ -15,6 +16,7 @@ let lastBoundaryKey = null
 let activeBoundaryKey = null
 let inFlightKey = null
 let scheduledKey = null
+let pendingRun = null
 let sessionRoutingHint = null
 
 function resetSessionState({ preserveRoutingHint = false } = {}) {
@@ -25,6 +27,7 @@ function resetSessionState({ preserveRoutingHint = false } = {}) {
   activeBoundaryKey = null
   inFlightKey = null
   scheduledKey = null
+  pendingRun = null
   sessionRoutingHint = retainedRoutingHint
 }
 
@@ -69,14 +72,34 @@ function runtimeDegraded($, boundary = null, code = 'plugin_runtime_error') {
 
 async function runPreflight($, boundary, boundaryKey) {
   if (!boundaryKey || activeBoundaryKey !== boundaryKey) return latestResult
-  if (inFlightKey === boundaryKey || scheduledKey === boundaryKey) return latestResult
+  if (scheduledKey === boundaryKey) return latestResult
+
+  // Product selection is process-local MCP state. Never overlap two different
+  // route -> select -> preflight chains. Coalesce onto the newest active Plan.
+  if (inFlightKey) {
+    if (inFlightKey !== boundaryKey) pendingRun = { boundary, boundaryKey }
+    return latestResult
+  }
 
   inFlightKey = boundaryKey
   setResult($, { state: 'analyzing', boundary })
   try {
-    const response = await $.mcp.call(MCP_SERVER, MCP_TOOL, buildPreflightArguments(boundary))
+    const routed = await establishProductContext(
+      (tool, args) => $.mcp.call(MCP_SERVER, tool, args),
+      sessionRoutingHint,
+      boundary,
+      () => activeBoundaryKey === boundaryKey,
+    )
+
+    if (routed.superseded || activeBoundaryKey !== boundaryKey) return latestResult
+    if (!routed.ok) {
+      setResult($, routed.result)
+      return latestResult
+    }
+
+    const response = await $.mcp.call(MCP_SERVER, MCP_TOOL, buildPreflightArguments(routed.boundary))
     if (activeBoundaryKey === boundaryKey) {
-      setResult($, normalizeBoundedMcpResult(response, boundary))
+      setResult($, normalizeBoundedMcpResult(response, routed.boundary))
     }
   } catch {
     if (activeBoundaryKey === boundaryKey) {
@@ -91,6 +114,12 @@ async function runPreflight($, boundary, boundaryKey) {
     }
   } finally {
     if (inFlightKey === boundaryKey) inFlightKey = null
+
+    const pending = pendingRun
+    pendingRun = null
+    if (pending && activeBoundaryKey === pending.boundaryKey && !inFlightKey) {
+      await runPreflight($, pending.boundary, pending.boundaryKey)
+    }
   }
   return latestResult
 }
@@ -153,7 +182,13 @@ export function register(on) {
       return next(e)
     }
 
-    latestBoundary = parsed.boundary
+    // Product identity never comes from the Claude event. Even if a provider or
+    // another Mod adds a product_id-shaped field, routing must resolve and select
+    // the canonical Product through Bicameral in this MCP process.
+    const planningBoundary = { ...parsed.boundary }
+    delete planningBoundary.product_id
+
+    latestBoundary = planningBoundary
     activeBoundaryKey = parsed.key
     if (parsed.key === lastBoundaryKey || parsed.key === inFlightKey || parsed.key === scheduledKey) {
       return next(e)
@@ -161,16 +196,16 @@ export function register(on) {
 
     lastBoundaryKey = parsed.key
     scheduledKey = parsed.key
-    setResult($, { state: 'analyzing', boundary: parsed.boundary })
+    setResult($, { state: 'analyzing', boundary: planningBoundary })
     try {
       const scheduled = $.clock.after(0, async () => {
         if (scheduledKey === parsed.key) scheduledKey = null
-        await runPreflight($, parsed.boundary, parsed.key)
+        await runPreflight($, planningBoundary, parsed.key)
       })
       ignorePromiseFailure(scheduled)
     } catch {
       if (scheduledKey === parsed.key) scheduledKey = null
-      runtimeDegraded($, parsed.boundary, 'background_schedule_failed')
+      runtimeDegraded($, planningBoundary, 'background_schedule_failed')
     }
     return next(e)
   })
@@ -210,8 +245,3 @@ export function register(on) {
     return next(e)
   })
 }
-
-// sessionRoutingHint is intentionally captured but not consumed yet. It is a
-// fallible provider routing hint, never Product identity. Product routing
-// remains blocked on the accepted host-neutral MCP seam in #871.
-void sessionRoutingHint
