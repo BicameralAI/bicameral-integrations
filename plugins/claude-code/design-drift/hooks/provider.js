@@ -28,8 +28,9 @@ export function planningThreadDisposition(event) {
  * Claude's later cwd is mutable after cd/worktree changes, so it is never used
  * as Product identity and is not refreshed from PostToolUse events.
  *
- * This hint is deliberately not sent anywhere until the host-neutral
- * bicameral.workspace.resolve seam in BicameralAI/bicameral-mcp#871 exists.
+ * The hint may be sent only to Bicameral's read-only workspace.resolve MCP
+ * surface. The daemon resolves it to canonical Product identity, and the Mod
+ * still must explicitly select that Product before Product-scoped preflight.
  */
 export function sessionRoutingHintFromStart(event) {
   const e = objectOrNull(event)
